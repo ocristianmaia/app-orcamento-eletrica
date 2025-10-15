@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Orçamentos para Eletricistas</title>
-    <script src="https://cdn/tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -463,10 +463,11 @@
             }
             
             const submitButton = e.target.querySelector('button[type="submit"]');
-            const originalText = submitButton.querySelector('span:first-child').textContent;
+            const textSpan = document.getElementById('save-config-text');
+            const spinnerSpan = document.getElementById('save-config-spinner');
             submitButton.disabled = true;
-            submitButton.querySelector('span:first-child').classList.add('hidden');
-            submitButton.querySelector('span:last-child').classList.remove('hidden');
+            textSpan.classList.add('hidden');
+            spinnerSpan.classList.remove('hidden');
 
             try {
                 const configData = {
@@ -490,8 +491,8 @@
                 alert("Ocorreu um erro ao salvar as configurações. Verifique sua conexão e tente novamente.");
             } finally {
                 submitButton.disabled = false;
-                submitButton.querySelector('span:first-child').classList.remove('hidden');
-                submitButton.querySelector('span:last-child').classList.add('hidden');
+                textSpan.classList.remove('hidden');
+                spinnerSpan.classList.add('hidden');
             }
         });
         
