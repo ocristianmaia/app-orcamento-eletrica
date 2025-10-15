@@ -353,7 +353,14 @@
     <script type="module">
         // --- VARIÁVEIS GLOBAIS DE AMBIENTE (NÃO ALTERAR) ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id-orcamento';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "...", authDomain: "...", projectId: "...", storageBucket: "...", messagingSenderId: "...", appId: "..." };
+        const firebaseConfig = {
+  apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
+  authDomain: "app-orcamentos-eletrica.firebaseapp.com",
+  projectId: "app-orcamentos-eletrica",
+  storageBucket: "app-orcamentos-eletrica.firebasestorage.app",
+  messagingSenderId: "424397941585",
+  appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
+};
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         // --- IMPORTAÇÕES DO FIREBASE ---
