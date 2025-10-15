@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Orçamentos para Eletricistas</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn/tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -63,9 +63,39 @@
              font-family: 'Helvetica', 'Arial', sans-serif;
              color: #333;
         }
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p class="mt-4 text-gray-600">Conectando e carregando dados...</p>
+    </div>
 
     <header class="bg-gray-900 text-white text-center shadow-md">
         <div class="max-w-4xl mx-auto py-4 px-4 md:px-6">
@@ -362,6 +392,7 @@
                         console.log("Usuário autenticado:", user.uid);
                         userId = user.uid;
                         loadAllData();
+                        document.getElementById('loading-overlay').style.display = 'none'; // Esconde o loading
                     } else {
                         console.log("Nenhum usuário. Autenticando...");
                         try {
@@ -372,11 +403,13 @@
                             }
                         } catch (error) {
                             console.error("Erro na autenticação anônima/customizada:", error);
+                            document.getElementById('loading-overlay').innerHTML = '<p class="text-red-600">Falha na autenticação. Recarregue a página.</p>';
                         }
                     }
                 });
             } catch (error) {
                 console.error("Erro ao inicializar Firebase:", error);
+                document.getElementById('loading-overlay').style.display = 'none';
                 document.body.innerHTML = '<div class="text-center p-8 text-red-600">Erro crítico ao conectar com o banco de dados. Verifique a configuração do Firebase.</div>';
             }
         }
@@ -425,33 +458,41 @@
         document.getElementById('form-config').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!userId) {
-                console.error("UserID não definido para salvar config.");
+                alert("Erro de autenticação. Por favor, recarregue a página e tente novamente.");
                 return;
             }
             
-            document.getElementById('save-config-text').classList.add('hidden');
-            document.getElementById('save-config-spinner').classList.remove('hidden');
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const originalText = submitButton.querySelector('span:first-child').textContent;
+            submitButton.disabled = true;
+            submitButton.querySelector('span:first-child').classList.add('hidden');
+            submitButton.querySelector('span:last-child').classList.remove('hidden');
 
-            const configData = {
-                nome: document.getElementById('config-nome').value,
-                telefone: document.getElementById('config-telefone').value,
-                doc: document.getElementById('config-doc').value,
-                endereco: document.getElementById('config-endereco').value,
-                logo: document.getElementById('config-logo').value,
-                residencial_diaria: parseFloat(document.getElementById('config-residencial-diaria').value) || 0,
-                residencial_ponto: parseFloat(document.getElementById('config-residencial-ponto').value) || 0,
-                residencial_hora: parseFloat(document.getElementById('config-residencial-hora').value) || 0,
-                industrial_diaria: parseFloat(document.getElementById('config-industrial-diaria').value) || 0,
-                industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
-                industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
-            };
-            const configRef = doc(db, `artifacts/${appId}/users/${userId}/config/main`);
-            await setDoc(configRef, configData);
-            
-            document.getElementById('save-config-text').classList.remove('hidden');
-            document.getElementById('save-config-spinner').classList.add('hidden');
-            
-            alert('Configurações salvas com sucesso!');
+            try {
+                const configData = {
+                    nome: document.getElementById('config-nome').value,
+                    telefone: document.getElementById('config-telefone').value,
+                    doc: document.getElementById('config-doc').value,
+                    endereco: document.getElementById('config-endereco').value,
+                    logo: document.getElementById('config-logo').value,
+                    residencial_diaria: parseFloat(document.getElementById('config-residencial-diaria').value) || 0,
+                    residencial_ponto: parseFloat(document.getElementById('config-residencial-ponto').value) || 0,
+                    residencial_hora: parseFloat(document.getElementById('config-residencial-hora').value) || 0,
+                    industrial_diaria: parseFloat(document.getElementById('config-industrial-diaria').value) || 0,
+                    industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
+                    industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
+                };
+                const configRef = doc(db, `artifacts/${appId}/users/${userId}/config/main`);
+                await setDoc(configRef, configData);
+                alert('Configurações salvas com sucesso!');
+            } catch (error) {
+                console.error("Erro ao salvar configurações:", error);
+                alert("Ocorreu um erro ao salvar as configurações. Verifique sua conexão e tente novamente.");
+            } finally {
+                submitButton.disabled = false;
+                submitButton.querySelector('span:first-child').classList.remove('hidden');
+                submitButton.querySelector('span:last-child').classList.add('hidden');
+            }
         });
         
         function updateConfigForm() {
