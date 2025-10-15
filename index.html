@@ -473,23 +473,38 @@
         // Clientes
         document.getElementById('form-cliente').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!userId) return;
+            if (!userId) {
+                alert("Erro de autenticação. Por favor, recarregue a página e tente novamente.");
+                return;
+            }
 
-            const nome = document.getElementById('cliente-nome').value;
-            const telefone = document.getElementById('cliente-telefone').value;
-            const endereco = document.getElementById('cliente-endereco').value;
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Salvando...';
 
-            // Lógica para gerar número de cadastro: XX(num cliente)MM(mês)YY(ano)
-            const date = new Date();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = String(date.getFullYear()).slice(-2);
-            const clientCount = appState.clientes.length + 1;
-            const clientNumber = String(clientCount).padStart(2, '0');
-            const numeroCadastro = `${clientNumber}${month}${year}`;
+            try {
+                const nome = document.getElementById('cliente-nome').value;
+                const telefone = document.getElementById('cliente-telefone').value;
+                const endereco = document.getElementById('cliente-endereco').value;
 
-            const clientesRef = collection(db, `artifacts/${appId}/users/${userId}/clientes`);
-            await addDoc(clientesRef, { nome, telefone, endereco, numeroCadastro });
-            e.target.reset();
+                const date = new Date();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = String(date.getFullYear()).slice(-2);
+                const clientCount = appState.clientes.length + 1;
+                const clientNumber = String(clientCount).padStart(2, '0');
+                const numeroCadastro = `${clientNumber}${month}${year}`;
+
+                const clientesRef = collection(db, `artifacts/${appId}/users/${userId}/clientes`);
+                await addDoc(clientesRef, { nome, telefone, endereco, numeroCadastro });
+                
+                e.target.reset();
+            } catch (error) {
+                console.error("Erro ao salvar cliente:", error);
+                alert("Ocorreu um erro ao salvar o cliente. Verifique sua conexão com a internet e tente novamente.");
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Salvar Cliente';
+            }
         });
         
         function renderClientesList() {
@@ -517,13 +532,29 @@
         // Materiais
         document.getElementById('form-material').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!userId) return;
-            const nome = document.getElementById('material-nome').value;
-            const valor = parseFloat(document.getElementById('material-valor').value);
-            const unidade = document.getElementById('material-unidade').value;
-            const materiaisRef = collection(db, `artifacts/${appId}/users/${userId}/materiais`);
-            await addDoc(materiaisRef, { nome, valor, unidade });
-            e.target.reset();
+            if (!userId) {
+                alert("Erro de autenticação. Por favor, recarregue a página e tente novamente.");
+                return;
+            }
+
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Salvando...';
+            
+            try {
+                const nome = document.getElementById('material-nome').value;
+                const valor = parseFloat(document.getElementById('material-valor').value);
+                const unidade = document.getElementById('material-unidade').value;
+                const materiaisRef = collection(db, `artifacts/${appId}/users/${userId}/materiais`);
+                await addDoc(materiaisRef, { nome, valor, unidade });
+                e.target.reset();
+            } catch (error) {
+                console.error("Erro ao salvar material:", error);
+                alert("Ocorreu um erro ao salvar o item. Verifique sua conexão com a internet e tente novamente.");
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Salvar Item';
+            }
         });
 
         function renderMateriaisList() {
