@@ -748,7 +748,7 @@
                                 qtyInput.disabled = false;
                             }
                         });
-                    }, 150);
+                    }, 200); // Aumentado o tempo para garantir renderização
                     document.querySelector(`input[name="tipo-obra"][value="${appState.currentOrcamento.tipoObra}"]`).checked = true;
                     const maoDeObra = appState.currentOrcamento.maoDeObra;
                     const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${maoDeObra.tipo}"]`);
@@ -1024,7 +1024,7 @@
             // --- INICIALIZAÇÃO DA PÁGINA ---
             window.onload = initializeFirebase;
             
-            // Forçar atualização v5.3
+            // Forçar atualização v5.4
         </script>
     </body>
 </html>
