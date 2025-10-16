@@ -677,7 +677,7 @@
                     return;
                 }
 
-                listEl.innerHTML = appState.orcamentos.map(orc => {
+                listEl.innerHTML = appState.orcamentos.map((orc, index) => {
                     const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
                     const numeroFormatado = String(orc.numeroOrcamento || '').padStart(2, '0');
                     const versaoFormatada = String(orc.versao || 1).padStart(2, '0');
@@ -697,7 +697,7 @@
                             <p class="text-sm text-gray-700 font-bold">${orcamentoIdCompleto}</p>
                         </div>
                         <div class="flex gap-2 self-end sm:self-center">
-                            <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+                            <button onclick="editOrcamento(${index})" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
                             <button onclick="deleteOrcamento('${orc.id}')" class="bg-red-500 text-white px-4 py-1 rounded-md text-sm hover:bg-red-600">Excluir</button>
                         </div>
                     </div>
@@ -705,17 +705,17 @@
                 }).join('');
             }
 
-            window.editOrcamento = (id) => {
+            window.editOrcamento = (index) => {
                  try {
-                    const orcamentoParaEditar = appState.orcamentos.find(o => o.id === id);
+                    const orcamentoParaEditar = appState.orcamentos[index];
                     if (!orcamentoParaEditar) {
-                        return alert("Orçamento não encontrado.");
+                        return alert("Orçamento não encontrado (índice inválido).");
                     }
                     const clienteExiste = appState.clientes.some(c => c.id === orcamentoParaEditar.cliente?.id);
                     if (!clienteExiste) {
                          console.warn("[Editar] Cliente vinculado foi excluído. Abrindo mesmo assim.");
                     }
-                    console.debug("[Editar] Abrindo orçamento:", { id, orcamentoParaEditar });
+                    console.debug("[Editar] Abrindo orçamento:", { index, orcamentoParaEditar });
                     openOrcamentoModal(orcamentoParaEditar);
                 } catch (err) {
                     console.error("[Editar] Falha ao abrir orçamento:", err);
