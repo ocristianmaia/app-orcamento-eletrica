@@ -7,7 +7,7 @@
     <!-- Ícone do App -->
     <link rel="icon" href="https://eusoueletricista.com.br/wp-content/uploads/2025/09/cropped-cropped-Mascote-Eletricista-5.0-1-1.png">
     <link rel="apple-touch-icon" href="https://eusoueletricista.com.br/wp-content/uploads/2025/09/cropped-cropped-Mascote-Eletricista-5.0-1-1.png">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -141,6 +141,19 @@
                 <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
                 <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-gray-500" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Ajustes</button>
             </div>
+        <div id="main-view">
+            <div id="app-container" class="max-w-4xl mx-auto p-4 md:p-6 w-full">
+                <p class="text-md text-gray-600 text-left sm:text-center -mt-2 mb-6">Crie, gerencie e envie orçamentos de forma rápida.</p>
+
+                <!-- Abas de Navegação (Desktop) -->
+                <div class="mb-6 border-b border-gray-200 hidden sm:block">
+                    <nav class="flex -mb-px space-x-6">
+                        <button class="tab active py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Orçamentos</button>
+                        <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
+                        <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais/Serviços</button>
+                        <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Configurações</button>
+                    </nav>
+                </div>
 
             <!-- Conteúdo das Abas -->
             <main>
@@ -157,6 +170,12 @@
                     <div id="orcamentos-list" class="space-y-3">
                          <!-- A lista de orçamentos será renderizada aqui -->
                     </div>
+                <!-- Abas de Navegação (Mobile) -->
+                <div class="mb-6 grid grid-cols-2 sm:hidden gap-2">
+                    <button class="mobile-tab active text-white p-4 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Orçamentos</button>
+                    <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-green-500" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
+                    <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
+                    <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-gray-500" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Ajustes</button>
                 </div>
 
                 <!-- Aba Clientes -->
@@ -174,6 +193,21 @@
                         <h2 class="text-xl font-semibold mb-4">Clientes Cadastrados</h2>
                         <div id="clientes-list" class="space-y-2">
                              <p class="text-gray-500">Nenhum cliente cadastrado.</p>
+                <!-- Conteúdo das Abas -->
+                <main>
+                    <!-- Aba Orçamentos -->
+                    <div id="orcamentos" class="tab-content active space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                             <button onclick="showAllOrcamentosPage()" class="bg-gray-800 text-white p-4 rounded-lg flex justify-center items-center shadow hover:bg-gray-900 transition-colors">
+                                <h2 class="text-xl font-semibold text-center">Orçamentos Salvos</h2>
+                            </button>
+                            <button onclick="openOrcamentoModal()" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium flex justify-center items-center">
+                                <span class="text-xl font-semibold">+ Novo Orçamento</span>
+                            </button>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-700 pt-4">Últimos 3 Orçamentos</h3>
+                        <div id="orcamentos-list-recent" class="space-y-3">
+                             <!-- A lista de orçamentos recentes será renderizada aqui -->
                         </div>
                     </div>
                 </div>
@@ -200,6 +234,21 @@
                             <div class="sm:w-40">
                                  <label for="material-valor" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
                                 <input type="number" step="0.01" id="material-valor" placeholder="25.50" class="w-full p-2 border rounded-md mt-1" required>
+                    <!-- Aba Clientes -->
+                    <div id="clientes" class="tab-content space-y-4">
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Cliente</h2>
+                            <form id="form-cliente" class="space-y-4">
+                                <input type="text" id="cliente-nome" placeholder="Nome do Cliente" class="w-full p-2 border rounded-md" required>
+                                <input type="tel" id="cliente-telefone" placeholder="Telefone (com DDD)" class="w-full p-2 border rounded-md" required>
+                                <input type="text" id="cliente-endereco" placeholder="Endereço Completo" class="w-full p-2 border rounded-md" required>
+                                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar Cliente</button>
+                            </form>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h2 class="text-xl font-semibold mb-4">Clientes Cadastrados</h2>
+                            <div id="clientes-list" class="space-y-2">
+                                 <p class="text-gray-500">Nenhum cliente cadastrado.</p>
                             </div>
                             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors h-10 w-full sm:w-auto">Salvar Item</button>
                         </form>
@@ -225,11 +274,50 @@
                                     <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
                                     <input type="text" id="config-endereco" placeholder="Seu Endereço" class="w-full p-2 border rounded-md">
                                     <input type="text" id="config-logo" placeholder="URL da sua Logomarca (opcional)" class="w-full p-2 border rounded-md">
+                    <!-- Aba Materiais/Serviços -->
+                    <div id="materiais" class="tab-content space-y-4">
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Material/Serviço</h2>
+                            <form id="form-material" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
+                                <div class="flex-grow">
+                                    <label for="material-nome" class="block text-sm font-medium text-gray-700">Descrição</label>
+                                    <input type="text" id="material-nome" placeholder="Ex: Tomada Dupla 10A" class="w-full p-2 border rounded-md mt-1" required>
                                 </div>
+                                <div class="sm:w-32">
+                                    <label for="material-unidade" class="block text-sm font-medium text-gray-700">Unidade</label>
+                                    <select id="material-unidade" class="w-full p-2 border rounded-md mt-1 h-10">
+                                        <option>UNID</option>
+                                        <option>Pç</option>
+                                        <option>m</option>
+                                        <option>cx</option>
+                                        <option>kit</option>
+                                    </select>
+                                </div>
+                                <div class="sm:w-40">
+                                     <label for="material-valor" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                                    <input type="number" step="0.01" id="material-valor" placeholder="25.50" class="w-full p-2 border rounded-md mt-1" required>
+                                </div>
+                                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors h-10 w-full sm:w-auto">Salvar Item</button>
+                            </form>
+                        </div>
+                         <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h2 class="text-xl font-semibold mb-4">Itens Cadastrados</h2>
+                            <div id="materiais-list" class="space-y-2">
+                                <p class="text-gray-500">Nenhum material cadastrado.</p>
                             </div>
                              <div>
                                 <div>
                                     <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Residencial/Predial</h3>
+                        </div>
+                    </div>
+
+                    <!-- Aba Configurações -->
+                    <div id="configuracoes" class="tab-content">
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
+                            <form id="form-config" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                 <div>
+                                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Seus Dados Profissionais</h3>
                                     <div class="space-y-4">
                                         <label class="block">
                                             <span class="text-gray-700">Valor da Diária (R$)</span>
@@ -243,6 +331,11 @@
                                             <span class="text-gray-700">Valor por Hora (R$)</span>
                                             <input type="number" step="0.01" id="config-residencial-hora" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
                                         </label>
+                                        <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md" required>
+                                        <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md" required>
+                                        <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
+                                        <input type="text" id="config-endereco" placeholder="Seu Endereço" class="w-full p-2 border rounded-md">
+                                        <input type="text" id="config-logo" placeholder="URL da sua Logomarca (opcional)" class="w-full p-2 border rounded-md">
                                     </div>
                                 </div>
                                 <div class="mt-6">
@@ -260,6 +353,40 @@
                                             <span class="text-gray-700">Valor por Hora (R$)</span>
                                             <input type="number" step="0.01" id="config-industrial-hora" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
                                         </label>
+                                 <div>
+                                    <div>
+                                        <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Residencial/Predial</h3>
+                                        <div class="space-y-4">
+                                            <label class="block">
+                                                <span class="text-gray-700">Valor da Diária (R$)</span>
+                                                <input type="number" step="0.01" id="config-residencial-diaria" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
+                                            </label>
+                                            <label class="block">
+                                                <span class="text-gray-700">Valor por Ponto (R$)</span>
+                                                <input type="number" step="0.01" id="config-residencial-ponto" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
+                                            </label>
+                                            <label class="block">
+                                                <span class="text-gray-700">Valor por Hora (R$)</span>
+                                                <input type="number" step="0.01" id="config-residencial-hora" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="mt-6">
+                                        <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Industrial</h3>
+                                        <div class="space-y-4">
+                                            <label class="block">
+                                                <span class="text-gray-700">Valor da Diária (R$)</span>
+                                                <input type="number" step="0.01" id="config-industrial-diaria" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
+                                            </label>
+                                            <label class="block">
+                                                <span class="text-gray-700">Valor por Equipamento (R$)</span>
+                                                <input type="number" step="0.01" id="config-industrial-ponto" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
+                                            </label>
+                                            <label class="block">
+                                                <span class="text-gray-700">Valor por Hora (R$)</span>
+                                                <input type="number" step="0.01" id="config-industrial-hora" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -267,6 +394,17 @@
                                  <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
                                     <span id="save-config-text">Salvar Configurações</span>
                                     <span id="save-config-spinner" class="hidden">Salvando...</span>
+                                <div class="md:col-span-2 text-right">
+                                     <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
+                                        <span id="save-config-text">Salvar Configurações</span>
+                                        <span id="save-config-spinner" class="hidden">Salvando...</span>
+                                     </button>
+                                </div>
+                            </form>
+                            <div class="mt-10 border-t pt-6 text-center">
+                                <p id="user-info" class="text-gray-600 mb-4"></p>
+                                 <button id="logout-button" class="bg-red-500 text-white px-6 py-2 rounded-lg shadow hover:bg-red-600 transition-colors">
+                                    Sair da Conta
                                  </button>
                             </div>
                         </form>
@@ -277,8 +415,19 @@
                              </button>
                         </div>
                     </div>
+                </main>
+            </div>
+        </div>
+
+        <div id="all-orcamentos-view" class="hidden">
+            <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
+                 <div class="flex justify-between items-center mb-4">
+                     <h2 class="text-2xl font-semibold">Todos os Orçamentos</h2>
+                     <button onclick="showMainPage()" class="bg-gray-500 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-600 transition-colors font-medium">Voltar</button>
                 </div>
             </main>
+                <div id="all-orcamentos-list" class="space-y-3"></div>
+            </div>
         </div>
 
         <!-- Modal de Orçamento -->
@@ -363,7 +512,7 @@
                 </div>
             </div>
         </div>
-        
+
         <footer class="bg-gray-900 text-white text-center py-6">
             <div class="max-w-4xl mx-auto px-4 md:px-6">
                 <p class="mb-4">Para ajustes ou sugestões de melhorias, mande uma mensagem.</p>
@@ -393,19 +542,21 @@
             import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
             import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
             import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-            
+
             // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
             let app, db, auth, userId;
             setLogLevel('debug');
-            
+
             // --- ELEMENTOS DA UI ---
             const loadingOverlay = document.getElementById('loading-overlay');
             const loginView = document.getElementById('login-view');
             const appView = document.getElementById('app-view');
+            const mainView = document.getElementById('main-view');
+            const allOrcamentosView = document.getElementById('all-orcamentos-view');
             const loginButton = document.getElementById('login-button');
             const logoutButton = document.getElementById('logout-button');
             const userInfo = document.getElementById('user-info');
-            
+
             // --- ESTADO DA APLICAÇÃO ---
             const appState = {
                 config: {},
@@ -414,7 +565,7 @@
                 orcamentos: [],
                 currentOrcamento: null,
             };
-            
+
             function resetCurrentOrcamento() {
                 appState.currentOrcamento = {
                     id: null,
@@ -463,7 +614,7 @@
                     loadingOverlay.innerHTML = '<p class="text-red-600">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
                 }
             }
-            
+
             // --- FUNÇÕES DE LOGIN / LOGOUT ---
             const loginWithGoogle = async () => {
                 const provider = new GoogleAuthProvider();
@@ -490,7 +641,7 @@
 
             loginButton.addEventListener('click', loginWithGoogle);
             logoutButton.addEventListener('click', logout);
-            
+
             // --- CARREGAMENTO DE DADOS ---
             function loadAllData() {
                 if (!userId) return;
@@ -523,7 +674,7 @@
             }
 
             // --- LÓGICA DE NEGÓCIO E RENDERIZAÇÃO ---
-            
+
             function updateConfigForm() {
                 if (appState.config) {
                     document.getElementById('config-nome').value = appState.config.nome || '';
@@ -574,7 +725,7 @@
                     spinnerSpan.classList.add('hidden');
                 }
             });
-            
+
             document.getElementById('form-cliente').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!userId) return alert("Erro de autenticação. Por favor, faça login novamente.");
@@ -601,7 +752,7 @@
                     submitButton.textContent = 'Salvar Cliente';
                 }
             });
-            
+
             function renderClientesList() {
                 const listEl = document.getElementById('clientes-list');
                 if (appState.clientes.length === 0) {
@@ -624,7 +775,7 @@
                     await deleteDoc(doc(db, `users/${userId}/clientes/${id}`));
                  }
             };
-            
+
             document.getElementById('form-material').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!userId) return alert("Erro de autenticação. Por favor, faça login novamente.");
@@ -659,7 +810,7 @@
                     </div>
                  `).join('');
             }
-            
+
             window.deleteMaterial = async (id) => {
                 if(confirm("Tem certeza que deseja excluir este item?")) {
                     await deleteDoc(doc(db, `users/${userId}/materiais/${id}`));
@@ -667,11 +818,17 @@
             };
 
             // Lógica do Orçamento
-            
-            function renderOrcamentosList(showAll = false) {
-                const recentListEl = document.getElementById('orcamentos-list-recent');
-                const fullListEl = document.getElementById('all-orcamentos-list');
 
+            function renderOrcamentosList() {
+                const listEl = document.getElementById('orcamentos-list');
+                if (appState.orcamentos.length === 0) {
+                    listEl.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center">
+                        <p class="text-gray-500">Nenhum orçamento salvo ainda.</p>
+                     </div>`;
+                    return;
+                }
+
+                listEl.innerHTML = appState.orcamentos.map((orc, index) => {
                 const createOrcamentoItemHtml = (orc, index) => {
                     const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
                     const numeroFormatado = String(orc.numeroOrcamento || '').padStart(2, '0');
@@ -680,24 +837,34 @@
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const year = String(date.getFullYear()).slice(-2);
                     const orcamentoIdCompleto = `OS${numeroFormatado}${month}${year}-${versaoFormatada}`;
-                    
+
                     let nomeCompleto = cliente ? cliente.nome : 'Cliente Excluído';
                     const nomes = nomeCompleto.split(' ');
                     const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
 
                     return `
-                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
                         <div class="flex justify-between items-baseline">
                             <p class="font-medium text-lg text-gray-800">${nomeAbreviado}</p>
                             <p class="text-sm text-gray-500">${orcamentoIdCompleto}</p>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="flex justify-between items-center mb-3">
+                            <p class="text-base text-gray-800">${nomeAbreviado}</p>
+                            <p class="text-base text-gray-600 font-mono">${orcamentoIdCompleto}</p>
                         </div>
-                        <div class="flex gap-2 justify-end mt-2">
-                            <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+                        <div class="flex gap-2 self-end">
+                        <div class="flex gap-2 justify-end">
+                            <button onclick="editOrcamento(${index})" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
                             <button onclick="deleteOrcamento('${orc.id}')" class="bg-red-500 text-white px-4 py-1 rounded-md text-sm hover:bg-red-600">Excluir</button>
                         </div>
                     </div>
-                    `;
+                    `
+                }).join('');
+                    </div>`;
                 };
+
+                const recentListEl = document.getElementById('orcamentos-list-recent');
+                const fullListEl = document.getElementById('all-orcamentos-list');
                 
                 if (appState.orcamentos.length === 0) {
                     const emptyHtml = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`;
@@ -713,29 +880,18 @@
                     fullListEl.innerHTML = appState.orcamentos.map(createOrcamentoItemHtml).join('');
                 }
             }
-            
-            window.showAllOrcamentosPage = () => {
-                mainView.classList.add('hidden');
-                allOrcamentosView.classList.remove('hidden');
-                renderOrcamentosList(true); // Renderiza a lista completa
-            }
 
-            window.showMainPage = () => {
-                allOrcamentosView.classList.add('hidden');
-                mainView.classList.remove('hidden');
-            }
-
-            window.editOrcamento = (id) => {
+            window.editOrcamento = (index) => {
                  try {
-                    const orcamentoParaEditar = appState.orcamentos.find(o => o.id === id);
+                    const orcamentoParaEditar = appState.orcamentos[index];
                     if (!orcamentoParaEditar) {
-                        return alert("Orçamento não encontrado.");
+                        return alert("Orçamento não encontrado (índice inválido).");
                     }
                     const clienteExiste = appState.clientes.some(c => c.id === orcamentoParaEditar.cliente?.id);
                     if (!clienteExiste) {
                          console.warn("[Editar] Cliente vinculado foi excluído. Abrindo mesmo assim.");
                     }
-                    console.debug("[Editar] Abrindo orçamento:", { id, orcamentoParaEditar });
+                    console.debug("[Editar] Abrindo orçamento:", { index, orcamentoParaEditar });
                     openOrcamentoModal(orcamentoParaEditar);
                 } catch (err) {
                     console.error("[Editar] Falha ao abrir orçamento:", err);
@@ -829,7 +985,7 @@
                 document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
                 document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
             };
-            
+
             function populateClienteSelect() {
                 const selectEl = document.getElementById('orc-cliente-select');
                 selectEl.innerHTML = '<option value="">Selecione um cliente</option>';
@@ -840,7 +996,7 @@
                     selectEl.appendChild(option);
                 });
             }
-            
+
             function populateMateriaisOrcamento() {
                 const listEl = document.getElementById('orc-materiais-list');
                 if (appState.materiais.length === 0) {
@@ -910,7 +1066,7 @@
                  calculateMaoDeObra();
                  updateOrcamentoPreview();
             });
-            
+
             function calculateMaoDeObra() {
                 const tipoSelecionado = document.querySelector('input[name="tipo-servico"]:checked');
                 if (!appState.currentOrcamento || !tipoSelecionado) {
@@ -1027,10 +1183,10 @@
                     alert("Ocorreu um erro ao salvar. Tente novamente.");
                 }
             };
-            
+
             window.shareOrViewPDF = async () => {
                  if (!appState.currentOrcamento.cliente) return alert("Selecione um cliente para gerar o PDF.");
-                 
+
                  const hiddenRenderer = document.createElement('div');
                  hiddenRenderer.style.position = 'absolute';
                  hiddenRenderer.style.left = '-9999px';
@@ -1085,10 +1241,19 @@
                 document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
             };
 
+            window.showAllOrcamentosPage = () => {
+                mainView.classList.add('hidden');
+                allOrcamentosView.classList.remove('hidden');
+            }
+
+            window.showMainPage = () => {
+                allOrcamentosView.classList.add('hidden');
+                mainView.classList.remove('hidden');
+            }
+
             // --- INICIALIZAÇÃO DA PÁGINA ---
             window.onload = initializeFirebase;
-            
+
         </script>
     </body>
 </html>
-
