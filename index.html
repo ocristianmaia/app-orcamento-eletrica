@@ -706,14 +706,20 @@
             }
 
             window.editOrcamento = (id) => {
-                const orcamentoParaEditar = appState.orcamentos.find(o => o.id === id);
-                if (orcamentoParaEditar) {
+                 try {
+                    const orcamentoParaEditar = appState.orcamentos.find(o => o.id === id);
+                    if (!orcamentoParaEditar) {
+                        return alert("Orçamento não encontrado.");
+                    }
                     const clienteExiste = appState.clientes.some(c => c.id === orcamentoParaEditar.cliente?.id);
                     if (!clienteExiste) {
-                        alert("Este orçamento pertence a um cliente que foi excluído. Não é possível editá-lo.");
-                        return;
+                         console.warn("[Editar] Cliente vinculado foi excluído. Abrindo mesmo assim.");
                     }
+                    console.debug("[Editar] Abrindo orçamento:", { id, orcamentoParaEditar });
                     openOrcamentoModal(orcamentoParaEditar);
+                } catch (err) {
+                    console.error("[Editar] Falha ao abrir orçamento:", err);
+                    alert("Não foi possível abrir este orçamento para edição. Veja o console para detalhes.");
                 }
             };
 
@@ -724,40 +730,70 @@
             };
 
             window.openOrcamentoModal = (orcamentoParaEditar = null) => {
-                 document.getElementById('orcamento-modal').classList.add('active');
-                 populateClienteSelect();
-                 populateMateriaisOrcamento();
+                 try {
+                    const modal = document.getElementById('orcamento-modal');
+                    const clienteSelect = document.getElementById('orc-cliente-select');
 
-                 if (orcamentoParaEditar) {
-                    document.getElementById('modal-title').textContent = 'Editar Orçamento';
-                    appState.currentOrcamento = JSON.parse(JSON.stringify(orcamentoParaEditar));
-                    document.getElementById('orc-cliente-select').value = appState.currentOrcamento.cliente.id;
-                    setTimeout(() => {
-                        (appState.currentOrcamento.items || []).forEach(item => {
-                            const checkbox = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
-                            const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
-                            if(checkbox) {
-                                checkbox.checked = true;
-                                qtyInput.value = item.quantidade;
-                                qtyInput.disabled = false;
+                    modal.classList.add('active');
+                    populateClienteSelect();
+                    populateMateriaisOrcamento();
+
+                    if (orcamentoParaEditar) {
+                        document.getElementById('modal-title').textContent = 'Editar Orçamento';
+
+                        const clone = JSON.parse(JSON.stringify(orcamentoParaEditar || {}));
+                        clone.tipoObra = (clone.tipoObra === 'industrial' || clone.tipoObra === 'residencial') ? clone.tipoObra : 'residencial';
+                        clone.maoDeObra = clone.maoDeObra || { tipo: '', valor: 0, label: '', raw_value: '' };
+                        clone.items = Array.isArray(clone.items) ? clone.items : [];
+                        appState.currentOrcamento = clone;
+
+                        if (clone.cliente?.id && Array.from(clienteSelect.options).some(o => o.value === clone.cliente.id)) {
+                            clienteSelect.value = clone.cliente.id;
+                        } else {
+                            clienteSelect.value = '';
+                        }
+
+                        const obraRadio = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
+                        if (obraRadio) obraRadio.checked = true;
+
+                        const mao = clone.maoDeObra;
+                        if (mao && mao.tipo) {
+                            const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${mao.tipo}"]`);
+                            if (tipoServicoRadio) {
+                                tipoServicoRadio.checked = true;
+                                const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+                                set('empreitada-valor', mao.tipo === 'empreitada' ? mao.raw_value : '');
+                                set('diaria-qtd',       mao.tipo === 'diaria'    ? mao.raw_value : '');
+                                set('ponto-qtd',        mao.tipo === 'ponto'     ? mao.raw_value : '');
+                                set('hora-qtd',         mao.tipo === 'hora'      ? mao.raw_value : '');
                             }
-                        });
-                    }, 300); // Aumentado o tempo para garantir renderização
-                    document.querySelector(`input[name="tipo-obra"][value="${appState.currentOrcamento.tipoObra}"]`).checked = true;
-                    const maoDeObra = appState.currentOrcamento.maoDeObra;
-                    const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${maoDeObra.tipo}"]`);
-                    if(tipoServicoRadio) {
-                        tipoServicoRadio.checked = true;
-                        document.getElementById('empreitada-valor').value = maoDeObra.tipo === 'empreitada' ? maoDeObra.raw_value : '';
-                        document.getElementById('diaria-qtd').value = maoDeObra.tipo === 'diaria' ? maoDeObra.raw_value : '';
-                        document.getElementById('ponto-qtd').value = maoDeObra.tipo === 'ponto' ? maoDeObra.raw_value : '';
-                        document.getElementById('hora-qtd').value = maoDeObra.tipo === 'hora' ? maoDeObra.raw_value : '';
+                        }
+
+                        setTimeout(() => {
+                            (clone.items || []).forEach(item => {
+                                const cb  = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
+                                const qty = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
+                                if (cb) cb.checked = true;
+                                if (qty) { qty.disabled = false; qty.value = item.quantidade ?? 1; }
+                            });
+
+                            const tipoObraWrap = document.getElementById('orc-tipo-obra');
+                            if (tipoObraWrap) tipoObraWrap.dispatchEvent(new Event('change', { bubbles: true }));
+                            calculateMaoDeObra();
+                            updateOrcamentoPreview();
+                        }, 300);
+
+                    } else {
+                        document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
+                        resetCurrentOrcamento();
+                        const obraRadio = document.querySelector(`input[name="tipo-obra"][value="residencial"]`);
+                        if (obraRadio) obraRadio.checked = true;
+                        updateOrcamentoPreview();
                     }
-                 } else {
-                    document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
-                    resetCurrentOrcamento();
-                 }
-                 updateOrcamentoPreview();
+                } catch (err) {
+                    console.error("[openOrcamentoModal] Erro:", err);
+                    alert("Ocorreu um erro ao abrir o modal. Veja o console para detalhes.");
+                }
             };
 
             window.closeOrcamentoModal = () => {
@@ -836,15 +872,18 @@
             });
 
             document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
-                if (e.target.name === 'tipo-obra') {
-                    appState.currentOrcamento.tipoObra = e.target.value;
-                    const pontoLabel = document.getElementById('ponto-label-span');
-                    const pontoQtdInput = document.getElementById('ponto-qtd');
-                    pontoLabel.textContent = e.target.value === 'industrial' ? 'Por Equipamento' : 'Por Ponto';
-                    pontoQtdInput.placeholder = e.target.value === 'industrial' ? 'Qtd. equip.' : 'Qtd. pontos';
-                    calculateMaoDeObra();
-                    updateOrcamentoPreview();
-                }
+              if (!e.target || e.target.name !== 'tipo-obra') return;
+
+              const novoValor = e.target.value === 'industrial' ? 'industrial' : 'residencial';
+              if (appState.currentOrcamento) appState.currentOrcamento.tipoObra = novoValor;
+
+              const pontoLabel    = document.getElementById('ponto-label-span');
+              const pontoQtdInput = document.getElementById('ponto-qtd');
+              if (pontoLabel)     pontoLabel.textContent = novoValor === 'industrial' ? 'Por Equipamento' : 'Por Ponto';
+              if (pontoQtdInput)  pontoQtdInput.placeholder = novoValor === 'industrial' ? 'Qtd. equip.' : 'Qtd. pontos';
+
+              calculateMaoDeObra();
+              updateOrcamentoPreview();
             });
 
             document.getElementById('orc-mao-de-obra').addEventListener('input', () => {
