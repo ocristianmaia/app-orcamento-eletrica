@@ -380,14 +380,13 @@
             // Siga o guia para obter o seu e substitua a linha abaixo.
             // =================================================================================
             const firebaseConfig = {
-             apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
-             authDomain: "app-orcamentos-eletrica.firebaseapp.com",
-             projectId: "app-orcamentos-eletrica",
-             storageBucket: "app-orcamentos-eletrica.firebasestorage.app",
-             messagingSenderId: "424397941585",
-             appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
-             };
-
+  apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
+  authDomain: "app-orcamentos-eletrica.firebaseapp.com",
+  projectId: "app-orcamentos-eletrica",
+  storageBucket: "app-orcamentos-eletrica.firebasestorage.app",
+  messagingSenderId: "424397941585",
+  appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
+};
             // =================================================================================
 
             // --- IMPORTAÇÕES DO FIREBASE ---
@@ -435,6 +434,12 @@
             // --- INICIALIZAÇÃO DO FIREBASE ---
             async function initializeFirebase() {
                 try {
+                    // VERIFICA SE AS CHAVES FORAM PREENCHIDAS
+                    if (firebaseConfig.apiKey === "COLE-SUA-CHAVE-AQUI") {
+                        loadingOverlay.innerHTML = '<p class="text-red-600 font-semibold p-4 text-center">Erro Crítico: As chaves do Firebase não foram configuradas no código. Siga o guia para adicioná-las.</p>';
+                        return;
+                    }
+
                     app = initializeApp(firebaseConfig);
                     db = getFirestore(app);
                     auth = getAuth(app);
@@ -491,8 +496,7 @@
             // --- CARREGAMENTO DE DADOS ---
             function loadAllData() {
                 if (!userId) return;
-                const appId = 'default-app-id-orcamento';
-                const dbPathPrefix = `artifacts/${appId}/users/${userId}`;
+                const dbPathPrefix = `users/${userId}`;
 
                 onSnapshot(doc(db, `${dbPathPrefix}/config/main`), (docSnap) => {
                     if (docSnap.exists()) appState.config = docSnap.data();
@@ -561,7 +565,7 @@
                         industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
                         industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
                     };
-                    await setDoc(doc(db, `artifacts/default-app-id-orcamento/users/${userId}/config/main`), configData);
+                    await setDoc(doc(db, `users/${userId}/config/main`), configData);
                     alert('Configurações salvas com sucesso!');
                 } catch (error) {
                     console.error("Erro ao salvar configurações:", error);
@@ -589,7 +593,7 @@
                     const clientCount = appState.clientes.length + 1;
                     const clientNumber = String(clientCount).padStart(2, '0');
                     const numeroCadastro = `${clientNumber}${month}${year}`;
-                    await addDoc(collection(db, `artifacts/default-app-id-orcamento/users/${userId}/clientes`), { nome, telefone, endereco, numeroCadastro });
+                    await addDoc(collection(db, `users/${userId}/clientes`), { nome, telefone, endereco, numeroCadastro });
                     e.target.reset();
                 } catch (error) {
                     console.error("Erro ao salvar cliente:", error);
@@ -619,7 +623,7 @@
 
             window.deleteCliente = async (id) => {
                  if(confirm("Tem certeza que deseja excluir este cliente?")) {
-                    await deleteDoc(doc(db, `artifacts/default-app-id-orcamento/users/${userId}/clientes/${id}`));
+                    await deleteDoc(doc(db, `users/${userId}/clientes/${id}`));
                  }
             };
             
@@ -633,7 +637,7 @@
                     const nome = document.getElementById('material-nome').value;
                     const valor = parseFloat(document.getElementById('material-valor').value);
                     const unidade = document.getElementById('material-unidade').value;
-                    await addDoc(collection(db, `artifacts/default-app-id-orcamento/users/${userId}/materiais`), { nome, valor, unidade });
+                    await addDoc(collection(db, `users/${userId}/materiais`), { nome, valor, unidade });
                     e.target.reset();
                 } catch (error) {
                     console.error("Erro ao salvar material:", error);
@@ -660,7 +664,7 @@
             
             window.deleteMaterial = async (id) => {
                 if(confirm("Tem certeza que deseja excluir este item?")) {
-                    await deleteDoc(doc(db, `artifacts/default-app-id-orcamento/users/${userId}/materiais/${id}`));
+                    await deleteDoc(doc(db, `users/${userId}/materiais/${id}`));
                 }
             };
 
@@ -723,7 +727,7 @@
 
             window.deleteOrcamento = async (id) => {
                 if(confirm("Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.")) {
-                    await deleteDoc(doc(db, `artifacts/default-app-id-orcamento/users/${userId}/orcamentos/${id}`));
+                    await deleteDoc(doc(db, `users/${userId}/orcamentos/${id}`));
                 }
             };
 
@@ -952,7 +956,7 @@
                 try {
                     if (orcamentoData.id) {
                         orcamentoData.versao = (orcamentoData.versao || 1) + 1;
-                        const orcamentoRef = doc(db, `artifacts/${appId}/users/${userId}/orcamentos/${orcamentoData.id}`);
+                        const orcamentoRef = doc(db, `users/${userId}/orcamentos/${orcamentoData.id}`);
                         delete orcamentoData.createdAt; // Não atualiza data de criação
                         await setDoc(orcamentoRef, orcamentoData, { merge: true });
                         alert("Orçamento atualizado com sucesso!");
@@ -961,7 +965,7 @@
                         orcamentoData.numeroOrcamento = maxNumero + 1;
                         orcamentoData.versao = 1;
                         orcamentoData.createdAt = serverTimestamp();
-                        const orcamentosRef = collection(db, `artifacts/${appId}/users/${userId}/orcamentos`);
+                        const orcamentosRef = collection(db, `users/${userId}/orcamentos`);
                         const docRef = await addDoc(orcamentosRef, orcamentoData);
                         appState.currentOrcamento.id = docRef.id;
                         appState.currentOrcamento.numeroOrcamento = orcamentoData.numeroOrcamento;
