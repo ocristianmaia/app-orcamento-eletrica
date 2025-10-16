@@ -151,6 +151,9 @@
                     <div id="orcamentos-list" class="space-y-3">
                          <!-- A lista de orçamentos será renderizada aqui -->
                     </div>
+                    <div id="orcamentos-footer" class="text-center mt-4">
+                        <!-- O botão "Ver todos" será renderizado aqui -->
+                    </div>
                 </div>
 
                 <!-- Aba Clientes -->
@@ -383,7 +386,6 @@
   messagingSenderId: "424397941585",
   appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
 };
-
             // =================================================================================
 
             // --- IMPORTAÇÕES DO FIREBASE ---
@@ -410,18 +412,19 @@
                 clientes: [],
                 materiais: [],
                 orcamentos: [],
-                currentOrcamento: null
+                currentOrcamento: null,
+                showAllOrcamentos: false
             };
             
             function resetCurrentOrcamento() {
                 appState.currentOrcamento = {
-                    id: null, // Importante para diferenciar novo de edição
+                    id: null,
                     cliente: null,
                     items: [],
                     maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
                     total: 0,
                     tipoObra: 'residencial',
-                    createdAt: null, // Será preenchido ao salvar
+                    createdAt: null,
                     numeroOrcamento: null,
                     versao: 1
                 };
@@ -436,19 +439,14 @@
 
                     onAuthStateChanged(auth, (user) => {
                         if (user) {
-                            console.log("Usuário autenticado:", user.uid);
                             userId = user.uid;
                             userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
                             loadingOverlay.querySelector('p').textContent = 'Carregando seus dados...';
-                            
                             loadAllData();
-                            
                             loginView.classList.add('hidden');
                             appView.classList.remove('hidden');
                             loadingOverlay.style.display = 'none';
-
                         } else {
-                            console.log("Nenhum usuário logado.");
                             userId = null;
                             loginView.classList.remove('hidden');
                             appView.classList.add('hidden');
@@ -494,43 +492,30 @@
 
                 const dbPathPrefix = `artifacts/${appId}/users/${userId}`;
 
-                // Configurações
-                const configRef = doc(db, `${dbPathPrefix}/config/main`);
-                onSnapshot(configRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        appState.config = docSnap.data();
-                        updateConfigForm();
-                    }
-                }, err => console.error("Erro ao ouvir config:", err));
+                onSnapshot(doc(db, `${dbPathPrefix}/config/main`), (docSnap) => {
+                    if (docSnap.exists()) appState.config = docSnap.data();
+                    updateConfigForm();
+                });
 
-                // Clientes
-                const clientesQuery = query(collection(db, `${dbPathPrefix}/clientes`));
-                onSnapshot(clientesQuery, (querySnapshot) => {
-                    appState.clientes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                onSnapshot(query(collection(db, `${dbPathPrefix}/clientes`)), (snapshot) => {
+                    appState.clientes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     renderClientesList();
-                }, err => console.error("Erro ao ouvir clientes:", err));
+                });
 
-                // Materiais
-                const materiaisQuery = query(collection(db, `${dbPathPrefix}/materiais`));
-                onSnapshot(materiaisQuery, (querySnapshot) => {
-                    appState.materiais = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                onSnapshot(query(collection(db, `${dbPathPrefix}/materiais`)), (snapshot) => {
+                    appState.materiais = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     renderMateriaisList();
-                }, err => console.error("Erro ao ouvir materiais:", err));
+                });
 
-                // Orçamentos
-                const orcamentosQuery = query(collection(db, `${dbPathPrefix}/orcamentos`));
-                 onSnapshot(orcamentosQuery, (querySnapshot) => {
-                    appState.orcamentos = querySnapshot.docs.map(doc => {
+                onSnapshot(query(collection(db, `${dbPathPrefix}/orcamentos`)), (snapshot) => {
+                    appState.orcamentos = snapshot.docs.map(doc => {
                         const data = doc.data();
-                        if (data.createdAt && data.createdAt.toDate) {
-                            data.createdAt = data.createdAt.toDate();
-                        }
+                        if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
                         return { id: doc.id, ...data };
                     });
-                    // Ordena pelo número do orçamento, do maior para o menor
                     appState.orcamentos.sort((a, b) => (b.numeroOrcamento || 0) - (a.numeroOrcamento || 0));
                     renderOrcamentosList();
-                }, err => console.error("Erro ao ouvir orçamentos:", err));
+                });
             }
 
             // --- LÓGICA DE NEGÓCIO E RENDERIZAÇÃO ---
@@ -553,10 +538,7 @@
 
             document.getElementById('form-config').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                if (!userId) {
-                    alert("Erro de autenticação. Por favor, faça login novamente.");
-                    return;
-                }
+                if (!userId) return alert("Erro de autenticação. Por favor, faça login novamente.");
                 const submitButton = e.target.querySelector('button[type="submit"]');
                 const textSpan = document.getElementById('save-config-text');
                 const spinnerSpan = document.getElementById('save-config-spinner');
@@ -577,8 +559,7 @@
                         industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
                         industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
                     };
-                    const configRef = doc(db, `artifacts/${appId}/users/${userId}/config/main`);
-                    await setDoc(configRef, configData);
+                    await setDoc(doc(db, `artifacts/${appId}/users/${userId}/config/main`), configData);
                     alert('Configurações salvas com sucesso!');
                 } catch (error) {
                     console.error("Erro ao salvar configurações:", error);
@@ -590,13 +571,9 @@
                 }
             });
             
-            // Clientes
             document.getElementById('form-cliente').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                if (!userId) {
-                    alert("Erro de autenticação. Por favor, faça login novamente.");
-                    return;
-                }
+                if (!userId) return alert("Erro de autenticação. Por favor, faça login novamente.");
                 const submitButton = e.target.querySelector('button[type="submit"]');
                 submitButton.disabled = true;
                 submitButton.textContent = 'Salvando...';
@@ -610,8 +587,7 @@
                     const clientCount = appState.clientes.length + 1;
                     const clientNumber = String(clientCount).padStart(2, '0');
                     const numeroCadastro = `${clientNumber}${month}${year}`;
-                    const clientesRef = collection(db, `artifacts/${appId}/users/${userId}/clientes`);
-                    await addDoc(clientesRef, { nome, telefone, endereco, numeroCadastro });
+                    await addDoc(collection(db, `artifacts/${appId}/users/${userId}/clientes`), { nome, telefone, endereco, numeroCadastro });
                     e.target.reset();
                 } catch (error) {
                     console.error("Erro ao salvar cliente:", error);
@@ -641,18 +617,13 @@
 
             window.deleteCliente = async (id) => {
                  if(confirm("Tem certeza que deseja excluir este cliente?")) {
-                    const clienteDocRef = doc(db, `artifacts/${appId}/users/${userId}/clientes/${id}`);
-                    await deleteDoc(clienteDocRef);
+                    await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/clientes/${id}`));
                  }
             };
             
-            // Materiais
             document.getElementById('form-material').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                if (!userId) {
-                    alert("Erro de autenticação. Por favor, faça login novamente.");
-                    return;
-                }
+                if (!userId) return alert("Erro de autenticação. Por favor, faça login novamente.");
                 const submitButton = e.target.querySelector('button[type="submit"]');
                 submitButton.disabled = true;
                 submitButton.textContent = 'Salvando...';
@@ -660,8 +631,7 @@
                     const nome = document.getElementById('material-nome').value;
                     const valor = parseFloat(document.getElementById('material-valor').value);
                     const unidade = document.getElementById('material-unidade').value;
-                    const materiaisRef = collection(db, `artifacts/${appId}/users/${userId}/materiais`);
-                    await addDoc(materiaisRef, { nome, valor, unidade });
+                    await addDoc(collection(db, `artifacts/${appId}/users/${userId}/materiais`), { nome, valor, unidade });
                     e.target.reset();
                 } catch (error) {
                     console.error("Erro ao salvar material:", error);
@@ -688,23 +658,31 @@
             
             window.deleteMaterial = async (id) => {
                 if(confirm("Tem certeza que deseja excluir este item?")) {
-                    const materialDocRef = doc(db, `artifacts/${appId}/users/${userId}/materiais/${id}`);
-                    await deleteDoc(materialDocRef);
+                    await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/materiais/${id}`));
                 }
             };
 
             // Lógica do Orçamento
             
+            window.toggleAllOrcamentos = () => {
+                appState.showAllOrcamentos = !appState.showAllOrcamentos;
+                renderOrcamentosList();
+            }
+            
             function renderOrcamentosList() {
                 const listEl = document.getElementById('orcamentos-list');
+                const footerEl = document.getElementById('orcamentos-footer');
                 if (appState.orcamentos.length === 0) {
                     listEl.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center">
                         <p class="text-gray-500">Nenhum orçamento salvo ainda.</p>
                      </div>`;
+                    footerEl.innerHTML = '';
                     return;
                 }
 
-                listEl.innerHTML = appState.orcamentos.map(orc => {
+                const orcamentosToShow = appState.showAllOrcamentos ? appState.orcamentos : appState.orcamentos.slice(0, 3);
+
+                listEl.innerHTML = orcamentosToShow.map(orc => {
                     const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
                     const numeroFormatado = String(orc.numeroOrcamento || '').padStart(4, '0');
                     return `
@@ -720,6 +698,13 @@
                     </div>
                     `
                 }).join('');
+                
+                if (appState.orcamentos.length > 3) {
+                    const buttonText = appState.showAllOrcamentos ? 'Ver Apenas os Recentes' : `Ver Todos (${appState.orcamentos.length})`;
+                    footerEl.innerHTML = `<button onclick="toggleAllOrcamentos()" class="bg-gray-800 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-900 transition-colors">${buttonText}</button>`;
+                } else {
+                    footerEl.innerHTML = '';
+                }
             }
 
             window.editOrcamento = (id) => {
@@ -736,11 +721,9 @@
 
             window.deleteOrcamento = async (id) => {
                 if(confirm("Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.")) {
-                    const orcamentoDocRef = doc(db, `artifacts/${appId}/users/${userId}/orcamentos/${id}`);
-                    await deleteDoc(orcamentoDocRef);
+                    await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/orcamentos/${id}`));
                 }
             };
-
 
             window.openOrcamentoModal = (orcamentoParaEditar = null) => {
                  document.getElementById('orcamento-modal').classList.add('active');
@@ -750,10 +733,7 @@
                  if (orcamentoParaEditar) {
                     document.getElementById('modal-title').textContent = 'Editar Orçamento';
                     appState.currentOrcamento = JSON.parse(JSON.stringify(orcamentoParaEditar));
-
                     document.getElementById('orc-cliente-select').value = appState.currentOrcamento.cliente.id;
-
-                    // Atraso para garantir que os checkboxes existam no DOM
                     setTimeout(() => {
                         appState.currentOrcamento.items.forEach(item => {
                             const checkbox = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
@@ -764,25 +744,21 @@
                                 qtyInput.disabled = false;
                             }
                         });
-                    }, 100);
-
+                    }, 150);
                     document.querySelector(`input[name="tipo-obra"][value="${appState.currentOrcamento.tipoObra}"]`).checked = true;
-
                     const maoDeObra = appState.currentOrcamento.maoDeObra;
                     const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${maoDeObra.tipo}"]`);
                     if(tipoServicoRadio) {
                         tipoServicoRadio.checked = true;
-                        if(maoDeObra.tipo === 'empreitada') document.getElementById('empreitada-valor').value = maoDeObra.raw_value;
-                        if(maoDeObra.tipo === 'diaria') document.getElementById('diaria-qtd').value = maoDeObra.raw_value;
-                        if(maoDeObra.tipo === 'ponto') document.getElementById('ponto-qtd').value = maoDeObra.raw_value;
-                        if(maoDeObra.tipo === 'hora') document.getElementById('hora-qtd').value = maoDeObra.raw_value;
+                        document.getElementById('empreitada-valor').value = maoDeObra.tipo === 'empreitada' ? maoDeObra.raw_value : '';
+                        document.getElementById('diaria-qtd').value = maoDeObra.tipo === 'diaria' ? maoDeObra.raw_value : '';
+                        document.getElementById('ponto-qtd').value = maoDeObra.tipo === 'ponto' ? maoDeObra.raw_value : '';
+                        document.getElementById('hora-qtd').value = maoDeObra.tipo === 'hora' ? maoDeObra.raw_value : '';
                     }
-                    
                  } else {
                     document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
                     resetCurrentOrcamento();
                  }
-                 
                  updateOrcamentoPreview();
             };
 
@@ -800,7 +776,7 @@
                 document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
             };
             
-             function populateClienteSelect() {
+            function populateClienteSelect() {
                 const selectEl = document.getElementById('orc-cliente-select');
                 selectEl.innerHTML = '<option value="">Selecione um cliente</option>';
                 appState.clientes.forEach(c => {
@@ -844,9 +820,7 @@
                 const materialId = target.dataset.id;
                 const material = appState.materiais.find(m => m.id === materialId);
                 if (!material) return;
-
                 const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${materialId}"]`);
-
                 if (target.type === 'checkbox') {
                     if (target.checked) {
                         qtyInput.disabled = false;
@@ -858,9 +832,7 @@
                     }
                 } else if (target.type === 'number') {
                     const itemInOrcamento = appState.currentOrcamento.items.find(item => item.id === materialId);
-                    if (itemInOrcamento) {
-                        itemInOrcamento.quantidade = parseInt(target.value) || 1;
-                    }
+                    if (itemInOrcamento) itemInOrcamento.quantidade = parseInt(target.value) || 1;
                 }
                 updateOrcamentoPreview();
             });
@@ -870,13 +842,8 @@
                     appState.currentOrcamento.tipoObra = e.target.value;
                     const pontoLabel = document.getElementById('ponto-label-span');
                     const pontoQtdInput = document.getElementById('ponto-qtd');
-                    if (e.target.value === 'industrial') {
-                        pontoLabel.textContent = 'Por Equipamento';
-                        pontoQtdInput.placeholder = 'Qtd. equip.';
-                    } else {
-                        pontoLabel.textContent = 'Por Ponto';
-                        pontoQtdInput.placeholder = 'Qtd. pontos';
-                    }
+                    pontoLabel.textContent = e.target.value === 'industrial' ? 'Por Equipamento' : 'Por Ponto';
+                    pontoQtdInput.placeholder = e.target.value === 'industrial' ? 'Qtd. equip.' : 'Qtd. pontos';
                     calculateMaoDeObra();
                     updateOrcamentoPreview();
                 }
@@ -894,17 +861,13 @@
                      return;
                 }
                 const tipo = tipoSelecionado.value;
-                let valor = 0;
-                let label = '';
-                let raw_value = 0;
-
+                let valor = 0, label = '', raw_value = 0;
                 const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
                 const rates = {
                     diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
                     ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial_ponto) || 0,
                     hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0,
                 };
-
                 switch(tipo) {
                     case 'empreitada':
                         raw_value = parseFloat(document.getElementById('empreitada-valor').value) || 0;
@@ -916,12 +879,12 @@
                         valor = raw_value * rates.diaria;
                         label = `${raw_value} diária(s)`;
                         break;
-                     case 'ponto':
+                    case 'ponto':
                         raw_value = parseInt(document.getElementById('ponto-qtd').value) || 0;
                         valor = raw_value * rates.ponto;
                         label = tipoObra === 'industrial' ? `${raw_value} equipamento(s)` : `${raw_value} ponto(s)`;
                         break;
-                     case 'hora':
+                    case 'hora':
                         raw_value = parseFloat(document.getElementById('hora-qtd').value) || 0;
                         valor = raw_value * rates.hora;
                         label = `${raw_value} hora(s)`;
@@ -933,38 +896,28 @@
             function updateOrcamentoPreview() {
                 const { config, currentOrcamento } = appState;
                 const previewEl = document.getElementById('pdf-preview');
-                
                 if (!currentOrcamento || !currentOrcamento.cliente) {
                     previewEl.innerHTML = '<p class="text-gray-500 text-center mt-8">Selecione um cliente para começar.</p>';
                     return;
                 }
-
                 const fullClient = appState.clientes.find(c => c.id === currentOrcamento.cliente.id);
                 if (!fullClient) {
                      previewEl.innerHTML = '<p class="text-red-500 text-center mt-8">Cliente não encontrado. Selecione novamente.</p>';
                     return;
                 }
-
                 const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
-                
-                let itemsHtml = currentOrcamento.items.map(item => {
+                const itemsHtml = currentOrcamento.items.map(item => {
                     const itemTotal = item.valor * (item.quantidade || 1);
-                    return `
-                        <tr>
+                    return `<tr>
                             <td style="padding: 4px 2px; text-align: left;">${item.nome}</td>
                             <td style="padding: 4px 2px; text-align: center;">${item.quantidade || 1} ${item.unidade || 'UNID'}</td>
                             <td style="padding: 4px 2px; text-align: right;">R$ ${item.valor.toFixed(2)}</td>
                             <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
-                        </tr>
-                    `;
+                        </tr>`;
                 }).join('');
-
                 const totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
-                const totalGeral = subtotalMateriais + totalMaoDeObra;
-                currentOrcamento.total = totalGeral;
-
+                currentOrcamento.total = subtotalMateriais + totalMaoDeObra;
                 const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
-
                 previewEl.innerHTML = `
                     <div style="padding: 10px;">
                         ${config.logo ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px; margin: 0 auto;"></div>` : ''}
@@ -980,85 +933,50 @@
                         <span>Telefone: ${fullClient.telefone}</span>
                         <hr style="margin: 15px 0;">
                         <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">DESCRIÇÃO DOS MATERIAIS:</h4>
-                        
                         <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
-                           ${currentOrcamento.items.length > 0 ? `
-                            <thead>
-                                <tr>
-                                    <th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th>
-                                    <th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th>
-                                    <th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th>
-                                    <th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
+                           ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
                         </table>
-
-                        ${currentOrcamento.items.length > 0 ? `
-                        <div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;">
-                            <span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span>
-                        </div>` : ''}
-
+                        ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}
                         <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">MÃO DE OBRA:</h4>
-                        <div style="text-align: right;">
-                            <span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span>
-                        </div>
-
-                        <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #333;">
-                            <span>TOTAL: R$ ${totalGeral.toFixed(2)}</span>
-                        </div>
-                        
-                        <div style="font-size: 0.8em; margin-top: 20px; text-align: center; color: #888;">
-                            Orçamento válido por 15 dias.
-                        </div>
-                    </div>
-                `;
+                        <div style="text-align: right;"><span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>
+                        <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #333;"><span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span></div>
+                        <div style="font-size: 0.8em; margin-top: 20px; text-align: center; color: #888;">Orçamento válido por 15 dias.</div>
+                    </div>`;
             }
 
             window.saveOrcamento = async () => {
-                if (!appState.currentOrcamento.cliente) {
-                    alert("Selecione um cliente para salvar o orçamento.");
-                    return;
-                }
-
+                if (!appState.currentOrcamento.cliente) return alert("Selecione um cliente para salvar o orçamento.");
                 const orcamentoData = { ...appState.currentOrcamento };
-                
                 try {
                     if (orcamentoData.id) {
                         orcamentoData.versao = (orcamentoData.versao || 1) + 1;
                         const orcamentoRef = doc(db, `artifacts/${appId}/users/${userId}/orcamentos/${orcamentoData.id}`);
-                        // Não atualizamos createdAt ao editar
-                        delete orcamentoData.createdAt;
+                        delete orcamentoData.createdAt; // Não atualiza data de criação
                         await setDoc(orcamentoRef, orcamentoData, { merge: true });
                         alert("Orçamento atualizado com sucesso!");
                     } else {
-                        // Descobre o próximo número de orçamento
-                        const nextNumero = (appState.orcamentos[0]?.numeroOrcamento || 0) + 1;
-                        orcamentoData.numeroOrcamento = nextNumero;
+                        const maxNumero = appState.orcamentos.reduce((max, orc) => Math.max(max, orc.numeroOrcamento || 0), 0);
+                        orcamentoData.numeroOrcamento = maxNumero + 1;
                         orcamentoData.versao = 1;
                         orcamentoData.createdAt = serverTimestamp();
                         const orcamentosRef = collection(db, `artifacts/${appId}/users/${userId}/orcamentos`);
-                        await addDoc(orcamentosRef, orcamentoData);
-                        alert("Orçamento salvo com sucesso!");
+                        const docRef = await addDoc(orcamentosRef, orcamentoData);
+                        appState.currentOrcamento.id = docRef.id;
+                        appState.currentOrcamento.numeroOrcamento = orcamentoData.numeroOrcamento;
+                        alert("Orçamento salvo! Agora você pode gerar o PDF ou continuar editando.");
                     }
-                    closeOrcamentoModal();
                 } catch (error) {
                     console.error("Erro ao salvar orçamento:", error);
                     alert("Ocorreu um erro ao salvar. Tente novamente.");
                 }
             };
             
-            // Geração de PDF e WhatsApp
             window.shareOrViewPDF = async () => {
-                 if (!appState.currentOrcamento.cliente) {
-                    alert("Selecione um cliente para gerar o PDF.");
-                    return;
-                }
+                 if (!appState.currentOrcamento.cliente) return alert("Selecione um cliente para gerar o PDF.");
                  const { jsPDF } = window.jspdf;
                  const content = document.getElementById('pdf-preview');
                  const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
                  const fileName = `orcamento-${clienteNome}.pdf`;
-                 
                  try {
                     const canvas = await html2canvas(content, { scale: 2 });
                     const imgData = canvas.toDataURL('image/png');
@@ -1066,41 +984,25 @@
                     const pdfWidth = pdf.internal.pageSize.getWidth();
                     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
                     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                    
                     if (navigator.share && navigator.canShare) {
                         const blob = pdf.output('blob');
                         const file = new File([blob], fileName, { type: 'application/pdf' });
                         if (navigator.canShare({ files: [file] })) {
-                            await navigator.share({
-                                title: `Orçamento - ${clienteNome}`,
-                                text: 'Segue o orçamento em anexo.',
-                                files: [file]
-                            });
-                            return; // Encerra aqui se o compartilhamento nativo funcionar
+                            await navigator.share({ title: `Orçamento - ${clienteNome}`, text: 'Segue o orçamento em anexo.', files: [file] });
+                            return;
                         }
                     }
-                    
-                    // Fallback para download direto se o share não for possível
                     pdf.save(fileName);
-
                  } catch(e) {
                     console.error("Erro ao gerar ou compartilhar PDF:", e);
-                    if (e.name !== 'AbortError') {
-                      alert("Ocorreu um erro ao tentar gerar o PDF.");
-                    }
+                    if (e.name !== 'AbortError') alert("Ocorreu um erro ao tentar gerar o PDF.");
                  }
             };
 
             window.sendWhatsAppText = () => {
-                if (!appState.currentOrcamento.cliente) {
-                    alert("Por favor, selecione um cliente primeiro.");
-                    return;
-                }
+                if (!appState.currentOrcamento.cliente) return alert("Por favor, selecione um cliente primeiro.");
                 const fullClient = appState.clientes.find(c => c.id === appState.currentOrcamento.cliente.id);
-                if (!fullClient) {
-                     alert("Cliente não encontrado.");
-                    return;
-                }
+                if (!fullClient) return alert("Cliente não encontrado.");
                 const telefone = fullClient.telefone.replace(/\D/g, '');
                 const nomeProfissional = appState.config.nome || 'nós';
                 const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
@@ -1108,7 +1010,6 @@
                 window.open(whatsappUrl, '_blank');
             };
 
-            // --- CONTROLE DE ABAS ---
             window.changeTab = (event, tabName) => {
                 document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
                 document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
@@ -1116,10 +1017,10 @@
                 document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
             };
 
-            // --- INICIALIZAÇÃO DA PÁGINA ---
             window.onload = initializeFirebase;
 
         </script>
     </body>
 </html>
+"
 
