@@ -1010,12 +1010,21 @@
             
             window.shareOrViewPDF = async () => {
                  if (!appState.currentOrcamento.cliente) return alert("Selecione um cliente para gerar o PDF.");
+                 
+                 const hiddenRenderer = document.createElement('div');
+                 hiddenRenderer.style.position = 'absolute';
+                 hiddenRenderer.style.left = '-9999px';
+                 hiddenRenderer.style.top = '-9999px';
+                 hiddenRenderer.style.width = '210mm'; // A4 width
+                 hiddenRenderer.innerHTML = document.getElementById('pdf-preview').innerHTML;
+                 document.body.appendChild(hiddenRenderer);
+
                  const { jsPDF } = window.jspdf;
-                 const content = document.getElementById('pdf-preview');
                  const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
                  const fileName = `orcamento-${clienteNome}.pdf`;
+
                  try {
-                    const canvas = await html2canvas(content, { scale: 2 });
+                    const canvas = await html2canvas(hiddenRenderer, { scale: 2 });
                     const imgData = canvas.toDataURL('image/png');
                     const pdf = new jsPDF('p', 'mm', 'a4');
                     const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -1033,6 +1042,8 @@
                  } catch(e) {
                     console.error("Erro ao gerar ou compartilhar PDF:", e);
                     if (e.name !== 'AbortError') alert("Ocorreu um erro ao tentar gerar o PDF.");
+                 } finally {
+                    document.body.removeChild(hiddenRenderer);
                  }
             };
 
