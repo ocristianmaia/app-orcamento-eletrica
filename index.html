@@ -387,6 +387,7 @@
   messagingSenderId: "424397941585",
   appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
 };
+
             // =================================================================================
 
             // --- IMPORTAÇÕES DO FIREBASE ---
@@ -928,15 +929,15 @@
                     <div style="padding: 10px;">
                         ${config.logo ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px; margin: 0 auto;"></div>` : ''}
                         <div style="text-align: center; margin-bottom: 20px;">
-                            <strong style="font-size: 1.2em;">${config.nome || 'Nome do Profissional'}</strong><br>
-                            <span>${config.endereco || ''}</span><br>
-                            <span>Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
+                            <strong style="font-size: 1.2em; display: block;">${config.nome || 'Nome do Profissional'}</strong>
+                            <span style="display: block;">${config.endereco || ''}</span>
+                            <span style="display: block;">Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
                         </div>
                         <hr style="margin: 15px 0;">
                         <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Orçamento para:</h4>
-                        <strong>${fullClient.nome}</strong><br>
-                        <span>${fullClient.endereco}</span><br>
-                        <span>Telefone: ${fullClient.telefone}</span>
+                        <strong style="display: block;">${fullClient.nome}</strong>
+                        <span style="display: block;">${fullClient.endereco}</span>
+                        <span style="display: block;">Telefone: ${fullClient.telefone}</span>
                         <hr style="margin: 15px 0;">
                         <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">DESCRIÇÃO DOS MATERIAIS:</h4>
                         <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
