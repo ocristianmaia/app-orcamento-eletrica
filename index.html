@@ -669,16 +669,25 @@
 
             // Lógica do Orçamento
             
+            window.toggleAllOrcamentos = () => {
+                appState.showAllOrcamentos = !appState.showAllOrcamentos;
+                renderOrcamentosList();
+            }
+            
             function renderOrcamentosList() {
                 const listEl = document.getElementById('orcamentos-list');
+                const footerEl = document.getElementById('orcamentos-footer');
                 if (appState.orcamentos.length === 0) {
                     listEl.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center">
                         <p class="text-gray-500">Nenhum orçamento salvo ainda.</p>
                      </div>`;
+                    footerEl.innerHTML = '';
                     return;
                 }
 
-                listEl.innerHTML = appState.orcamentos.map(orc => {
+                const orcamentosToShow = appState.showAllOrcamentos ? appState.orcamentos : appState.orcamentos.slice(0, 3);
+
+                listEl.innerHTML = orcamentosToShow.map(orc => {
                     const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
                     const numeroFormatado = String(orc.numeroOrcamento || '').padStart(2, '0');
                     const versaoFormatada = String(orc.versao || 1).padStart(2, '0');
@@ -686,11 +695,15 @@
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const year = String(date.getFullYear()).slice(-2);
                     const orcamentoIdCompleto = `OS${numeroFormatado}${month}${year}-${versaoFormatada}`;
+                    
+                    let nomeCompleto = cliente ? cliente.nome : 'Cliente Excluído';
+                    const nomes = nomeCompleto.split(' ');
+                    const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
 
                     return `
                     <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         <div>
-                            <p class="font-bold text-lg">${cliente ? (cliente.nome.split(' ')[0] + ' ' + (cliente.nome.split(' ')[1] || '')) : 'Cliente Excluído'}</p>
+                            <p class="font-bold text-lg">${nomeAbreviado}</p>
                             <p class="text-sm text-gray-700 font-bold">${orcamentoIdCompleto}</p>
                         </div>
                         <div class="flex gap-2 self-end sm:self-center">
@@ -700,6 +713,13 @@
                     </div>
                     `
                 }).join('');
+                
+                if (appState.orcamentos.length > 3) {
+                    const buttonText = appState.showAllOrcamentos ? 'Ver Apenas os Recentes' : `Ver Todos os Orçamentos (${appState.orcamentos.length})`;
+                    footerEl.innerHTML = `<button onclick="toggleAllOrcamentos()" class="bg-gray-800 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-900 transition-colors">${buttonText}</button>`;
+                } else {
+                    footerEl.innerHTML = '';
+                }
             }
 
             window.editOrcamento = (id) => {
@@ -956,7 +976,7 @@
                         orcamentoData.createdAt = serverTimestamp();
                         const orcamentosRef = collection(db, `users/${userId}/orcamentos`);
                         const docRef = await addDoc(orcamentosRef, orcamentoData);
-                        appState.currentOrcamento.id = docRef.id;
+                        appState.currentOrcamento.id = docRef.id; // Atualiza o ID no estado atual para permitir envios imediatos
                         appState.currentOrcamento.numeroOrcamento = orcamentoData.numeroOrcamento;
                         alert("Orçamento salvo! Agora você pode gerar o PDF ou continuar editando.");
                     }
