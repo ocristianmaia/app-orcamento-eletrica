@@ -379,13 +379,13 @@
             // Siga o guia para obter o seu e substitua a linha abaixo.
             // =================================================================================
             const firebaseConfig = {
-  apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
-  authDomain: "app-orcamentos-eletrica.firebaseapp.com",
-  projectId: "app-orcamentos-eletrica",
-  storageBucket: "app-orcamentos-eletrica.firebasestorage.app",
-  messagingSenderId: "424397941585",
-  appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
-};
+              apiKey: "COLE-SUA-CHAVE-AQUI",
+              authDomain: "COLE-SEU-DOMINIO-AQUI",
+              projectId: "COLE-SEU-PROJETO-AQUI",
+              storageBucket: "COLE-SEU-BUCKET-AQUI",
+              messagingSenderId: "COLE-SEU-SENDER-ID-AQUI",
+              appId: "COLE-SEU-APP-ID-AQUI"
+            };
             // =================================================================================
 
             // --- IMPORTAÇÕES DO FIREBASE ---
@@ -691,10 +691,10 @@
                     const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
 
                     return `
-                    <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                        <div>
-                            <p class="font-bold text-lg">${nomeAbreviado}</p>
-                            <p class="text-sm text-gray-700 font-bold">${orcamentoIdCompleto}</p>
+                    <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <div class="flex items-baseline gap-x-3">
+                           <p class="font-medium text-lg text-gray-800">${nomeAbreviado}</p>
+                           <p class="text-sm text-gray-500 font-mono">${orcamentoIdCompleto}</p>
                         </div>
                         <div class="flex gap-2 self-end sm:self-center">
                             <button onclick="editOrcamento(${index})" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
@@ -1071,4 +1071,5 @@
         </script>
     </body>
 </html>
+
 
