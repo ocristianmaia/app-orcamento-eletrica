@@ -386,6 +386,7 @@
   messagingSenderId: "424397941585",
   appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
 };
+
             // =================================================================================
 
             // --- IMPORTAÇÕES DO FIREBASE ---
@@ -1017,10 +1018,11 @@
                 document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
             };
 
+            // --- INICIALIZAÇÃO DA PÁGINA ---
             window.onload = initializeFirebase;
-
+            
+            // Forçar atualização v5.2
         </script>
     </body>
 </html>
-"
 
