@@ -69,7 +69,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(249, 250, 251, 0.95);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -94,266 +94,289 @@
 
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <p class="mt-4 text-gray-600">Conectando e carregando dados...</p>
+        <p class="mt-4 text-gray-600">Conectando...</p>
     </div>
 
-    <header class="bg-gray-900 text-white text-center shadow-md">
-        <div class="max-w-4xl mx-auto py-4 px-4 md:px-6">
-            <h1 class="text-3xl font-bold">
-                Gerador de Orçamentos
-                <span class="block text-4xl">ELETRICISTA 5.0</span>
-            </h1>
-        </div>
-    </header>
+    <div id="login-view" class="hidden h-screen flex flex-col justify-center items-center text-center p-6 bg-gray-100">
+        <h1 class="text-4xl font-bold text-gray-800">Bem-vindo ao</h1>
+        <h2 class="text-5xl font-extrabold text-blue-600 mb-8">Gerador de Orçamentos 5.0</h2>
+        <p class="max-w-md mb-8 text-gray-600">Seus dados de clientes e materiais salvos na nuvem, acessíveis de qualquer lugar.</p>
+        <button id="login-button" class="bg-white text-gray-700 font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center">
+            <svg class="w-6 h-6 mr-3" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C42.022,35.138,44,30.025,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+            Entrar com Google
+        </button>
+    </div>
 
-    <div id="app-container" class="max-w-4xl mx-auto p-4 md:p-6 w-full">
-        <p class="text-md text-gray-600 text-left sm:text-center -mt-2 mb-6">Crie, gerencie e envie orçamentos de forma rápida.</p>
+    <div id="app-view" class="hidden">
+        <header class="bg-gray-900 text-white text-center shadow-md">
+            <div class="max-w-4xl mx-auto py-4 px-4 md:px-6">
+                <h1 class="text-3xl font-bold">
+                    Gerador de Orçamentos
+                    <span class="block text-4xl">ELETRICISTA 5.0</span>
+                </h1>
+            </div>
+        </header>
 
-        <!-- Abas de Navegação (Desktop) -->
-        <div class="mb-6 border-b border-gray-200 hidden sm:block">
-            <nav class="flex -mb-px space-x-6">
-                <button class="tab active py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Orçamentos</button>
-                <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
-                <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais/Serviços</button>
-                <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Configurações</button>
-            </nav>
-        </div>
+        <div id="app-container" class="max-w-4xl mx-auto p-4 md:p-6 w-full">
+            <p class="text-md text-gray-600 text-left sm:text-center -mt-2 mb-6">Crie, gerencie e envie orçamentos de forma rápida.</p>
 
-        <!-- Abas de Navegação (Mobile) -->
-        <div class="mb-6 grid grid-cols-2 sm:hidden gap-2">
-            <button class="mobile-tab active text-white p-4 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Orçamentos</button>
-            <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-green-500" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
-            <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
-            <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-gray-500" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Ajustes</button>
-        </div>
-
-        <!-- Conteúdo das Abas -->
-        <main>
-            <!-- Aba Orçamentos -->
-            <div id="orcamentos" class="tab-content active space-y-4">
-                <div class="flex justify-end">
-                    <button onclick="openOrcamentoModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium">
-                        + Novo Orçamento
-                    </button>
-                </div>
-                <!-- Lista de orçamentos (funcionalidade futura) -->
-                <div id="orcamentos-list" class="bg-white p-6 rounded-lg shadow-sm text-center">
-                    <p class="text-gray-500">Nenhum orçamento salvo ainda.</p>
-                    <p class="text-sm text-gray-400 mt-2">Os orçamentos criados aparecerão aqui no futuro.</p>
-                </div>
+            <!-- Abas de Navegação (Desktop) -->
+            <div class="mb-6 border-b border-gray-200 hidden sm:block">
+                <nav class="flex -mb-px space-x-6">
+                    <button class="tab active py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Orçamentos</button>
+                    <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
+                    <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais/Serviços</button>
+                    <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Configurações</button>
+                </nav>
             </div>
 
-            <!-- Aba Clientes -->
-            <div id="clientes" class="tab-content space-y-4">
-                <div class="bg-white p-6 rounded-lg shadow-sm">
-                    <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Cliente</h2>
-                    <form id="form-cliente" class="space-y-4">
-                        <input type="text" id="cliente-nome" placeholder="Nome do Cliente" class="w-full p-2 border rounded-md" required>
-                        <input type="tel" id="cliente-telefone" placeholder="Telefone (com DDD)" class="w-full p-2 border rounded-md" required>
-                        <input type="text" id="cliente-endereco" placeholder="Endereço Completo" class="w-full p-2 border rounded-md" required>
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar Cliente</button>
-                    </form>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-sm">
-                    <h2 class="text-xl font-semibold mb-4">Clientes Cadastrados</h2>
-                    <div id="clientes-list" class="space-y-2">
-                         <p class="text-gray-500">Nenhum cliente cadastrado.</p>
+            <!-- Abas de Navegação (Mobile) -->
+            <div class="mb-6 grid grid-cols-2 sm:hidden gap-2">
+                <button class="mobile-tab active text-white p-4 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Orçamentos</button>
+                <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-green-500" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
+                <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
+                <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-gray-500" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Ajustes</button>
+            </div>
+
+            <!-- Conteúdo das Abas -->
+            <main>
+                <!-- Aba Orçamentos -->
+                <div id="orcamentos" class="tab-content active space-y-4">
+                    <div class="flex justify-end">
+                        <button onclick="openOrcamentoModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium">
+                            + Novo Orçamento
+                        </button>
+                    </div>
+                    <div id="orcamentos-list" class="space-y-3">
+                         <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+                            <p class="text-gray-500">Nenhum orçamento salvo ainda.</p>
+                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Aba Materiais/Serviços -->
-            <div id="materiais" class="tab-content space-y-4">
-                <div class="bg-white p-6 rounded-lg shadow-sm">
-                    <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Material/Serviço</h2>
-                    <form id="form-material" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
-                        <div class="flex-grow">
-                            <label for="material-nome" class="block text-sm font-medium text-gray-700">Descrição</label>
-                            <input type="text" id="material-nome" placeholder="Ex: Tomada Dupla 10A" class="w-full p-2 border rounded-md mt-1" required>
+                <!-- Aba Clientes -->
+                <div id="clientes" class="tab-content space-y-4">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Cliente</h2>
+                        <form id="form-cliente" class="space-y-4">
+                            <input type="text" id="cliente-nome" placeholder="Nome do Cliente" class="w-full p-2 border rounded-md" required>
+                            <input type="tel" id="cliente-telefone" placeholder="Telefone (com DDD)" class="w-full p-2 border rounded-md" required>
+                            <input type="text" id="cliente-endereco" placeholder="Endereço Completo" class="w-full p-2 border rounded-md" required>
+                            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar Cliente</button>
+                        </form>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-xl font-semibold mb-4">Clientes Cadastrados</h2>
+                        <div id="clientes-list" class="space-y-2">
+                             <p class="text-gray-500">Nenhum cliente cadastrado.</p>
                         </div>
-                        <div class="sm:w-32">
-                            <label for="material-unidade" class="block text-sm font-medium text-gray-700">Unidade</label>
-                            <select id="material-unidade" class="w-full p-2 border rounded-md mt-1 h-10">
-                                <option>UNID</option>
-                                <option>Pç</option>
-                                <option>m</option>
-                                <option>cx</option>
-                                <option>kit</option>
-                            </select>
-                        </div>
-                        <div class="sm:w-40">
-                             <label for="material-valor" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
-                            <input type="number" step="0.01" id="material-valor" placeholder="25.50" class="w-full p-2 border rounded-md mt-1" required>
-                        </div>
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors h-10 w-full sm:w-auto">Salvar Item</button>
-                    </form>
-                </div>
-                 <div class="bg-white p-6 rounded-lg shadow-sm">
-                    <h2 class="text-xl font-semibold mb-4">Itens Cadastrados</h2>
-                    <div id="materiais-list" class="space-y-2">
-                        <p class="text-gray-500">Nenhum material cadastrado.</p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Aba Configurações -->
-            <div id="configuracoes" class="tab-content">
-                <div class="bg-white p-6 rounded-lg shadow-sm">
-                    <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
-                    <form id="form-config" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                         <div>
-                            <h3 class="text-lg font-medium mb-4 border-b pb-2">Seus Dados Profissionais</h3>
-                            <div class="space-y-4">
-                                <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md" required>
-                                <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md" required>
-                                <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
-                                <input type="text" id="config-endereco" placeholder="Seu Endereço" class="w-full p-2 border rounded-md">
-                                <input type="text" id="config-logo" placeholder="URL da sua Logomarca (opcional)" class="w-full p-2 border rounded-md">
+                <!-- Aba Materiais/Serviços -->
+                <div id="materiais" class="tab-content space-y-4">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Material/Serviço</h2>
+                        <form id="form-material" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
+                            <div class="flex-grow">
+                                <label for="material-nome" class="block text-sm font-medium text-gray-700">Descrição</label>
+                                <input type="text" id="material-nome" placeholder="Ex: Tomada Dupla 10A" class="w-full p-2 border rounded-md mt-1" required>
                             </div>
+                            <div class="sm:w-32">
+                                <label for="material-unidade" class="block text-sm font-medium text-gray-700">Unidade</label>
+                                <select id="material-unidade" class="w-full p-2 border rounded-md mt-1 h-10">
+                                    <option>UNID</option>
+                                    <option>Pç</option>
+                                    <option>m</option>
+                                    <option>cx</option>
+                                    <option>kit</option>
+                                </select>
+                            </div>
+                            <div class="sm:w-40">
+                                 <label for="material-valor" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                                <input type="number" step="0.01" id="material-valor" placeholder="25.50" class="w-full p-2 border rounded-md mt-1" required>
+                            </div>
+                            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors h-10 w-full sm:w-auto">Salvar Item</button>
+                        </form>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-xl font-semibold mb-4">Itens Cadastrados</h2>
+                        <div id="materiais-list" class="space-y-2">
+                            <p class="text-gray-500">Nenhum material cadastrado.</p>
                         </div>
-                         <div>
-                            <div>
-                                <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Residencial/Predial</h3>
+                    </div>
+                </div>
+
+                <!-- Aba Configurações -->
+                <div id="configuracoes" class="tab-content">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
+                        <form id="form-config" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                             <div>
+                                <h3 class="text-lg font-medium mb-4 border-b pb-2">Seus Dados Profissionais</h3>
                                 <div class="space-y-4">
-                                    <label class="block">
-                                        <span class="text-gray-700">Valor da Diária (R$)</span>
-                                        <input type="number" step="0.01" id="config-residencial-diaria" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
-                                    </label>
-                                    <label class="block">
-                                        <span class="text-gray-700">Valor por Ponto (R$)</span>
-                                        <input type="number" step="0.01" id="config-residencial-ponto" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
-                                    </label>
-                                    <label class="block">
-                                        <span class="text-gray-700">Valor por Hora (R$)</span>
-                                        <input type="number" step="0.01" id="config-residencial-hora" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
-                                    </label>
+                                    <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md" required>
+                                    <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md" required>
+                                    <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
+                                    <input type="text" id="config-endereco" placeholder="Seu Endereço" class="w-full p-2 border rounded-md">
+                                    <input type="text" id="config-logo" placeholder="URL da sua Logomarca (opcional)" class="w-full p-2 border rounded-md">
                                 </div>
                             </div>
-                            <div class="mt-6">
-                                <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Industrial</h3>
-                                <div class="space-y-4">
-                                    <label class="block">
-                                        <span class="text-gray-700">Valor da Diária (R$)</span>
-                                        <input type="number" step="0.01" id="config-industrial-diaria" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
-                                    </label>
-                                    <label class="block">
-                                        <span class="text-gray-700">Valor por Equipamento (R$)</span>
-                                        <input type="number" step="0.01" id="config-industrial-ponto" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
-                                    </label>
-                                    <label class="block">
-                                        <span class="text-gray-700">Valor por Hora (R$)</span>
-                                        <input type="number" step="0.01" id="config-industrial-hora" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
-                                    </label>
+                             <div>
+                                <div>
+                                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Residencial/Predial</h3>
+                                    <div class="space-y-4">
+                                        <label class="block">
+                                            <span class="text-gray-700">Valor da Diária (R$)</span>
+                                            <input type="number" step="0.01" id="config-residencial-diaria" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
+                                        </label>
+                                        <label class="block">
+                                            <span class="text-gray-700">Valor por Ponto (R$)</span>
+                                            <input type="number" step="0.01" id="config-residencial-ponto" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
+                                        </label>
+                                        <label class="block">
+                                            <span class="text-gray-700">Valor por Hora (R$)</span>
+                                            <input type="number" step="0.01" id="config-residencial-hora" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mt-6">
+                                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Industrial</h3>
+                                    <div class="space-y-4">
+                                        <label class="block">
+                                            <span class="text-gray-700">Valor da Diária (R$)</span>
+                                            <input type="number" step="0.01" id="config-industrial-diaria" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
+                                        </label>
+                                        <label class="block">
+                                            <span class="text-gray-700">Valor por Equipamento (R$)</span>
+                                            <input type="number" step="0.01" id="config-industrial-ponto" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
+                                        </label>
+                                        <label class="block">
+                                            <span class="text-gray-700">Valor por Hora (R$)</span>
+                                            <input type="number" step="0.01" id="config-industrial-hora" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="md:col-span-2 text-right">
-                             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
-                                <span id="save-config-text">Salvar Configurações</span>
-                                <span id="save-config-spinner" class="hidden">Salvando...</span>
+                            <div class="md:col-span-2 text-right">
+                                 <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
+                                    <span id="save-config-text">Salvar Configurações</span>
+                                    <span id="save-config-spinner" class="hidden">Salvando...</span>
+                                 </button>
+                            </div>
+                        </form>
+                        <div class="mt-10 border-t pt-6 text-center">
+                            <p id="user-info" class="text-gray-600 mb-4"></p>
+                             <button id="logout-button" class="bg-red-500 text-white px-6 py-2 rounded-lg shadow hover:bg-red-600 transition-colors">
+                                Sair da Conta
                              </button>
                         </div>
-                    </form>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Modal de Orçamento -->
-    <div id="orcamento-modal" class="modal">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">Criar Novo Orçamento</h2>
-                <button onclick="closeOrcamentoModal()" class="text-gray-500 text-2xl font-bold">&times;</button>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Coluna de Seleção -->
-                <div class="space-y-6">
-                    <div>
-                        <h4 class="text-md font-medium text-gray-800 mb-2">1. Selecione o Cliente</h4>
-                        <select id="orc-cliente-select" class="w-full p-2 border rounded-md">
-                            <option value="">Selecione um cliente</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <h4 class="text-md font-medium text-gray-800 mb-2">2. Selecione os Materiais/Serviços</h4>
-                        <div id="orc-materiais-list" class="h-48 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50">
-                           <!-- Lista de materiais será populada aqui -->
-                        </div>
-                    </div>
-
-                     <div>
-                        <h4 class="text-md font-medium text-gray-800 mb-2">3. Selecione o Tipo de Obra</h4>
-                        <div id="orc-tipo-obra" class="flex space-x-4">
-                            <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                                <input type="radio" name="tipo-obra" value="residencial" class="h-4 w-4 text-blue-600 border-gray-300" checked>
-                                <span class="ml-3 text-sm font-medium text-gray-900">Residencial/Predial</span>
-                            </label>
-                            <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                                <input type="radio" name="tipo-obra" value="industrial" class="h-4 w-4 text-blue-600 border-gray-300">
-                                <span class="ml-3 text-sm font-medium text-gray-900">Industrial</span>
-                            </label>
-                        </div>
-                    </div>
-
-                     <div>
-                        <h4 class="text-md font-medium text-gray-800 mb-2">4. Defina a Mão de Obra</h4>
-                        <div id="orc-mao-de-obra" class="space-y-2">
-                             <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                                <input type="radio" name="tipo-servico" value="empreitada" class="h-4 w-4 text-blue-600 border-gray-300">
-                                <span class="ml-3 text-sm font-medium text-gray-900">Empreitada</span>
-                                <input type="number" step="0.01" id="empreitada-valor" placeholder="Valor total R$" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                            </label>
-                             <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                                <input type="radio" name="tipo-servico" value="diaria" class="h-4 w-4 text-blue-600 border-gray-300">
-                                <span class="ml-3 text-sm font-medium text-gray-900">Diária</span>
-                                <input type="number" step="1" id="diaria-qtd" placeholder="Qtd. dias" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                            </label>
-                            <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                                <input type="radio" name="tipo-servico" value="ponto" class="h-4 w-4 text-blue-600 border-gray-300">
-                                <span id="ponto-label-span" class="ml-3 text-sm font-medium text-gray-900">Por Ponto</span>
-                                <input type="number" step="1" id="ponto-qtd" placeholder="Qtd. pontos" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                            </label>
-                             <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                                <input type="radio" name="tipo-servico" value="hora" class="h-4 w-4 text-blue-600 border-gray-300">
-                                <span class="ml-3 text-sm font-medium text-gray-900">Por Hora</span>
-                                <input type="number" step="0.5" id="hora-qtd" placeholder="Qtd. horas" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                            </label>
-                        </div>
                     </div>
                 </div>
+            </main>
+        </div>
 
-                <!-- Coluna de Preview -->
-                <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
-                    <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
-                    <div id="pdf-preview" class="flex-grow text-sm">
-                        <!-- Preview content goes here -->
-                        <p class="text-gray-500 text-center mt-8">Selecione um cliente e adicione itens para ver o orçamento.</p>
+        <!-- Modal de Orçamento -->
+        <div id="orcamento-modal" class="modal">
+            <div class="modal-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 id="modal-title" class="text-2xl font-bold">Criar Novo Orçamento</h2>
+                    <button onclick="closeOrcamentoModal()" class="text-gray-500 text-2xl font-bold">&times;</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Coluna de Seleção -->
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="text-md font-medium text-gray-800 mb-2">1. Selecione o Cliente</h4>
+                            <select id="orc-cliente-select" class="w-full p-2 border rounded-md">
+                                <option value="">Selecione um cliente</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <h4 class="text-md font-medium text-gray-800 mb-2">2. Selecione os Materiais/Serviços</h4>
+                            <div id="orc-materiais-list" class="h-48 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50">
+                               <!-- Lista de materiais será populada aqui -->
+                            </div>
+                        </div>
+
+                         <div>
+                            <h4 class="text-md font-medium text-gray-800 mb-2">3. Selecione o Tipo de Obra</h4>
+                            <div id="orc-tipo-obra" class="flex space-x-4">
+                                <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                                    <input type="radio" name="tipo-obra" value="residencial" class="h-4 w-4 text-blue-600 border-gray-300" checked>
+                                    <span class="ml-3 text-sm font-medium text-gray-900">Residencial/Predial</span>
+                                </label>
+                                <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                                    <input type="radio" name="tipo-obra" value="industrial" class="h-4 w-4 text-blue-600 border-gray-300">
+                                    <span class="ml-3 text-sm font-medium text-gray-900">Industrial</span>
+                                </label>
+                            </div>
+                        </div>
+
+                         <div>
+                            <h4 class="text-md font-medium text-gray-800 mb-2">4. Defina a Mão de Obra</h4>
+                            <div id="orc-mao-de-obra" class="space-y-2">
+                                 <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
+                                    <input type="radio" name="tipo-servico" value="empreitada" class="h-4 w-4 text-blue-600 border-gray-300">
+                                    <span class="ml-3 text-sm font-medium text-gray-900">Empreitada</span>
+                                    <input type="number" step="0.01" id="empreitada-valor" placeholder="Valor total R$" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                                </label>
+                                 <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
+                                    <input type="radio" name="tipo-servico" value="diaria" class="h-4 w-4 text-blue-600 border-gray-300">
+                                    <span class="ml-3 text-sm font-medium text-gray-900">Diária</span>
+                                    <input type="number" step="1" id="diaria-qtd" placeholder="Qtd. dias" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                                </label>
+                                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
+                                    <input type="radio" name="tipo-servico" value="ponto" class="h-4 w-4 text-blue-600 border-gray-300">
+                                    <span id="ponto-label-span" class="ml-3 text-sm font-medium text-gray-900">Por Ponto</span>
+                                    <input type="number" step="1" id="ponto-qtd" placeholder="Qtd. pontos" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                                </label>
+                                 <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
+                                    <input type="radio" name="tipo-servico" value="hora" class="h-4 w-4 text-blue-600 border-gray-300">
+                                    <span class="ml-3 text-sm font-medium text-gray-900">Por Hora</span>
+                                    <input type="number" step="0.5" id="hora-qtd" placeholder="Qtd. horas" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                     <div class="mt-6 flex space-x-3 justify-end">
-                        <button onclick="generatePDF()" class="bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition-colors">Gerar PDF</button>
-                        <button onclick="sendWhatsApp()" class="bg-teal-500 text-white px-5 py-2 rounded-lg shadow hover:bg-teal-600 transition-colors">Enviar p/ Cliente</button>
+
+                    <!-- Coluna de Preview -->
+                    <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
+                        <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
+                        <div id="pdf-preview" class="flex-grow text-sm">
+                            <!-- Preview content goes here -->
+                            <p class="text-gray-500 text-center mt-8">Selecione um cliente e adicione itens para ver o orçamento.</p>
+                        </div>
+                         <div class="mt-6 flex flex-col sm:flex-row gap-2 justify-end">
+                            <button onclick="saveOrcamento()" class="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar Orçamento</button>
+                            <button onclick="shareOrViewPDF()" class="bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition-colors">Ver/Enviar PDF</button>
+                            <button onclick="sendWhatsAppText()" class="bg-teal-500 text-white px-5 py-2 rounded-lg shadow hover:bg-teal-600 transition-colors">Enviar (só texto)</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <footer class="bg-gray-900 text-white text-center py-6">
-        <div class="max-w-4xl mx-auto px-4 md:px-6">
-            <p class="mb-4">Para ajustes ou sugestões de melhorias, mande uma mensagem.</p>
-            <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">
-                Enviar mensagem ao desenvolvedor
-            </a>
-        </div>
-    </footer>
+        
+        <footer class="bg-gray-900 text-white text-center py-6">
+            <div class="max-w-4xl mx-auto px-4 md:px-6">
+                <p class="mb-4">Para ajustes ou sugestões de melhorias, mande uma mensagem.</p>
+                <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">
+                    Enviar mensagem ao desenvolvedor
+                </a>
+            </div>
+        </footer>
 
-    <script type="module">
-        // --- VARIÁVEIS GLOBAIS DE AMBIENTE (NÃO ALTERAR) ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id-orcamento';
-        const firebaseConfig = {
+        <script type="module">
+            // --- VARIÁVEIS GLOBAIS DE AMBIENTE (NÃO ALTERAR) ---
+            const appId = 'default-app-id-orcamento';
+            
+            // =================================================================================
+            // ATENÇÃO: COLE AQUI O SEU CÓDIGO DE CONFIGURAÇÃO DO FIREBASE
+            // Siga o guia para obter o seu e substitua a linha abaixo.
+            // =================================================================================
+            const firebaseConfig = {
   apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
   authDomain: "app-orcamentos-eletrica.firebaseapp.com",
   projectId: "app-orcamentos-eletrica",
@@ -361,549 +384,685 @@
   messagingSenderId: "424397941585",
   appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
 };
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // --- IMPORTAÇÕES DO FIREBASE ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        
-        // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
-        let app, db, auth, userId;
-        setLogLevel('debug');
-        
-        // --- ESTADO DA APLICAÇÃO ---
-        const appState = {
-            config: {},
-            clientes: [],
-            materiais: [],
-            currentOrcamento: {
-                cliente: null,
-                items: [],
-                maoDeObra: { tipo: '', valor: 0, label: '' },
-                total: 0,
-                tipoObra: 'residencial'
-            }
-        };
+            // =================================================================================
 
-        // --- INICIALIZAÇÃO DO FIREBASE ---
-        async function initializeFirebase() {
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        console.log("Usuário autenticado:", user.uid);
-                        userId = user.uid;
-                        loadAllData();
-                        document.getElementById('loading-overlay').style.display = 'none'; // Esconde o loading
-                    } else {
-                        console.log("Nenhum usuário. Autenticando...");
-                        try {
-                            if (initialAuthToken) {
-                                await signInWithCustomToken(auth, initialAuthToken);
-                            } else {
-                                await signInAnonymously(auth);
-                            }
-                        } catch (error) {
-                            console.error("Erro na autenticação anônima/customizada:", error);
-                            document.getElementById('loading-overlay').innerHTML = '<p class="text-red-600">Falha na autenticação. Recarregue a página.</p>';
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error("Erro ao inicializar Firebase:", error);
-                document.getElementById('loading-overlay').style.display = 'none';
-                document.body.innerHTML = '<div class="text-center p-8 text-red-600">Erro crítico ao conectar com o banco de dados. Verifique a configuração do Firebase.</div>';
-            }
-        }
-        
-        // --- CARREGAMENTO DE DADOS ---
-        function loadAllData() {
-            if (!userId) return;
-
-            // Configurações
-            const configRef = doc(db, `artifacts/${appId}/users/${userId}/config/main`);
-            onSnapshot(configRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    appState.config = docSnap.data();
-                    updateConfigForm();
-                } else {
-                    console.log("Nenhum documento de configuração encontrado.");
-                }
-            }, err => console.error("Erro ao ouvir config:", err));
-
-            // Clientes
-            const clientesQuery = query(collection(db, `artifacts/${appId}/users/${userId}/clientes`));
-            onSnapshot(clientesQuery, (querySnapshot) => {
-                appState.clientes = [];
-                querySnapshot.forEach((doc) => {
-                    appState.clientes.push({ id: doc.id, ...doc.data() });
-                });
-                renderClientesList();
-                populateClienteSelect();
-            }, err => console.error("Erro ao ouvir clientes:", err));
-
-            // Materiais
-            const materiaisQuery = query(collection(db, `artifacts/${appId}/users/${userId}/materiais`));
-            onSnapshot(materiaisQuery, (querySnapshot) => {
-                appState.materiais = [];
-                querySnapshot.forEach((doc) => {
-                    appState.materiais.push({ id: doc.id, ...doc.data() });
-                });
-                renderMateriaisList();
-                populateMateriaisOrcamento();
-            }, err => console.error("Erro ao ouvir materiais:", err));
-        }
-
-        // --- LÓGICA DE NEGÓCIO E RENDERIZAÇÃO ---
-
-        // Configurações
-        document.getElementById('form-config').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!userId) {
-                alert("Erro de autenticação. Por favor, recarregue a página e tente novamente.");
-                return;
-            }
+            // --- IMPORTAÇÕES DO FIREBASE ---
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+            import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+            import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+            import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
             
-            const submitButton = e.target.querySelector('button[type="submit"]');
-            const textSpan = document.getElementById('save-config-text');
-            const spinnerSpan = document.getElementById('save-config-spinner');
-            submitButton.disabled = true;
-            textSpan.classList.add('hidden');
-            spinnerSpan.classList.remove('hidden');
-
-            try {
-                const configData = {
-                    nome: document.getElementById('config-nome').value,
-                    telefone: document.getElementById('config-telefone').value,
-                    doc: document.getElementById('config-doc').value,
-                    endereco: document.getElementById('config-endereco').value,
-                    logo: document.getElementById('config-logo').value,
-                    residencial_diaria: parseFloat(document.getElementById('config-residencial-diaria').value) || 0,
-                    residencial_ponto: parseFloat(document.getElementById('config-residencial-ponto').value) || 0,
-                    residencial_hora: parseFloat(document.getElementById('config-residencial-hora').value) || 0,
-                    industrial_diaria: parseFloat(document.getElementById('config-industrial-diaria').value) || 0,
-                    industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
-                    industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
+            // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
+            let app, db, auth, userId;
+            setLogLevel('debug');
+            
+            // --- ELEMENTOS DA UI ---
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loginView = document.getElementById('login-view');
+            const appView = document.getElementById('app-view');
+            const loginButton = document.getElementById('login-button');
+            const logoutButton = document.getElementById('logout-button');
+            const userInfo = document.getElementById('user-info');
+            
+            // --- ESTADO DA APLICAÇÃO ---
+            const appState = {
+                config: {},
+                clientes: [],
+                materiais: [],
+                orcamentos: [],
+                currentOrcamento: null
+            };
+            
+            function resetCurrentOrcamento() {
+                appState.currentOrcamento = {
+                    id: null, // Importante para diferenciar novo de edição
+                    cliente: null,
+                    items: [],
+                    maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
+                    total: 0,
+                    tipoObra: 'residencial',
+                    createdAt: new Date()
                 };
-                const configRef = doc(db, `artifacts/${appId}/users/${userId}/config/main`);
-                await setDoc(configRef, configData);
-                alert('Configurações salvas com sucesso!');
-            } catch (error) {
-                console.error("Erro ao salvar configurações:", error);
-                alert("Ocorreu um erro ao salvar as configurações. Verifique sua conexão e tente novamente.");
-            } finally {
-                submitButton.disabled = false;
-                textSpan.classList.remove('hidden');
-                spinnerSpan.classList.add('hidden');
-            }
-        });
-        
-        function updateConfigForm() {
-            if (appState.config) {
-                document.getElementById('config-nome').value = appState.config.nome || '';
-                document.getElementById('config-telefone').value = appState.config.telefone || '';
-                document.getElementById('config-doc').value = appState.config.doc || '';
-                document.getElementById('config-endereco').value = appState.config.endereco || '';
-                document.getElementById('config-logo').value = appState.config.logo || '';
-                document.getElementById('config-residencial-diaria').value = appState.config.residencial_diaria || '';
-                document.getElementById('config-residencial-ponto').value = appState.config.residencial_ponto || '';
-                document.getElementById('config-residencial-hora').value = appState.config.residencial_hora || '';
-                document.getElementById('config-industrial-diaria').value = appState.config.industrial_diaria || '';
-                document.getElementById('config-industrial-ponto').value = appState.config.industrial_ponto || '';
-                document.getElementById('config-industrial-hora').value = appState.config.industrial_hora || '';
-            }
-        }
-        
-        // Clientes
-        document.getElementById('form-cliente').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!userId) {
-                alert("Erro de autenticação. Por favor, recarregue a página e tente novamente.");
-                return;
             }
 
-            const submitButton = e.target.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.textContent = 'Salvando...';
+            // --- INICIALIZAÇÃO DO FIREBASE ---
+            async function initializeFirebase() {
+                try {
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
 
-            try {
-                const nome = document.getElementById('cliente-nome').value;
-                const telefone = document.getElementById('cliente-telefone').value;
-                const endereco = document.getElementById('cliente-endereco').value;
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            console.log("Usuário autenticado:", user.uid);
+                            userId = user.uid;
+                            userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
+                            loadingOverlay.querySelector('p').textContent = 'Carregando seus dados...';
+                            
+                            loadAllData();
+                            
+                            loginView.classList.add('hidden');
+                            appView.classList.remove('hidden');
+                            loadingOverlay.style.display = 'none';
 
-                const date = new Date();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const year = String(date.getFullYear()).slice(-2);
-                const clientCount = appState.clientes.length + 1;
-                const clientNumber = String(clientCount).padStart(2, '0');
-                const numeroCadastro = `${clientNumber}${month}${year}`;
-
-                const clientesRef = collection(db, `artifacts/${appId}/users/${userId}/clientes`);
-                await addDoc(clientesRef, { nome, telefone, endereco, numeroCadastro });
-                
-                e.target.reset();
-            } catch (error) {
-                console.error("Erro ao salvar cliente:", error);
-                alert("Ocorreu um erro ao salvar o cliente. Verifique sua conexão com a internet e tente novamente.");
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Salvar Cliente';
+                        } else {
+                            console.log("Nenhum usuário logado.");
+                            userId = null;
+                            loginView.classList.remove('hidden');
+                            appView.classList.add('hidden');
+                            loadingOverlay.style.display = 'none';
+                        }
+                    });
+                } catch (error) {
+                    console.error("Erro ao inicializar Firebase:", error);
+                    loadingOverlay.innerHTML = '<p class="text-red-600">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
+                }
             }
-        });
-        
-        function renderClientesList() {
-            const listEl = document.getElementById('clientes-list');
-            if (appState.clientes.length === 0) {
-                listEl.innerHTML = '<p class="text-gray-500">Nenhum cliente cadastrado.</p>';
-                return;
-            }
-            listEl.innerHTML = appState.clientes.map(c => `
-                <div class="flex justify-between items-center p-2 border rounded-md">
-                    <div>
-                        <p class="font-medium">${c.nome} <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">${c.numeroCadastro || ''}</span></p>
-                        <p class="text-sm text-gray-600">${c.telefone} | ${c.endereco}</p>
-                    </div>
-                    <button onclick="deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700">&times;</button>
-                </div>
-            `).join('');
-        }
-
-        window.deleteCliente = async (id) => {
-            const clienteDocRef = doc(db, `artifacts/${appId}/users/${userId}/clientes/${id}`);
-            await deleteDoc(clienteDocRef);
-        };
-
-        // Materiais
-        document.getElementById('form-material').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!userId) {
-                alert("Erro de autenticação. Por favor, recarregue a página e tente novamente.");
-                return;
-            }
-
-            const submitButton = e.target.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.textContent = 'Salvando...';
             
-            try {
-                const nome = document.getElementById('material-nome').value;
-                const valor = parseFloat(document.getElementById('material-valor').value);
-                const unidade = document.getElementById('material-unidade').value;
-                const materiaisRef = collection(db, `artifacts/${appId}/users/${userId}/materiais`);
-                await addDoc(materiaisRef, { nome, valor, unidade });
-                e.target.reset();
-            } catch (error) {
-                console.error("Erro ao salvar material:", error);
-                alert("Ocorreu um erro ao salvar o item. Verifique sua conexão com a internet e tente novamente.");
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Salvar Item';
-            }
-        });
-
-        function renderMateriaisList() {
-             const listEl = document.getElementById('materiais-list');
-             if (appState.materiais.length === 0) {
-                listEl.innerHTML = '<p class="text-gray-500">Nenhum material cadastrado.</p>';
-                return;
-             }
-             listEl.innerHTML = appState.materiais.map(m => `
-                <div class="flex justify-between items-center p-2 border rounded-md">
-                    <p>${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</p>
-                    <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700">&times;</button>
-                </div>
-             `).join('');
-        }
-        
-        window.deleteMaterial = async (id) => {
-            const materialDocRef = doc(db, `artifacts/${appId}/users/${userId}/materiais/${id}`);
-            await deleteDoc(materialDocRef);
-        };
-
-        // Lógica do Orçamento
-        window.openOrcamentoModal = () => {
-             document.getElementById('orcamento-modal').classList.add('active');
-             populateClienteSelect();
-             populateMateriaisOrcamento();
-             updateOrcamentoPreview(); // Show initial state
-        };
-
-        window.closeOrcamentoModal = () => {
-            document.getElementById('orcamento-modal').classList.remove('active');
-             // Resetar o estado do orçamento ao fechar
-            appState.currentOrcamento = { cliente: null, items: [], maoDeObra: { tipo: '', valor: 0, label: '' }, total: 0, tipoObra: 'residencial' };
-             document.querySelector('#orc-materiais-list').querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-             document.querySelectorAll('#orc-materiais-list input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
-             document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
-             document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
-             document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
-        };
-
-        function populateClienteSelect() {
-            const selectEl = document.getElementById('orc-cliente-select');
-            selectEl.innerHTML = '<option value="">Selecione um cliente</option>';
-            appState.clientes.forEach(c => {
-                const option = document.createElement('option');
-                option.value = c.id;
-                option.textContent = c.nome;
-                selectEl.appendChild(option);
-            });
-        }
-        
-        function populateMateriaisOrcamento() {
-            const listEl = document.getElementById('orc-materiais-list');
-            if (appState.materiais.length === 0) {
-                listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum material cadastrado.</p>';
-                return;
-            }
-            listEl.innerHTML = appState.materiais.map(m => `
-                <div class="flex items-center justify-between p-2 rounded-md hover:bg-gray-100">
-                    <label class="flex items-center flex-grow cursor-pointer">
-                        <input type="checkbox" data-id="${m.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <span class="ml-3 text-sm">${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</span>
-                    </label>
-                    <input type="number" min="1" value="1" data-id="${m.id}" class="w-20 p-1 border rounded-md text-sm ml-2" disabled>
-                </div>
-            `).join('');
-        }
-
-        document.getElementById('orc-cliente-select').addEventListener('change', (e) => {
-            const clienteId = e.target.value;
-            appState.currentOrcamento.cliente = appState.clientes.find(c => c.id === clienteId) || null;
-            updateOrcamentoPreview();
-        });
-
-        document.getElementById('orc-materiais-list').addEventListener('input', (e) => {
-            const target = e.target;
-            const materialId = target.dataset.id;
-            const material = appState.materiais.find(m => m.id === materialId);
-            if (!material) return;
-
-            const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${materialId}"]`);
-
-            if (target.type === 'checkbox') {
-                if (target.checked) {
-                    qtyInput.disabled = false;
-                    const newItem = { ...material, quantidade: parseInt(qtyInput.value) || 1 };
-                    appState.currentOrcamento.items.push(newItem);
-                } else {
-                    qtyInput.disabled = true;
-                    appState.currentOrcamento.items = appState.currentOrcamento.items.filter(item => item.id !== materialId);
+            // --- FUNÇÕES DE LOGIN / LOGOUT ---
+            const loginWithGoogle = async () => {
+                const provider = new GoogleAuthProvider();
+                try {
+                    loadingOverlay.style.display = 'flex';
+                    await signInWithPopup(auth, provider);
+                } catch (error) {
+                    console.error("Erro ao fazer login com Google:", error);
+                    alert("Não foi possível fazer o login com Google. Tente novamente.");
+                    loadingOverlay.style.display = 'none';
                 }
-            } else if (target.type === 'number') {
-                const itemInOrcamento = appState.currentOrcamento.items.find(item => item.id === materialId);
-                if (itemInOrcamento) {
-                    itemInOrcamento.quantidade = parseInt(target.value) || 1;
-                }
-            }
-            updateOrcamentoPreview();
-        });
-
-
-        document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
-            if (e.target.name === 'tipo-obra') {
-                appState.currentOrcamento.tipoObra = e.target.value;
-
-                // Atualiza o label e placeholder para "ponto" vs "equipamento"
-                const pontoLabel = document.getElementById('ponto-label-span');
-                const pontoQtdInput = document.getElementById('ponto-qtd');
-                if (e.target.value === 'industrial') {
-                    pontoLabel.textContent = 'Por Equipamento';
-                    pontoQtdInput.placeholder = 'Qtd. equip.';
-                } else {
-                    pontoLabel.textContent = 'Por Ponto';
-                    pontoQtdInput.placeholder = 'Qtd. pontos';
-                }
-
-                calculateMaoDeObra(); // Recalculate immediately
-                updateOrcamentoPreview();
-            }
-        });
-
-        document.getElementById('orc-mao-de-obra').addEventListener('input', () => {
-             calculateMaoDeObra();
-             updateOrcamentoPreview();
-        });
-        
-        function calculateMaoDeObra() {
-            const tipoSelecionado = document.querySelector('input[name="tipo-servico"]:checked');
-            if (!tipoSelecionado) {
-                 appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '' };
-                 return;
-            }
-            const tipo = tipoSelecionado.value;
-            let valor = 0;
-            let label = '';
-
-            const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
-            const rates = {
-                diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
-                ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial_ponto) || 0,
-                hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0,
             };
 
-            switch(tipo) {
-                case 'empreitada':
-                    valor = parseFloat(document.getElementById('empreitada-valor').value) || 0;
-                    label = 'Empreitada (Valor Fechado)';
-                    break;
-                case 'diaria':
-                    const qtdDias = parseInt(document.getElementById('diaria-qtd').value) || 0;
-                    valor = qtdDias * rates.diaria;
-                    label = `${qtdDias} diária(s)`;
-                    break;
-                 case 'ponto':
-                    const qtdPontos = parseInt(document.getElementById('ponto-qtd').value) || 0;
-                    valor = qtdPontos * rates.ponto;
-                    label = tipoObra === 'industrial' ? `${qtdPontos} equipamento(s)` : `${qtdPontos} ponto(s)`;
-                    break;
-                 case 'hora':
-                    const qtdHoras = parseFloat(document.getElementById('hora-qtd').value) || 0;
-                    valor = qtdHoras * rates.hora;
-                    label = `${qtdHoras} hora(s)`;
-                    break;
-            }
-            appState.currentOrcamento.maoDeObra = { tipo, valor, label };
-        }
+            const logout = async () => {
+                if (confirm("Tem certeza que deseja sair da sua conta?")) {
+                    try {
+                        await signOut(auth);
+                    } catch (error) {
+                        console.error("Erro ao fazer logout:", error);
+                        alert("Ocorreu um erro ao sair. Tente novamente.");
+                    }
+                }
+            };
 
-        function updateOrcamentoPreview() {
-            const { config, currentOrcamento } = appState;
-            const previewEl = document.getElementById('pdf-preview');
+            loginButton.addEventListener('click', loginWithGoogle);
+            logoutButton.addEventListener('click', logout);
             
-            if (!currentOrcamento.cliente) {
-                previewEl.innerHTML = '<p class="text-gray-500 text-center mt-8">Selecione um cliente para começar.</p>';
-                return;
+            // --- CARREGAMENTO DE DADOS ---
+            function loadAllData() {
+                if (!userId) return;
+
+                const dbPathPrefix = `artifacts/${appId}/users/${userId}`;
+
+                // Configurações
+                const configRef = doc(db, `${dbPathPrefix}/config/main`);
+                onSnapshot(configRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        appState.config = docSnap.data();
+                        updateConfigForm();
+                    }
+                }, err => console.error("Erro ao ouvir config:", err));
+
+                // Clientes
+                const clientesQuery = query(collection(db, `${dbPathPrefix}/clientes`));
+                onSnapshot(clientesQuery, (querySnapshot) => {
+                    appState.clientes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderClientesList();
+                }, err => console.error("Erro ao ouvir clientes:", err));
+
+                // Materiais
+                const materiaisQuery = query(collection(db, `${dbPathPrefix}/materiais`));
+                onSnapshot(materiaisQuery, (querySnapshot) => {
+                    appState.materiais = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderMateriaisList();
+                }, err => console.error("Erro ao ouvir materiais:", err));
+
+                // Orçamentos
+                const orcamentosQuery = query(collection(db, `${dbPathPrefix}/orcamentos`));
+                 onSnapshot(orcamentosQuery, (querySnapshot) => {
+                    appState.orcamentos = querySnapshot.docs.map(doc => {
+                        const data = doc.data();
+                        // Converter timestamp do Firebase para Date do JS
+                        if (data.createdAt && data.createdAt.toDate) {
+                            data.createdAt = data.createdAt.toDate();
+                        }
+                        return { id: doc.id, ...data };
+                    });
+                    // Ordenar por data, mais recente primeiro
+                    appState.orcamentos.sort((a, b) => b.createdAt - a.createdAt);
+                    renderOrcamentosList();
+                }, err => console.error("Erro ao ouvir orçamentos:", err));
             }
 
-            const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
+            // --- LÓGICA DE NEGÓCIO E RENDERIZAÇÃO ---
             
-            let itemsHtml = currentOrcamento.items.map(item => {
-                const itemTotal = item.valor * (item.quantidade || 1);
-                return `
-                    <tr>
-                        <td style="padding: 4px 2px; text-align: left;">${item.nome}</td>
-                        <td style="padding: 4px 2px; text-align: center;">${item.quantidade || 1} ${item.unidade || 'UNID'}</td>
-                        <td style="padding: 4px 2px; text-align: right;">R$ ${item.valor.toFixed(2)}</td>
-                        <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
-                    </tr>
-                `;
-            }).join('');
+            // ... (funções de config, cliente e material permanecem quase iguais) ...
+            
+            // Clientes
+            document.getElementById('form-cliente').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!userId) {
+                    alert("Erro de autenticação. Por favor, faça login novamente.");
+                    return;
+                }
 
-            const totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
-            const totalGeral = subtotalMateriais + totalMaoDeObra;
-            appState.currentOrcamento.total = totalGeral;
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Salvando...';
 
-            const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
+                try {
+                    const nome = document.getElementById('cliente-nome').value;
+                    const telefone = document.getElementById('cliente-telefone').value;
+                    const endereco = document.getElementById('cliente-endereco').value;
 
-            previewEl.innerHTML = `
-                <div style="padding: 10px;">
-                    ${config.logo ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px; margin: 0 auto;"></div>` : ''}
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <strong style="font-size: 1.2em;">${config.nome || 'Nome do Profissional'}</strong><br>
-                        <span>${config.endereco || ''}</span><br>
-                        <span>Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
-                    </div>
-                    <hr style="margin: 15px 0;">
-                    <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Orçamento para:</h4>
-                    <strong>${currentOrcamento.cliente.nome}</strong><br>
-                    <span>${currentOrcamento.cliente.endereco}</span><br>
-                    <span>Telefone: ${currentOrcamento.cliente.telefone}</span>
-                    <hr style="margin: 15px 0;">
-                    <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Detalhes do Serviço:</h4>
+                    const date = new Date();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = String(date.getFullYear()).slice(-2);
+                    const clientCount = appState.clientes.length + 1;
+                    const clientNumber = String(clientCount).padStart(2, '0');
+                    const numeroCadastro = `${clientNumber}${month}${year}`;
+
+                    const clientesRef = collection(db, `artifacts/${appId}/users/${userId}/clientes`);
+                    await addDoc(clientesRef, { nome, telefone, endereco, numeroCadastro });
                     
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
-                        <thead>
-                            <tr>
-                                <th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th>
-                                <th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th>
-                                <th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th>
-                                <th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${itemsHtml}
-                        </tbody>
-                    </table>
-
-                    ${currentOrcamento.items.length > 0 ? `
-                    <div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;">
-                        <span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span>
-                    </div>` : ''}
-
-                    <div style="text-align: right; margin-top: 5px;">
-                        <span>Mão de Obra (${maoDeObraLabel}): R$ ${totalMaoDeObra.toFixed(2)}</span>
-                    </div>
-
-                    <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #333;">
-                        <span>TOTAL: R$ ${totalGeral.toFixed(2)}</span>
-                    </div>
-                    
-                    <div style="font-size: 0.8em; margin-top: 20px; text-align: center; color: #888;">
-                        Orçamento válido por 15 dias.
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Geração de PDF e WhatsApp
-        window.generatePDF = async () => {
-             const { jsPDF } = window.jspdf;
-             const content = document.getElementById('pdf-preview');
-             
-             try {
-                const canvas = await html2canvas(content, { scale: 2 });
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save(`orcamento-${appState.currentOrcamento.cliente?.nome?.replace(/\s+/g, '-') || 'cliente'}.pdf`);
-             } catch(e) {
-                console.error("Erro ao gerar PDF:", e);
-                alert("Ocorreu um erro ao tentar gerar o PDF.");
-             }
-        };
-
-        window.sendWhatsApp = () => {
-            const { cliente, total } = appState.currentOrcamento;
-            if (!cliente) {
-                alert("Por favor, selecione um cliente primeiro.");
-                return;
-            }
-            const telefone = cliente.telefone.replace(/\D/g, '');
-            const nomeProfissional = appState.config.nome || 'nós';
-            const mensagem = `Olá ${cliente.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${total.toFixed(2)}. O arquivo PDF com os detalhes está em anexo. Qualquer dúvida, estou à disposição!`;
-            const whatsappUrl = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
-            window.open(whatsappUrl, '_blank');
-        };
-
-        // --- CONTROLE DE ABAS ---
-        window.changeTab = (event, tabName) => {
-            // Esconde todo o conteúdo
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            // Remove a classe 'active' de todas as abas (desktop e mobile)
-            document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
-
-            // Mostra o conteúdo da aba clicada
-            document.getElementById(tabName).classList.add('active');
-            
-            // Adiciona a classe 'active' para a aba clicada (seja mobile ou desktop)
-            // e para sua correspondente no outro menu, para manter a consistência visual
-            document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => {
-                tab.classList.add('active');
+                    e.target.reset();
+                } catch (error) {
+                    console.error("Erro ao salvar cliente:", error);
+                    alert("Ocorreu um erro ao salvar o cliente. Verifique sua conexão com a internet e tente novamente.");
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Salvar Cliente';
+                }
             });
-        };
+            
+            function renderClientesList() {
+                const listEl = document.getElementById('clientes-list');
+                if (appState.clientes.length === 0) {
+                    listEl.innerHTML = '<p class="text-gray-500">Nenhum cliente cadastrado.</p>';
+                    return;
+                }
+                listEl.innerHTML = appState.clientes.map(c => `
+                    <div class="flex justify-between items-center p-2 border rounded-md">
+                        <div>
+                            <p class="font-medium">${c.nome} <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">${c.numeroCadastro || ''}</span></p>
+                            <p class="text-sm text-gray-600">${c.telefone} | ${c.endereco}</p>
+                        </div>
+                        <button onclick="deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700">&times;</button>
+                    </div>
+                `).join('');
+            }
 
-        // --- INICIALIZAÇÃO DA PÁGINA ---
-        window.onload = initializeFirebase;
+            window.deleteCliente = async (id) => {
+                 if(confirm("Tem certeza que deseja excluir este cliente?")) {
+                    const clienteDocRef = doc(db, `artifacts/${appId}/users/${userId}/clientes/${id}`);
+                    await deleteDoc(clienteDocRef);
+                 }
+            };
+            
+            // Materiais
+            document.getElementById('form-material').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!userId) {
+                    alert("Erro de autenticação. Por favor, faça login novamente.");
+                    return;
+                }
 
-    </script>
-</body>
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Salvando...';
+                
+                try {
+                    const nome = document.getElementById('material-nome').value;
+                    const valor = parseFloat(document.getElementById('material-valor').value);
+                    const unidade = document.getElementById('material-unidade').value;
+                    const materiaisRef = collection(db, `artifacts/${appId}/users/${userId}/materiais`);
+                    await addDoc(materiaisRef, { nome, valor, unidade });
+                    e.target.reset();
+                } catch (error) {
+                    console.error("Erro ao salvar material:", error);
+                    alert("Ocorreu um erro ao salvar o item. Verifique sua conexão com a internet e tente novamente.");
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Salvar Item';
+                }
+            });
+
+            function renderMateriaisList() {
+                 const listEl = document.getElementById('materiais-list');
+                 if (appState.materiais.length === 0) {
+                    listEl.innerHTML = '<p class="text-gray-500">Nenhum material cadastrado.</p>';
+                    return;
+                 }
+                 listEl.innerHTML = appState.materiais.map(m => `
+                    <div class="flex justify-between items-center p-2 border rounded-md">
+                        <p>${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</p>
+                        <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700">&times;</button>
+                    </div>
+                 `).join('');
+            }
+            
+            window.deleteMaterial = async (id) => {
+                if(confirm("Tem certeza que deseja excluir este item?")) {
+                    const materialDocRef = doc(db, `artifacts/${appId}/users/${userId}/materiais/${id}`);
+                    await deleteDoc(materialDocRef);
+                }
+            };
+
+            // Lógica do Orçamento
+            
+            function renderOrcamentosList() {
+                const listEl = document.getElementById('orcamentos-list');
+                if (appState.orcamentos.length === 0) {
+                    listEl.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center">
+                        <p class="text-gray-500">Nenhum orçamento salvo ainda.</p>
+                     </div>`;
+                    return;
+                }
+
+                listEl.innerHTML = appState.orcamentos.map(orc => {
+                    const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
+                    const dataFormatada = orc.createdAt ? orc.createdAt.toLocaleDateString('pt-BR') : 'Data indisponível';
+                    return `
+                    <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <div>
+                            <p class="font-bold text-lg">${cliente ? cliente.nome : 'Cliente não encontrado'}</p>
+                            <p class="text-sm text-gray-500">Criado em: ${dataFormatada}</p>
+                            <p class="text-gray-800 font-semibold mt-1">Valor Total: R$ ${orc.total.toFixed(2)}</p>
+                        </div>
+                        <div class="flex gap-2 self-end sm:self-center">
+                            <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+                            <button onclick="deleteOrcamento('${orc.id}')" class="bg-red-500 text-white px-4 py-1 rounded-md text-sm hover:bg-red-600">Excluir</button>
+                        </div>
+                    </div>
+                    `
+                }).join('');
+            }
+
+            window.editOrcamento = (id) => {
+                const orcamentoParaEditar = appState.orcamentos.find(o => o.id === id);
+                if (orcamentoParaEditar) {
+                    openOrcamentoModal(orcamentoParaEditar);
+                }
+            };
+
+            window.deleteOrcamento = async (id) => {
+                if(confirm("Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.")) {
+                    const orcamentoDocRef = doc(db, `artifacts/${appId}/users/${userId}/orcamentos/${id}`);
+                    await deleteDoc(orcamentoDocRef);
+                }
+            };
+
+
+            window.openOrcamentoModal = (orcamentoParaEditar = null) => {
+                 document.getElementById('orcamento-modal').classList.add('active');
+                 populateClienteSelect();
+                 populateMateriaisOrcamento();
+
+                 if (orcamentoParaEditar) {
+                    document.getElementById('modal-title').textContent = 'Editar Orçamento';
+                    // Clonar para não modificar o estado original diretamente
+                    appState.currentOrcamento = JSON.parse(JSON.stringify(orcamentoParaEditar));
+
+                    // Preencher formulário
+                    const clienteSelect = document.getElementById('orc-cliente-select');
+                    clienteSelect.value = appState.currentOrcamento.cliente.id;
+
+                    appState.currentOrcamento.items.forEach(item => {
+                        const checkbox = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
+                        const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
+                        if(checkbox) {
+                            checkbox.checked = true;
+                            qtyInput.value = item.quantidade;
+                            qtyInput.disabled = false;
+                        }
+                    });
+
+                    document.querySelector(`input[name="tipo-obra"][value="${appState.currentOrcamento.tipoObra}"]`).checked = true;
+
+                    const maoDeObra = appState.currentOrcamento.maoDeObra;
+                    const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${maoDeObra.tipo}"]`);
+                    if(tipoServicoRadio) {
+                        tipoServicoRadio.checked = true;
+                        if(maoDeObra.tipo === 'empreitada') document.getElementById('empreitada-valor').value = maoDeObra.raw_value;
+                        if(maoDeObra.tipo === 'diaria') document.getElementById('diaria-qtd').value = maoDeObra.raw_value;
+                        if(maoDeObra.tipo === 'ponto') document.getElementById('ponto-qtd').value = maoDeObra.raw_value;
+                        if(maoDeObra.tipo === 'hora') document.getElementById('hora-qtd').value = maoDeObra.raw_value;
+                    }
+                    
+                 } else {
+                    document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
+                    resetCurrentOrcamento();
+                 }
+                 
+                 updateOrcamentoPreview();
+            };
+
+            window.closeOrcamentoModal = () => {
+                document.getElementById('orcamento-modal').classList.remove('active');
+                resetCurrentOrcamento();
+                // Limpeza visual do formulário
+                document.getElementById('orc-cliente-select').value = '';
+                document.querySelector('#orc-materiais-list').querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                document.querySelectorAll('#orc-materiais-list input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
+                document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
+                document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
+                document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
+            };
+
+            // ... (restante das funções como populate, listeners, calculate, updatePreview) ...
+            
+             function populateClienteSelect() {
+                const selectEl = document.getElementById('orc-cliente-select');
+                selectEl.innerHTML = '<option value="">Selecione um cliente</option>';
+                appState.clientes.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.id;
+                    option.textContent = c.nome;
+                    selectEl.appendChild(option);
+                });
+            }
+            
+            function populateMateriaisOrcamento() {
+                const listEl = document.getElementById('orc-materiais-list');
+                if (appState.materiais.length === 0) {
+                    listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum material cadastrado.</p>';
+                    return;
+                }
+                listEl.innerHTML = appState.materiais.map(m => `
+                    <div class="flex items-center justify-between p-2 rounded-md hover:bg-gray-100">
+                        <label class="flex items-center flex-grow cursor-pointer">
+                            <input type="checkbox" data-id="${m.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <span class="ml-3 text-sm">${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</span>
+                        </label>
+                        <input type="number" min="1" value="1" data-id="${m.id}" class="w-20 p-1 border rounded-md text-sm ml-2" disabled>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('orc-cliente-select').addEventListener('change', (e) => {
+                const clienteId = e.target.value;
+                const clienteSelecionado = appState.clientes.find(c => c.id === clienteId) || null;
+                if(clienteSelecionado) {
+                    // Salvar apenas ID e nome para evitar redundância de dados no DB
+                    appState.currentOrcamento.cliente = { id: clienteSelecionado.id, nome: clienteSelecionado.nome };
+                } else {
+                    appState.currentOrcamento.cliente = null;
+                }
+                updateOrcamentoPreview();
+            });
+
+            document.getElementById('orc-materiais-list').addEventListener('input', (e) => {
+                const target = e.target;
+                const materialId = target.dataset.id;
+                const material = appState.materiais.find(m => m.id === materialId);
+                if (!material) return;
+
+                const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${materialId}"]`);
+
+                if (target.type === 'checkbox') {
+                    if (target.checked) {
+                        qtyInput.disabled = false;
+                        const newItem = { ...material, quantidade: parseInt(qtyInput.value) || 1 };
+                        appState.currentOrcamento.items.push(newItem);
+                    } else {
+                        qtyInput.disabled = true;
+                        appState.currentOrcamento.items = appState.currentOrcamento.items.filter(item => item.id !== materialId);
+                    }
+                } else if (target.type === 'number') {
+                    const itemInOrcamento = appState.currentOrcamento.items.find(item => item.id === materialId);
+                    if (itemInOrcamento) {
+                        itemInOrcamento.quantidade = parseInt(target.value) || 1;
+                    }
+                }
+                updateOrcamentoPreview();
+            });
+
+            document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
+                if (e.target.name === 'tipo-obra') {
+                    appState.currentOrcamento.tipoObra = e.target.value;
+                    const pontoLabel = document.getElementById('ponto-label-span');
+                    const pontoQtdInput = document.getElementById('ponto-qtd');
+                    if (e.target.value === 'industrial') {
+                        pontoLabel.textContent = 'Por Equipamento';
+                        pontoQtdInput.placeholder = 'Qtd. equip.';
+                    } else {
+                        pontoLabel.textContent = 'Por Ponto';
+                        pontoQtdInput.placeholder = 'Qtd. pontos';
+                    }
+                    calculateMaoDeObra();
+                    updateOrcamentoPreview();
+                }
+            });
+
+            document.getElementById('orc-mao-de-obra').addEventListener('input', () => {
+                 calculateMaoDeObra();
+                 updateOrcamentoPreview();
+            });
+            
+            function calculateMaoDeObra() {
+                const tipoSelecionado = document.querySelector('input[name="tipo-servico"]:checked');
+                if (!tipoSelecionado) {
+                     appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
+                     return;
+                }
+                const tipo = tipoSelecionado.value;
+                let valor = 0;
+                let label = '';
+                let raw_value = 0;
+
+                const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
+                const rates = {
+                    diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
+                    ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial_ponto) || 0,
+                    hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0,
+                };
+
+                switch(tipo) {
+                    case 'empreitada':
+                        raw_value = parseFloat(document.getElementById('empreitada-valor').value) || 0;
+                        valor = raw_value;
+                        label = 'Empreitada';
+                        break;
+                    case 'diaria':
+                        raw_value = parseInt(document.getElementById('diaria-qtd').value) || 0;
+                        valor = raw_value * rates.diaria;
+                        label = `${raw_value} diária(s)`;
+                        break;
+                     case 'ponto':
+                        raw_value = parseInt(document.getElementById('ponto-qtd').value) || 0;
+                        valor = raw_value * rates.ponto;
+                        label = tipoObra === 'industrial' ? `${raw_value} equipamento(s)` : `${raw_value} ponto(s)`;
+                        break;
+                     case 'hora':
+                        raw_value = parseFloat(document.getElementById('hora-qtd').value) || 0;
+                        valor = raw_value * rates.hora;
+                        label = `${raw_value} hora(s)`;
+                        break;
+                }
+                appState.currentOrcamento.maoDeObra = { tipo, valor, label, raw_value };
+            }
+
+            function updateOrcamentoPreview() {
+                const { config, currentOrcamento } = appState;
+                const previewEl = document.getElementById('pdf-preview');
+                
+                if (!currentOrcamento || !currentOrcamento.cliente) {
+                    previewEl.innerHTML = '<p class="text-gray-500 text-center mt-8">Selecione um cliente para começar.</p>';
+                    return;
+                }
+
+                const fullClient = appState.clientes.find(c => c.id === currentOrcamento.cliente.id);
+                if (!fullClient) {
+                     previewEl.innerHTML = '<p class="text-red-500 text-center mt-8">Cliente não encontrado. Selecione novamente.</p>';
+                    return;
+                }
+
+                const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
+                
+                let itemsHtml = currentOrcamento.items.map(item => {
+                    const itemTotal = item.valor * (item.quantidade || 1);
+                    return `
+                        <tr>
+                            <td style="padding: 4px 2px; text-align: left;">${item.nome}</td>
+                            <td style="padding: 4px 2px; text-align: center;">${item.quantidade || 1} ${item.unidade || 'UNID'}</td>
+                            <td style="padding: 4px 2px; text-align: right;">R$ ${item.valor.toFixed(2)}</td>
+                            <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                const totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
+                const totalGeral = subtotalMateriais + totalMaoDeObra;
+                currentOrcamento.total = totalGeral;
+
+                const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
+
+                previewEl.innerHTML = `
+                    <div style="padding: 10px;">
+                        ${config.logo ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px; margin: 0 auto;"></div>` : ''}
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <strong style="font-size: 1.2em;">${config.nome || 'Nome do Profissional'}</strong><br>
+                            <span>${config.endereco || ''}</span><br>
+                            <span>Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
+                        </div>
+                        <hr style="margin: 15px 0;">
+                        <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Orçamento para:</h4>
+                        <strong>${fullClient.nome}</strong><br>
+                        <span>${fullClient.endereco}</span><br>
+                        <span>Telefone: ${fullClient.telefone}</span>
+                        <hr style="margin: 15px 0;">
+                        <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">DESCRIÇÃO DOS MATERIAIS:</h4>
+                        
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                           ${currentOrcamento.items.length > 0 ? `
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th>
+                                    <th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th>
+                                    <th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th>
+                                    <th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
+                        </table>
+
+                        ${currentOrcamento.items.length > 0 ? `
+                        <div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;">
+                            <span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span>
+                        </div>` : ''}
+
+                        <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">MÃO DE OBRA:</h4>
+                        <div style="text-align: right;">
+                            <span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span>
+                        </div>
+
+                        <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #333;">
+                            <span>TOTAL: R$ ${totalGeral.toFixed(2)}</span>
+                        </div>
+                        
+                        <div style="font-size: 0.8em; margin-top: 20px; text-align: center; color: #888;">
+                            Orçamento válido por 15 dias.
+                        </div>
+                    </div>
+                `;
+            }
+
+            window.saveOrcamento = async () => {
+                if (!appState.currentOrcamento.cliente) {
+                    alert("Selecione um cliente para salvar o orçamento.");
+                    return;
+                }
+
+                const orcamentoData = { ...appState.currentOrcamento };
+                
+                // Usar serverTimestamp para novos orçamentos, manter data para edições
+                if (!orcamentoData.id) {
+                    orcamentoData.createdAt = serverTimestamp();
+                } else {
+                    // Firebase não permite salvar `undefined`
+                    delete orcamentoData.createdAt; 
+                }
+
+                try {
+                    if (orcamentoData.id) {
+                        // Editando um existente
+                        const orcamentoRef = doc(db, `artifacts/${appId}/users/${userId}/orcamentos/${orcamentoData.id}`);
+                        await setDoc(orcamentoRef, orcamentoData, { merge: true });
+                        alert("Orçamento atualizado com sucesso!");
+                    } else {
+                        // Salvando um novo
+                        const orcamentosRef = collection(db, `artifacts/${appId}/users/${userId}/orcamentos`);
+                        await addDoc(orcamentosRef, orcamentoData);
+                        alert("Orçamento salvo com sucesso!");
+                    }
+                    closeOrcamentoModal();
+                } catch (error) {
+                    console.error("Erro ao salvar orçamento:", error);
+                    alert("Ocorreu um erro ao salvar. Tente novamente.");
+                }
+            };
+            
+            // Geração de PDF e WhatsApp
+            window.shareOrViewPDF = async () => {
+                 const { jsPDF } = window.jspdf;
+                 const content = document.getElementById('pdf-preview');
+                 const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
+                 const fileName = `orcamento-${clienteNome}.pdf`;
+                 
+                 try {
+                    const canvas = await html2canvas(content, { scale: 2 });
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    
+                    // Lógica de compartilhamento para mobile
+                    if (navigator.share) {
+                        const blob = pdf.output('blob');
+                        const file = new File([blob], fileName, { type: 'application/pdf' });
+                        await navigator.share({
+                            title: `Orçamento - ${clienteNome}`,
+                            text: 'Segue o orçamento em anexo.',
+                            files: [file]
+                        });
+                    } else {
+                        // Fallback para desktop: download direto
+                        pdf.save(fileName);
+                    }
+                 } catch(e) {
+                    console.error("Erro ao gerar ou compartilhar PDF:", e);
+                    // Não mostrar alerta se for erro de "share cancelado"
+                    if (e.name !== 'AbortError') {
+                      alert("Ocorreu um erro ao tentar gerar o PDF.");
+                    }
+                 }
+            };
+
+            window.sendWhatsAppText = () => {
+                if (!appState.currentOrcamento.cliente) {
+                    alert("Por favor, selecione um cliente primeiro.");
+                    return;
+                }
+                const fullClient = appState.clientes.find(c => c.id === appState.currentOrcamento.cliente.id);
+                const telefone = fullClient.telefone.replace(/\D/g, '');
+                const nomeProfissional = appState.config.nome || 'nós';
+                const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
+                const whatsappUrl = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
+                window.open(whatsappUrl, '_blank');
+            };
+
+            // --- CONTROLE DE ABAS ---
+            window.changeTab = (event, tabName) => {
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
+                document.getElementById(tabName).classList.add('active');
+                document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
+            };
+
+            // --- INICIALIZAÇÃO DA PÁGINA ---
+            window.onload = initializeFirebase;
+
+        </script>
+    </body>
 </html>
 
