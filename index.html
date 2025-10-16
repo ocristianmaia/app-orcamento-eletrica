@@ -375,9 +375,6 @@
         </footer>
 
         <script type="module">
-            // --- VARIÁVEIS GLOBAIS DE AMBIENTE (NÃO ALTERAR) ---
-            const appId = 'default-app-id-orcamento';
-            
             // =================================================================================
             // ATENÇÃO: COLE AQUI O SEU CÓDIGO DE CONFIGURAÇÃO DO FIREBASE
             // Siga o guia para obter o seu e substitua a linha abaixo.
@@ -493,7 +490,7 @@
             // --- CARREGAMENTO DE DADOS ---
             function loadAllData() {
                 if (!userId) return;
-
+                const appId = 'default-app-id-orcamento';
                 const dbPathPrefix = `artifacts/${appId}/users/${userId}`;
 
                 onSnapshot(doc(db, `${dbPathPrefix}/config/main`), (docSnap) => {
@@ -563,7 +560,7 @@
                         industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
                         industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
                     };
-                    await setDoc(doc(db, `artifacts/${appId}/users/${userId}/config/main`), configData);
+                    await setDoc(doc(db, `artifacts/default-app-id-orcamento/users/${userId}/config/main`), configData);
                     alert('Configurações salvas com sucesso!');
                 } catch (error) {
                     console.error("Erro ao salvar configurações:", error);
@@ -591,7 +588,7 @@
                     const clientCount = appState.clientes.length + 1;
                     const clientNumber = String(clientCount).padStart(2, '0');
                     const numeroCadastro = `${clientNumber}${month}${year}`;
-                    await addDoc(collection(db, `artifacts/${appId}/users/${userId}/clientes`), { nome, telefone, endereco, numeroCadastro });
+                    await addDoc(collection(db, `artifacts/default-app-id-orcamento/users/${userId}/clientes`), { nome, telefone, endereco, numeroCadastro });
                     e.target.reset();
                 } catch (error) {
                     console.error("Erro ao salvar cliente:", error);
@@ -621,7 +618,7 @@
 
             window.deleteCliente = async (id) => {
                  if(confirm("Tem certeza que deseja excluir este cliente?")) {
-                    await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/clientes/${id}`));
+                    await deleteDoc(doc(db, `artifacts/default-app-id-orcamento/users/${userId}/clientes/${id}`));
                  }
             };
             
@@ -635,7 +632,7 @@
                     const nome = document.getElementById('material-nome').value;
                     const valor = parseFloat(document.getElementById('material-valor').value);
                     const unidade = document.getElementById('material-unidade').value;
-                    await addDoc(collection(db, `artifacts/${appId}/users/${userId}/materiais`), { nome, valor, unidade });
+                    await addDoc(collection(db, `artifacts/default-app-id-orcamento/users/${userId}/materiais`), { nome, valor, unidade });
                     e.target.reset();
                 } catch (error) {
                     console.error("Erro ao salvar material:", error);
@@ -662,7 +659,7 @@
             
             window.deleteMaterial = async (id) => {
                 if(confirm("Tem certeza que deseja excluir este item?")) {
-                    await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/materiais/${id}`));
+                    await deleteDoc(doc(db, `artifacts/default-app-id-orcamento/users/${userId}/materiais/${id}`));
                 }
             };
 
@@ -725,7 +722,7 @@
 
             window.deleteOrcamento = async (id) => {
                 if(confirm("Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.")) {
-                    await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/orcamentos/${id}`));
+                    await deleteDoc(doc(db, `artifacts/default-app-id-orcamento/users/${userId}/orcamentos/${id}`));
                 }
             };
 
