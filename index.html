@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Orçamentos para Eletricistas</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap)" rel="stylesheet">
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js](https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js)"></script>
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js](https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js)"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -142,15 +142,14 @@
             <main>
                 <!-- Aba Orçamentos -->
                 <div id="orcamentos" class="tab-content active space-y-4">
-                    <div class="flex justify-end">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-semibold">Orçamentos Salvos</h2>
                         <button onclick="openOrcamentoModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium">
                             + Novo Orçamento
                         </button>
                     </div>
                     <div id="orcamentos-list" class="space-y-3">
-                         <div class="bg-white p-6 rounded-lg shadow-sm text-center">
-                            <p class="text-gray-500">Nenhum orçamento salvo ainda.</p>
-                         </div>
+                         <!-- A lista de orçamentos será renderizada aqui -->
                     </div>
                 </div>
 
@@ -362,7 +361,7 @@
         <footer class="bg-gray-900 text-white text-center py-6">
             <div class="max-w-4xl mx-auto px-4 md:px-6">
                 <p class="mb-4">Para ajustes ou sugestões de melhorias, mande uma mensagem.</p>
-                <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">
+                <a href="[https://wa.me/5551999600889](https://wa.me/5551999600889)" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">
                     Enviar mensagem ao desenvolvedor
                 </a>
             </div>
@@ -388,10 +387,10 @@
             // =================================================================================
 
             // --- IMPORTAÇÕES DO FIREBASE ---
-            import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-            import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-            import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-            import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+            import { initializeApp } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js)";
+            import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js)";
+            import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js)";
+            import { setLogLevel } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js)";
             
             // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
             let app, db, auth, userId;
@@ -422,7 +421,9 @@
                     maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
                     total: 0,
                     tipoObra: 'residencial',
-                    createdAt: new Date()
+                    createdAt: null, // Será preenchido ao salvar
+                    numeroOrcamento: null,
+                    versao: 1
                 };
             }
 
@@ -521,21 +522,73 @@
                  onSnapshot(orcamentosQuery, (querySnapshot) => {
                     appState.orcamentos = querySnapshot.docs.map(doc => {
                         const data = doc.data();
-                        // Converter timestamp do Firebase para Date do JS
                         if (data.createdAt && data.createdAt.toDate) {
                             data.createdAt = data.createdAt.toDate();
                         }
                         return { id: doc.id, ...data };
                     });
-                    // Ordenar por data, mais recente primeiro
-                    appState.orcamentos.sort((a, b) => b.createdAt - a.createdAt);
+                    // Ordena pelo número do orçamento, do maior para o menor
+                    appState.orcamentos.sort((a, b) => (b.numeroOrcamento || 0) - (a.numeroOrcamento || 0));
                     renderOrcamentosList();
                 }, err => console.error("Erro ao ouvir orçamentos:", err));
             }
 
             // --- LÓGICA DE NEGÓCIO E RENDERIZAÇÃO ---
             
-            // ... (funções de config, cliente e material permanecem quase iguais) ...
+            function updateConfigForm() {
+                if (appState.config) {
+                    document.getElementById('config-nome').value = appState.config.nome || '';
+                    document.getElementById('config-telefone').value = appState.config.telefone || '';
+                    document.getElementById('config-doc').value = appState.config.doc || '';
+                    document.getElementById('config-endereco').value = appState.config.endereco || '';
+                    document.getElementById('config-logo').value = appState.config.logo || '';
+                    document.getElementById('config-residencial-diaria').value = appState.config.residencial_diaria || '';
+                    document.getElementById('config-residencial-ponto').value = appState.config.residencial_ponto || '';
+                    document.getElementById('config-residencial-hora').value = appState.config.residencial_hora || '';
+                    document.getElementById('config-industrial-diaria').value = appState.config.industrial_diaria || '';
+                    document.getElementById('config-industrial-ponto').value = appState.config.industrial_ponto || '';
+                    document.getElementById('config-industrial-hora').value = appState.config.industrial_hora || '';
+                }
+            }
+
+            document.getElementById('form-config').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!userId) {
+                    alert("Erro de autenticação. Por favor, faça login novamente.");
+                    return;
+                }
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                const textSpan = document.getElementById('save-config-text');
+                const spinnerSpan = document.getElementById('save-config-spinner');
+                submitButton.disabled = true;
+                textSpan.classList.add('hidden');
+                spinnerSpan.classList.remove('hidden');
+                try {
+                    const configData = {
+                        nome: document.getElementById('config-nome').value,
+                        telefone: document.getElementById('config-telefone').value,
+                        doc: document.getElementById('config-doc').value,
+                        endereco: document.getElementById('config-endereco').value,
+                        logo: document.getElementById('config-logo').value,
+                        residencial_diaria: parseFloat(document.getElementById('config-residencial-diaria').value) || 0,
+                        residencial_ponto: parseFloat(document.getElementById('config-residencial-ponto').value) || 0,
+                        residencial_hora: parseFloat(document.getElementById('config-residencial-hora').value) || 0,
+                        industrial_diaria: parseFloat(document.getElementById('config-industrial-diaria').value) || 0,
+                        industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
+                        industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
+                    };
+                    const configRef = doc(db, `artifacts/${appId}/users/${userId}/config/main`);
+                    await setDoc(configRef, configData);
+                    alert('Configurações salvas com sucesso!');
+                } catch (error) {
+                    console.error("Erro ao salvar configurações:", error);
+                    alert("Ocorreu um erro ao salvar as configurações.");
+                } finally {
+                    submitButton.disabled = false;
+                    textSpan.classList.remove('hidden');
+                    spinnerSpan.classList.add('hidden');
+                }
+            });
             
             // Clientes
             document.getElementById('form-cliente').addEventListener('submit', async (e) => {
@@ -544,30 +597,25 @@
                     alert("Erro de autenticação. Por favor, faça login novamente.");
                     return;
                 }
-
                 const submitButton = e.target.querySelector('button[type="submit"]');
                 submitButton.disabled = true;
                 submitButton.textContent = 'Salvando...';
-
                 try {
                     const nome = document.getElementById('cliente-nome').value;
                     const telefone = document.getElementById('cliente-telefone').value;
                     const endereco = document.getElementById('cliente-endereco').value;
-
                     const date = new Date();
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const year = String(date.getFullYear()).slice(-2);
                     const clientCount = appState.clientes.length + 1;
                     const clientNumber = String(clientCount).padStart(2, '0');
                     const numeroCadastro = `${clientNumber}${month}${year}`;
-
                     const clientesRef = collection(db, `artifacts/${appId}/users/${userId}/clientes`);
                     await addDoc(clientesRef, { nome, telefone, endereco, numeroCadastro });
-                    
                     e.target.reset();
                 } catch (error) {
                     console.error("Erro ao salvar cliente:", error);
-                    alert("Ocorreu um erro ao salvar o cliente. Verifique sua conexão com a internet e tente novamente.");
+                    alert("Ocorreu um erro ao salvar o cliente.");
                 } finally {
                     submitButton.disabled = false;
                     submitButton.textContent = 'Salvar Cliente';
@@ -586,7 +634,7 @@
                             <p class="font-medium">${c.nome} <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">${c.numeroCadastro || ''}</span></p>
                             <p class="text-sm text-gray-600">${c.telefone} | ${c.endereco}</p>
                         </div>
-                        <button onclick="deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700">&times;</button>
+                        <button onclick="deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700 text-2xl">&times;</button>
                     </div>
                 `).join('');
             }
@@ -605,11 +653,9 @@
                     alert("Erro de autenticação. Por favor, faça login novamente.");
                     return;
                 }
-
                 const submitButton = e.target.querySelector('button[type="submit"]');
                 submitButton.disabled = true;
                 submitButton.textContent = 'Salvando...';
-                
                 try {
                     const nome = document.getElementById('material-nome').value;
                     const valor = parseFloat(document.getElementById('material-valor').value);
@@ -619,7 +665,7 @@
                     e.target.reset();
                 } catch (error) {
                     console.error("Erro ao salvar material:", error);
-                    alert("Ocorreu um erro ao salvar o item. Verifique sua conexão com a internet e tente novamente.");
+                    alert("Ocorreu um erro ao salvar o item.");
                 } finally {
                     submitButton.disabled = false;
                     submitButton.textContent = 'Salvar Item';
@@ -635,7 +681,7 @@
                  listEl.innerHTML = appState.materiais.map(m => `
                     <div class="flex justify-between items-center p-2 border rounded-md">
                         <p>${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</p>
-                        <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700">&times;</button>
+                        <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 text-2xl">&times;</button>
                     </div>
                  `).join('');
             }
@@ -660,13 +706,12 @@
 
                 listEl.innerHTML = appState.orcamentos.map(orc => {
                     const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
-                    const dataFormatada = orc.createdAt ? orc.createdAt.toLocaleDateString('pt-BR') : 'Data indisponível';
+                    const numeroFormatado = String(orc.numeroOrcamento || '').padStart(4, '0');
                     return `
                     <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         <div>
-                            <p class="font-bold text-lg">${cliente ? cliente.nome : 'Cliente não encontrado'}</p>
-                            <p class="text-sm text-gray-500">Criado em: ${dataFormatada}</p>
-                            <p class="text-gray-800 font-semibold mt-1">Valor Total: R$ ${orc.total.toFixed(2)}</p>
+                            <p class="font-bold text-lg">${cliente ? cliente.nome.split(' ')[0] : 'Cliente Excluído'}</p>
+                            <p class="text-sm text-gray-500 font-mono">Nº ${numeroFormatado}-v${orc.versao || 1}</p>
                         </div>
                         <div class="flex gap-2 self-end sm:self-center">
                             <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
@@ -680,6 +725,11 @@
             window.editOrcamento = (id) => {
                 const orcamentoParaEditar = appState.orcamentos.find(o => o.id === id);
                 if (orcamentoParaEditar) {
+                    const clienteExiste = appState.clientes.some(c => c.id === orcamentoParaEditar.cliente?.id);
+                    if (!clienteExiste) {
+                        alert("Este orçamento pertence a um cliente que foi excluído. Não é possível editá-lo.");
+                        return;
+                    }
                     openOrcamentoModal(orcamentoParaEditar);
                 }
             };
@@ -699,22 +749,22 @@
 
                  if (orcamentoParaEditar) {
                     document.getElementById('modal-title').textContent = 'Editar Orçamento';
-                    // Clonar para não modificar o estado original diretamente
                     appState.currentOrcamento = JSON.parse(JSON.stringify(orcamentoParaEditar));
 
-                    // Preencher formulário
-                    const clienteSelect = document.getElementById('orc-cliente-select');
-                    clienteSelect.value = appState.currentOrcamento.cliente.id;
+                    document.getElementById('orc-cliente-select').value = appState.currentOrcamento.cliente.id;
 
-                    appState.currentOrcamento.items.forEach(item => {
-                        const checkbox = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
-                        const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
-                        if(checkbox) {
-                            checkbox.checked = true;
-                            qtyInput.value = item.quantidade;
-                            qtyInput.disabled = false;
-                        }
-                    });
+                    // Atraso para garantir que os checkboxes existam no DOM
+                    setTimeout(() => {
+                        appState.currentOrcamento.items.forEach(item => {
+                            const checkbox = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
+                            const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
+                            if(checkbox) {
+                                checkbox.checked = true;
+                                qtyInput.value = item.quantidade;
+                                qtyInput.disabled = false;
+                            }
+                        });
+                    }, 100);
 
                     document.querySelector(`input[name="tipo-obra"][value="${appState.currentOrcamento.tipoObra}"]`).checked = true;
 
@@ -739,16 +789,16 @@
             window.closeOrcamentoModal = () => {
                 document.getElementById('orcamento-modal').classList.remove('active');
                 resetCurrentOrcamento();
-                // Limpeza visual do formulário
                 document.getElementById('orc-cliente-select').value = '';
-                document.querySelector('#orc-materiais-list').querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-                document.querySelectorAll('#orc-materiais-list input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
+                const materiaisList = document.querySelector('#orc-materiais-list');
+                if (materiaisList) {
+                    materiaisList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                    materiaisList.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
+                }
                 document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
                 document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
                 document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
             };
-
-            // ... (restante das funções como populate, listeners, calculate, updatePreview) ...
             
              function populateClienteSelect() {
                 const selectEl = document.getElementById('orc-cliente-select');
@@ -782,7 +832,6 @@
                 const clienteId = e.target.value;
                 const clienteSelecionado = appState.clientes.find(c => c.id === clienteId) || null;
                 if(clienteSelecionado) {
-                    // Salvar apenas ID e nome para evitar redundância de dados no DB
                     appState.currentOrcamento.cliente = { id: clienteSelecionado.id, nome: clienteSelecionado.nome };
                 } else {
                     appState.currentOrcamento.cliente = null;
@@ -840,8 +889,8 @@
             
             function calculateMaoDeObra() {
                 const tipoSelecionado = document.querySelector('input[name="tipo-servico"]:checked');
-                if (!tipoSelecionado) {
-                     appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
+                if (!appState.currentOrcamento || !tipoSelecionado) {
+                     if(appState.currentOrcamento) appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
                      return;
                 }
                 const tipo = tipoSelecionado.value;
@@ -974,22 +1023,20 @@
 
                 const orcamentoData = { ...appState.currentOrcamento };
                 
-                // Usar serverTimestamp para novos orçamentos, manter data para edições
-                if (!orcamentoData.id) {
-                    orcamentoData.createdAt = serverTimestamp();
-                } else {
-                    // Firebase não permite salvar `undefined`
-                    delete orcamentoData.createdAt; 
-                }
-
                 try {
                     if (orcamentoData.id) {
-                        // Editando um existente
+                        orcamentoData.versao = (orcamentoData.versao || 1) + 1;
                         const orcamentoRef = doc(db, `artifacts/${appId}/users/${userId}/orcamentos/${orcamentoData.id}`);
+                        // Não atualizamos createdAt ao editar
+                        delete orcamentoData.createdAt;
                         await setDoc(orcamentoRef, orcamentoData, { merge: true });
                         alert("Orçamento atualizado com sucesso!");
                     } else {
-                        // Salvando um novo
+                        // Descobre o próximo número de orçamento
+                        const nextNumero = (appState.orcamentos[0]?.numeroOrcamento || 0) + 1;
+                        orcamentoData.numeroOrcamento = nextNumero;
+                        orcamentoData.versao = 1;
+                        orcamentoData.createdAt = serverTimestamp();
                         const orcamentosRef = collection(db, `artifacts/${appId}/users/${userId}/orcamentos`);
                         await addDoc(orcamentosRef, orcamentoData);
                         alert("Orçamento salvo com sucesso!");
@@ -1003,6 +1050,10 @@
             
             // Geração de PDF e WhatsApp
             window.shareOrViewPDF = async () => {
+                 if (!appState.currentOrcamento.cliente) {
+                    alert("Selecione um cliente para gerar o PDF.");
+                    return;
+                }
                  const { jsPDF } = window.jspdf;
                  const content = document.getElementById('pdf-preview');
                  const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
@@ -1016,22 +1067,24 @@
                     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
                     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                     
-                    // Lógica de compartilhamento para mobile
-                    if (navigator.share) {
+                    if (navigator.share && navigator.canShare) {
                         const blob = pdf.output('blob');
                         const file = new File([blob], fileName, { type: 'application/pdf' });
-                        await navigator.share({
-                            title: `Orçamento - ${clienteNome}`,
-                            text: 'Segue o orçamento em anexo.',
-                            files: [file]
-                        });
-                    } else {
-                        // Fallback para desktop: download direto
-                        pdf.save(fileName);
+                        if (navigator.canShare({ files: [file] })) {
+                            await navigator.share({
+                                title: `Orçamento - ${clienteNome}`,
+                                text: 'Segue o orçamento em anexo.',
+                                files: [file]
+                            });
+                            return; // Encerra aqui se o compartilhamento nativo funcionar
+                        }
                     }
+                    
+                    // Fallback para download direto se o share não for possível
+                    pdf.save(fileName);
+
                  } catch(e) {
                     console.error("Erro ao gerar ou compartilhar PDF:", e);
-                    // Não mostrar alerta se for erro de "share cancelado"
                     if (e.name !== 'AbortError') {
                       alert("Ocorreu um erro ao tentar gerar o PDF.");
                     }
@@ -1044,6 +1097,10 @@
                     return;
                 }
                 const fullClient = appState.clientes.find(c => c.id === appState.currentOrcamento.cliente.id);
+                if (!fullClient) {
+                     alert("Cliente não encontrado.");
+                    return;
+                }
                 const telefone = fullClient.telefone.replace(/\D/g, '');
                 const nomeProfissional = appState.config.nome || 'nós';
                 const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
