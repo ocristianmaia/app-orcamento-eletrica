@@ -1,439 +1,327 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Orçamentos para Eletricistas</title>
-    <!-- Ícone do App -->
-    <link rel="icon" href="https://eusoueletricista.com.br/wp-content/uploads/2025/09/cropped-cropped-Mascote-Eletricista-5.0-1-1.png">
-    <link rel="apple-touch-icon" href="https://eusoueletricista.com.br/wp-content/uploads/2025/09/cropped-cropped-Mascote-Eletricista-5.0-1-1.png">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        main {
-            flex-grow: 1;
-        }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .tab.active {
-            border-bottom: 2px solid #2563EB;
-            color: #2563EB;
-            font-weight: 600;
-        }
-        .mobile-tab {
-            transition: transform 0.1s ease-in-out;
-        }
-        .mobile-tab.active {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            font-weight: 700;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal.active {
-            display: flex;
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: auto;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            width: 90%;
-            max-width: 900px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        #pdf-preview {
-             font-family: 'Helvetica', 'Arial', sans-serif;
-             color: #333;
-        }
-        #loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(249, 250, 251, 0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            flex-direction: column;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    
-        .servico-slim { font-weight: 400; letter-spacing: 0.1px; }
-        .servico-slim small { color:#6b7280; }
-        </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.20.2/xlsx.full.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gerador de Orçamentos 5.0 — Categorias & Submenus</title>
+  <link rel="icon" href="https://eusoueletricista.com.br/wp-content/uploads/2025/09/cropped-cropped-Mascote-Eletricista-5.0-1-1.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .tab.active { border-bottom: 2px solid #2563EB; color: #2563EB; font-weight: 600; }
+    .modal { display:none; position:fixed; inset:0; background: rgba(0,0,0,.5); z-index:50; align-items:center; justify-content:center; }
+    .modal.active { display:flex; }
+    /* Slim look for serviços */
+    .servico-slim { font-size: 0.80rem; line-height: 1.1rem; font-weight: 300; }
+    .servico-slim strong { font-weight: 500; }
+    details > summary::-webkit-details-marker { display:none; }
+    details .arrow { transition: transform .2s; }
+    details[open] .arrow { transform: rotate(180deg); }
+  </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
-
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <p class="mt-4 text-gray-600">Conectando...</p>
-    </div>
-
-    <div id="login-view" class="hidden h-screen flex flex-col justify-center items-center text-center p-6 bg-gray-100">
-        <h1 class="text-4xl font-bold text-gray-800">Bem-vindo ao</h1>
-        <h2 class="text-5xl font-extrabold text-blue-600 mb-8">Gerador de Orçamentos 5.0</h2>
-        <p class="max-w-md mb-8 text-gray-600">Seus dados de clientes e materiais salvos na nuvem, acessíveis de qualquer lugar.</p>
-        <button id="login-button" class="bg-white text-gray-700 font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center">
-            <svg class="w-6 h-6 mr-3" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C42.022,35.138,44,30.025,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
-            Entrar com Google
-        </button>
-    </div>
-
-    <div id="app-view" class="hidden">
-        <header class="bg-gray-900 text-white text-center shadow-md">
-            <div class="max-w-4xl mx-auto py-4 px-4 md:px-6">
-                <h1 class="text-3xl font-bold">
-                    Gerador de Orçamentos
-                    <span class="block text-4xl">ELETRICISTA 5.0</span>
-                </h1>
-            </div>
-        </header>
-
-        <div id="main-view">
-            <div id="app-container" class="max-w-4xl mx-auto p-4 md:p-6 w-full">
-                <p class="text-md text-gray-600 text-left sm:text-center -mt-2 mb-6">Crie, gerencie e envie orçamentos de forma rápida.</p>
-
-                <!-- Abas de Navegação (Desktop) -->
-                <div class="mb-6 border-b border-gray-200 hidden sm:block">
-                    <nav class="flex -mb-px space-x-6">
-                        <button class="tab active py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Tela Inicial</button>
-                        <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
-                        <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais/Serviços</button>
-                        <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Ajustes</button>
-                    </nav>
-                </div>
-
-                <!-- Abas de Navegação (Mobile) -->
-                <div class="mb-6 grid grid-cols-2 sm:hidden gap-2">
-                    <button class="mobile-tab active text-white p-4 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Tela Inicial</button>
-                    <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-green-500" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
-                    <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
-                    <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-gray-500" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Ajustes</button>
-                </div>
-
-                <!-- Conteúdo das Abas -->
-                <main>
-                    <!-- Aba Orçamentos -->
-                    <div id="orcamentos" class="tab-content active space-y-4">
-                         <div class="grid grid-cols-2 gap-4">
-                            <button onclick="showAllOrcamentosPage()" class="bg-gray-800 text-white p-4 rounded-lg flex justify-center items-center shadow hover:bg-gray-900 transition-colors">
-                                <h2 class="text-xl font-semibold text-center">Orçamentos Salvos</h2>
-                            </button>
-                            <button onclick="openOrcamentoModal()" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium flex justify-center items-center">
-                                <span class="text-xl font-semibold">+ Novo Orçamento</span>
-                            </button>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-700 pt-4">Últimos 3 Orçamentos</h3>
-                        <div id="orcamentos-list-recent" class="space-y-3">
-                             <!-- A lista de orçamentos recentes será renderizada aqui -->
-                        </div>
-                    </div>
-
-                    <!-- Aba Clientes -->
-                    <div id="clientes" class="tab-content space-y-4">
-                        <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Cliente</h2>
-                            <form id="form-cliente" class="space-y-4">
-                                <input type="text" id="cliente-nome" placeholder="Nome do Cliente" class="w-full p-2 border rounded-md" required>
-                                <input type="tel" id="cliente-telefone" placeholder="Telefone (com DDD)" class="w-full p-2 border rounded-md" required>
-                                <input type="text" id="cliente-endereco" placeholder="Endereço Completo" class="w-full p-2 border rounded-md" required>
-                                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar Cliente</button>
-                            </form>
-                        </div>
-                        <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <h2 class="text-xl font-semibold mb-4">Clientes Cadastrados</h2>
-                            <div id="clientes-list" class="space-y-2">
-                                 <p class="text-gray-500">Nenhum cliente cadastrado.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Aba Materiais/Serviços -->
-                    <div id="materiais" class="tab-content space-y-4">
-                        <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Material/Serviço</h2>
-                            <form id="form-material" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
-                                <div class="flex-grow">
-                                    <label for="material-nome" class="block text-sm font-medium text-gray-700">Descrição</label>
-                                    <input type="text" id="material-nome" placeholder="Ex: Tomada Dupla 10A" class="w-full p-2 border rounded-md mt-1" required>
-                                </div>
-                                <div class="sm:w-32">
-                                    <label for="material-unidade" class="block text-sm font-medium text-gray-700">Unidade</label>
-                                    <select id="material-unidade" class="w-full p-2 border rounded-md mt-1 h-10">
-                                        <option>UNID</option>
-                                        <option>Pç</option>
-                                        <option>m</option>
-                                        <option>cx</option>
-                                        <option>kit</option>
-                                    </select>
-                                </div>
-                                <div class="sm:w-40">
-                                     <label for="material-valor" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
-                                    <input type="number" step="0.01" id="material-valor" placeholder="25.50" class="w-full p-2 border rounded-md mt-1" required>
-                                </div>
-                                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors h-10 w-full sm:w-auto">Salvar Item</button>
-                            </form>
-                        </div>
-                         <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <h2 class="text-xl font-semibold mb-4">Itens Cadastrados</h2>
-                            <div id="materiais-list" class="space-y-2">
-                                <p class="text-gray-500">Nenhum material cadastrado.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Aba Configurações -->
-                    <div id="configuracoes" class="tab-content space-y-4">
-                        <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
-                            <form id="form-config" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                                 <div>
-                                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Seus Dados Profissionais</h3>
-                                    <div class="space-y-4">
-                                        <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md" required>
-                                        <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md" required>
-                                        <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
-                                        <input type="text" id="config-endereco" placeholder="Seu Endereço" class="w-full p-2 border rounded-md">
-                                        <input type="text" id="config-logo" placeholder="URL da sua Logomarca (opcional)" class="w-full p-2 border rounded-md">
-                                    </div>
-                                </div>
-                                 <div>
-                                    <div>
-                                        <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Residencial/Predial</h3>
-                                        <div class="space-y-4">
-                                            <label class="block">
-                                                <span class="text-gray-700">Valor da Diária (R$)</span>
-                                                <input type="number" step="0.01" id="config-residencial-diaria" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
-                                            </label>
-                                            <label class="block">
-                                                <span class="text-gray-700">Valor por Ponto (R$)</span>
-                                                <input type="number" step="0.01" id="config-residencial-ponto" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
-                                            </label>
-                                            <label class="block">
-                                                <span class="text-gray-700">Valor por Hora (R$)</span>
-                                                <input type="number" step="0.01" id="config-residencial-hora" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="mt-6">
-                                        <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Industrial</h3>
-                                        <div class="space-y-4">
-                                            <label class="block">
-                                                <span class="text-gray-700">Valor da Diária (R$)</span>
-                                                <input type="number" step="0.01" id="config-industrial-diaria" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
-                                            </label>
-                                            <label class="block">
-                                                <span class="text-gray-700">Valor por Equipamento (R$)</span>
-                                                <input type="number" step="0.01" id="config-industrial-ponto" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
-                                            </label>
-                                            <label class="block">
-                                                <span class="text-gray-700">Valor por Hora (R$)</span>
-                                                <input type="number" step="0.01" id="config-industrial-hora" placeholder="0.00" class="w-full p-2 border rounded-md mt-1">
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="md:col-span-2 text-right">
-                                     <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
-                                        <span id="save-config-text">Salvar Configurações</span>
-                                        <span id="save-config-spinner" class="hidden">Salvando...</span>
-                                     </button>
-                                </div>
-                            </form>
-                        </div>
-
-                         <div class="bg-white p-6 rounded-lg shadow-sm mt-4">
-                             <h2 class="text-xl font-semibold mb-4">Tipos de Serviço</h2>
-                             <!-- Import Excel UI -->
-<div class="mb-6 p-4 border rounded-lg bg-gray-50">
-  <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-    <div class="flex-1">
-      <p class="text-sm text-gray-600 mb-2">Importar planilha (.xlsx) com as colunas <strong>Categoria</strong>, <strong>Descrição</strong> e <strong>Valor</strong>.</p>
-      <input type="file" id="xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm text-gray-700">
-    </div>
-    <button id="btn-import-xlsx" class="whitespace-nowrap bg-emerald-600 text-white px-4 py-2 rounded-lg shadow hover:bg-emerald-700 transition">Importar planilha</button>
+  <div id="loading-overlay" class="fixed inset-0 bg-white/90 z-50 flex flex-col items-center justify-center">
+    <div class="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-blue-500"></div>
+    <p class="mt-3 text-gray-600">Conectando...</p>
   </div>
-  <p id="xlsx-status" class="text-xs text-gray-500 mt-2"></p>
-</div>
 
-<form id="form-tiposervico" class="flex items-end gap-4">
-                                <div class="flex-grow">
-                                    <label for="tiposervico-nome" class="block text-sm font-medium text-gray-700">Descrição do Serviço</label>
-                                    <input type="text" id="tiposervico-nome" placeholder="Ex: Reforma Elétrica Geral" class="w-full p-2 border rounded-md mt-1" required>
-                                </div>
-                                <div class="w-40">
-                                     <label for="tiposervico-valor" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
-                                    <input type="number" step="0.01" id="tiposervico-valor" placeholder="150.00" class="w-full p-2 border rounded-md mt-1" required>
-                                </div>
-                                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors h-10">Salvar</button>
-                            </form>
-                            <div id="tiposdeservico-list" class="space-y-2 mt-4">
-                                <p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>
-                            </div>
-                        </div>
+  <div id="login-view" class="hidden h-screen flex flex-col justify-center items-center text-center p-6 bg-gray-100">
+    <h1 class="text-4xl font-bold text-gray-800">Bem-vindo ao</h1>
+    <h2 class="text-5xl font-extrabold text-blue-600 mb-8">Gerador de Orçamentos 5.0</h2>
+    <p class="max-w-md mb-8 text-gray-600">Seus dados salvos na nuvem.</p>
+    <button id="login-button" class="bg-white text-gray-700 font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center">
+      <svg class="w-6 h-6 mr-3" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C42.022,35.138,44,30.025,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+      Entrar com Google
+    </button>
+  </div>
 
-                        <div class="mt-8 border-t pt-6 text-center">
-                            <p id="user-info" class="text-gray-600 mb-4"></p>
-                             <button id="logout-button" class="bg-red-500 text-white px-6 py-2 rounded-lg shadow hover:bg-red-600 transition-colors">
-                                Sair da Conta
-                             </button>
-                        </div>
-                    </div>
-                </div>
-            </main>
+  <div id="app-view" class="hidden">
+    <header class="bg-gray-900 text-white text-center shadow-md">
+      <div class="max-w-4xl mx-auto py-4 px-4 md:px-6">
+        <h1 class="text-3xl font-bold">Gerador de Orçamentos <span class="block text-4xl">ELETRICISTA 5.0</span></h1>
+      </div>
+    </header>
+
+    <div id="main-view">
+      <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
+        <p class="text-md text-gray-600 text-left sm:text-center -mt-2 mb-6">Crie, gerencie e envie orçamentos de forma rápida.</p>
+
+        <div class="mb-6 border-b border-gray-200 hidden sm:block">
+          <nav class="flex -mb-px space-x-6">
+            <button class="tab active py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Tela Inicial</button>
+            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
+            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais/Serviços</button>
+            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Ajustes</button>
+          </nav>
         </div>
 
-        <div id="all-orcamentos-view" class="hidden">
-             <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
-                 <div class="flex justify-between items-center mb-4">
-                     <h2 class="text-2xl font-semibold">Todos os Orçamentos</h2>
-                     <button onclick="showMainPage()" class="bg-gray-500 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-600 transition-colors font-medium">Voltar</button>
-                </div>
-                <div id="all-orcamentos-list" class="space-y-3"></div>
-            </div>
+        <div class="mb-6 grid grid-cols-2 sm:hidden gap-2">
+          <button class="mobile-tab active text-white p-4 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Tela Inicial</button>
+          <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-green-500" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
+          <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
+          <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-gray-500" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Ajustes</button>
         </div>
 
-        <!-- Modal de Orçamento -->
-        <div id="orcamento-modal" class="modal">
-            <div class="modal-content">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 id="modal-title" class="text-2xl font-bold">Criar Novo Orçamento</h2>
-                    <button onclick="closeOrcamentoModal()" class="text-gray-500 text-2xl font-bold">&times;</button>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Coluna de Seleção -->
-                    <div class="space-y-6">
-                        <div>
-                            <h4 class="text-md font-medium text-gray-800 mb-2">1. Selecione o Cliente</h4>
-                            <select id="orc-cliente-select" class="w-full p-2 border rounded-md">
-                                <option value="">Selecione um cliente</option>
-                            </select>
-                        </div>
-                        
-                         <div>
-                            <h4 class="text-md font-medium text-gray-800 mb-2">2. Tipo de Serviço</h4>
-                            <div id="orc-tiposdeservico-list" class="h-24 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50">
-                               <!-- Checkbox list here -->
-                            </div>
-                        </div>
-
-                        <div>
-                            <h4 class="text-md font-medium text-gray-800 mb-2">3. Materiais/Itens</h4>
-                            <div id="orc-materiais-list" class="h-48 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50">
-                               <!-- Lista de materiais será populada aqui -->
-                            </div>
-                        </div>
-
-                         <div>
-                            <h4 class="text-md font-medium text-gray-800 mb-2">4. Tipo de Obra</h4>
-                            <div id="orc-tipo-obra" class="flex space-x-4">
-                                <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                                    <input type="radio" name="tipo-obra" value="residencial" class="h-4 w-4 text-blue-600 border-gray-300" checked>
-                                    <span class="ml-3 text-sm font-medium text-gray-900">Residencial/Predial</span>
-                                </label>
-                                <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                                    <input type="radio" name="tipo-obra" value="industrial" class="h-4 w-4 text-blue-600 border-gray-300">
-                                    <span class="ml-3 text-sm font-medium text-gray-900">Industrial</span>
-                                </label>
-                            </div>
-                        </div>
-
-                         <div>
-                            <h4 class="text-md font-medium text-gray-800 mb-2">5. Mão de Obra</h4>
-                            <div id="orc-mao-de-obra" class="space-y-2">
-                                 <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                                    <input type="radio" name="tipo-servico" value="empreitada" class="h-4 w-4 text-blue-600 border-gray-300">
-                                    <span class="ml-3 text-sm font-medium text-gray-900">Empreitada</span>
-                                    <input type="number" step="0.01" id="empreitada-valor" placeholder="Valor total R$" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                                </label>
-                                 <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                                    <input type="radio" name="tipo-servico" value="diaria" class="h-4 w-4 text-blue-600 border-gray-300">
-                                    <span class="ml-3 text-sm font-medium text-gray-900">Diária</span>
-                                    <input type="number" step="1" id="diaria-qtd" placeholder="Qtd. dias" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                                </label>
-                                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                                    <input type="radio" name="tipo-servico" value="ponto" class="h-4 w-4 text-blue-600 border-gray-300">
-                                    <span id="ponto-label-span" class="ml-3 text-sm font-medium text-gray-900">Por Ponto</span>
-                                    <input type="number" step="1" id="ponto-qtd" placeholder="Qtd. pontos" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                                </label>
-                                 <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                                    <input type="radio" name="tipo-servico" value="hora" class="h-4 w-4 text-blue-600 border-gray-300">
-                                    <span class="ml-3 text-sm font-medium text-gray-900">Por Hora</span>
-                                    <input type="number" step="0.5" id="hora-qtd" placeholder="Qtd. horas" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Coluna de Preview -->
-                    <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
-                        <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
-                        <div id="pdf-preview" class="flex-grow text-sm">
-                            <!-- Preview content goes here -->
-                            <p class="text-gray-500 text-center mt-8">Selecione um cliente e adicione itens para ver o orçamento.</p>
-                        </div>
-                         <div class="mt-6 flex flex-col sm:flex-row gap-2 justify-end">
-                            <button onclick="saveOrcamento()" class="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar Orçamento</button>
-                            <button onclick="shareOrViewPDF()" class="bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition-colors">Enviar PDF</button>
-                            <button onclick="sendWhatsAppText()" class="bg-teal-500 text-white px-5 py-2 rounded-lg shadow hover:bg-teal-600 transition-colors">Enviar (só texto)</button>
-                        </div>
-                    </div>
-                </div>
+        <main>
+          <div id="orcamentos" class="tab-content active space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <button onclick="showAllOrcamentosPage()" class="bg-gray-800 text-white p-4 rounded-lg flex justify-center items-center shadow hover:bg-gray-900 transition-colors">
+                <h2 class="text-xl font-semibold text-center">Orçamentos Salvos</h2>
+              </button>
+              <button onclick="openOrcamentoModal()" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium flex justify-center items-center">
+                <span class="text-xl font-semibold">+ Novo Orçamento</span>
+              </button>
             </div>
+            <h3 class="text-lg font-semibold text-gray-700 pt-4">Últimos 3 Orçamentos</h3>
+            <div id="orcamentos-list-recent" class="space-y-3"></div>
+          </div>
+
+          <div id="clientes" class="tab-content space-y-4">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+              <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Cliente</h2>
+              <form id="form-cliente" class="space-y-4">
+                <input type="text" id="cliente-nome" placeholder="Nome do Cliente" class="w-full p-2 border rounded-md" required>
+                <input type="tel" id="cliente-telefone" placeholder="Telefone (com DDD)" class="w-full p-2 border rounded-md" required>
+                <input type="text" id="cliente-endereco" placeholder="Endereço Completo" class="w-full p-2 border rounded-md" required>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar Cliente</button>
+              </form>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+              <h2 class="text-xl font-semibold mb-4">Clientes Cadastrados</h2>
+              <div id="clientes-list" class="space-y-2"><p class="text-gray-500">Nenhum cliente cadastrado.</p></div>
+            </div>
+          </div>
+
+          <div id="materiais" class="tab-content space-y-4">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+              <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Material/Serviço</h2>
+              <form id="form-material" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
+                <div class="flex-grow">
+                  <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                  <input type="text" id="material-nome" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: Tomada Dupla 10A" required>
+                </div>
+                <div class="sm:w-32">
+                  <label class="block text-sm font-medium text-gray-700">Unidade</label>
+                  <select id="material-unidade" class="w-full p-2 border rounded-md mt-1 h-10">
+                    <option>UNID</option><option>Pç</option><option>m</option><option>cx</option><option>kit</option>
+                  </select>
+                </div>
+                <div class="sm:w-40">
+                  <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                  <input type="number" step="0.01" id="material-valor" class="w-full p-2 border rounded-md mt-1" placeholder="25.50" required>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors h-10 w-full sm:w-auto">Salvar Item</button>
+              </form>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+              <h2 class="text-xl font-semibold mb-4">Itens Cadastrados</h2>
+              <div id="materiais-list" class="space-y-2"><p class="text-gray-500">Nenhum material cadastrado.</p></div>
+            </div>
+          </div>
+
+          <div id="configuracoes" class="tab-content space-y-4">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+              <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
+              <form id="form-config" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div>
+                  <h3 class="text-lg font-medium mb-4 border-b pb-2">Seus Dados Profissionais</h3>
+                  <div class="space-y-4">
+                    <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md" required>
+                    <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md" required>
+                    <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
+                    <input type="text" id="config-endereco" placeholder="Seu Endereço" class="w-full p-2 border rounded-md">
+                    <input type="text" id="config-logo" placeholder="URL da sua Logomarca (opcional)" class="w-full p-2 border rounded-md">
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Residencial/Predial</h3>
+                    <div class="space-y-4">
+                      <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-residencial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                      <label class="block"><span class="text-gray-700">Valor por Ponto (R$)</span><input type="number" step="0.01" id="config-residencial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                      <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-residencial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                    </div>
+                  </div>
+                  <div class="mt-6">
+                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Industrial</h3>
+                    <div class="space-y-4">
+                      <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-industrial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                      <label class="block"><span class="text-gray-700">Valor por Equipamento (R$)</span><input type="number" step="0.01" id="config-industrial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                      <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-industrial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                    </div>
+                  </div>
+                </div>
+                <div class="md:col-span-2 text-right">
+                  <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
+                    <span id="save-config-text">Salvar Configurações</span>
+                    <span id="save-config-spinner" class="hidden">Salvando...</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm mt-4">
+              <h2 class="text-xl font-semibold mb-4">Tipos de Serviço</h2>
+
+              <div class="mb-6 p-4 border rounded-lg bg-gray-50">
+                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                  <div class="flex-1">
+                    <p class="text-sm text-gray-600 mb-2">Importar planilha (.xlsx) com as colunas <strong>Categoria</strong>, <strong>Descrição</strong> e <strong>Valor</strong>.</p>
+                    <input type="file" id="xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm text-gray-700">
+                  </div>
+                  <button id="btn-import-xlsx" class="whitespace-nowrap bg-emerald-600 text-white px-4 py-2 rounded-lg shadow hover:bg-emerald-700 transition">Importar planilha</button>
+                </div>
+                <p id="xlsx-status" class="text-xs text-gray-500 mt-2"></p>
+              </div>
+
+              <form id="form-tiposervico" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Categoria</label>
+                    <select id="tiposervico-categoria-select" class="w-full p-2 border rounded-md mt-1">
+                      <option value="">Selecionar existente</option>
+                      <option value="new_category">+ Nova Categoria</option>
+                    </select>
+                    <input type="text" id="tiposervico-categoria-new" placeholder="Nome da Nova Categoria" class="w-full p-2 border rounded-md mt-2 hidden">
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                    <input type="text" id="tiposervico-descricao" placeholder="Ex: Instalação de Padrão" class="w-full p-2 border rounded-md mt-1" required>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                    <input type="number" step="0.01" id="tiposervico-valor" placeholder="150.00" class="w-full p-2 border rounded-md mt-1" required>
+                  </div>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar</button>
+              </form>
+
+              <div id="tiposdeservico-list" class="space-y-2 mt-6">
+                <p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>
+              </div>
+            </div>
+
+            <div class="mt-8 border-t pt-6 text-center">
+              <p id="user-info" class="text-gray-600 mb-4"></p>
+              <button id="logout-button" class="bg-red-500 text-white px-6 py-2 rounded-lg shadow hover:bg-red-600 transition-colors">Sair da Conta</button>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div id="all-orcamentos-view" class="hidden">
+      <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-semibold">Todos os Orçamentos</h2>
+          <button onclick="showMainPage()" class="bg-gray-500 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-600 transition-colors font-medium">Voltar</button>
         </div>
-        
-        <footer class="bg-gray-900 text-white text-center py-6">
-            <div class="max-w-4xl mx-auto px-4 md:px-6">
-                <p class="mb-4">Para ajustes ou sugestões de melhorias, mande uma mensagem.</p>
-                <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">
-                    Enviar mensagem ao desenvolvedor
-                </a>
-            </div>
-        </footer>
+        <div id="all-orcamentos-list" class="space-y-3"></div>
+      </div>
+    </div>
 
-        <script type="module">
-            // =================================================================================
-            // ATENÇÃO: COLE AQUI O SEU CÓDIGO DE CONFIGURAÇÃO DO FIREBASE
-            // Siga o guia para obter o seu e substitua a linha abaixo.
-            // =================================================================================
-            const firebaseConfig = {
+    <div id="orcamento-modal" class="modal">
+      <div class="bg-white rounded-lg p-6 w-[95%] max-w-[960px] max-height-[90vh] max-h-[90vh] overflow-y-auto shadow-xl">
+        <div class="flex justify-between items-center mb-6">
+          <h2 id="modal-title" class="text-2xl font-bold">Criar Novo Orçamento</h2>
+          <button onclick="closeOrcamentoModal()" class="text-gray-500 text-2xl font-bold">&times;</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="space-y-6">
+            <div>
+              <h4 class="text-md font-medium text-gray-800 mb-2">1. Selecione o Cliente</h4>
+              <select id="orc-cliente-select" class="w-full p-2 border rounded-md">
+                <option value="">Selecione um cliente</option>
+              </select>
+            </div>
+
+            <div>
+              <h4 class="text-md font-medium text-gray-800 mb-2">2. Tipo de Serviço</h4>
+              <input id="filter-tipos" placeholder="Pesquisar serviço..." class="w-full p-2 border rounded-md mb-2 text-sm" />
+              <div id="orc-tiposdeservico-list" class="h-48 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50"></div>
+            </div>
+
+            <div>
+              <h4 class="text-md font-medium text-gray-800 mb-2">3. Materiais/Itens</h4>
+              <div id="orc-materiais-list" class="h-48 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50"></div>
+            </div>
+
+            <div>
+              <h4 class="text-md font-medium text-gray-800 mb-2">4. Tipo de Obra</h4>
+              <div id="orc-tipo-obra" class="flex gap-3">
+                <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                  <input type="radio" name="tipo-obra" value="residencial" class="h-4 w-4 text-blue-600 border-gray-300" checked>
+                  <span class="ml-3 text-sm font-medium text-gray-900">Residencial/Predial</span>
+                </label>
+                <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                  <input type="radio" name="tipo-obra" value="industrial" class="h-4 w-4 text-blue-600 border-gray-300">
+                  <span class="ml-3 text-sm font-medium text-gray-900">Industrial</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-md font-medium text-gray-800 mb-2">5. Mão de Obra</h4>
+              <div id="orc-mao-de-obra" class="space-y-2">
+                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
+                  <input type="radio" name="tipo-servico" value="empreitada" class="h-4 w-4 text-blue-600 border-gray-300">
+                  <span class="ml-3 text-sm font-medium text-gray-900">Empreitada</span>
+                  <input type="number" step="0.01" id="empreitada-valor" placeholder="Valor total R$" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                </label>
+                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
+                  <input type="radio" name="tipo-servico" value="diaria" class="h-4 w-4 text-blue-600 border-gray-300">
+                  <span class="ml-3 text-sm font-medium text-gray-900">Diária</span>
+                  <input type="number" step="1" id="diaria-qtd" placeholder="Qtd. dias" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                </label>
+                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
+                  <input type="radio" name="tipo-servico" value="ponto" class="h-4 w-4 text-blue-600 border-gray-300">
+                  <span id="ponto-label-span" class="ml-3 text-sm font-medium text-gray-900">Por Ponto</span>
+                  <input type="number" step="1" id="ponto-qtd" placeholder="Qtd. pontos" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                </label>
+                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
+                  <input type="radio" name="tipo-servico" value="hora" class="h-4 w-4 text-blue-600 border-gray-300">
+                  <span class="ml-3 text-sm font-medium text-gray-900">Por Hora</span>
+                  <input type="number" step="0.5" id="hora-qtd" placeholder="Qtd. horas" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
+            <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
+            <div id="pdf-preview" class="flex-grow text-sm">
+              <p class="text-gray-500 text-center mt-8">Selecione um cliente e adicione itens para ver o orçamento.</p>
+            </div>
+            <div class="mt-6 flex flex-col sm:flex-row gap-2 justify-end">
+              <button onclick="saveOrcamento()" class="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar Orçamento</button>
+              <button onclick="shareOrViewPDF()" class="bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition-colors">Enviar PDF</button>
+              <button onclick="sendWhatsAppText()" class="bg-teal-500 text-white px-5 py-2 rounded-lg shadow hover:bg-teal-600 transition-colors">Enviar (só texto)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-gray-900 text-white text-center py-6">
+    <div class="max-w-4xl mx-auto px-4 md:px-6">
+      <p class="mb-4">Para ajustes ou sugestões de melhorias, mande uma mensagem.</p>
+      <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">Enviar mensagem ao desenvolvedor</a>
+    </div>
+  </footer>
+
+  <script type="module">
+    // ===== Firebase config (preservado do seu arquivo) =====
+    const firebaseConfig = {
   apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
   authDomain: "app-orcamentos-eletrica.firebaseapp.com",
   projectId: "app-orcamentos-eletrica",
@@ -441,937 +329,830 @@
   messagingSenderId: "424397941585",
   appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
 };
-            // =================================================================================
 
-            // --- IMPORTAÇÕES DO FIREBASE ---
-            import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-            import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-            import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-            import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-            
-            // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
-            let app, db, auth, userId;
-            setLogLevel('debug');
-            
-            // --- ELEMENTOS DA UI ---
-            const loadingOverlay = document.getElementById('loading-overlay');
-            const loginView = document.getElementById('login-view');
-            const appView = document.getElementById('app-view');
-            const mainView = document.getElementById('main-view');
-            const allOrcamentosView = document.getElementById('all-orcamentos-view');
-            const loginButton = document.getElementById('login-button');
-            const logoutButton = document.getElementById('logout-button');
-            const userInfo = document.getElementById('user-info');
-            
-            // --- ESTADO DA APLICAÇÃO ---
-            const appState = {
-                config: {},
-                clientes: [],
-                materiais: [],
-                orcamentos: [],
-                tiposDeServico: [],
-                currentOrcamento: null,
-            };
-            
-            function resetCurrentOrcamento() {
-                appState.currentOrcamento = {
-                    id: null,
-                    cliente: null,
-                    tiposDeServico: [],
-                    items: [],
-                    maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
-                    total: 0,
-                    tipoObra: 'residencial',
-                    createdAt: null,
-                    numeroOrcamento: null,
-                    versao: 1
-                };
+    // Imports Firebase
+    import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // ===== Estado e elementos =====
+    let app, db, auth, userId;
+    setLogLevel('debug');
+
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loginView = document.getElementById('login-view');
+    const appView = document.getElementById('app-view');
+    const mainView = document.getElementById('main-view');
+    const allOrcamentosView = document.getElementById('all-orcamentos-view');
+    const loginButton = document.getElementById('login-button');
+    const logoutButton = document.getElementById('logout-button');
+    const userInfo = document.getElementById('user-info');
+
+    const appState = {
+      config: {}, clientes: [], materiais: [], orcamentos: [],
+      tiposDeServico: [], currentOrcamento: null,
+    };
+
+    function resetCurrentOrcamento() {
+      appState.currentOrcamento = {
+        id: null, cliente: null, tiposDeServico: [], items: [],
+        maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
+        total: 0, tipoObra: 'residencial', createdAt: null,
+        numeroOrcamento: null, versao: 1
+      };
+    }
+
+    // ===== Inicialização Firebase e Auth =====
+    async function initializeFirebase() {
+      try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            userId = user.uid;
+            userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
+            loadingOverlay.querySelector('p').textContent = 'Carregando seus dados...';
+            loadAllData();
+            loginView.classList.add('hidden');
+            appView.classList.remove('hidden');
+            loadingOverlay.style.display = 'none';
+          } else {
+            userId = null;
+            loginView.classList.remove('hidden');
+            appView.classList.add('hidden');
+            loadingOverlay.style.display = 'none';
+          }
+        });
+      } catch (e) {
+        console.error('Erro ao inicializar Firebase:', e);
+        loadingOverlay.innerHTML = '<p class="text-red-600">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
+      }
+    }
+
+    const loginWithGoogle = async () => {
+      const provider = new GoogleAuthProvider();
+      try { loadingOverlay.style.display = 'flex'; await signInWithPopup(auth, provider); }
+      catch (e) { console.error(e); alert('Falha no login Google.'); loadingOverlay.style.display = 'none'; }
+    };
+
+    const logout = async () => {
+      if (confirm('Tem certeza que deseja sair da sua conta?')) {
+        try { await signOut(auth); } catch(e) { alert('Erro ao sair.'); }
+      }
+    };
+
+    loginButton?.addEventListener('click', loginWithGoogle);
+    logoutButton?.addEventListener('click', logout);
+
+    // ===== Carregamento reativo de dados =====
+    function loadAllData() {
+      if (!userId) return;
+      const prefix = `users/${userId}`;
+
+      onSnapshot(doc(db, `${prefix}/config/main`), (snap) => {
+        if (snap.exists()) appState.config = snap.data();
+        updateConfigForm();
+      });
+
+      onSnapshot(query(collection(db, `${prefix}/clientes`)), (snapshot) => {
+        appState.clientes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderClientesList();
+      });
+
+      onSnapshot(query(collection(db, `${prefix}/materiais`)), (snapshot) => {
+        appState.materiais = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderMateriaisList();
+      });
+
+      onSnapshot(query(collection(db, `${prefix}/tiposdeservico`)), (snapshot) => {
+        appState.tiposDeServico = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderTiposDeServicoList();
+        populateCategorySelect();
+        // populateSubmenuSelect(); // ATUALIZADO: Removido
+      });
+
+      onSnapshot(query(collection(db, `${prefix}/orcamentos`)), (snapshot) => {
+        appState.orcamentos = snapshot.docs.map(d => {
+          const data = d.data();
+          if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
+          return { id: d.id, ...data };
+        });
+        appState.orcamentos.sort((a,b) => (b.numeroOrcamento||0) - (a.numeroOrcamento||0));
+        renderOrcamentosList();
+        renderOrcamentosList(true);
+      });
+    }
+
+    // ===== Config =====
+    function updateConfigForm() {
+      const c = appState.config || {};
+      document.getElementById('config-nome').value = c.nome || '';
+      document.getElementById('config-telefone').value = c.telefone || '';
+      document.getElementById('config-doc').value = c.doc || '';
+      document.getElementById('config-endereco').value = c.endereco || '';
+      document.getElementById('config-logo').value = c.logo || '';
+      document.getElementById('config-residencial-diaria').value = c.residencial_diaria || '';
+      document.getElementById('config-residencial-ponto').value = c.residencial_ponto || '';
+      document.getElementById('config-residencial-hora').value = c.residencial_hora || '';
+      document.getElementById('config-industrial-diaria').value = c.industrial_diaria || '';
+      document.getElementById('config-industrial-ponto').value = c.industrial_ponto || '';
+      document.getElementById('config-industrial-hora').value = c.industrial_hora || '';
+    }
+
+    document.getElementById('form-config').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      const textSpan = document.getElementById('save-config-text');
+      const spinSpan = document.getElementById('save-config-spinner');
+      btn.disabled = true; textSpan.classList.add('hidden'); spinSpan.classList.remove('hidden');
+      try {
+        const data = {
+          nome: document.getElementById('config-nome').value,
+          telefone: document.getElementById('config-telefone').value,
+          doc: document.getElementById('config-doc').value,
+          endereco: document.getElementById('config-endereco').value,
+          logo: document.getElementById('config-logo').value,
+          residencial_diaria: parseFloat(document.getElementById('config-residencial-diaria').value) || 0,
+          residencial_ponto: parseFloat(document.getElementById('config-residencial-ponto').value) || 0,
+          residencial_hora: parseFloat(document.getElementById('config-residencial-hora').value) || 0,
+          industrial_diaria: parseFloat(document.getElementById('config-industrial-diaria').value) || 0,
+          industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
+          industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
+        };
+        await setDoc(doc(db, `users/${userId}/config/main`), data);
+        alert('Configurações salvas!');
+      } catch(e) { console.error(e); alert('Erro ao salvar.'); }
+      finally { btn.disabled=false; textSpan.classList.remove('hidden'); spinSpan.classList.add('hidden'); }
+    });
+
+    // ===== Clientes =====
+    document.getElementById('form-cliente').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent='Salvando...';
+      try {
+        const nome = document.getElementById('cliente-nome').value;
+        const telefone = document.getElementById('cliente-telefone').value;
+        const endereco = document.getElementById('cliente-endereco').value;
+        const d = new Date(), month = String(d.getMonth()+1).padStart(2,'0'), year = String(d.getFullYear()).slice(-2);
+        const count = appState.clientes.length + 1; const num = String(count).padStart(2,'0');
+        const numeroCadastro = `${num}${month}${year}`;
+        await addDoc(collection(db, `users/${userId}/clientes`), { nome, telefone, endereco, numeroCadastro });
+        e.target.reset();
+      } catch(e) { console.error(e); alert('Erro ao salvar cliente.'); }
+      finally { btn.disabled=false; btn.textContent='Salvar Cliente'; }
+    });
+
+    function renderClientesList() {
+      const el = document.getElementById('clientes-list');
+      if (!appState.clientes.length) { el.innerHTML = '<p class="text-gray-500">Nenhum cliente cadastrado.</p>'; return; }
+      el.innerHTML = appState.clientes.map(c => `
+        <div class="flex justify-between items-center p-2 border rounded-md">
+          <div>
+            <p class="font-medium">${c.nome} <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">${c.numeroCadastro||''}</span></p>
+            <p class="text-sm text-gray-600">${c.telefone} | ${c.endereco}</p>
+          </div>
+          <button onclick="deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700 text-2xl">&times;</button>
+        </div>`).join('');
+    }
+
+    window.deleteCliente = async (id) => {
+      if (confirm('Excluir este cliente?')) { await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); }
+    };
+
+    // ===== Materiais =====
+    document.getElementById('form-material').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent='Salvando...';
+      try {
+        const nome = document.getElementById('material-nome').value;
+        const valor = parseFloat(document.getElementById('material-valor').value);
+        const unidade = document.getElementById('material-unidade').value;
+        await addDoc(collection(db, `users/${userId}/materiais`), { nome, valor, unidade });
+        e.target.reset();
+      } catch(e) { console.error(e); alert('Erro ao salvar item.'); }
+      finally { btn.disabled=false; btn.textContent='Salvar Item'; }
+    });
+
+    function renderMateriaisList() {
+      const el = document.getElementById('materiais-list');
+      if (!appState.materiais.length) { el.innerHTML = '<p class="text-gray-500">Nenhum material cadastrado.</p>'; return; }
+      el.innerHTML = appState.materiais.map(m => `
+        <div class="flex justify-between items-center p-2 border rounded-md">
+          <p class="servico-slim"><strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${m.valor.toFixed(2)}</p>
+          <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 text-2xl">&times;</button>
+        </div>`).join('');
+    }
+
+    window.deleteMaterial = async (id) => {
+      if (confirm('Excluir este item?')) { await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); }
+    };
+
+    // ===== Tipos de Serviço com Categoria & Submenu =====
+    // ATUALIZADO: Removido subSelect e subNew
+    const catSelect = document.getElementById('tiposervico-categoria-select');
+    const catNew = document.getElementById('tiposervico-categoria-new');
+    // const subSelect = document.getElementById('tiposervico-submenu-select'); // Removido
+    // const subNew = document.getElementById('tiposervico-submenu-new'); // Removido
+
+    function populateCategorySelect() {
+      // Preserva primeiras 2 opções
+      while (catSelect.options.length > 2) catSelect.remove(2);
+      const cats = [...new Set(appState.tiposDeServico.map(s => s.categoria).filter(Boolean))].sort();
+      cats.forEach(cat => { const o=document.createElement('option'); o.value=cat; o.textContent=cat; catSelect.appendChild(o); });
+    }
+
+    // ATUALIZADO: Função removida
+    /*
+    function populateSubmenuSelect() {
+      // Reset subSelect mantendo 2 primeiras opções
+      while (subSelect.options.length > 2) subSelect.remove(2);
+      const selectedCat = catSelect.value && catSelect.value!=='new_category' ? catSelect.value : null;
+      if (!selectedCat) return;
+      const subs = [...new Set(appState.tiposDeServico.filter(s => (s.categoria||'')===selectedCat).map(s => s.submenu).filter(Boolean))].sort();
+      subs.forEach(sub => { const o=document.createElement('option'); o.value=sub; o.textContent=sub; subSelect.appendChild(o); });
+    }
+    */
+
+    // ATUALIZADO: Removida chamada a populateSubmenuSelect()
+    catSelect.addEventListener('change', () => {
+      if (catSelect.value === 'new_category') { catNew.classList.remove('hidden'); catNew.focus(); }
+      else { catNew.classList.add('hidden'); }
+    });
+
+    // ATUALIZADO: Event listener removido
+    /*
+    subSelect.addEventListener('change', () => {
+      if (subSelect.value === 'new_submenu') { subNew.classList.remove('hidden'); subNew.focus(); }
+      else { subNew.classList.add('hidden'); }
+    });
+    */
+
+    // ATUALIZADO: Lógica de salvar para { categoria, descricao, valor }
+    document.getElementById('form-tiposervico').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent='Salvando...';
+      try {
+        let categoria = (catSelect.value === 'new_category') ? (catNew.value||'').trim() : (catSelect.value||'').trim();
+        categoria = categoria ? categoria.toUpperCase() : 'OUTROS';
+        const descricao = document.getElementById('tiposervico-descricao').value;
+        const valor = parseFloat(document.getElementById('tiposervico-valor').value);
+        if (!categoria || !descricao || isNaN(valor)) throw new Error('Preencha categoria, descrição e valor.');
+        await addDoc(collection(db, `users/${userId}/tiposdeservico`), { descricao, valor, categoria });
+        e.target.reset();
+        catNew.classList.add('hidden');
+        catSelect.value='';
+      } catch(e) { console.error(e); alert('Erro ao salvar tipo de serviço.'); }
+      finally { btn.disabled=false; btn.textContent='Salvar'; }
+    });
+
+    function groupBy(arr, key) { return arr.reduce((acc,cur)=>{ const k=cur[key]||'OUTROS'; (acc[k]||(acc[k]=[])).push(cur); return acc; },{}); }
+
+    // ATUALIZADO: Renderiza lista com 2 níveis (Categoria > Descrição) e usa s.descricao
+    function renderTiposDeServicoList() {
+      const el = document.getElementById('tiposdeservico-list');
+      if (!appState.tiposDeServico.length) { el.innerHTML = '<p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>'; return; }
+      const byCat = groupBy(appState.tiposDeServico, 'categoria');
+      const cats = Object.keys(byCat).sort();
+      el.innerHTML = cats.map(cat => {
+        const servicos = byCat[cat].sort((a,b) => (a.descricao || '').localeCompare(b.descricao || ''));
+        return `
+          <details class="border rounded-md mb-2">
+            <summary class="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-gray-100">
+              <span class="text-sm font-medium text-gray-800">${cat}</span>
+              <svg class="w-4 h-4 arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="p-2 space-y-1">
+              ${
+                servicos.map(s => `
+                  <div class="flex justify-between items-center p-1 border-b border-gray-100">
+                    <p class="servico-slim">${s.descricao} — <span class="text-gray-700">R$ ${s.valor.toFixed(2)}</span></p>
+                    <button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500 hover:text-red-700 text-xl leading-none">&times;</button>
+                  </div>
+                `).join('')
+              }
+            </div>
+          </details>`;
+      }).join('');
+    }
+
+    window.deleteTipoDeServico = async (id) => {
+      if (confirm('Excluir este tipo de serviço?')) { await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`)); }
+    };
+
+    // ===== Importar Excel =====
+    document.getElementById('btn-import-xlsx').addEventListener('click', async () => {
+      const inp = document.getElementById('xlsx-input');
+      const status = document.getElementById('xlsx-status');
+      if (!inp.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx'); return; }
+      const f = inp.files[0];
+      try {
+        status.textContent = 'Lendo planilha...';
+        const buf = await f.arrayBuffer();
+        const wb = XLSX.read(buf, { type:'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+        // Normaliza nomes de colunas
+        const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
+        // ATUALIZADO: headerMapCandidates (removido submenu, 'nome' virou 'descricao')
+        const headerMapCandidates = {
+          categoria: ['categoria','grupo','setor'],
+          descricao: ['descricao','descrição','servico','serviço','atividade','item'],
+          valor: ['valor','preco','preço','price']
+        };
+
+        const keys = rows.length ? Object.keys(rows[0]) : [];
+        // ATUALIZADO: colMap
+        const colMap = { categoria: null, descricao: null, valor: null };
+        keys.forEach(k => {
+          const nk = norm(k);
+          for (const fld of Object.keys(headerMapCandidates)) {
+            if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k;
+          }
+        });
+
+        // ATUALIZADO: Checagem de colunas e alerta
+        if (!colMap.categoria || !colMap.descricao || !colMap.valor) {
+          alert('Não encontrei colunas suficientes. Garanta que a planilha tenha: Categoria, Descrição e Valor.');
+          return;
+        }
+
+        const prefix = `users/${userId}`;
+        const batch = writeBatch(db);
+        let count = 0;
+
+        // ATUALIZADO: Lógica do loop para salvar { categoria, descricao, valor }
+        rows.forEach(r => {
+          const categoria = String(r[colMap.categoria]||'').toUpperCase().trim() || 'OUTROS';
+          const descricao = String(r[colMap.descricao]||'').trim();
+          const rawValor = (r[colMap.valor] ?? '').toString().replace(',', '.').replace(/\s/g,'');
+          const valor = parseFloat(rawValor) || 0;
+          if (!categoria || !descricao || !valor) return;
+          const ref = doc(collection(db, `${prefix}/tiposdeservico`));
+          batch.set(ref, { categoria, descricao, valor });
+          count++;
+        });
+
+        if (!count) { alert('Nenhuma linha válida encontrada.'); return; }
+        status.textContent = 'Enviando para o banco...';
+        await batch.commit();
+        status.textContent = `Importação concluída: ${count} itens adicionados.`;
+      } catch(e) {
+        console.error(e);
+        alert('Erro ao importar planilha.');
+      }
+    });
+
+    // ===== Orçamentos (lista / modal etc.) =====
+    function renderOrcamentosList(isFullList = false) {
+      const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
+      if (!el) return;
+      const list = isFullList ? appState.orcamentos : appState.orcamentos.slice(0,3);
+      if (!list.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; return; }
+      el.innerHTML = list.map(orc => {
+        const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
+        const numeroFormatado = String(orc.numeroOrcamento || '').padStart(2, '0');
+        const versaoFormatada = String(orc.versao || 1).padStart(2, '0');
+        const date = orc.createdAt || new Date();
+        const month = String((new Date(date)).getMonth() + 1).padStart(2, '0');
+        const year = String((new Date(date)).getFullYear()).slice(-2);
+        const orcamentoId = `OS${numeroFormatado}${month}${year}-${versaoFormatada}`;
+        const nome = cliente ? cliente.nome : 'Cliente Excluído';
+        const nomes = nome.split(' ');
+        const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
+        return `
+          <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
+            <div class="flex justify-between items-baseline w-full">
+              <p class="font-medium text-lg text-gray-800">${nomeAbreviado}</p>
+              <p class="text-sm text-gray-500">${orcamentoId}</p>
+            </div>
+            <div class="flex gap-2 self-end">
+              <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+              <button onclick="deleteOrcamento('${orc.id}')" class="bg-red-500 text-white px-4 py-1 rounded-md text-sm hover:bg-red-600">Excluir</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    window.showAllOrcamentosPage = () => {
+      mainView.classList.add('hidden');
+      allOrcamentosView.classList.remove('hidden');
+      renderOrcamentosList(true);
+    };
+    window.showMainPage = () => {
+      allOrcamentosView.classList.add('hidden');
+      mainView.classList.remove('hidden');
+    };
+
+    window.editOrcamento = (id) => {
+      const orc = appState.orcamentos.find(o => o.id === id);
+      if (!orc) return alert('Orçamento não encontrado.');
+      openOrcamentoModal(orc);
+    };
+
+    window.deleteOrcamento = async (id) => {
+      if(confirm('Excluir este orçamento?')) { await deleteDoc(doc(db, `users/${userId}/orcamentos/${id}`)); }
+    };
+
+    window.openOrcamentoModal = (orcamentoParaEditar = null) => {
+      try {
+        const modal = document.getElementById('orcamento-modal');
+        const clienteSelect = document.getElementById('orc-cliente-select');
+        modal.classList.add('active');
+        populateClienteSelect();
+        populateMateriaisOrcamento();
+        populateTiposDeServicoOrcamento();
+
+        if (orcamentoParaEditar) {
+          document.getElementById('modal-title').textContent = 'Editar Orçamento';
+          const clone = JSON.parse(JSON.stringify(orcamentoParaEditar || {}));
+          clone.tipoObra = (clone.tipoObra === 'industrial' || clone.tipoObra === 'residencial') ? clone.tipoObra : 'residencial';
+          clone.maoDeObra = clone.maoDeObra || { tipo: '', valor: 0, label: '', raw_value: '' };
+          clone.items = Array.isArray(clone.items) ? clone.items : [];
+          clone.tiposDeServico = Array.isArray(clone.tiposDeServico) ? clone.tiposDeServico : [];
+          appState.currentOrcamento = clone;
+
+          if (clone.cliente?.id && Array.from(clienteSelect.options).some(o => o.value === clone.cliente.id)) {
+            clienteSelect.value = clone.cliente.id;
+          } else { clienteSelect.value = ''; }
+
+          const obraRadio = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
+          if (obraRadio) obraRadio.checked = true;
+
+          const mao = clone.maoDeObra;
+          if (mao && mao.tipo) {
+            const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${mao.tipo}"]`);
+            if (tipoServicoRadio) {
+              tipoServicoRadio.checked = true;
+              const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+              set('empreitada-valor', mao.tipo === 'empreitada' ? mao.raw_value : '');
+              set('diaria-qtd',       mao.tipo === 'diaria'    ? mao.raw_value : '');
+              set('ponto-qtd',        mao.tipo === 'ponto'     ? mao.raw_value : '');
+              set('hora-qtd',         mao.tipo === 'hora'      ? mao.raw_value : '');
             }
+          }
 
-            // --- INICIALIZAÇÃO DO FIREBASE ---
-            async function initializeFirebase() {
-                try {
-                    // VERIFICA SE AS CHAVES FORAM PREENCHIDAS
-                    if (firebaseConfig.apiKey === "COLE-SUA-CHAVE-AQUI") {
-                        loadingOverlay.innerHTML = '<p class="text-red-600 font-semibold p-4 text-center">Erro Crítico: As chaves do Firebase não foram configuradas no código. Siga o guia para adicioná-las.</p>';
-                        return;
-                    }
-
-                    app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-
-                    onAuthStateChanged(auth, (user) => {
-                        if (user) {
-                            userId = user.uid;
-                            userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
-                            loadingOverlay.querySelector('p').textContent = 'Carregando seus dados...';
-                            loadAllData();
-                            loginView.classList.add('hidden');
-                            appView.classList.remove('hidden');
-                            loadingOverlay.style.display = 'none';
-                        } else {
-                            userId = null;
-                            loginView.classList.remove('hidden');
-                            appView.classList.add('hidden');
-                            loadingOverlay.style.display = 'none';
-                        }
-                    });
-                } catch (error) {
-                    console.error("Erro ao inicializar Firebase:", error);
-                    loadingOverlay.innerHTML = '<p class="text-red-600">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
-                }
-            }
-            
-            // --- FUNÇÕES DE LOGIN / LOGOUT ---
-            const loginWithGoogle = async () => {
-                const provider = new GoogleAuthProvider();
-                try {
-                    loadingOverlay.style.display = 'flex';
-                    await signInWithPopup(auth, provider);
-                } catch (error) {
-                    console.error("Erro ao fazer login com Google:", error);
-                    alert("Não foi possível fazer o login com Google. Tente novamente.");
-                    loadingOverlay.style.display = 'none';
-                }
-            };
-
-            const logout = async () => {
-                if (confirm("Tem certeza que deseja sair da sua conta?")) {
-                    try {
-                        await signOut(auth);
-                    } catch (error) {
-                        console.error("Erro ao fazer logout:", error);
-                        alert("Ocorreu um erro ao sair. Tente novamente.");
-                    }
-                }
-            };
-
-            loginButton.addEventListener('click', loginWithGoogle);
-            logoutButton.addEventListener('click', logout);
-            
-            // --- CARREGAMENTO DE DADOS ---
-            function loadAllData() {
-                if (!userId) return;
-                const dbPathPrefix = `users/${userId}`;
-
-                onSnapshot(doc(db, `${dbPathPrefix}/config/main`), (docSnap) => {
-                    if (docSnap.exists()) appState.config = docSnap.data();
-                    updateConfigForm();
-                });
-
-                onSnapshot(query(collection(db, `${dbPathPrefix}/clientes`)), (snapshot) => {
-                    appState.clientes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderClientesList();
-                });
-
-                onSnapshot(query(collection(db, `${dbPathPrefix}/materiais`)), (snapshot) => {
-                    appState.materiais = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderMateriaisList();
-                });
-
-                onSnapshot(query(collection(db, `${dbPathPrefix}/tiposdeservico`)), (snapshot) => {
-                    appState.tiposDeServico = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderTiposDeServicoList();
-                });
-
-                onSnapshot(query(collection(db, `${dbPathPrefix}/orcamentos`)), (snapshot) => {
-                    appState.orcamentos = snapshot.docs.map(doc => {
-                        const data = doc.data();
-                        if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
-                        return { id: doc.id, ...data };
-                    });
-                    appState.orcamentos.sort((a, b) => (b.numeroOrcamento || 0) - (a.numeroOrcamento || 0));
-                    renderOrcamentosList();
-                    renderOrcamentosList(true); // Renderiza também na página de todos os orçamentos
-                });
-            }
-
-            // --- LÓGICA DE NEGÓCIO E RENDERIZAÇÃO ---
-            // Helpers de compatibilidade (descricao/submenu)
-            const getDescricao = (s) => (s.descricao ?? s.submenu ?? s.nome ?? '');
-            const normalizeService = (s) => ({
-                id: s.id,
-                categoria: (s.categoria||'').toUpperCase(),
-                descricao: getDescricao(s),
-                submenu: getDescricao(s),
-                nome: s.nome ?? getDescricao(s),
-                valor: Number(s.valor)||0
+          setTimeout(() => {
+            (clone.items || []).forEach(item => {
+              const cb  = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
+              const qty = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
+              if (cb) cb.checked = true;
+              if (qty) { qty.disabled = false; qty.value = item.quantidade ?? 1; }
             });
-            
-            function updateConfigForm() {
-                if (appState.config) {
-                    document.getElementById('config-nome').value = appState.config.nome || '';
-                    document.getElementById('config-telefone').value = appState.config.telefone || '';
-                    document.getElementById('config-doc').value = appState.config.doc || '';
-                    document.getElementById('config-endereco').value = appState.config.endereco || '';
-                    document.getElementById('config-logo').value = appState.config.logo || '';
-                    document.getElementById('config-residencial-diaria').value = appState.config.residencial_diaria || '';
-                    document.getElementById('config-residencial-ponto').value = appState.config.residencial_ponto || '';
-                    document.getElementById('config-residencial-hora').value = appState.config.residencial_hora || '';
-                    document.getElementById('config-industrial-diaria').value = appState.config.industrial_diaria || '';
-                    document.getElementById('config-industrial-ponto').value = appState.config.industrial_ponto || '';
-                    document.getElementById('config-industrial-hora').value = appState.config.industrial_hora || '';
-                }
-            }
-
-            document.getElementById('form-config').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!userId) return alert("Erro de autenticação. Por favor, faça login novamente.");
-                const submitButton = e.target.querySelector('button[type="submit"]');
-                const textSpan = document.getElementById('save-config-text');
-                const spinnerSpan = document.getElementById('save-config-spinner');
-                submitButton.disabled = true;
-                textSpan.classList.add('hidden');
-                spinnerSpan.classList.remove('hidden');
-                try {
-                    const configData = {
-                        nome: document.getElementById('config-nome').value,
-                        telefone: document.getElementById('config-telefone').value,
-                        doc: document.getElementById('config-doc').value,
-                        endereco: document.getElementById('config-endereco').value,
-                        logo: document.getElementById('config-logo').value,
-                        residencial_diaria: parseFloat(document.getElementById('config-residencial-diaria').value) || 0,
-                        residencial_ponto: parseFloat(document.getElementById('config-residencial-ponto').value) || 0,
-                        residencial_hora: parseFloat(document.getElementById('config-residencial-hora').value) || 0,
-                        industrial_diaria: parseFloat(document.getElementById('config-industrial-diaria').value) || 0,
-                        industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
-                        industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
-                    };
-                    await setDoc(doc(db, `users/${userId}/config/main`), configData);
-                    alert('Configurações salvas com sucesso!');
-                } catch (error) {
-                    console.error("Erro ao salvar configurações:", error);
-                    alert("Ocorreu um erro ao salvar as configurações.");
-                } finally {
-                    submitButton.disabled = false;
-                    textSpan.classList.remove('hidden');
-                    spinnerSpan.classList.add('hidden');
-                }
+            (clone.tiposDeServico || []).forEach(service => {
+              const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
+              if(checkbox) checkbox.checked = true;
             });
-            
-            document.getElementById('form-cliente').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!userId) return alert("Erro de autenticação. Por favor, faça login novamente.");
-                const submitButton = e.target.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.textContent = 'Salvando...';
-                try {
-                    const nome = document.getElementById('cliente-nome').value;
-                    const telefone = document.getElementById('cliente-telefone').value;
-                    const endereco = document.getElementById('cliente-endereco').value;
-                    const date = new Date();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const year = String(date.getFullYear()).slice(-2);
-                    const clientCount = appState.clientes.length + 1;
-                    const clientNumber = String(clientCount).padStart(2, '0');
-                    const numeroCadastro = `${clientNumber}${month}${year}`;
-                    await addDoc(collection(db, `users/${userId}/clientes`), { nome, telefone, endereco, numeroCadastro });
-                    e.target.reset();
-                } catch (error) {
-                    console.error("Erro ao salvar cliente:", error);
-                    alert("Ocorreu um erro ao salvar o cliente.");
-                } finally {
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Salvar Cliente';
-                }
-            });
-            
-            function renderClientesList() {
-                const listEl = document.getElementById('clientes-list');
-                if (appState.clientes.length === 0) {
-                    listEl.innerHTML = '<p class="text-gray-500">Nenhum cliente cadastrado.</p>';
-                    return;
-                }
-                listEl.innerHTML = appState.clientes.map(c => `
-                    <div class="flex justify-between items-center p-2 border rounded-md">
-                        <div>
-                            <p class="font-medium">${c.nome} <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">${c.numeroCadastro || ''}</span></p>
-                            <p class="text-sm text-gray-600">${c.telefone} | ${c.endereco}</p>
-                        </div>
-                        <button onclick="deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700 text-2xl">&times;</button>
-                    </div>
-                `).join('');
-            }
+            const tipoObraWrap = document.getElementById('orc-tipo-obra');
+            if (tipoObraWrap) tipoObraWrap.dispatchEvent(new Event('change', { bubbles: true }));
+            calculateMaoDeObra();
+            updateOrcamentoPreview();
+          }, 300);
+        } else {
+          document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
+          resetCurrentOrcamento();
+          const obraRadio = document.querySelector(`input[name="tipo-obra"][value="residencial"]`);
+          if (obraRadio) obraRadio.checked = true;
+          updateOrcamentoPreview();
+        }
+      } catch (err) {
+        console.error("[openOrcamentoModal] Erro:", err);
+        alert("Ocorreu um erro ao abrir o modal. Veja o console para detalhes.");
+      }
+    };
 
-            window.deleteCliente = async (id) => {
-                 if(confirm("Tem certeza que deseja excluir este cliente?")) {
-                    await deleteDoc(doc(db, `users/${userId}/clientes/${id}`));
-                 }
-            };
-            
-            document.getElementById('form-material').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!userId) return alert("Erro de autenticação. Por favor, faça login novamente.");
-                const submitButton = e.target.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.textContent = 'Salvando...';
-                try {
-                    const nome = document.getElementById('material-nome').value;
-                    const valor = parseFloat(document.getElementById('material-valor').value);
-                    const unidade = document.getElementById('material-unidade').value;
-                    await addDoc(collection(db, `users/${userId}/materiais`), { nome, valor, unidade });
-                    e.target.reset();
-                } catch (error) {
-                    console.error("Erro ao salvar material:", error);
-                    alert("Ocorreu um erro ao salvar o item.");
-                } finally {
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Salvar Item';
-                }
-            });
+    window.closeOrcamentoModal = () => {
+      document.getElementById('orcamento-modal').classList.remove('active');
+      resetCurrentOrcamento();
+      document.getElementById('orc-cliente-select').value = '';
+      const materiaisList = document.querySelector('#orc-materiais-list');
+      if (materiaisList) {
+        materiaisList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        materiaisList.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
+      }
+      const tiposServicoList = document.querySelector('#orc-tiposdeservico-list');
+      if (tiposServicoList) { tiposServicoList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); }
+      document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
+      document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
+      document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
+    };
 
-            function renderMateriaisList() {
-                 const listEl = document.getElementById('materiais-list');
-                 if (appState.materiais.length === 0) {
-                    listEl.innerHTML = '<p class="text-gray-500">Nenhum material cadastrado.</p>';
-                    return;
-                 }
-                 listEl.innerHTML = appState.materiais.map(m => `
-                    <div class="flex justify-between items-center p-2 border rounded-md">
-                        <p>${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</p>
-                        <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 text-2xl">&times;</button>
-                    </div>
-                 `).join('');
-            }
-            
-            window.deleteMaterial = async (id) => {
-                if(confirm("Tem certeza que deseja excluir este item?")) {
-                    await deleteDoc(doc(db, `users/${userId}/materiais/${id}`));
-                }
-            };
-            
-            // --- LÓGICA DE TIPOS DE SERVIÇO ---
-            document.getElementById('form-tiposervico').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!userId) return alert("Erro de autenticação. Por favor, faça login novamente.");
-                const submitButton = e.target.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.textContent = 'Salvando...';
-                try {
-                    const nome = document.getElementById('tiposervico-nome').value;
-                    const valor = parseFloat(document.getElementById('tiposervico-valor').value);
-                    const subSelect = document.getElementById('tiposervico-descricao-select');
-                    const subNew = document.getElementById('tiposervico-descricao-new');
-                    const descricao = (subSelect.value === 'new_descricao') ? (subNew.value||'').trim() : (subSelect.value||'').trim();
-                    const nomeCampo = (document.getElementById('tiposervico-nome')?.value || '').trim();
-                    const payload = { categoria, descricao, submenu: descricao, nome: nomeCampo || descricao, valor };
-                    await addDoc(collection(db, `users/${userId}/tiposdeservico`), payload);
-                    e.target.reset();
-                } catch (error) {
-                    console.error("Erro ao salvar tipo de serviço:", error);
-                    alert("Ocorreu um erro ao salvar o tipo de serviço.");
-                } finally {
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Salvar';
-                }
-            });
+    function populateClienteSelect() {
+      const selectEl = document.getElementById('orc-cliente-select');
+      selectEl.innerHTML = '<option value="">Selecione um cliente</option>';
+      appState.clientes.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.id; option.textContent = c.nome; selectEl.appendChild(option);
+      });
+    }
 
-            
-            function renderTiposDeServicoList() {
-                const listEl = document.getElementById('tiposdeservico-list');
-                if (appState.tiposDeServico.length === 0) {
-                    listEl.innerHTML = '<p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>';
-                    return;
-                }
-                const normalized = appState.tiposDeServico.map(normalizeService);
-                const byCat = normalized.reduce((acc, s) => { const k = s.categoria || 'OUTROS'; (acc[k]||(acc[k]=[])).push(s); return acc; }, {});
-                const cats = Object.keys(byCat).sort();
-                listEl.innerHTML = cats.map(categoria => {
-                    const byDesc = byCat[categoria].reduce((acc,s)=>{ const k = s.descricao || 'SEM DESCRIÇÃO'; (acc[k]||(acc[k]=[])).push(s); return acc; }, {});
-                    const descs = Object.keys(byDesc).sort();
-                    return `
-                        <details class="group border rounded-md mb-2">
-                            <summary class="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-gray-100">
-                                <span class="text-sm font-medium text-gray-800">${categoria}</span>
-                                <svg class="w-4 h-4 transition-transform duration-200 arrow-down" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                            </summary>
-                            <div class="p-2">
-                                ${descs.map(d => {
-                                    const s = byDesc[d][0];
-                                    return `
-                                        <div class="flex justify-between items-center p-1 border-b border-gray-100">
-                                            <p class="servico-slim">${d} — <small>R$ ${Number(s.valor).toFixed(2)}</small></p>
-                                            <button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500 hover:text-red-700 text-xl leading-none">&times;</button>
-                                        </div>`;
-                                }).join('')}
-                            </div>
-                        </details>`;
-                }).join('');
-            }
-    
-                listEl.innerHTML = appState.tiposDeServico.map(s => `
-                    <div class="flex justify-between items-center p-2 border rounded-md">
-                        <p>${s.nome} - R$ ${s.valor.toFixed(2)}</p>
-                        <button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500 hover:text-red-700 text-2xl">&times;</button>
-                    </div>
-                `).join('');
-            }
+    function populateMateriaisOrcamento() {
+      const listEl = document.getElementById('orc-materiais-list');
+      if (!appState.materiais.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum material cadastrado.</p>'; return; }
+      listEl.innerHTML = appState.materiais.map(m => `
+        <div class="flex items-center justify-between p-2 rounded-md hover:bg-gray-100">
+          <label class="flex items-center flex-grow cursor-pointer">
+            <input type="checkbox" data-id="${m.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+            <span class="ml-3 text-xs">${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</span>
+          </label>
+          <input type="number" min="1" value="1" data-id="${m.id}" class="w-20 p-1 border rounded-md text-sm ml-2" disabled>
+        </div>`).join('');
+    }
 
-            window.deleteTipoDeServico = async (id) => {
-                if(confirm("Tem certeza que deseja excluir este tipo de serviço?")) {
-                    await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`));
-                }
-            };
+    // ATUALIZADO: Função removida (era para agrupar por submenu)
+    /*
+    function nestedGroup(arr) {
+      const byCat = arr.reduce((acc, s) => { const k = s.categoria || 'OUTROS'; (acc[k]||(acc[k]=[])).push(s); return acc; }, {});
+      const out = {};
+      Object.keys(byCat).forEach(cat => {
+        out[cat] = byCat[cat].reduce((acc, s) => { const k = s.submenu || ''; (acc[k]||(acc[k]=[])).push(s); return acc; }, {});
+      });
+      return out;
+    }
+    */
 
-            // --- LÓGICA DO ORÇAMENTO ---
-            
-            function renderOrcamentosList(isFullList = false) {
-                const listEl = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
-                
-                const orcamentosToShow = isFullList ? appState.orcamentos : appState.orcamentos.slice(0, 3);
+    // ATUALIZADO: Renderiza lista do modal com 2 níveis (Categoria > Descrição) e usa s.descricao
+    function populateTiposDeServicoOrcamento() {
+      const listEl = document.getElementById('orc-tiposdeservico-list');
+      if (!appState.tiposDeServico.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum tipo de serviço cadastrado em Ajustes.</p>'; return; }
 
-                if (orcamentosToShow.length === 0) {
-                    const emptyHtml = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`;
-                    if(listEl) listEl.innerHTML = emptyHtml;
-                    return;
-                }
+      const grouped = groupBy(appState.tiposDeServico, 'categoria');
+      const cats = Object.keys(grouped).sort();
+      listEl.innerHTML = cats.map(cat => {
+        const servicos = grouped[cat].sort((a,b) => (a.descricao || '').localeCompare(b.descricao || ''));
+        return `
+          <details class="group border rounded">
+            <summary class="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-200 rounded-md">
+              <span class="font-medium text-sm text-gray-700">${cat}</span>
+              <svg class="w-4 h-4 arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+            </summary>
+            <div class="pl-3 pb-2">
+              ${
+                servicos.map(s => `
+                  <label class="flex items-center p-1 rounded-md hover:bg-gray-100 cursor-pointer">
+                    <input type="checkbox" data-id="${s.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <span class="ml-2 servico-slim">${s.descricao} - R$ ${s.valor.toFixed(2)}</span>
+                  </label>
+                `).join('')
+              }
+            </div>
+          </details>`;
+      }).join('');
+    }
 
-                listEl.innerHTML = orcamentosToShow.map((orc, index) => {
-                    const globalIndex = appState.orcamentos.findIndex(o => o.id === orc.id);
-                    const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
-                    const numeroFormatado = String(orc.numeroOrcamento || '').padStart(2, '0');
-                    const versaoFormatada = String(orc.versao || 1).padStart(2, '0');
-                    const date = orc.createdAt || new Date();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const year = String(date.getFullYear()).slice(-2);
-                    const orcamentoIdCompleto = `OS${numeroFormatado}${month}${year}-${versaoFormatada}`;
-                    
-                    let nomeCompleto = cliente ? cliente.nome : 'Cliente Excluído';
-                    const nomes = nomeCompleto.split(' ');
-                    const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
+    // Filtro de serviços por texto
+    document.getElementById('filter-tipos').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const boxes = document.querySelectorAll('#orc-tiposdeservico-list label span');
+      boxes.forEach(span => {
+        const row = span.closest('label');
+        row.style.display = span.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
 
-                    return `
-                    <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
-                        <div class="flex justify-between items-baseline w-full">
-                            <p class="font-medium text-lg text-gray-800">${nomeAbreviado}</p>
-                            <p class="text-sm text-gray-500">${orcamentoIdCompleto}</p>
-                        </div>
-                        <div class="flex gap-2 self-end">
-                            <button onclick="editOrcamento(${globalIndex})" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
-                            <button onclick="deleteOrcamento('${orc.id}')" class="bg-red-500 text-white px-4 py-1 rounded-md text-sm hover:bg-red-600">Excluir</button>
-                        </div>
-                    </div>
-                    `;
-                }).join('');
-            }
-            
-            window.showAllOrcamentosPage = () => {
-                mainView.classList.add('hidden');
-                allOrcamentosView.classList.remove('hidden');
-                renderOrcamentosList(true);
-            }
+    // Interações do modal com materiais e serviços
+    document.getElementById('orc-materiais-list').addEventListener('input', (e) => {
+      const target = e.target;
+      const materialId = target.dataset.id;
+      const material = appState.materiais.find(m => m.id === materialId);
+      if (!material) return;
+      const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${materialId}"]`);
+      if (target.type === 'checkbox') {
+        if (target.checked) {
+          qtyInput.disabled = false;
+          const newItem = { ...material, quantidade: parseInt(qtyInput.value) || 1 };
+          appState.currentOrcamento.items.push(newItem);
+        } else {
+          qtyInput.disabled = true;
+          appState.currentOrcamento.items = appState.currentOrcamento.items.filter(item => item.id !== materialId);
+        }
+      } else if (target.type === 'number') {
+        const itemInOrcamento = appState.currentOrcamento.items.find(item => item.id === materialId);
+        if (itemInOrcamento) itemInOrcamento.quantidade = parseInt(target.value) || 1;
+      }
+      updateOrcamentoPreview();
+    });
 
-            window.showMainPage = () => {
-                allOrcamentosView.classList.add('hidden');
-                mainView.classList.remove('hidden');
-            }
+    document.getElementById('orc-tiposdeservico-list').addEventListener('change', (e) => {
+      if (e.target.type === 'checkbox') {
+        const serviceId = e.target.dataset.id;
+        const service = appState.tiposDeServico.find(s => s.id === serviceId);
+        if (!service) return;
+        if (e.target.checked) {
+          if (!appState.currentOrcamento.tiposDeServico.some(s => s.id === serviceId)) {
+            appState.currentOrcamento.tiposDeServico.push(service);
+          }
+        } else {
+          appState.currentOrcamento.tiposDeServico = appState.currentOrcamento.tiposDeServico.filter(s => s.id !== serviceId);
+        }
+        updateOrcamentoPreview();
+      }
+    });
 
-            window.editOrcamento = (index) => {
-                 try {
-                    const orcamentoParaEditar = appState.orcamentos[index];
-                    if (!orcamentoParaEditar) {
-                        return alert("Orçamento não encontrado (índice inválido).");
-                    }
-                    const clienteExiste = appState.clientes.some(c => c.id === orcamentoParaEditar.cliente?.id);
-                    if (!clienteExiste) {
-                         console.warn("[Editar] Cliente vinculado foi excluído. Abrindo mesmo assim.");
-                    }
-                    console.debug("[Editar] Abrindo orçamento:", { index, orcamentoParaEditar });
-                    openOrcamentoModal(orcamentoParaEditar);
-                } catch (err) {
-                    console.error("[Editar] Falha ao abrir orçamento:", err);
-                    alert("Não foi possível abrir este orçamento para edição. Veja o console para detalhes.");
-                }
-            };
+    document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
+      if (!e.target || e.target.name !== 'tipo-obra') return;
+      const novoValor = e.target.value === 'industrial' ? 'industrial' : 'residencial';
+      if (appState.currentOrcamento) appState.currentOrcamento.tipoObra = novoValor;
+      const pontoLabel = document.getElementById('ponto-label-span');
+      const pontoQtdInput = document.getElementById('ponto-qtd');
+      if (pontoLabel) pontoLabel.textContent = novoValor === 'industrial' ? 'Por Equipamento' : 'Por Ponto';
+      if (pontoQtdInput) pontoQtdInput.placeholder = novoValor === 'industrial' ? 'Qtd. equip.' : 'Qtd. pontos';
+      calculateMaoDeObra();
+      updateOrcamentoPreview();
+    });
 
-            window.deleteOrcamento = async (id) => {
-                if(confirm("Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.")) {
-                    await deleteDoc(doc(db, `users/${userId}/orcamentos/${id}`));
-                }
-            };
+    document.getElementById('orc-mao-de-obra').addEventListener('input', () => {
+      calculateMaoDeObra();
+      updateOrcamentoPreview();
+    });
 
-            window.openOrcamentoModal = (orcamentoParaEditar = null) => {
-                 try {
-                    const modal = document.getElementById('orcamento-modal');
-                    const clienteSelect = document.getElementById('orc-cliente-select');
+    function calculateMaoDeObra() {
+      const tipoSelecionado = document.querySelector('input[name="tipo-servico"]:checked');
+      if (!appState.currentOrcamento || !tipoSelecionado) {
+        if(appState.currentOrcamento) appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
+        return;
+      }
+      const tipo = tipoSelecionado.value;
+      let valor = 0, label = '', raw_value = 0;
+      const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
+      const rates = {
+        diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
+        ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial_ponto) || 0,
+        hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0,
+      };
+      switch(tipo) {
+        case 'empreitada':
+          raw_value = parseFloat(document.getElementById('empreitada-valor').value) || 0;
+          valor = raw_value; label = 'Empreitada'; break;
+        case 'diaria':
+          raw_value = parseInt(document.getElementById('diaria-qtd').value) || 0;
+          valor = raw_value * rates.diaria; label = `${raw_value} diária(s)`; break;
+        case 'ponto':
+          raw_value = parseInt(document.getElementById('ponto-qtd').value) || 0;
+          valor = raw_value * rates.ponto; label = tipoObra === 'industrial' ? `${raw_value} equipamento(s)` : `${raw_value} ponto(s)`; break;
+        case 'hora':
+          raw_value = parseFloat(document.getElementById('hora-qtd').value) || 0;
+          valor = raw_value * rates.hora; label = `${raw_value} hora(s)`; break;
+      }
+      appState.currentOrcamento.maoDeObra = { tipo, valor, label, raw_value };
+    }
 
-                    modal.classList.add('active');
-                    populateClienteSelect();
-                    populateMateriaisOrcamento();
-                    populateTiposDeServicoOrcamento();
+    function updateOrcamentoPreview() {
+      const { config, currentOrcamento } = appState;
+      const previewEl = document.getElementById('pdf-preview');
+      if (!currentOrcamento || !currentOrcamento.cliente) {
+        previewEl.innerHTML = '<p class="text-gray-500 text-center mt-8">Selecione um cliente para começar.</p>';
+        return;
+      }
+      const fullClient = appState.clientes.find(c => c.id === currentOrcamento.cliente.id);
+      if (!fullClient) {
+        previewEl.innerHTML = '<p class="text-red-500 text-center mt-8">Cliente não encontrado. Selecione novamente.</p>';
+        return;
+      }
 
-                    if (orcamentoParaEditar) {
-                        document.getElementById('modal-title').textContent = 'Editar Orçamento';
+      let tiposDeServicoHtml = '';
+      if (currentOrcamento.tiposDeServico && currentOrcamento.tiposDeServico.length > 0) {
+        // ATUALIZADO: usa s.descricao
+        const servicosContent = currentOrcamento.tiposDeServico.map(s => `<tr><td style="padding: 4px 2px;">${s.descricao}</td><td style="text-align: right;">R$ ${s.valor.toFixed(2)}</td></tr>`).join('');
+        tiposDeServicoHtml = `
+        <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">TIPOS DE SERVIÇO:</h4>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 10px;">
+          <thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">Valor</th></tr></thead>
+          <tbody>${servicosContent}</tbody>
+        </table>
+        <hr style="margin: 15px 0;">`;
+      }
 
-                        const clone = JSON.parse(JSON.stringify(orcamentoParaEditar || {}));
-                        clone.tipoObra = (clone.tipoObra === 'industrial' || clone.tipoObra === 'residencial') ? clone.tipoObra : 'residencial';
-                        clone.maoDeObra = clone.maoDeObra || { tipo: '', valor: 0, label: '', raw_value: '' };
-                        clone.items = Array.isArray(clone.items) ? clone.items : [];
-                        clone.tiposDeServico = Array.isArray(clone.tiposDeServico) ? clone.tiposDeServico : [];
-                        appState.currentOrcamento = clone;
+      const subtotalServicos = currentOrcamento.tiposDeServico.reduce((sum, service) => sum + service.valor, 0);
+      const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
+      const itemsHtml = currentOrcamento.items.map(item => {
+        const itemTotal = item.valor * (item.quantidade || 1);
+        return `<tr>
+          <td style="padding: 4px 2px; text-align: left;">${item.nome}</td>
+          <td style="padding: 4px 2px; text-align: center;">${item.quantidade || 1} ${item.unidade || 'UNID'}</td>
+          <td style="padding: 4px 2px; text-align: right;">R$ ${item.valor.toFixed(2)}</td>
+          <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
+        </tr>`;
+      }).join('');
+      const totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
+      currentOrcamento.total = subtotalServicos + subtotalMateriais + totalMaoDeObra;
+      const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
+      previewEl.innerHTML = `
+        <div style="padding: 10px;">
+          ${config.logo ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px; margin: 0 auto;"></div>` : ''}
+          <div style="text-align: center; margin-bottom: 20px;">
+            <strong style="font-size: 1.2em; display: block;">${config.nome || 'Nome do Profissional'}</strong>
+            <span style="display: block;">${config.endereco || ''}</span>
+            <span style="display: block;">Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
+          </div>
+          <hr style="margin: 15px 0;">
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Orçamento para:</h4>
+          <strong style="display: block;">${fullClient.nome}</strong>
+          <span style="display: block;">${fullClient.endereco}</span>
+          <span style="display: block;">Telefone: ${fullClient.telefone}</span>
+          <hr style="margin: 15px 0;">
+          ${tiposDeServicoHtml}
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">DESCRIÇÃO DOS MATERIAIS:</h4>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+            ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
+          </table>
+          ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">MÃO DE OBRA:</h4>
+          <div style="text-align: right;"><span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>
+          <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #333;"><span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span></div>
+          <div style="font-size: 0.8em; margin-top: 20px; text-align: center; color: #888;">Orçamento válido por 15 dias.</div>
+        </div>`;
+    }
 
-                        if (clone.cliente?.id && Array.from(clienteSelect.options).some(o => o.value === clone.cliente.id)) {
-                            clienteSelect.value = clone.cliente.id;
-                        } else {
-                            clienteSelect.value = '';
-                        }
+    window.saveOrcamento = async () => {
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
+      const data = { ...appState.currentOrcamento };
+      try {
+        if (data.id) {
+          data.versao = (data.versao || 1) + 1;
+          const ref = doc(db, `users/${userId}/orcamentos/${data.id}`);
+          delete data.createdAt;
+          await setDoc(ref, data, { merge: true });
+          alert('Orçamento atualizado!');
+        } else {
+          const maxNumero = appState.orcamentos.reduce((max, o) => Math.max(max, o.numeroOrcamento || 0), 0);
+          data.numeroOrcamento = maxNumero + 1;
+          data.versao = 1;
+          data.createdAt = serverTimestamp();
+          const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), data);
+          appState.currentOrcamento.id = ref.id;
+          appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
+          alert('Orçamento salvo! Você já pode gerar o PDF.');
+        }
+        closeOrcamentoModal();
+      } catch(e) {
+        console.error(e); alert('Erro ao salvar.');
+      }
+    };
 
-                        const obraRadio = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
-                        if (obraRadio) obraRadio.checked = true;
+    window.shareOrViewPDF = async () => {
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+      const hidden = document.createElement('div');
+      hidden.style.position = 'absolute'; hidden.style.left = '-9999px'; hidden.style.top = '-9999px';
+      hidden.style.width = '210mm';
+      hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
+      document.body.appendChild(hidden);
+      const { jsPDF } = window.jspdf;
+      const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
+      const fileName = `orcamento-${clienteNome}.pdf`;
+      try {
+        const canvas = await html2canvas(hidden, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        if (navigator.share && navigator.canShare) {
+          const blob = pdf.output('blob');
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ title: `Orçamento - ${clienteNome}`, text: 'Segue o orçamento em anexo.', files: [file] });
+            document.body.removeChild(hidden);
+            return;
+          }
+        }
+        pdf.save(fileName);
+      } catch(e) {
+        console.error(e);
+        if (e.name !== 'AbortError') alert('Erro ao gerar o PDF.');
+      } finally {
+        document.body.removeChild(hidden);
+      }
+    };
 
-                        const mao = clone.maoDeObra;
-                        if (mao && mao.tipo) {
-                            const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${mao.tipo}"]`);
-                            if (tipoServicoRadio) {
-                                tipoServicoRadio.checked = true;
-                                const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
-                                set('empreitada-valor', mao.tipo === 'empreitada' ? mao.raw_value : '');
-                                set('diaria-qtd',       mao.tipo === 'diaria'    ? mao.raw_value : '');
-                                set('ponto-qtd',        mao.tipo === 'ponto'     ? mao.raw_value : '');
-                                set('hora-qtd',         mao.tipo === 'hora'      ? mao.raw_value : '');
-                            }
-                        }
+    window.sendWhatsAppText = () => {
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
+      const fullClient = appState.clientes.find(c => c.id === appState.currentOrcamento.cliente.id);
+      if (!fullClient) return alert('Cliente não encontrado.');
+      const telefone = fullClient.telefone.replace(/\D/g, '');
+      const nomeProfissional = appState.config.nome || 'nós';
+      const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
+      const whatsappUrl = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
+      window.open(whatsappUrl, '_blank');
+    };
 
-                        setTimeout(() => {
-                            (clone.items || []).forEach(item => {
-                                const cb  = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
-                                const qty = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
-                                if (cb) cb.checked = true;
-                                if (qty) { qty.disabled = false; qty.value = item.quantidade ?? 1; }
-                            });
+    window.changeTab = (event, tabName) => {
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
+    };
 
-                            (clone.tiposDeServico || []).forEach(service => {
-                                const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
-                                if(checkbox) checkbox.checked = true;
-                            });
-
-                            const tipoObraWrap = document.getElementById('orc-tipo-obra');
-                            if (tipoObraWrap) tipoObraWrap.dispatchEvent(new Event('change', { bubbles: true }));
-                            calculateMaoDeObra();
-                            updateOrcamentoPreview();
-                        }, 300);
-
-                    } else {
-                        document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
-                        resetCurrentOrcamento();
-                        const obraRadio = document.querySelector(`input[name="tipo-obra"][value="residencial"]`);
-                        if (obraRadio) obraRadio.checked = true;
-                        updateOrcamentoPreview();
-                    }
-                } catch (err) {
-                    console.error("[openOrcamentoModal] Erro:", err);
-                    alert("Ocorreu um erro ao abrir o modal. Veja o console para detalhes.");
-                }
-            };
-
-            window.closeOrcamentoModal = () => {
-                document.getElementById('orcamento-modal').classList.remove('active');
-                resetCurrentOrcamento();
-                document.getElementById('orc-cliente-select').value = '';
-                const materiaisList = document.querySelector('#orc-materiais-list');
-                if (materiaisList) {
-                    materiaisList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-                    materiaisList.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
-                }
-                const tiposServicoList = document.querySelector('#orc-tiposdeservico-list');
-                if (tiposServicoList) {
-                    tiposServicoList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-                }
-                document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
-                document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
-                document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
-            };
-            
-            function populateClienteSelect() {
-                const selectEl = document.getElementById('orc-cliente-select');
-                selectEl.innerHTML = '<option value="">Selecione um cliente</option>';
-                appState.clientes.forEach(c => {
-                    const option = document.createElement('option');
-                    option.value = c.id;
-                    option.textContent = c.nome;
-                    selectEl.appendChild(option);
-                });
-            }
-            
-            function populateMateriaisOrcamento() {
-                const listEl = document.getElementById('orc-materiais-list');
-                if (appState.materiais.length === 0) {
-                    listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum material cadastrado.</p>';
-                    return;
-                }
-                listEl.innerHTML = appState.materiais.map(m => `
-                    <div class="flex items-center justify-between p-2 rounded-md hover:bg-gray-100">
-                        <label class="flex items-center flex-grow cursor-pointer">
-                            <input type="checkbox" data-id="${m.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                            <span class="ml-3 text-sm">${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</span>
-                        </label>
-                        <input type="number" min="1" value="1" data-id="${m.id}" class="w-20 p-1 border rounded-md text-sm ml-2" disabled>
-                    </div>
-                `).join('');
-            }
-
-             
-            function populateTiposDeServicoOrcamento() {
-                const listEl = document.getElementById('orc-tiposdeservico-list');
-                if (appState.tiposDeServico.length === 0) {
-                    listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum tipo de serviço cadastrado em Ajustes.</p>';
-                    return;
-                }
-                const normalized = appState.tiposDeServico.map(normalizeService);
-                const byCat = normalized.reduce((acc,s)=>{ const k=s.categoria||'OUTROS'; (acc[k]||(acc[k]=[])).push(s); return acc; },{});
-                const cats = Object.keys(byCat).sort();
-                listEl.innerHTML = cats.map(cat => {
-                    const items = byCat[cat].sort((a,b)=> a.descricao.localeCompare(b.descricao));
-                    return `
-                        <details class="group border rounded">
-                            <summary class="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-200 rounded-md">
-                                <span class="font-medium text-sm text-gray-700">${cat}</span>
-                                <svg class="w-4 h-4 transition-transform duration-200 arrow-down" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                            </summary>
-                            <div class="pl-3 pb-2">
-                                ${items.map(s => `
-                                    <label class="flex items-center p-1 rounded-md hover:bg-gray-100 cursor-pointer">
-                                        <input type="checkbox" data-id="${s.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                        <span class="ml-2 servico-slim">${s.descricao} - R$ ${Number(s.valor).toFixed(2)}</span>
-                                    </label>`).join('')}
-                            </div>
-                        </details>`;
-                }).join('');
-            }
-    
-                listEl.innerHTML = appState.tiposDeServico.map(s => `
-                    <label class="flex items-center p-2 rounded-md hover:bg-gray-100 cursor-pointer">
-                        <input type="checkbox" data-id="${s.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <span class="ml-3 text-sm">${s.nome} - R$ ${s.valor.toFixed(2)}</span>
-                    </label>
-                `).join('');
-            }
-
-            document.getElementById('orc-cliente-select').addEventListener('change', (e) => {
-                const clienteId = e.target.value;
-                const clienteSelecionado = appState.clientes.find(c => c.id === clienteId) || null;
-                if(clienteSelecionado) {
-                    appState.currentOrcamento.cliente = { id: clienteSelecionado.id, nome: clienteSelecionado.nome };
-                } else {
-                    appState.currentOrcamento.cliente = null;
-                }
-                updateOrcamentoPreview();
-            });
-
-            document.getElementById('orc-materiais-list').addEventListener('input', (e) => {
-                const target = e.target;
-                const materialId = target.dataset.id;
-                const material = appState.materiais.find(m => m.id === materialId);
-                if (!material) return;
-                const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${materialId}"]`);
-                if (target.type === 'checkbox') {
-                    if (target.checked) {
-                        qtyInput.disabled = false;
-                        const newItem = { ...material, quantidade: parseInt(qtyInput.value) || 1 };
-                        appState.currentOrcamento.items.push(newItem);
-                    } else {
-                        qtyInput.disabled = true;
-                        appState.currentOrcamento.items = appState.currentOrcamento.items.filter(item => item.id !== materialId);
-                    }
-                } else if (target.type === 'number') {
-                    const itemInOrcamento = appState.currentOrcamento.items.find(item => item.id === materialId);
-                    if (itemInOrcamento) itemInOrcamento.quantidade = parseInt(target.value) || 1;
-                }
-                updateOrcamentoPreview();
-            });
-            
-            document.getElementById('orc-tiposdeservico-list').addEventListener('change', (e) => {
-                 if (e.target.type === 'checkbox') {
-                     const serviceId = e.target.dataset.id;
-                     const service = appState.tiposDeServico.find(s => s.id === serviceId);
-                     if (!service) return;
-
-                     if (e.target.checked) {
-                        if (!appState.currentOrcamento.tiposDeServico.some(s => s.id === serviceId)) {
-                            appState.currentOrcamento.tiposDeServico.push(service);
-                        }
-                     } else {
-                         appState.currentOrcamento.tiposDeServico = appState.currentOrcamento.tiposDeServico.filter(s => s.id !== serviceId);
-                     }
-                     updateOrcamentoPreview();
-                 }
-            });
-
-
-            document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
-              if (!e.target || e.target.name !== 'tipo-obra') return;
-
-              const novoValor = e.target.value === 'industrial' ? 'industrial' : 'residencial';
-              if (appState.currentOrcamento) appState.currentOrcamento.tipoObra = novoValor;
-
-              const pontoLabel    = document.getElementById('ponto-label-span');
-              const pontoQtdInput = document.getElementById('ponto-qtd');
-              if (pontoLabel)     pontoLabel.textContent = novoValor === 'industrial' ? 'Por Equipamento' : 'Por Ponto';
-              if (pontoQtdInput)  pontoQtdInput.placeholder = novoValor === 'industrial' ? 'Qtd. equip.' : 'Qtd. pontos';
-
-              calculateMaoDeObra();
-              updateOrcamentoPreview();
-            });
-
-            document.getElementById('orc-mao-de-obra').addEventListener('input', () => {
-                 calculateMaoDeObra();
-                 updateOrcamentoPreview();
-            });
-            
-            function calculateMaoDeObra() {
-                const tipoSelecionado = document.querySelector('input[name="tipo-servico"]:checked');
-                if (!appState.currentOrcamento || !tipoSelecionado) {
-                     if(appState.currentOrcamento) appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
-                     return;
-                }
-                const tipo = tipoSelecionado.value;
-                let valor = 0, label = '', raw_value = 0;
-                const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
-                const rates = {
-                    diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
-                    ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial_ponto) || 0,
-                    hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0,
-                };
-                switch(tipo) {
-                    case 'empreitada':
-                        raw_value = parseFloat(document.getElementById('empreitada-valor').value) || 0;
-                        valor = raw_value;
-                        label = 'Empreitada';
-                        break;
-                    case 'diaria':
-                        raw_value = parseInt(document.getElementById('diaria-qtd').value) || 0;
-                        valor = raw_value * rates.diaria;
-                        label = `${raw_value} diária(s)`;
-                        break;
-                    case 'ponto':
-                        raw_value = parseInt(document.getElementById('ponto-qtd').value) || 0;
-                        valor = raw_value * rates.ponto;
-                        label = tipoObra === 'industrial' ? `${raw_value} equipamento(s)` : `${raw_value} ponto(s)`;
-                        break;
-                    case 'hora':
-                        raw_value = parseFloat(document.getElementById('hora-qtd').value) || 0;
-                        valor = raw_value * rates.hora;
-                        label = `${raw_value} hora(s)`;
-                        break;
-                }
-                appState.currentOrcamento.maoDeObra = { tipo, valor, label, raw_value };
-            }
-
-            function updateOrcamentoPreview() {
-                const { config, currentOrcamento } = appState;
-                const previewEl = document.getElementById('pdf-preview');
-                if (!currentOrcamento || !currentOrcamento.cliente) {
-                    previewEl.innerHTML = '<p class="text-gray-500 text-center mt-8">Selecione um cliente para começar.</p>';
-                    return;
-                }
-                const fullClient = appState.clientes.find(c => c.id === currentOrcamento.cliente.id);
-                if (!fullClient) {
-                     previewEl.innerHTML = '<p class="text-red-500 text-center mt-8">Cliente não encontrado. Selecione novamente.</p>';
-                    return;
-                }
-
-                let tiposDeServicoHtml = '';
-                if (currentOrcamento.tiposDeServico && currentOrcamento.tiposDeServico.length > 0) {
-                    const servicosContent = currentOrcamento.tiposDeServico.map(s => `<tr><td style="padding: 4px 2px;">${s.nome}</td><td style="text-align: right;">R$ ${s.valor.toFixed(2)}</td></tr>`).join('');
-                    tiposDeServicoHtml = `
-                    <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">TIPOS DE SERVIÇO:</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 10px;">
-                        <thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">Valor</th></tr></thead>
-                        <tbody>${servicosContent}</tbody>
-                    </table>
-                    <hr style="margin: 15px 0;">`;
-                }
-
-                const subtotalServicos = currentOrcamento.tiposDeServico.reduce((sum, service) => sum + service.valor, 0);
-                const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
-                const itemsHtml = currentOrcamento.items.map(item => {
-                    const itemTotal = item.valor * (item.quantidade || 1);
-                    return `<tr>
-                            <td style="padding: 4px 2px; text-align: left;">${item.nome}</td>
-                            <td style="padding: 4px 2px; text-align: center;">${item.quantidade || 1} ${item.unidade || 'UNID'}</td>
-                            <td style="padding: 4px 2px; text-align: right;">R$ ${item.valor.toFixed(2)}</td>
-                            <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
-                        </tr>`;
-                }).join('');
-                const totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
-                currentOrcamento.total = subtotalServicos + subtotalMateriais + totalMaoDeObra;
-                const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
-                previewEl.innerHTML = `
-                    <div style="padding: 10px;">
-                        ${config.logo ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px; margin: 0 auto;"></div>` : ''}
-                        <div style="text-align: center; margin-bottom: 20px;">
-                            <strong style="font-size: 1.2em; display: block;">${config.nome || 'Nome do Profissional'}</strong>
-                            <span style="display: block;">${config.endereco || ''}</span>
-                            <span style="display: block;">Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
-                        </div>
-                        <hr style="margin: 15px 0;">
-                        <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Orçamento para:</h4>
-                        <strong style="display: block;">${fullClient.nome}</strong>
-                        <span style="display: block;">${fullClient.endereco}</span>
-                        <span style="display: block;">Telefone: ${fullClient.telefone}</span>
-                        <hr style="margin: 15px 0;">
-                        ${tiposDeServicoHtml}
-                        <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">DESCRIÇÃO DOS MATERIAIS:</h4>
-                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
-                           ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
-                        </table>
-                        ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}
-                        <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">MÃO DE OBRA:</h4>
-                        <div style="text-align: right;"><span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>
-                        <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #333;"><span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span></div>
-                        <div style="font-size: 0.8em; margin-top: 20px; text-align: center; color: #888;">Orçamento válido por 15 dias.</div>
-                    </div>`;
-            }
-
-            window.saveOrcamento = async () => {
-                if (!appState.currentOrcamento.cliente) return alert("Selecione um cliente para salvar o orçamento.");
-                const orcamentoData = { ...appState.currentOrcamento };
-                try {
-                    if (orcamentoData.id) {
-                        orcamentoData.versao = (orcamentoData.versao || 1) + 1;
-                        const orcamentoRef = doc(db, `users/${userId}/orcamentos/${orcamentoData.id}`);
-                        delete orcamentoData.createdAt; // Não atualiza data de criação
-                        await setDoc(orcamentoRef, orcamentoData, { merge: true });
-                        alert("Orçamento atualizado com sucesso!");
-                    } else {
-                        const maxNumero = appState.orcamentos.reduce((max, orc) => Math.max(max, orc.numeroOrcamento || 0), 0);
-                        orcamentoData.numeroOrcamento = maxNumero + 1;
-                        orcamentoData.versao = 1;
-                        orcamentoData.createdAt = serverTimestamp();
-                        const orcamentosRef = collection(db, `users/${userId}/orcamentos`);
-                        const docRef = await addDoc(orcamentosRef, orcamentoData);
-                        appState.currentOrcamento.id = docRef.id; // Atualiza o ID no estado atual para permitir envios imediatos
-                        appState.currentOrcamento.numeroOrcamento = orcamentoData.numeroOrcamento;
-                        alert("Orçamento salvo! Agora você pode gerar o PDF ou continuar editando.");
-                    }
-                     closeOrcamentoModal(); // Fecha o modal após salvar
-                } catch (error) {
-                    console.error("Erro ao salvar orçamento:", error);
-                    alert("Ocorreu um erro ao salvar. Tente novamente.");
-                }
-            };
-            
-            window.shareOrViewPDF = async () => {
-                 if (!appState.currentOrcamento.cliente) return alert("Selecione um cliente para gerar o PDF.");
-                 
-                 const hiddenRenderer = document.createElement('div');
-                 hiddenRenderer.style.position = 'absolute';
-                 hiddenRenderer.style.left = '-9999px';
-                 hiddenRenderer.style.top = '-9999px';
-                 hiddenRenderer.style.width = '210mm'; // A4 width
-                 hiddenRenderer.innerHTML = document.getElementById('pdf-preview').innerHTML;
-                 document.body.appendChild(hiddenRenderer);
-
-                 const { jsPDF } = window.jspdf;
-                 const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
-                 const fileName = `orcamento-${clienteNome}.pdf`;
-
-                 try {
-                    const canvas = await html2canvas(hiddenRenderer, { scale: 2 });
-                    const imgData = canvas.toDataURL('image/png');
-                    const pdf = new jsPDF('p', 'mm', 'a4');
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                    if (navigator.share && navigator.canShare) {
-                        const blob = pdf.output('blob');
-                        const file = new File([blob], fileName, { type: 'application/pdf' });
-                        if (navigator.canShare({ files: [file] })) {
-                            await navigator.share({ title: `Orçamento - ${clienteNome}`, text: 'Segue o orçamento em anexo.', files: [file] });
-                            return;
-                        }
-                    }
-                    pdf.save(fileName);
-                 } catch(e) {
-                    console.error("Erro ao gerar ou compartilhar PDF:", e);
-                    if (e.name !== 'AbortError') alert("Ocorreu um erro ao tentar gerar o PDF.");
-                 } finally {
-                    document.body.removeChild(hiddenRenderer);
-                 }
-            };
-
-            window.sendWhatsAppText = () => {
-                if (!appState.currentOrcamento.cliente) return alert("Por favor, selecione um cliente primeiro.");
-                const fullClient = appState.clientes.find(c => c.id === appState.currentOrcamento.cliente.id);
-                if (!fullClient) return alert("Cliente não encontrado.");
-                const telefone = fullClient.telefone.replace(/\D/g, '');
-                const nomeProfissional = appState.config.nome || 'nós';
-                const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
-                const whatsappUrl = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
-                window.open(whatsappUrl, '_blank');
-            };
-
-            window.changeTab = (event, tabName) => {
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
-                document.getElementById(tabName).classList.add('active');
-                document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
-            };
-
-
-            // ===== Importar Excel =====
-            document.getElementById('btn-import-xlsx')?.addEventListener('click', async () => {
-                const inp = document.getElementById('xlsx-input');
-                const status = document.getElementById('xlsx-status');
-                if (!inp?.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx'); return; }
-                const f = inp.files[0];
-                try {
-                    status.textContent = 'Lendo planilha...';
-                    const buf = await f.arrayBuffer();
-                    const wb = XLSX.read(buf, { type:'array' });
-                    const ws = wb.Sheets[wb.SheetNames[0]];
-                    const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-
-                    const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
-                    const headerMapCandidates = {
-                        categoria: ['categoria','grupo','setor'],
-                        descricao: ['descricao','descrição','submenu','subcategoria','sub-categoria','sub'],
-                        valor: ['valor','preco','preço','price']
-                    };
-
-                    const keys = rows.length ? Object.keys(rows[0]) : [];
-                    const colMap = { categoria: null, descricao: null, valor: null };
-                    keys.forEach(k => {
-                        const nk = norm(k);
-                        for (const fld of Object.keys(headerMapCandidates)) {
-                            if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k;
-                        }
-                    });
-                    if (!colMap.categoria || !colMap.descricao || !colMap.valor) {
-                        alert('A planilha deve ter: Categoria, Descrição e Valor.');
-                        return;
-                    }
-
-                    const prefix = `users/${userId}`;
-                    const batch = writeBatch(db);
-                    let count = 0;
-                    rows.forEach(r => {
-                        const categoria = String(r[colMap.categoria]||'').toUpperCase().trim();
-                        const descricao = String(r[colMap.descricao]||'').trim();
-                        const rawValor = (r[colMap.valor] ?? '').toString().replace(',', '.').replace(/\s/g,'');
-                        const valor = parseFloat(rawValor) || 0;
-                        if (!categoria || !descricao || !valor) return;
-                        const ref = doc(collection(db, `${prefix}/tiposdeservico`));
-                        const payload = { categoria, descricao, submenu: descricao, nome: descricao, valor };
-                        batch.set(ref, payload);
-                        count++;
-                    });
-                    if (!count) { alert('Nenhuma linha válida encontrada.'); return; }
-                    status.textContent = 'Enviando para o banco...';
-                    await batch.commit();
-                    status.textContent = `Importação concluída: ${count} itens adicionados.`;
-                } catch(e) {
-                    console.error(e);
-                    alert('Erro ao importar planilha.');
-                }
-            });
-
-            // --- INICIALIZAÇÃO DA PÁGINA ---
-        
-            window.onload = initializeFirebase;
-            
-        </script>
-    </body>
+    window.onload = initializeFirebase;
+  </script>
+</body>
 </html>
-
