@@ -92,15 +92,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        details > summary {
-            list-style: none;
-        }
-        details > summary::-webkit-details-marker {
-            display: none;
-        }
-        details[open] summary .arrow-down {
-            transform: rotate(180deg);
-        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -285,30 +276,18 @@
 
                          <div class="bg-white p-6 rounded-lg shadow-sm mt-4">
                              <h2 class="text-xl font-semibold mb-4">Tipos de Serviço</h2>
-                             <form id="form-tiposervico" class="space-y-4">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label for="tiposervico-categoria" class="block text-sm font-medium text-gray-700">Categoria</label>
-                                        <select id="tiposervico-categoria-select" class="w-full p-2 border rounded-md mt-1">
-                                            <option value="">Selecionar existente</option>
-                                            <option value="new_category">+ Nova Categoria</option>
-                                        </select>
-                                        <input type="text" id="tiposervico-categoria-new" placeholder="Nome da Nova Categoria" class="w-full p-2 border rounded-md mt-2 hidden">
-                                    </div>
-                                    <div>
-                                        <label for="tiposervico-nome" class="block text-sm font-medium text-gray-700">Descrição do Serviço</label>
-                                        <input type="text" id="tiposervico-nome" placeholder="Ex: Instalação de Padrão" class="w-full p-2 border rounded-md mt-1" required>
-                                    </div>
+                             <form id="form-tiposervico" class="flex items-end gap-4">
+                                <div class="flex-grow">
+                                    <label for="tiposervico-nome" class="block text-sm font-medium text-gray-700">Descrição do Serviço</label>
+                                    <input type="text" id="tiposervico-nome" placeholder="Ex: Reforma Elétrica Geral" class="w-full p-2 border rounded-md mt-1" required>
                                 </div>
-                                <div class="flex items-end gap-4">
-                                    <div class="flex-grow">
-                                        <label for="tiposervico-valor" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
-                                        <input type="number" step="0.01" id="tiposervico-valor" placeholder="150.00" class="w-full p-2 border rounded-md mt-1" required>
-                                    </div>
-                                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors h-10">Salvar</button>
+                                <div class="w-40">
+                                     <label for="tiposervico-valor" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                                    <input type="number" step="0.01" id="tiposervico-valor" placeholder="150.00" class="w-full p-2 border rounded-md mt-1" required>
                                 </div>
+                                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors h-10">Salvar</button>
                             </form>
-                            <div id="tiposdeservico-list" class="space-y-2 mt-6">
+                            <div id="tiposdeservico-list" class="space-y-2 mt-4">
                                 <p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>
                             </div>
                         </div>
@@ -354,7 +333,7 @@
                         
                          <div>
                             <h4 class="text-md font-medium text-gray-800 mb-2">2. Tipo de Serviço</h4>
-                            <div id="orc-tiposdeservico-list" class="h-48 overflow-y-auto border rounded-md p-2 space-y-1 bg-gray-50">
+                            <div id="orc-tiposdeservico-list" class="h-24 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50">
                                <!-- Checkbox list here -->
                             </div>
                         </div>
@@ -451,7 +430,7 @@
             // --- IMPORTAÇÕES DO FIREBASE ---
             import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
             import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-            import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+            import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
             import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
             
             // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
@@ -506,15 +485,12 @@
                     db = getFirestore(app);
                     auth = getAuth(app);
 
-                    onAuthStateChanged(auth, async (user) => {
+                    onAuthStateChanged(auth, (user) => {
                         if (user) {
                             userId = user.uid;
                             userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
                             loadingOverlay.querySelector('p').textContent = 'Carregando seus dados...';
-                            
-                            await prepopulateInitialData();
                             loadAllData();
-                            
                             loginView.classList.add('hidden');
                             appView.classList.remove('hidden');
                             loadingOverlay.style.display = 'none';
@@ -581,7 +557,6 @@
                 onSnapshot(query(collection(db, `${dbPathPrefix}/tiposdeservico`)), (snapshot) => {
                     appState.tiposDeServico = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     renderTiposDeServicoList();
-                    populateCategorySelect();
                 });
 
                 onSnapshot(query(collection(db, `${dbPathPrefix}/orcamentos`)), (snapshot) => {
@@ -747,38 +722,17 @@
                 const submitButton = e.target.querySelector('button[type="submit"]');
                 submitButton.disabled = true;
                 submitButton.textContent = 'Salvando...';
-                
-                const categoriaSelect = document.getElementById('tiposervico-categoria-select');
-                const categoriaNovaInput = document.getElementById('tiposervico-categoria-new');
-                let categoria = categoriaSelect.value === 'new_category' ? categoriaNovaInput.value.trim() : categoriaSelect.value;
-                categoria = categoria.toUpperCase();
-
                 try {
                     const nome = document.getElementById('tiposervico-nome').value;
                     const valor = parseFloat(document.getElementById('tiposervico-valor').value);
-                    if (!categoria || !nome || isNaN(valor)) {
-                        throw new Error("Todos os campos são obrigatórios.");
-                    }
-                    await addDoc(collection(db, `users/${userId}/tiposdeservico`), { nome, valor, categoria });
+                    await addDoc(collection(db, `users/${userId}/tiposdeservico`), { nome, valor });
                     e.target.reset();
-                    categoriaNovaInput.classList.add('hidden');
-                    categoriaSelect.value = '';
                 } catch (error) {
                     console.error("Erro ao salvar tipo de serviço:", error);
-                    alert("Ocorreu um erro ao salvar o tipo de serviço. Verifique se todos os campos estão preenchidos.");
+                    alert("Ocorreu um erro ao salvar o tipo de serviço.");
                 } finally {
                     submitButton.disabled = false;
                     submitButton.textContent = 'Salvar';
-                }
-            });
-            
-            document.getElementById('tiposervico-categoria-select').addEventListener('change', (e) => {
-                const newCategoryInput = document.getElementById('tiposervico-categoria-new');
-                if (e.target.value === 'new_category') {
-                    newCategoryInput.classList.remove('hidden');
-                    newCategoryInput.focus();
-                } else {
-                    newCategoryInput.classList.add('hidden');
                 }
             });
 
@@ -788,41 +742,12 @@
                     listEl.innerHTML = '<p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>';
                     return;
                 }
-                const groupedServices = appState.tiposDeServico.reduce((acc, service) => {
-                    const cat = service.categoria || 'OUTROS';
-                    if (!acc[cat]) acc[cat] = [];
-                    acc[cat].push(service);
-                    return acc;
-                }, {});
-
-                listEl.innerHTML = Object.keys(groupedServices).sort().map(categoria => `
-                    <div class="mt-4">
-                        <h3 class="font-semibold text-gray-600 border-b pb-1">${categoria}</h3>
-                        ${groupedServices[categoria].map(s => `
-                             <div class="flex justify-between items-center p-2 border-b border-gray-100">
-                                <p>${s.nome} - R$ ${s.valor.toFixed(2)}</p>
-                                <button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500 hover:text-red-700 text-2xl">&times;</button>
-                            </div>
-                        `).join('')}
+                listEl.innerHTML = appState.tiposDeServico.map(s => `
+                    <div class="flex justify-between items-center p-2 border rounded-md">
+                        <p>${s.nome} - R$ ${s.valor.toFixed(2)}</p>
+                        <button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500 hover:text-red-700 text-2xl">&times;</button>
                     </div>
                 `).join('');
-            }
-
-            function populateCategorySelect() {
-                const selectEl = document.getElementById('tiposervico-categoria-select');
-                const uniqueCategories = [...new Set(appState.tiposDeServico.map(s => s.categoria).filter(Boolean))];
-                
-                // Limpa opções antigas, exceto as duas primeiras
-                while(selectEl.options.length > 2) {
-                    selectEl.remove(2);
-                }
-
-                uniqueCategories.sort().forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    selectEl.appendChild(option);
-                });
             }
 
             window.deleteTipoDeServico = async (id) => {
@@ -836,13 +761,11 @@
             function renderOrcamentosList(isFullList = false) {
                 const listEl = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
                 
-                if (!listEl) return;
-
                 const orcamentosToShow = isFullList ? appState.orcamentos : appState.orcamentos.slice(0, 3);
 
                 if (orcamentosToShow.length === 0) {
                     const emptyHtml = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`;
-                    listEl.innerHTML = emptyHtml;
+                    if(listEl) listEl.innerHTML = emptyHtml;
                     return;
                 }
 
@@ -1036,28 +959,11 @@
                     listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum tipo de serviço cadastrado em Ajustes.</p>';
                     return;
                 }
-                 const groupedServices = appState.tiposDeServico.reduce((acc, service) => {
-                    const cat = service.categoria || 'OUTROS';
-                    if (!acc[cat]) acc[cat] = [];
-                    acc[cat].push(service);
-                    return acc;
-                }, {});
-
-                listEl.innerHTML = Object.keys(groupedServices).sort().map(categoria => `
-                    <details class="group">
-                        <summary class="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-200 rounded-md">
-                            <span class="font-medium text-sm text-gray-700">${categoria}</span>
-                            <svg class="w-4 h-4 transition-transform duration-200 arrow-down" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                        </summary>
-                        <div class="pl-4 pt-1">
-                        ${groupedServices[categoria].map(s => `
-                            <label class="flex items-center p-1 rounded-md hover:bg-gray-100 cursor-pointer">
-                                <input type="checkbox" data-id="${s.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="ml-2 text-xs">${s.nome} - R$ ${s.valor.toFixed(2)}</span>
-                            </label>
-                        `).join('')}
-                        </div>
-                    </details>
+                listEl.innerHTML = appState.tiposDeServico.map(s => `
+                    <label class="flex items-center p-2 rounded-md hover:bg-gray-100 cursor-pointer">
+                        <input type="checkbox" data-id="${s.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <span class="ml-3 text-sm">${s.nome} - R$ ${s.valor.toFixed(2)}</span>
+                    </label>
                 `).join('');
             }
 
