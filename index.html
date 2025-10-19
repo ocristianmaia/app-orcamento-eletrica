@@ -92,15 +92,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        details > summary {
-            list-style: none;
-        }
-        details > summary::-webkit-details-marker {
-            display: none;
-        }
-        details[open] summary .arrow-down {
-            transform: rotate(180deg);
-        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -762,6 +753,7 @@
                     await addDoc(collection(db, `users/${userId}/tiposdeservico`), { nome, valor, categoria });
                     e.target.reset();
                     categoriaNovaInput.classList.add('hidden');
+                    categoriaSelect.value = '';
                 } catch (error) {
                     console.error("Erro ao salvar tipo de serviço:", error);
                     alert("Ocorreu um erro ao salvar o tipo de serviço. Verifique se todos os campos estão preenchidos.");
