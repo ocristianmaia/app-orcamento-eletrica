@@ -78,7 +78,7 @@
 
         <div class="mb-6 sm:hidden space-y-2">
             <div class="grid grid-cols-3 gap-2">
-                <button class="mobile-tab active text-white p-3 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Inicial</button>
+                <button class="mobile-tab active text-white p-3 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Início</button>
                 <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-green-500" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
                 <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
             </div>
@@ -250,14 +250,16 @@
 
     <div id="all-orcamentos-view" class="hidden">
       <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
           <h2 class="text-2xl font-semibold">Todos os Orçamentos</h2>
-          <button onclick="showMainPage()" class="bg-gray-500 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-600 transition-colors font-medium">Voltar</button>
+          <div class="flex gap-2 w-full sm:w-auto justify-end">
+             <button onclick="showMainPage()" class="bg-gray-500 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-600 transition-colors font-medium">Voltar</button>
+             <button id="btn-delete-selected-orcamentos" onclick="confirmDeleteSelectedOrcamentos()" class="bg-red-600 text-white px-5 py-2 rounded-lg shadow hover:bg-red-700 transition-colors font-medium disabled:opacity-50" disabled>Excluir Selecionados</button>
+          </div>
         </div>
         <div id="all-orcamentos-list" class="space-y-3"></div>
       </div>
     </div>
-
     <div id="orcamento-modal" class="modal">
       <div class="bg-white rounded-lg p-6 w-[95%] max-w-[960px] max-height-[90vh] max-h-[90vh] overflow-y-auto shadow-xl">
         <div class="flex justify-between items-center mb-6">
@@ -383,6 +385,7 @@
     const appState = {
       config: {}, clientes: [], materiais: [], orcamentos: [],
       tiposDeServico: [], currentOrcamento: null,
+      orcamentosParaExcluir: new Set() // Novo conjunto para IDs selecionados
     };
 
     function resetCurrentOrcamento() {
@@ -490,8 +493,10 @@
           return { id: d.id, ...data };
         });
         appState.orcamentos.sort((a,b) => (b.numeroOrcamento||0) - (a.numeroOrcamento||0));
+        
+        // Atualiza ambas as listas de orçamentos (recente e completa)
         renderOrcamentosList();
-        renderOrcamentosList(true); // Renderiza a lista completa (oculta)
+        renderOrcamentosList(true); 
       });
     }
 
@@ -767,11 +772,19 @@
 
 
     // ===== Orçamentos (lista / modal etc.) =====
+    function updateDeleteButtonState() {
+        const btn = document.getElementById('btn-delete-selected-orcamentos');
+        if (btn) {
+            btn.disabled = appState.orcamentosParaExcluir.size === 0;
+        }
+    }
+
     function renderOrcamentosList(isFullList = false) {
       const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
       if (!el) return;
       const list = isFullList ? appState.orcamentos : appState.orcamentos.slice(0,3);
       if (!list.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; return; }
+      
       el.innerHTML = list.map(orc => {
         const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
         const numeroFormatado = String(orc.numeroOrcamento || '').padStart(2, '0');
@@ -783,6 +796,28 @@
         const nome = cliente ? cliente.nome : 'Cliente Excluído';
         const nomes = nome.split(' ');
         const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
+        
+        // Renderização para a lista COMPLETA (com checkbox)
+        if (isFullList) {
+            const isChecked = appState.orcamentosParaExcluir.has(orc.id);
+            return `
+              <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
+                <div class="flex justify-between items-start w-full">
+                    <label class="flex items-center cursor-pointer flex-grow">
+                        <input type="checkbox" data-id="${orc.id}" onchange="toggleOrcamentoExclusao(this)" ${isChecked ? 'checked' : ''} class="h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                        <div class="ml-3">
+                            <p class="font-medium text-lg text-gray-800">${nomeAbreviado}</p>
+                            <p class="text-sm text-gray-500">${orcamentoId}</p>
+                        </div>
+                    </label>
+                </div>
+                <div class="flex gap-2 self-end">
+                    <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+                    </div>
+              </div>`;
+        }
+        
+        // Renderização para a lista RECENTE (sem checkbox)
         return `
           <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
             <div class="flex justify-between items-baseline w-full">
@@ -791,11 +826,68 @@
             </div>
             <div class="flex gap-2 self-end">
               <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
-              <button onclick="deleteOrcamento('${orc.id}')" class="bg-red-500 text-white px-4 py-1 rounded-md text-sm hover:bg-red-600">Excluir</button>
             </div>
           </div>`;
       }).join('');
+      
+      if (isFullList) updateDeleteButtonState();
     }
+
+    // NOVO: Adiciona/remove ID para exclusão
+    window.toggleOrcamentoExclusao = (checkbox) => {
+        const id = checkbox.dataset.id;
+        if (checkbox.checked) {
+            appState.orcamentosParaExcluir.add(id);
+        } else {
+            appState.orcamentosParaExcluir.delete(id);
+        }
+        updateDeleteButtonState();
+    };
+
+    // NOVO: Confirma e executa a exclusão em lote
+    window.confirmDeleteSelectedOrcamentos = () => {
+        const count = appState.orcamentosParaExcluir.size;
+        if (count === 0) {
+            alert('Nenhum orçamento selecionado para exclusão.');
+            return;
+        }
+
+        if(confirm(`ATENÇÃO! Você irá excluir ${count} orçamento(s) selecionado(s). Esta ação é irreversível. Deseja continuar?`)) {
+            deleteOrcamentosEmLote(Array.from(appState.orcamentosParaExcluir));
+        }
+    };
+
+    // REVISADO: Função de exclusão de orçamento (agora em lote)
+    async function deleteOrcamentosEmLote(ids) {
+      if (!userId) {
+        alert('Faça login para excluir orçamentos.');
+        return;
+      }
+      
+      const btn = document.getElementById('btn-delete-selected-orcamentos');
+      btn.disabled = true;
+      
+      try {
+        const batch = writeBatch(db);
+        ids.forEach(id => {
+            const docRef = doc(db, `users/${userId}/orcamentos/${id}`);
+            batch.delete(docRef);
+        });
+        await batch.commit();
+        
+        // Limpa a seleção e atualiza a UI
+        appState.orcamentosParaExcluir.clear();
+        alert(`${ids.length} orçamento(s) excluído(s) com sucesso.`);
+        // O onSnapshot se encarrega de atualizar as listas
+      } catch (e) {
+        console.error('Erro ao excluir orçamentos em lote:', e);
+        alert('Erro ao excluir os orçamentos. Tente novamente ou verifique sua conexão com a internet.');
+      } finally {
+        btn.disabled = false;
+        updateDeleteButtonState(); // Garante que o botão seja desativado se o set estiver vazio
+      }
+    };
+
 
     window.showAllOrcamentosPage = () => {
       mainView.classList.add('hidden');
@@ -805,6 +897,8 @@
     window.showMainPage = () => {
       allOrcamentosView.classList.add('hidden');
       mainView.classList.remove('hidden');
+      appState.orcamentosParaExcluir.clear(); // Limpa a seleção ao voltar
+      updateDeleteButtonState();
     };
 
     // Função de editar orçamento
@@ -827,24 +921,8 @@
       openOrcamentoModal(orc);
     };
 
-    // REVISADO: Função de exclusão de orçamento (Ajustada para usar userId do escopo)
-    window.deleteOrcamento = async (id) => {
-      if (!userId) {
-        alert('Faça login para excluir orçamentos.');
-        return;
-      }
-      if(confirm('Excluir este orçamento? Esta ação é irreversível.')) {
-        try {
-          // A chave é garantir que 'userId' esteja acessível aqui e que o ID do documento seja o correto.
-          await deleteDoc(doc(db, `users/${userId}/orcamentos/${id}`));
-          alert('Orçamento excluído com sucesso.');
-          // O onSnapshot se encarrega de atualizar a lista (verifique se a conexão Firebase está ok se a lista não atualizar)
-        } catch (e) {
-          console.error('Erro ao excluir orçamento:', e);
-          alert('Erro ao excluir o orçamento. Tente novamente ou verifique sua conexão com a internet.');
-        }
-      }
-    };
+    // A função deleteOrcamento individual não é mais usada (exclusão por lote)
+    // window.deleteOrcamento = async (id) => { ... };
 
     window.openOrcamentoModal = (orcamentoParaEditar = null) => {
       try {
