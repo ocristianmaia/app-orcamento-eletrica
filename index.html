@@ -62,18 +62,26 @@
 
         <div class="mb-6 border-b border-gray-200 hidden sm:block">
           <nav class="flex -mb-px space-x-6">
-            <button class="tab active py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Tela Inicial</button>
+            <button class="tab active py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Orçamentos</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais/Serviços</button>
-            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Ajustes</button>
+            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="servicos" onclick="changeTab(event, 'servicos')">Serviços</button>
+            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600 flex items-center" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.525.322 1.017.575 1.558.75.244.081.503.14.767.17.844.088 1.517.766 1.517 1.61z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Configurações
+            </button>
           </nav>
         </div>
 
-        <div class="mb-6 grid grid-cols-2 sm:hidden gap-2">
-          <button class="mobile-tab active text-white p-4 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Tela Inicial</button>
-          <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-green-500" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
-          <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
-          <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-gray-500" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Ajustes</button>
+        <div class="mb-6 grid grid-cols-5 sm:hidden gap-2">
+            <button class="mobile-tab active text-white p-4 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Orçamentos</button>
+            <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-green-500" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
+            <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
+            <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-purple-500" data-tab="servicos" onclick="changeTab(event, 'servicos')">Serviços</button>
+            <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-gray-500" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Conf.</button>
         </div>
 
         <main>
@@ -89,7 +97,6 @@
             <h3 class="text-lg font-semibold text-gray-700 pt-4">Últimos 3 Orçamentos</h3>
             <div id="orcamentos-list-recent" class="space-y-3"></div>
           </div>
-
           <div id="clientes" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
               <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Cliente</h2>
@@ -133,48 +140,8 @@
             </div>
           </div>
 
-          <div id="configuracoes" class="tab-content space-y-4">
+          <div id="servicos" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
-              <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
-              <form id="form-config" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <div>
-                  <h3 class="text-lg font-medium mb-4 border-b pb-2">Seus Dados Profissionais</h3>
-                  <div class="space-y-4">
-                    <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md" required>
-                    <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md" required>
-                    <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
-                    <input type="text" id="config-endereco" placeholder="Seu Endereço" class="w-full p-2 border rounded-md">
-                    <input type="text" id="config-logo" placeholder="URL da sua Logomarca (opcional)" class="w-full p-2 border rounded-md">
-                  </div>
-                </div>
-                <div>
-                  <div>
-                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Residencial/Predial</h3>
-                    <div class="space-y-4">
-                      <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-residencial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
-                      <label class="block"><span class="text-gray-700">Valor por Ponto (R$)</span><input type="number" step="0.01" id="config-residencial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
-                      <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-residencial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
-                    </div>
-                  </div>
-                  <div class="mt-6">
-                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Industrial</h3>
-                    <div class="space-y-4">
-                      <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-industrial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
-                      <label class="block"><span class="text-gray-700">Valor por Equipamento (R$)</span><input type="number" step="0.01" id="config-industrial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
-                      <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-industrial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
-                    </div>
-                  </div>
-                </div>
-                <div class="md:col-span-2 text-right">
-                  <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
-                    <span id="save-config-text">Salvar Configurações</span>
-                    <span id="save-config-spinner" class="hidden">Salvando...</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            <div class="bg-white p-6 rounded-lg shadow-sm mt-4">
               <h2 class="text-xl font-semibold mb-4">Tipos de Serviço</h2>
 
               <div class="mb-6 p-4 border rounded-lg bg-gray-50">
@@ -217,6 +184,47 @@
               <div id="tiposdeservico-list" class="space-y-2 mt-6">
                 <p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>
               </div>
+            </div>
+          </div>
+          <div id="configuracoes" class="tab-content space-y-4">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+              <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
+              <form id="form-config" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div>
+                  <h3 class="text-lg font-medium mb-4 border-b pb-2">Seus Dados Profissionais</h3>
+                  <div class="space-y-4">
+                    <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md" required>
+                    <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md" required>
+                    <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
+                    <input type="text" id="config-endereco" placeholder="Seu Endereço" class="w-full p-2 border rounded-md">
+                    <input type="text" id="config-logo" placeholder="URL da sua Logomarca (opcional)" class="w-full p-2 border rounded-md">
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Residencial/Predial</h3>
+                    <div class="space-y-4">
+                      <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-residencial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                      <label class="block"><span class="text-gray-700">Valor por Ponto (R$)</span><input type="number" step="0.01" id="config-residencial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                      <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-residencial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                    </div>
+                  </div>
+                  <div class="mt-6">
+                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Industrial</h3>
+                    <div class="space-y-4">
+                      <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-industrial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                      <label class="block"><span class="text-gray-700">Valor por Equipamento (R$)</span><input type="number" step="0.01" id="config-industrial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                      <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-industrial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                    </div>
+                  </div>
+                </div>
+                <div class="md:col-span-2 text-right">
+                  <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
+                    <span id="save-config-text">Salvar Configurações</span>
+                    <span id="save-config-spinner" class="hidden">Salvando...</span>
+                  </button>
+                </div>
+              </form>
             </div>
 
             <div class="mt-8 border-t pt-6 text-center">
@@ -341,7 +349,6 @@
   messagingSenderId: "424397941585",
   appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
 };
-
     // Imports Firebase
     import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -584,7 +591,7 @@
       if (confirm('Excluir este item?')) { await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); }
     };
 
-    // ===== Tipos de Serviço com Categoria & Submenu =====
+    // ===== Tipos de Serviço com Categoria & Submenu (AGORA EM #servicos) =====
     const catSelect = document.getElementById('tiposervico-categoria-select');
     const catNew = document.getElementById('tiposervico-categoria-new');
 
@@ -922,7 +929,7 @@
 
     function populateTiposDeServicoOrcamento() {
       const listEl = document.getElementById('orc-tiposdeservico-list');
-      if (!appState.tiposDeServico.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum tipo de serviço cadastrado em Ajustes.</p>'; return; }
+      if (!appState.tiposDeServico.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum tipo de serviço cadastrado em Serviços.</p>'; return; }
 
       const grouped = groupBy(appState.tiposDeServico, 'categoria');
       const cats = Object.keys(grouped).sort();
