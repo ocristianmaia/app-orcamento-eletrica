@@ -142,7 +142,6 @@
             <div class="bg-white p-6 rounded-lg shadow-sm">
               <h2 class="text-xl font-semibold mb-4">Gerenciar Tipos de Serviço</h2>
 
-              {/* ... (Conteúdo movido da tab Ajustes para cá) ... */}
               <div class="mb-6 p-4 border rounded-lg bg-gray-50">
                 <p class="text-sm text-gray-600 mb-2">Importar planilha (.xlsx) com as colunas <strong>Categoria</strong>, <strong>Descrição</strong> e <strong>Valor</strong>.</p>
                 <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
@@ -190,12 +189,11 @@
           {/* Fim da Nova Tab Serviços */}
 
 
-          {/* Configurações (antigo Ajustes) */}
+          {/* Configurações */}
           <div id="configuracoes" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
               <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
               <form id="form-config" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                {/* ... (Formulário de config geral e mão de obra) ... */}
                  <div>
                   <h3 class="text-lg font-medium mb-4 border-b pb-2">Seus Dados Profissionais</h3>
                   <div class="space-y-4">
@@ -244,7 +242,6 @@
 
     {/* Todos os Orçamentos */}
     <div id="all-orcamentos-view" class="hidden">
-      {/* ... (Conteúdo permanece igual) ... */}
        <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-2xl font-semibold">Todos os Orçamentos</h2>
@@ -255,9 +252,9 @@
     </div>
 
     {/* Modal do Orçamento */}
+    {/* ATUALIZADO: Removidos comentários {/**/} */}
     <div id="orcamento-modal" class="modal">
-      {/* ... (Conteúdo permanece igual) ... */}
-       <div class="bg-white rounded-lg p-6 w-[95%] max-w-[960px] max-height-[90vh] max-h-[90vh] overflow-y-auto shadow-xl">
+      <div class="bg-white rounded-lg p-6 w-[95%] max-w-[960px] max-height-[90vh] max-h-[90vh] overflow-y-auto shadow-xl">
         <div class="flex justify-between items-center mb-6">
           <h2 id="modal-title" class="text-2xl font-bold">Criar Novo Orçamento</h2>
           <button onclick="closeOrcamentoModal()" class="text-gray-500 text-2xl font-bold">&times;</button>
@@ -441,7 +438,7 @@
 
         onAuthStateChanged(auth, async (user) => {
           if (user) {
-            userId = user.uid;
+            userId = user.uid; // Garante que userId está definido aqui
             userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
             loadingOverlay.querySelector('p').textContent = 'Carregando seus dados...';
             
@@ -468,7 +465,7 @@
             appView.classList.remove('hidden');
             loadingOverlay.style.display = 'none';
           } else {
-            userId = null;
+            userId = null; // Limpa userId no logout
             loginView.classList.remove('hidden');
             appView.classList.add('hidden');
             loadingOverlay.style.display = 'none';
@@ -501,7 +498,7 @@
       const clienteId = e.target.value;
       if (clienteId) {
         const cliente = appState.clientes.find(c => c.id === clienteId);
-        appState.currentOrcamento.cliente = cliente || null; // Atualiza mesmo se não encontrar (segurança)
+        appState.currentOrcamento.cliente = cliente || null; 
       } else {
         appState.currentOrcamento.cliente = null;
       }
@@ -510,7 +507,10 @@
 
     // ===== Carregamento reativo de dados =====
     function loadAllData() {
-      if (!userId) return;
+      if (!userId) {
+        console.warn("loadAllData chamado sem userId.");
+        return; // Sai se não houver userId
+      }
       const prefix = `users/${userId}`;
 
       onSnapshot(doc(db, `${prefix}/config/main`), (snap) => {
@@ -624,6 +624,7 @@
     }
 
     window.deleteCliente = async (id) => {
+       if (!userId) return alert('Faça login novamente.'); // Verifica userId aqui também
       if (confirm('Excluir este cliente?')) { 
         try {
           await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); 
@@ -661,6 +662,7 @@
     }
 
     window.deleteMaterial = async (id) => {
+      if (!userId) return alert('Faça login novamente.'); // Verifica userId aqui também
       if (confirm('Excluir este item?')) { 
         try {
           await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); 
@@ -737,6 +739,7 @@
     }
 
     window.deleteTipoDeServico = async (id) => {
+      if (!userId) return alert('Faça login novamente.'); // Verifica userId aqui também
       if (confirm('Excluir este tipo de serviço?')) { 
         try {
           await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`)); 
@@ -895,16 +898,19 @@
       openOrcamentoModal(orc);
     };
 
-    // ATUALIZADO: Função deleteOrcamento com async/await e try/catch
+    // ATUALIZADO: Função deleteOrcamento com verificação de userId e try/catch
     window.deleteOrcamento = async (id) => {
-      if (!userId) return alert('Faça login novamente.');
+      if (!userId) { // Verifica se userId está definido ANTES de tudo
+          console.error("Tentativa de exclusão sem userId.");
+          return alert('Erro: Usuário não identificado. Faça login novamente.');
+      }
       if(confirm('Excluir este orçamento permanentemente?')) { 
-        console.log("Tentando excluir orçamento com ID:", id);
+        console.log("Tentando excluir orçamento com ID:", id, "para userId:", userId);
         try {
           const docRef = doc(db, `users/${userId}/orcamentos/${id}`);
           await deleteDoc(docRef); 
           console.log("Orçamento excluído com sucesso (ID:", id, ")");
-          // O onSnapshot cuidará de remover da interface
+          // O onSnapshot cuidará de remover da interface, não precisa de alert aqui.
         } catch (e) {
           console.error("Erro ao excluir orçamento:", e);
           alert("Erro ao excluir o orçamento. Verifique o console para mais detalhes.");
