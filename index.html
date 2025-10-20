@@ -789,10 +789,11 @@
     function renderOrcamentosList(isFullList = false) {
       const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
       if (!el) return;
-      const list = isFullList ? appState.orcamentos : appState.orcamentos.slice(0,3);
-      if (!list.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; return; }
+      const list = appState.orcamentos.filter(o => o.id); // Garante que só orçamentos com ID válido sejam renderizados
+      const displayList = isFullList ? list : list.slice(0,3);
+      if (!displayList.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; return; }
       
-      el.innerHTML = list.map(orc => {
+      el.innerHTML = displayList.map(orc => {
         const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
         const numeroFormatado = String(orc.numeroOrcamento || '').padStart(2, '0');
         const versaoFormatada = String(orc.versao || 1).padStart(2, '0');
@@ -867,7 +868,7 @@
     // REVISADO MINUCIOSAMENTE: Função de exclusão de orçamento (em lote)
     async function deleteOrcamentosEmLote(ids) {
       if (!userId) {
-        console.error('ERRO DE EXCLUSÃO: userId não está definido. O usuário não está logado ou a autenticação falhou.');
+        console.error('ERRO CRÍTICO: userId não está definido. O usuário não está logado.');
         alert('Falha na autenticação. Por favor, faça login novamente.');
         return;
       }
@@ -880,21 +881,37 @@
         console.log(`Iniciando exclusão em lote para ${ids.length} IDs. userId: ${userId}`);
         
         ids.forEach(id => {
-            const docPath = `users/${userId}/orcamentos/${id}`;
-            const docRef = doc(db, docPath);
-            batch.delete(docRef);
-            console.log(`Adicionado à exclusão: ${docPath}`);
+            if (id) {
+                const docPath = `users/${userId}/orcamentos/${id}`;
+                const docRef = doc(db, docPath);
+                batch.delete(docRef);
+                console.log(`Adicionado à exclusão: ${docPath}`);
+            } else {
+                console.warn('ID de orçamento nulo ou vazio encontrado e ignorado.');
+            }
         });
         
         await batch.commit();
         
-        // Limpa a seleção e atualiza a UI
+        // Limpa a seleção e informa sucesso
         appState.orcamentosParaExcluir.clear();
         alert(`${ids.length} orçamento(s) excluído(s) com sucesso.`);
-        // O onSnapshot se encarrega de atualizar as listas
+        
+        // Se a lista não está atualizando, o problema é nas Firebase Rules.
+        // A função onSnapshot deve disparar automaticamente.
+        
       } catch (e) {
-        console.error('ERRO CRÍTICO ao excluir orçamentos em lote. Verifique as Regras de Segurança do Firebase e o console do navegador.', e);
-        alert(`Erro ao excluir ${ids.length} orçamento(s). Verifique o console do navegador (F12) para detalhes. Possível problema: Regras de Segurança do Firebase.`);
+        console.error('ERRO CRÍTICO ao excluir orçamentos em lote.', e);
+        
+        // Verifica o tipo de erro para dar um feedback melhor
+        if (e.code === 'permission-denied') {
+            alert('ERRO DE PERMISSÃO: A exclusão falhou devido a regras de segurança do Firebase. Verifique suas regras do Firestore.');
+        } else if (e.code === 'unauthenticated') {
+            alert('ERRO DE AUTENTICAÇÃO: A exclusão falhou porque o usuário não está autenticado.');
+        } else {
+            alert(`Erro ao excluir ${ids.length} orçamento(s). Verifique o console do navegador (F12) para mais detalhes sobre a falha.`);
+        }
+        
       } finally {
         btn.disabled = false;
         updateDeleteButtonState();
@@ -1020,7 +1037,7 @@
       if (tiposServicoList) { tiposServicoList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); }
       document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
       document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
-      document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
+      document.querySelector('input[name="tipo-obra'][value="residencial"]').checked = true;
     };
 
     function populateClienteSelect() {
