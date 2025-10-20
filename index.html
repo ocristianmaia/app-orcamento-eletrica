@@ -802,9 +802,14 @@
         const orcamentoId = `OS${numeroFormatado}${month}${year}-${versaoFormatada}`;
         const nome = cliente ? cliente.nome : 'Cliente Excluído';
         const nomes = nome.split(' ');
+
+        // CORRIGIDO: Nome abreviado (primeiro e segundo nome)
         const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
         
-        // Renderização para a lista COMPLETA (com checkbox)
+        // NOVO: Usa o nome completo para a lista completa (Desktop) e abreviado para a lista recente (Mobile)
+        const nomeParaExibir = isFullList ? nome : nomeAbreviado; 
+        
+        // Renderização para a lista COMPLETA (com checkbox) - Visível no desktop e na página "Todos"
         if (isFullList) {
             const isChecked = appState.orcamentosParaExcluir.has(orc.id);
             return `
@@ -813,7 +818,7 @@
                     <label class="flex items-center cursor-pointer flex-grow">
                         <input type="checkbox" data-id="${orc.id}" onchange="toggleOrcamentoExclusao(this)" ${isChecked ? 'checked' : ''} class="h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
                         <div class="ml-3">
-                            <p class="font-medium text-lg text-gray-800">${nomeAbreviado}</p>
+                            <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
                             <p class="text-sm text-gray-500">${orcamentoId}</p>
                         </div>
                     </label>
@@ -824,11 +829,11 @@
               </div>`;
         }
         
-        // Renderização para a lista RECENTE (sem checkbox)
+        // Renderização para a lista RECENTE (sem checkbox) - Visível na tela inicial
         return `
           <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
             <div class="flex justify-between items-baseline w-full">
-              <p class="font-medium text-lg text-gray-800">${nomeAbreviado}</p>
+              <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
               <p class="text-sm text-gray-500">${orcamentoId}</p>
             </div>
             <div class="flex gap-2 self-end">
@@ -864,7 +869,7 @@
         }
     };
 
-    // REVISADO MINUCIOSAMENTE: Função de exclusão de orçamento (em lote)
+    // REVISADO FINALMENTE: Função de exclusão de orçamento (em lote)
     async function deleteOrcamentosEmLote(ids) {
       if (!userId) {
         console.error('ERRO DE EXCLUSÃO: userId não está definido. O usuário não está logado ou a autenticação falhou.');
@@ -880,6 +885,7 @@
         console.log(`Iniciando exclusão em lote para ${ids.length} IDs. userId: ${userId}`);
         
         ids.forEach(id => {
+            // AQUI está o caminho crítico. Ele PRECISA ser users/{userId}/orcamentos/{id}
             const docPath = `users/${userId}/orcamentos/${id}`;
             const docRef = doc(db, docPath);
             batch.delete(docRef);
@@ -1237,7 +1243,7 @@
             ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
           </table>
           ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}
-          <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">MÃO DE OBRA:</h4>
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">MÃO DE OBRAlabel:</h4>
           <div style="text-align: right;"><span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>
           <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #333;"><span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span></div>
           <div style="font-size: 0.8em; margin-top: 20px; text-align: center; color: #888;">Orçamento válido por 15 dias.</div>
