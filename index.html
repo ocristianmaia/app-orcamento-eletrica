@@ -216,6 +216,7 @@
                   <div>
                     <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Residencial/Predial</h3>
                     <div class="space-y-4">
+                      <label class="block"><span class="text-gray-700">Valor por Empreitada (R$)</span><input type="number" step="0.01" id="config-residencial-empreitada" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
                       <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-residencial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
                       <label class="block"><span class="text-gray-700">Valor por Ponto (R$)</span><input type="number" step="0.01" id="config-residencial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
                       <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-residencial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
@@ -508,6 +509,9 @@
       document.getElementById('config-doc').value = c.doc || '';
       document.getElementById('config-endereco').value = c.endereco || '';
       document.getElementById('config-logo').value = c.logo || '';
+      
+      // NOVO CAMPO: Residencial Empreitada
+      document.getElementById('config-residencial-empreitada').value = c.residencial_empreitada || '';
       document.getElementById('config-residencial-diaria').value = c.residencial_diaria || '';
       document.getElementById('config-residencial-ponto').value = c.residencial_ponto || '';
       document.getElementById('config-residencial-hora').value = c.residencial_hora || '';
@@ -530,6 +534,9 @@
           doc: document.getElementById('config-doc').value,
           endereco: document.getElementById('config-endereco').value,
           logo: document.getElementById('config-logo').value,
+          
+          // NOVO CAMPO SALVO: Residencial Empreitada
+          residencial_empreitada: parseFloat(document.getElementById('config-residencial-empreitada').value) || 0,
           residencial_diaria: parseFloat(document.getElementById('config-residencial-diaria').value) || 0,
           residencial_ponto: parseFloat(document.getElementById('config-residencial-ponto').value) || 0,
           residencial_hora: parseFloat(document.getElementById('config-residencial-hora').value) || 0,
@@ -857,10 +864,11 @@
         }
     };
 
-    // REVISADO: Função de exclusão de orçamento (agora em lote)
+    // REVISADO MINUCIOSAMENTE: Função de exclusão de orçamento (em lote)
     async function deleteOrcamentosEmLote(ids) {
       if (!userId) {
-        alert('Faça login para excluir orçamentos.');
+        console.error('ERRO DE EXCLUSÃO: userId não está definido. O usuário não está logado ou a autenticação falhou.');
+        alert('Falha na autenticação. Por favor, faça login novamente.');
         return;
       }
       
@@ -869,10 +877,15 @@
       
       try {
         const batch = writeBatch(db);
+        console.log(`Iniciando exclusão em lote para ${ids.length} IDs. userId: ${userId}`);
+        
         ids.forEach(id => {
-            const docRef = doc(db, `users/${userId}/orcamentos/${id}`);
+            const docPath = `users/${userId}/orcamentos/${id}`;
+            const docRef = doc(db, docPath);
             batch.delete(docRef);
+            console.log(`Adicionado à exclusão: ${docPath}`);
         });
+        
         await batch.commit();
         
         // Limpa a seleção e atualiza a UI
@@ -880,11 +893,11 @@
         alert(`${ids.length} orçamento(s) excluído(s) com sucesso.`);
         // O onSnapshot se encarrega de atualizar as listas
       } catch (e) {
-        console.error('Erro ao excluir orçamentos em lote:', e);
-        alert('Erro ao excluir os orçamentos. Tente novamente ou verifique sua conexão com a internet.');
+        console.error('ERRO CRÍTICO ao excluir orçamentos em lote. Verifique as Regras de Segurança do Firebase e o console do navegador.', e);
+        alert(`Erro ao excluir ${ids.length} orçamento(s). Verifique o console do navegador (F12) para detalhes. Possível problema: Regras de Segurança do Firebase.`);
       } finally {
         btn.disabled = false;
-        updateDeleteButtonState(); // Garante que o botão seja desativado se o set estiver vazio
+        updateDeleteButtonState();
       }
     };
 
@@ -1136,14 +1149,26 @@
       let valor = 0, label = '', raw_value = 0;
       const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
       const rates = {
+        empreitada: appState.config.residencial_empreitada || 0, // NOVO CAMPO
         diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
         ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial_ponto) || 0,
         hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0,
       };
+      
       switch(tipo) {
         case 'empreitada':
-          raw_value = parseFloat(document.getElementById('empreitada-valor').value) || 0;
-          valor = raw_value; label = 'Empreitada'; break;
+          // Se for residencial/predial, usa o valor da configuração (se definido)
+          if (tipoObra === 'residencial' && rates.empreitada > 0) {
+              valor = rates.empreitada;
+              label = 'Empreitada (Valor Fixo da Configuração)';
+              raw_value = rates.empreitada;
+          } else {
+              // Permite entrada manual para Empreitada ou se não houver valor fixo em config
+              raw_value = parseFloat(document.getElementById('empreitada-valor').value) || 0;
+              valor = raw_value; 
+              label = 'Empreitada (Valor Manual)';
+          }
+          break;
         case 'diaria':
           raw_value = parseInt(document.getElementById('diaria-qtd').value) || 0;
           valor = raw_value * rates.diaria; label = `${raw_value} diária(s)`; break;
