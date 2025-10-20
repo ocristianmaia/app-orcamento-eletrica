@@ -363,11 +363,20 @@
       </div>
     </footer>
 
-  </div> <script type="module">
+  </div> \1
+
+    async function waitForImagesToLoad(rootEl) {
+      const imgs = Array.from(rootEl.querySelectorAll('img'));
+      await Promise.all(imgs.map(img => img.complete ? Promise.resolve()
+        : new Promise(res => { img.onload = img.onerror = () => res(); })));
+    }
+    
+
     // ===== Firebase config (preservado do seu arquivo) =====
     // ATENÇÃO: SUBSTITUA COM SUAS PRÓPRIAS CHAVES DO FIREBASE
     // Erros de "não encontrado" ou "conectando" podem ser
     // causados por chaves incorretas.
+  
     const firebaseConfig = {
   apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
   authDomain: "app-orcamentos-eletrica.firebaseapp.com",
@@ -798,13 +807,62 @@
         }
     }
 
-    function renderOrcamentosList(isFullList = false) {
-      const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
-      if (!el) return;
-      const list = isFullList ? appState.orcamentos : appState.orcamentos.slice(0,3);
-      if (!list.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; return; }
-      
-      el.innerHTML = list.map(orc => {
+    
+function renderOrcamentosList(isFullList = false) {
+  const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
+  if (!el) return;
+  const listBase = (appState.orcamentos || []).filter(orc => orc && typeof orc.id === 'string' && orc.id.trim() !== '');
+  const list = (isFullList ? listBase : listBase.slice(0, 3));
+
+  if (!list.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; if (isFullList) updateDeleteButtonState(); return; }
+
+  el.innerHTML = list.map(orc => {
+    const cliente = (appState.clientes || []).find(c => c.id === orc.cliente?.id);
+    const numeroFormatado = String(orc.numeroOrcamento || '').padStart(2, '0');
+    const versaoFormatada = String(orc.versao || 1).padStart(2, '0');
+    const date = orc.createdAt || new Date();
+    const month = String((new Date(date)).getMonth() + 1).padStart(2, '0');
+    const year = String((new Date(date)).getFullYear()).slice(-2);
+    const orcamentoId = `OS${numeroFormatado}${month}${year}-${versaoFormatada}`;
+    const nome = cliente ? cliente.nome : (orc?.cliente?.nome || 'Cliente');
+    const nomes = nome.split(' ');
+    const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
+    const nomeParaExibir = isFullList ? nome : nomeAbreviado;
+
+    if (isFullList) {
+      const isChecked = appState.orcamentosParaExcluir.has(orc.id);
+      return `
+        <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
+          <div class="flex justify-between items-start w-full">
+            <label class="flex items-center cursor-pointer flex-grow">
+              <input type="checkbox" data-id="${orc.id}" onchange="toggleOrcamentoExclusao(this)" ${isChecked ? 'checked' : ''} class="h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
+              <div class="ml-3">
+                <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
+                <p class="text-sm text-gray-500">${orcamentoId}</p>
+              </div>
+            </label>
+          </div>
+          <div class="flex gap-2 self-end">
+            <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+          </div>
+        </div>`;
+    }
+
+    return `
+      <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
+        <div class="flex justify-between items-baseline w-full">
+          <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
+          <p class="text-sm text-gray-500">${orcamentoId}</p>
+        </div>
+        <div class="flex gap-2 self-end">
+          <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  if (isFullList) updateDeleteButtonState();
+}
+el.innerHTML = list.map(orc => {
         const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
         const numeroFormatado = String(orc.numeroOrcamento || '').padStart(2, '0');
         const versaoFormatada = String(orc.versao || 1).padStart(2, '0');
@@ -858,81 +916,90 @@
     }
 
     // NOVO: Adiciona/remove ID para exclusão
-    window.toggleOrcamentoExclusao = (checkbox) => {
-        const id = checkbox.dataset.id;
-        if (checkbox.checked) {
-            appState.orcamentosParaExcluir.add(id);
-        } else {
-            appState.orcamentosParaExcluir.delete(id);
-        }
-        updateDeleteButtonState();
-    };
+    
+window.toggleOrcamentoExclusao = (checkbox) => {
+    const id = String(checkbox?.dataset?.id || '').trim();
+    if (!id) {
+        checkbox.checked = false;
+        return;
+    }
+    if (checkbox.checked) {
+        appState.orcamentosParaExcluir.add(id);
+    } else {
+        appState.orcamentosParaExcluir.delete(id);
+    }
+    updateDeleteButtonState();
+    console.log("Itens selecionados para exclusão:", appState.orcamentosParaExcluir.size, Array.from(appState.orcamentosParaExcluir));
+};
+
 
     // CORRIGIDO: Usa o novo modal de confirmação para a contagem correta
-    window.confirmDeleteSelectedOrcamentos = () => {
-        const count = appState.orcamentosParaExcluir.size;
-        if (count === 0) {
-            alert('Nenhum orçamento selecionado para exclusão.');
-            return;
-        }
+    
+window.confirmDeleteSelectedOrcamentos = () => {
+    const count = appState.orcamentosParaExcluir.size;
+    if (count === 0) {
+        alert('Nenhum orçamento selecionado para exclusão.');
+        return;
+    }
+    const modal = document.getElementById('delete-confirm-modal');
+    const messageEl = document.getElementById('delete-confirm-message');
+    messageEl.innerHTML = `ATENÇÃO! Você irá excluir <strong>${count}</strong> orçamento(s) selecionado(s). Esta ação é irreversível. Deseja continuar?`;
+    modal.classList.add('active');
+};
 
-        const modal = document.getElementById('delete-confirm-modal');
-        const messageEl = document.getElementById('delete-confirm-message');
-        
-        messageEl.innerHTML = `ATENÇÃO! Você irá excluir **${count}** orçamento(s) selecionado(s). Esta ação é irreversível. Deseja continuar?`;
-        modal.classList.add('active');
-    };
 
     // NOVO: Função para fechar e processar o modal de confirmação de exclusão
-    window.closeDeleteConfirmModal = (confirmAction) => {
-        const modal = document.getElementById('delete-confirm-modal');
-        modal.classList.remove('active');
+    
+window.closeDeleteConfirmModal = (confirmAction) => {
+    const modal = document.getElementById('delete-confirm-modal');
+    modal.classList.remove('active');
+    if (confirmAction) {
+        const ids = Array.from(new Set(Array.from(appState.orcamentosParaExcluir)
+            .map(x => String(x || '').trim())
+            .filter(Boolean)));
+        deleteOrcamentosEmLote(ids);
+    }
+};
 
-        if (confirmAction) {
-             deleteOrcamentosEmLote(Array.from(appState.orcamentosParaExcluir));
-        }
-    };
 
 
     // REVISADO FINALMENTE: Função de exclusão de orçamento (em lote)
-    async function deleteOrcamentosEmLote(ids) {
-      if (!userId) {
-        console.error('ERRO DE EXCLUSÃO: userId não está definido. O usuário não está logado ou a autenticação falhou.');
-        // Se o userId falhou aqui, o problema é na autenticação ou na variável global.
-        alert('Falha crítica na autenticação (userId ausente). Por favor, saia e entre novamente.');
-        return;
-      }
-      
-      const btn = document.getElementById('btn-delete-selected-orcamentos');
-      btn.disabled = true;
-      
-      try {
-        const batch = writeBatch(db);
-        console.log(`Iniciando exclusão em lote para ${ids.length} IDs. userId: ${userId}`);
-        
-        ids.forEach(id => {
-            // AQUI está o caminho crítico. Ele PRECISA ser users/{userId}/orcamentos/{id}
-            const docPath = `users/${userId}/orcamentos/${id}`;
-            const docRef = doc(db, docPath);
-            batch.delete(docRef);
-            console.log(`Adicionado à exclusão: ${docPath}`);
-        });
-        
-        await batch.commit();
-        
-        // Limpa a seleção e atualiza a UI
-        appState.orcamentosParaExcluir.clear();
-        alert(`${ids.length} orçamento(s) excluído(s) com sucesso.`);
-        // O onSnapshot se encarrega de atualizar as listas
-      } catch (e) {
-        console.error('ERRO CRÍTICO ao excluir orçamentos em lote. Erro retornado:', e);
-        // Exibe o erro específico
-        alert(`Erro ao excluir ${ids.length} orçamento(s). Possível falha nas Regras de Segurança (Permission Denied). Detalhe: ${e.message}`);
-      } finally {
-        btn.disabled = false;
-        updateDeleteButtonState();
-      }
-    };
+    
+async function deleteOrcamentosEmLote(ids) {
+  if (!userId) {
+    console.error('ERRO DE EXCLUSÃO: userId não está definido. O usuário não está logado ou a autenticação falhou.');
+    alert('Falha crítica na autenticação (userId ausente). Por favor, saia e entre novamente.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-delete-selected-orcamentos');
+  if (btn) btn.disabled = true;
+
+  try {
+    const validIds = Array.from(new Set((ids || []).map(x => String(x || '').trim()).filter(Boolean)));
+    if (!validIds.length) {
+      alert('Nenhum ID válido para exclusão.');
+      return;
+    }
+    const batch = writeBatch(db);
+    let validIdsCount = 0;
+    validIds.forEach(id => {
+      const docRef = doc(db, `users/${userId}/orcamentos/${id}`);
+      batch.delete(docRef);
+      validIdsCount++;
+    });
+    await batch.commit();
+    appState.orcamentosParaExcluir.clear();
+    alert(`${validIdsCount} orçamento(s) excluído(s) com sucesso.`);
+  } catch (e) {
+    console.error('ERRO CRÍTICO ao excluir orçamentos em lote:', e);
+    alert(`Erro ao excluir orçamentos. Detalhe: ${e.message || e}.`);
+  } finally {
+    if (btn) btn.disabled = false;
+    updateDeleteButtonState();
+  }
+};
+
 
 
     window.showAllOrcamentosPage = () => {
@@ -1310,11 +1377,13 @@
       hidden.style.width = '210mm';
       hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
       document.body.appendChild(hidden);
+      hidden.querySelectorAll('img').forEach(img => img.setAttribute('crossorigin','anonymous'));
       const { jsPDF } = window.jspdf;
       const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
       const fileName = `orcamento-${clienteNome}.pdf`;
       try {
-        const canvas = await html2canvas(hidden, { scale: 2 });
+        await waitForImagesToLoad(hidden);
+        const canvas = await html2canvas(hidden, { scale: 2, useCORS: true, allowTaint: false });
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
