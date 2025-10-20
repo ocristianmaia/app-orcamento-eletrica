@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gerador de Orçamentos 5.0 — Categorias & Submenus</title>
+  <title>Gerador de Orçamentos 5.0</title>
   <link rel="icon" href="https://eusoueletricista.com.br/wp-content/uploads/2025/09/cropped-cropped-Mascote-Eletricista-5.0-1-1.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -15,9 +15,12 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     .tab.active { border-bottom: 2px solid #2563EB; color: #2563EB; font-weight: 600; }
+    .mobile-tab.active {
+      transform: scale(1.03);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
     .modal { display:none; position:fixed; inset:0; background: rgba(0,0,0,.5); z-index:50; align-items:center; justify-content:center; }
     .modal.active { display:flex; }
-    /* Slim look for serviços */
     .servico-slim { font-size: 0.80rem; line-height: 1.1rem; font-weight: 300; }
     .servico-slim strong { font-weight: 500; }
     details > summary::-webkit-details-marker { display:none; }
@@ -48,9 +51,9 @@
           Gerador de Orçamentos
           <span class="block text-3xl sm:text-4xl">ELETRICISTA 5.0</span>
         </h1>
-        <img 
-          src="https://eusoueletricista.com.br/wp-content/uploads/2025/09/cropped-cropped-Mascote-Eletricista-5.0-1-1.png" 
-          alt="Logo Eletricista 5.0" 
+        <img
+          src="https://eusoueletricista.com.br/wp-content/uploads/2025/09/cropped-cropped-Mascote-Eletricista-5.0-1-1.png"
+          alt="Logo Eletricista 5.0"
           class="h-12 sm:h-14 w-auto"
         >
       </div>
@@ -64,23 +67,25 @@
           <nav class="flex -mb-px space-x-6">
             <button class="tab active py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Tela Inicial</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
-            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais/Serviços</button>
-            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Ajustes</button>
+            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
+            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="servicos" onclick="changeTab(event, 'servicos')">Serviços</button>
+            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Configuração</button>
           </nav>
         </div>
 
-        <div class="mb-6 grid grid-cols-2 sm:hidden gap-2">
-          <button class="mobile-tab active text-white p-4 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Tela Inicial</button>
-          <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-green-500" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
-          <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
-          <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-gray-500" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Ajustes</button>
+        <div class="mb-6 grid grid-cols-3 sm:hidden gap-2">
+          <button class="mobile-tab active text-white p-3 rounded-lg shadow-md bg-blue-500 text-sm" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Tela Inicial</button>
+          <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-green-500 text-sm" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
+          <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-yellow-500 text-sm" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
+          <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-purple-500 text-sm" data-tab="servicos" onclick="changeTab(event, 'servicos')">Serviços</button>
+          <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-gray-500 text-sm" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Configuração</button>
         </div>
 
         <main>
           <div id="orcamentos" class="tab-content active space-y-4">
             <div class="grid grid-cols-2 gap-4">
               <button onclick="showAllOrcamentosPage()" class="bg-gray-800 text-white p-4 rounded-lg flex justify-center items-center shadow hover:bg-gray-900 transition-colors">
-                <h2 class="text-xl font-semibold text-center">Orçamentos Salvos</h2>
+                <h2 class="text-xl font-semibold text-center">Orçamentos</h2>
               </button>
               <button onclick="openOrcamentoModal()" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium flex justify-center items-center">
                 <span class="text-xl font-semibold">+ Novo Orçamento</span>
@@ -108,7 +113,7 @@
 
           <div id="materiais" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
-              <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Material/Serviço</h2>
+              <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Material</h2>
               <form id="form-material" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
                 <div class="flex-grow">
                   <label class="block text-sm font-medium text-gray-700">Descrição</label>
@@ -128,16 +133,70 @@
               </form>
             </div>
             <div class="bg-white p-6 rounded-lg shadow-sm">
-              <h2 class="text-xl font-semibold mb-4">Itens Cadastrados</h2>
+              <h2 class="text-xl font-semibold mb-4">Materiais Cadastrados</h2>
               <div id="materiais-list" class="space-y-2"><p class="text-gray-500">Nenhum material cadastrado.</p></div>
             </div>
           </div>
 
+          <div id="servicos" class="tab-content space-y-4">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+              <h2 class="text-xl font-semibold mb-4">Gerenciar Tipos de Serviço</h2>
+
+              {/* ... (Conteúdo movido da tab Ajustes para cá) ... */}
+              <div class="mb-6 p-4 border rounded-lg bg-gray-50">
+                <p class="text-sm text-gray-600 mb-2">Importar planilha (.xlsx) com as colunas <strong>Categoria</strong>, <strong>Descrição</strong> e <strong>Valor</strong>.</p>
+                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                  <input type="file" id="xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm text-gray-700 flex-1">
+                  <button id="btn-import-xlsx" class="whitespace-nowrap bg-emerald-600 text-white px-4 py-2 rounded-lg shadow hover:bg-emerald-700 transition">Importar</button>
+                  <button id="btn-clear-tiposervico" class="whitespace-nowrap bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">Limpar Tudo</button>
+                </div>
+                <p id="xlsx-status" class="text-xs text-gray-500 mt-2"></p>
+              </div>
+
+              <div class="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-md mb-4" role="alert">
+                <p class="text-sm font-medium">Adicione um novo serviço escolhendo uma das categorias, ou adicione uma nova categoria para o serviço desejado.</p>
+              </div>
+
+              <form id="form-tiposervico" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Categoria</label>
+                    <select id="tiposervico-categoria-select" class="w-full p-2 border rounded-md mt-1">
+                      <option value="">Selecionar existente</option>
+                      <option value="new_category">+ Nova Categoria</option>
+                    </select>
+                    <input type="text" id="tiposervico-categoria-new" placeholder="Nome da Nova Categoria" class="w-full p-2 border rounded-md mt-2 hidden">
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                    <input type="text" id="tiposervico-descricao" placeholder="Ex: Instalação de Padrão" class="w-full p-2 border rounded-md mt-1" required>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                    <input type="number" step="0.01" id="tiposervico-valor" placeholder="150.00" class="w-full p-2 border rounded-md mt-1" required>
+                  </div>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar</button>
+              </form>
+
+              <h3 class="text-lg font-semibold text-gray-700 pt-6 mt-6 border-t">Serviços Cadastrados</h3>
+              <div id="tiposdeservico-list" class="space-y-2 mt-2">
+                <p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>
+              </div>
+            </div>
+          </div>
+          {/* Fim da Nova Tab Serviços */}
+
+
+          {/* Configurações (antigo Ajustes) */}
           <div id="configuracoes" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
               <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
               <form id="form-config" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <div>
+                {/* ... (Formulário de config geral e mão de obra) ... */}
+                 <div>
                   <h3 class="text-lg font-medium mb-4 border-b pb-2">Seus Dados Profissionais</h3>
                   <div class="space-y-4">
                     <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md" required>
@@ -173,52 +232,7 @@
                 </div>
               </form>
             </div>
-
-            <div class="bg-white p-6 rounded-lg shadow-sm mt-4">
-              <h2 class="text-xl font-semibold mb-4">Tipos de Serviço</h2>
-
-              <div class="mb-6 p-4 border rounded-lg bg-gray-50">
-                <p class="text-sm text-gray-600 mb-2">Importar planilha (.xlsx) com as colunas <strong>Categoria</strong>, <strong>Descrição</strong> e <strong>Valor</strong>.</p>
-                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                  <input type="file" id="xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm text-gray-700 flex-1">
-                  <button id="btn-import-xlsx" class="whitespace-nowrap bg-emerald-600 text-white px-4 py-2 rounded-lg shadow hover:bg-emerald-700 transition">Importar</button>
-                  <button id="btn-clear-tiposervico" class="whitespace-nowrap bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">Limpar Tudo</button>
-                </div>
-                <p id="xlsx-status" class="text-xs text-gray-500 mt-2"></p>
-              </div>
-
-              <div class="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-md mb-4" role="alert">
-                <p class="text-sm font-medium">Adicione um novo serviço escolhendo uma das categorias, ou adicione uma nova categoria para o serviço desejado.</p>
-              </div>
-              <form id="form-tiposervico" class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">Categoria</label>
-                    <select id="tiposervico-categoria-select" class="w-full p-2 border rounded-md mt-1">
-                      <option value="">Selecionar existente</option>
-                      <option value="new_category">+ Nova Categoria</option>
-                    </select>
-                    <input type="text" id="tiposervico-categoria-new" placeholder="Nome da Nova Categoria" class="w-full p-2 border rounded-md mt-2 hidden">
-                  </div>
-                  
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">Descrição</label>
-                    <input type="text" id="tiposervico-descricao" placeholder="Ex: Instalação de Padrão" class="w-full p-2 border rounded-md mt-1" required>
-                  </div>
-                  
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
-                    <input type="number" step="0.01" id="tiposervico-valor" placeholder="150.00" class="w-full p-2 border rounded-md mt-1" required>
-                  </div>
-                </div>
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar</button>
-              </form>
-
-              <div id="tiposdeservico-list" class="space-y-2 mt-6">
-                <p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>
-              </div>
-            </div>
-
+            
             <div class="mt-8 border-t pt-6 text-center">
               <p id="user-info" class="text-gray-600 mb-4"></p>
               <button id="logout-button" class="bg-red-500 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700 transition-colors">Sair da Conta</button>
@@ -228,8 +242,10 @@
       </div>
     </div>
 
+    {/* Todos os Orçamentos */}
     <div id="all-orcamentos-view" class="hidden">
-      <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
+      {/* ... (Conteúdo permanece igual) ... */}
+       <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-2xl font-semibold">Todos os Orçamentos</h2>
           <button onclick="showMainPage()" class="bg-gray-500 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-600 transition-colors font-medium">Voltar</button>
@@ -238,15 +254,18 @@
       </div>
     </div>
 
+    {/* Modal do Orçamento */}
     <div id="orcamento-modal" class="modal">
-      <div class="bg-white rounded-lg p-6 w-[95%] max-w-[960px] max-height-[90vh] max-h-[90vh] overflow-y-auto shadow-xl">
+      {/* ... (Conteúdo permanece igual) ... */}
+       <div class="bg-white rounded-lg p-6 w-[95%] max-w-[960px] max-height-[90vh] max-h-[90vh] overflow-y-auto shadow-xl">
         <div class="flex justify-between items-center mb-6">
           <h2 id="modal-title" class="text-2xl font-bold">Criar Novo Orçamento</h2>
           <button onclick="closeOrcamentoModal()" class="text-gray-500 text-2xl font-bold">&times;</button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div class="space-y-6">
+           {/* Coluna esquerda */}
+           <div class="space-y-6">
             <div>
               <h4 class="text-md font-medium text-gray-800 mb-2">1. Selecione o Cliente</h4>
               <select id="orc-cliente-select" class="w-full p-2 border rounded-md">
@@ -306,6 +325,7 @@
             </div>
           </div>
 
+          {/* Coluna direita */}
           <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
             <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
             <div id="pdf-preview" class="flex-grow text-sm">
@@ -329,7 +349,7 @@
     </footer>
 
   </div> <script type="module">
-    // ===== Firebase config (preservado do seu arquivo) =====
+    // ===== Firebase config =====
     // ATENÇÃO: SUBSTITUA COM SUAS PRÓPRIAS CHAVES DO FIREBASE
     const firebaseConfig = {
   apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
@@ -347,7 +367,7 @@
 
     // ===== Estado e elementos =====
     let app, db, auth, userId;
-    setLogLevel('debug'); // 'debug' | 'error'
+    setLogLevel('error'); // Mude para 'debug' se precisar ver mais logs
 
     const loadingOverlay = document.getElementById('loading-overlay');
     const loginView = document.getElementById('login-view');
@@ -372,7 +392,7 @@
       };
     }
 
-    // --- NOVO: Função para popular serviços padrão ---
+    // --- Função para popular serviços padrão ---
     async function populateDefaultServices(userId) {
       console.log('Populando serviços padrão para novo usuário:', userId);
       const defaultServices = [
@@ -410,7 +430,6 @@
         console.error("Erro ao popular serviços padrão:", e);
       }
     }
-    // --- FIM DA NOVA FUNÇÃO ---
 
 
     // ===== Inicialização Firebase e Auth =====
@@ -420,41 +439,29 @@
         db = getFirestore(app);
         auth = getAuth(app);
 
-        // --- ATUALIZADO: Lógica para detectar novo usuário ---
-        onAuthStateChanged(auth, async (user) => { // Adicionado 'async'
+        onAuthStateChanged(auth, async (user) => {
           if (user) {
             userId = user.uid;
             userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
             loadingOverlay.querySelector('p').textContent = 'Carregando seus dados...';
             
-            // Verifica se é um usuário novo checando se a config existe
             const configRef = doc(db, `users/${userId}/config/main`);
             const configSnap = await getDoc(configRef);
 
             if (!configSnap.exists()) {
-              // É um usuário novo!
               console.log('Novo usuário detectado, populando dados padrão...');
-              // 1. Popula os serviços padrão
               await populateDefaultServices(userId);
-              
-              // 2. Cria um documento de config básico para que isso não rode de novo
               await setDoc(configRef, { 
                 nome: user.displayName || 'Novo Usuário', 
                 telefone: user.phoneNumber || '',
-                doc: '',
-                endereco: '',
-                logo: '',
-                residencial_diaria: 0,
-                residencial_ponto: 0,
-                residencial_hora: 0,
-                industrial_diaria: 0,
-                industrial_ponto: 0,
-                industrial_hora: 0
+                doc: '', endereco: '', logo: '',
+                residencial_diaria: 0, residencial_ponto: 0, residencial_hora: 0,
+                industrial_diaria: 0, industrial_ponto: 0, industrial_hora: 0
               });
               console.log('Configuração inicial criada.');
+              await new Promise(resolve => setTimeout(resolve, 500));
             }
             
-            // Carrega todos os dados (agora com os padrões, se for novo)
             loadAllData(); 
             
             loginView.classList.add('hidden');
@@ -467,7 +474,6 @@
             loadingOverlay.style.display = 'none';
           }
         });
-        // --- FIM DA ATUALIZAÇÃO ---
       } catch (e) {
         console.error('Erro ao inicializar Firebase:', e);
         loadingOverlay.innerHTML = '<p class="text-red-600">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
@@ -495,11 +501,7 @@
       const clienteId = e.target.value;
       if (clienteId) {
         const cliente = appState.clientes.find(c => c.id === clienteId);
-        if (cliente) {
-          appState.currentOrcamento.cliente = cliente;
-        } else {
-          appState.currentOrcamento.cliente = null;
-        }
+        appState.currentOrcamento.cliente = cliente || null; // Atualiza mesmo se não encontrar (segurança)
       } else {
         appState.currentOrcamento.cliente = null;
       }
@@ -542,7 +544,7 @@
         });
         appState.orcamentos.sort((a,b) => (b.numeroOrcamento||0) - (a.numeroOrcamento||0));
         renderOrcamentosList();
-        renderOrcamentosList(true); // Renderiza a lista completa (oculta)
+        renderOrcamentosList(true); 
       });
     }
 
@@ -583,7 +585,7 @@
           industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
           industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
         };
-        await setDoc(doc(db, `users/${userId}/config/main`), data, { merge: true }); // Adicionado merge: true
+        await setDoc(doc(db, `users/${userId}/config/main`), data, { merge: true });
         alert('Configurações salvas!');
       } catch(e) { console.error(e); alert('Erro ao salvar.'); }
       finally { btn.disabled=false; textSpan.classList.remove('hidden'); spinSpan.classList.add('hidden'); }
@@ -622,7 +624,14 @@
     }
 
     window.deleteCliente = async (id) => {
-      if (confirm('Excluir este cliente?')) { await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); }
+      if (confirm('Excluir este cliente?')) { 
+        try {
+          await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); 
+        } catch (e) {
+          console.error("Erro ao excluir cliente:", e);
+          alert("Erro ao excluir cliente.");
+        }
+      }
     };
 
     // ===== Materiais =====
@@ -652,23 +661,29 @@
     }
 
     window.deleteMaterial = async (id) => {
-      if (confirm('Excluir este item?')) { await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); }
+      if (confirm('Excluir este item?')) { 
+        try {
+          await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); 
+        } catch (e) {
+          console.error("Erro ao excluir material:", e);
+          alert("Erro ao excluir material.");
+        }
+      }
     };
 
-    // ===== Tipos de Serviço com Categoria & Submenu =====
+    // ===== Tipos de Serviço =====
     const catSelect = document.getElementById('tiposervico-categoria-select');
     const catNew = document.getElementById('tiposervico-categoria-new');
 
     function populateCategorySelect() {
-      // Preserva primeiras 2 opções
       while (catSelect.options.length > 2) catSelect.remove(2);
       const cats = [...new Set(appState.tiposDeServico.map(s => s.categoria).filter(Boolean))].sort();
       cats.forEach(cat => { const o=document.createElement('option'); o.value=cat; o.textContent=cat; catSelect.appendChild(o); });
     }
 
     catSelect.addEventListener('change', () => {
-      if (catSelect.value === 'new_category') { catNew.classList.remove('hidden'); catNew.focus(); }
-      else { catNew.classList.add('hidden'); }
+      catNew.classList.toggle('hidden', catSelect.value !== 'new_category');
+      if (catSelect.value === 'new_category') catNew.focus();
     });
 
     document.getElementById('form-tiposervico').addEventListener('submit', async (e) => {
@@ -722,10 +737,17 @@
     }
 
     window.deleteTipoDeServico = async (id) => {
-      if (confirm('Excluir este tipo de serviço?')) { await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`)); }
+      if (confirm('Excluir este tipo de serviço?')) { 
+        try {
+          await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`)); 
+        } catch (e) {
+           console.error("Erro ao excluir tipo de serviço:", e);
+           alert("Erro ao excluir tipo de serviço.");
+        }
+      }
     };
 
-    // ===== Importar Excel =====
+    // ===== Importar/Limpar Excel =====
     document.getElementById('btn-import-xlsx').addEventListener('click', async () => {
       const inp = document.getElementById('xlsx-input');
       const status = document.getElementById('xlsx-status');
@@ -738,7 +760,6 @@
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
 
-        // Normaliza nomes de colunas
         const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
         const headerMapCandidates = {
           categoria: ['categoria','grupo','setor'],
@@ -779,9 +800,11 @@
         status.textContent = 'Enviando para o banco...';
         await batch.commit();
         status.textContent = `Importação concluída: ${count} itens adicionados.`;
+        inp.value = ''; 
       } catch(e) {
         console.error(e);
         alert('Erro ao importar planilha.');
+        status.textContent = 'Erro na importação.';
       }
     });
 
@@ -802,9 +825,7 @@
         }
         
         const batch = writeBatch(db);
-        snapshot.docs.forEach(doc => {
-          batch.delete(doc.ref);
-        });
+        snapshot.docs.forEach(doc => batch.delete(doc.ref));
         await batch.commit();
         
         status.textContent = `Todos os ${snapshot.size} serviços foram apagados.`;
@@ -817,7 +838,7 @@
     document.getElementById('btn-clear-tiposervico').addEventListener('click', clearAllTiposDeServico);
 
 
-    // ===== Orçamentos (lista / modal etc.) =====
+    // ===== Orçamentos =====
     function renderOrcamentosList(isFullList = false) {
       const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
       if (!el) return;
@@ -851,36 +872,44 @@
     window.showAllOrcamentosPage = () => {
       mainView.classList.add('hidden');
       allOrcamentosView.classList.remove('hidden');
-      renderOrcamentosList(true); // Re-renderiza a lista completa ao mostrar
+      renderOrcamentosList(true); 
     };
     window.showMainPage = () => {
       allOrcamentosView.classList.add('hidden');
       mainView.classList.remove('hidden');
     };
 
-    // ATUALIZADO: Função de editar mais robusta e com logs
     window.editOrcamento = (id) => {
       console.log("Tentando editar ID:", id, `(tipo: ${typeof id})`);
       if (!appState.orcamentos || appState.orcamentos.length === 0) {
         console.error("appState.orcamentos está vazio!");
         return alert('Erro: Nenhuma lista de orçamentos carregada.');
       }
-      
-      // Compara como strings e remove espaços em branco
       const orc = appState.orcamentos.find(o => String(o.id).trim() === String(id).trim());
-      
       if (!orc) {
         console.error("ID não encontrado no appState.orcamentos.");
         console.log("IDs disponíveis:", appState.orcamentos.map(o => o.id));
         return alert('Orçamento não encontrado. Tente recarregar a página.');
       }
-      
       console.log("Orçamento encontrado:", orc);
       openOrcamentoModal(orc);
     };
 
+    // ATUALIZADO: Função deleteOrcamento com async/await e try/catch
     window.deleteOrcamento = async (id) => {
-      if(confirm('Excluir este orçamento?')) { await deleteDoc(doc(db, `users/${userId}/orcamentos/${id}`)); }
+      if (!userId) return alert('Faça login novamente.');
+      if(confirm('Excluir este orçamento permanentemente?')) { 
+        console.log("Tentando excluir orçamento com ID:", id);
+        try {
+          const docRef = doc(db, `users/${userId}/orcamentos/${id}`);
+          await deleteDoc(docRef); 
+          console.log("Orçamento excluído com sucesso (ID:", id, ")");
+          // O onSnapshot cuidará de remover da interface
+        } catch (e) {
+          console.error("Erro ao excluir orçamento:", e);
+          alert("Erro ao excluir o orçamento. Verifique o console para mais detalhes.");
+        }
+      }
     };
 
     window.openOrcamentoModal = (orcamentoParaEditar = null) => {
@@ -1019,17 +1048,15 @@
       }).join('');
     }
 
-    // Filtro de serviços por texto
+    // Filtro de serviços
     document.getElementById('filter-tipos').addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase().trim();
-      const boxes = document.querySelectorAll('#orc-tiposdeservico-list label span');
-      boxes.forEach(span => {
-        const row = span.closest('label');
-        row.style.display = span.textContent.toLowerCase().includes(q) ? '' : 'none';
+      document.querySelectorAll('#orc-tiposdeservico-list label').forEach(label => {
+         label.style.display = label.textContent.toLowerCase().includes(q) ? '' : 'none';
       });
     });
 
-    // Interações do modal com materiais e serviços
+    // Interações do modal (materiais, serviços, mão de obra)
     document.getElementById('orc-materiais-list').addEventListener('input', (e) => {
       const target = e.target;
       const materialId = target.dataset.id;
@@ -1037,12 +1064,11 @@
       if (!material) return;
       const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${materialId}"]`);
       if (target.type === 'checkbox') {
+        qtyInput.disabled = !target.checked;
         if (target.checked) {
-          qtyInput.disabled = false;
           const newItem = { ...material, quantidade: parseInt(qtyInput.value) || 1 };
           appState.currentOrcamento.items.push(newItem);
         } else {
-          qtyInput.disabled = true;
           appState.currentOrcamento.items = appState.currentOrcamento.items.filter(item => item.id !== materialId);
         }
       } else if (target.type === 'number') {
@@ -1087,8 +1113,9 @@
 
     function calculateMaoDeObra() {
       const tipoSelecionado = document.querySelector('input[name="tipo-servico"]:checked');
-      if (!appState.currentOrcamento || !tipoSelecionado) {
-        if(appState.currentOrcamento) appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
+      if (!appState.currentOrcamento) return; 
+      if (!tipoSelecionado) {
+        appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
         return;
       }
       const tipo = tipoSelecionado.value;
@@ -1148,9 +1175,9 @@
           <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
         </tr>`;
       }).join('');
-      const totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
+      const totalMaoDeObra = currentOrcamento.maoDeObra?.valor || 0; 
       currentOrcamento.total = subtotalServicos + subtotalMateriais + totalMaoDeObra;
-      const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
+      const maoDeObraLabel = currentOrcamento.maoDeObra?.label || 'Não definida'; 
       previewEl.innerHTML = `
         <div style="padding: 10px;">
           ${config.logo ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px; margin: 0 auto;"></div>` : ''}
@@ -1185,7 +1212,7 @@
         if (data.id) {
           data.versao = (data.versao || 1) + 1;
           const ref = doc(db, `users/${userId}/orcamentos/${data.id}`);
-          delete data.createdAt;
+          delete data.createdAt; 
           await setDoc(ref, data, { merge: true });
           alert('Orçamento atualizado!');
         } else {
@@ -1194,13 +1221,13 @@
           data.versao = 1;
           data.createdAt = serverTimestamp();
           const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), data);
-          appState.currentOrcamento.id = ref.id;
+          appState.currentOrcamento.id = ref.id; 
           appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
           alert('Orçamento salvo! Você já pode gerar o PDF.');
         }
         closeOrcamentoModal();
       } catch(e) {
-        console.error(e); alert('Erro ao salvar.');
+        console.error("Erro ao salvar orçamento:", e); alert('Erro ao salvar orçamento.');
       }
     };
 
@@ -1208,34 +1235,54 @@
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
       const hidden = document.createElement('div');
       hidden.style.position = 'absolute'; hidden.style.left = '-9999px'; hidden.style.top = '-9999px';
-      hidden.style.width = '210mm';
+      hidden.style.width = '210mm'; 
       hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
       document.body.appendChild(hidden);
+      
       const { jsPDF } = window.jspdf;
       const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
       const fileName = `orcamento-${clienteNome}.pdf`;
+      
       try {
-        const canvas = await html2canvas(hidden, { scale: 2 });
+        const canvas = await html2canvas(hidden, { scale: 2 }); 
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        let position = 0;
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        if (pdfHeight > pageHeight) {
+          let heightLeft = pdfHeight;
+          while (heightLeft > 0) {
+            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+            heightLeft -= pageHeight;
+            if (heightLeft > 0) {
+              pdf.addPage();
+              position -= pageHeight; 
+            }
+          }
+        } else {
+           pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        }
+
         if (navigator.share && navigator.canShare) {
           const blob = pdf.output('blob');
           const file = new File([blob], fileName, { type: 'application/pdf' });
           if (navigator.canShare({ files: [file] })) {
             await navigator.share({ title: `Orçamento - ${clienteNome}`, text: 'Segue o orçamento em anexo.', files: [file] });
-            document.body.removeChild(hidden);
-            return;
+            if (document.body.contains(hidden)) document.body.removeChild(hidden);
+            return; 
           }
         }
         pdf.save(fileName);
       } catch(e) {
-        console.error(e);
+        console.error("Erro ao gerar/compartilhar PDF:", e);
         if (e.name !== 'AbortError') alert('Erro ao gerar o PDF.');
       } finally {
-        document.body.removeChild(hidden);
+        if (document.body.contains(hidden)) {
+          document.body.removeChild(hidden);
+        }
       }
     };
 
@@ -1250,11 +1297,16 @@
       window.open(whatsappUrl, '_blank');
     };
 
+    // Função de troca de abas
     window.changeTab = (event, tabName) => {
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
       document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(tabName).classList.add('active');
-      document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
+      
+      const contentEl = document.getElementById(tabName);
+      if (contentEl) contentEl.classList.add('active');
+      
+      document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`)
+              .forEach(tab => tab.classList.add('active'));
     };
 
     window.onload = initializeFirebase;
