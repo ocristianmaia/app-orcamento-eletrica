@@ -252,7 +252,6 @@
     </div>
 
     {/* Modal do Orçamento */}
-    {/* ATUALIZADO: Removidos comentários {/**/} */}
     <div id="orcamento-modal" class="modal">
       <div class="bg-white rounded-lg p-6 w-[95%] max-w-[960px] max-height-[90vh] max-h-[90vh] overflow-y-auto shadow-xl">
         <div class="flex justify-between items-center mb-6">
@@ -260,6 +259,7 @@
           <button onclick="closeOrcamentoModal()" class="text-gray-500 text-2xl font-bold">&times;</button>
         </div>
 
+        {/* ATUALIZADO: Removidos comentários {/**/} */}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
            {/* Coluna esquerda */}
            <div class="space-y-6">
@@ -438,7 +438,7 @@
 
         onAuthStateChanged(auth, async (user) => {
           if (user) {
-            userId = user.uid; // Garante que userId está definido aqui
+            userId = user.uid; 
             userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
             loadingOverlay.querySelector('p').textContent = 'Carregando seus dados...';
             
@@ -465,7 +465,7 @@
             appView.classList.remove('hidden');
             loadingOverlay.style.display = 'none';
           } else {
-            userId = null; // Limpa userId no logout
+            userId = null; 
             loginView.classList.remove('hidden');
             appView.classList.add('hidden');
             loadingOverlay.style.display = 'none';
@@ -509,7 +509,7 @@
     function loadAllData() {
       if (!userId) {
         console.warn("loadAllData chamado sem userId.");
-        return; // Sai se não houver userId
+        return; 
       }
       const prefix = `users/${userId}`;
 
@@ -624,7 +624,7 @@
     }
 
     window.deleteCliente = async (id) => {
-       if (!userId) return alert('Faça login novamente.'); // Verifica userId aqui também
+       if (!userId) return alert('Faça login novamente.'); 
       if (confirm('Excluir este cliente?')) { 
         try {
           await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); 
@@ -662,7 +662,7 @@
     }
 
     window.deleteMaterial = async (id) => {
-      if (!userId) return alert('Faça login novamente.'); // Verifica userId aqui também
+      if (!userId) return alert('Faça login novamente.'); 
       if (confirm('Excluir este item?')) { 
         try {
           await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); 
@@ -739,7 +739,7 @@
     }
 
     window.deleteTipoDeServico = async (id) => {
-      if (!userId) return alert('Faça login novamente.'); // Verifica userId aqui também
+      if (!userId) return alert('Faça login novamente.'); 
       if (confirm('Excluir este tipo de serviço?')) { 
         try {
           await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`)); 
@@ -898,25 +898,34 @@
       openOrcamentoModal(orc);
     };
 
-    // ATUALIZADO: Função deleteOrcamento com verificação de userId e try/catch
+    // ATUALIZADO: Função deleteOrcamento com verificação de userId reforçada e alert de sucesso
     window.deleteOrcamento = async (id) => {
+      // Log inicial para debug
+      console.log("deleteOrcamento chamado com ID:", id); 
+      
       if (!userId) { // Verifica se userId está definido ANTES de tudo
           console.error("Tentativa de exclusão sem userId.");
           return alert('Erro: Usuário não identificado. Faça login novamente.');
       }
+      
+      // Confirmação com o usuário
       if(confirm('Excluir este orçamento permanentemente?')) { 
-        console.log("Tentando excluir orçamento com ID:", id, "para userId:", userId);
+        console.log("Usuário confirmou exclusão. Tentando excluir ID:", id, "para userId:", userId);
         try {
           const docRef = doc(db, `users/${userId}/orcamentos/${id}`);
           await deleteDoc(docRef); 
-          console.log("Orçamento excluído com sucesso (ID:", id, ")");
-          // O onSnapshot cuidará de remover da interface, não precisa de alert aqui.
+          console.log("Orçamento excluído com sucesso do Firestore (ID:", id, ")");
+          alert('Orçamento excluído com sucesso!'); // Feedback visual explícito
+          // O onSnapshot cuidará de remover da interface automaticamente.
         } catch (e) {
-          console.error("Erro ao excluir orçamento:", e);
+          console.error("Erro ao excluir orçamento no Firestore:", e);
           alert("Erro ao excluir o orçamento. Verifique o console para mais detalhes.");
         }
+      } else {
+        console.log("Usuário cancelou a exclusão.");
       }
     };
+
 
     window.openOrcamentoModal = (orcamentoParaEditar = null) => {
       try {
@@ -1062,7 +1071,7 @@
       });
     });
 
-    // Interações do modal (materiais, serviços, mão de obra)
+    // Interações do modal
     document.getElementById('orc-materiais-list').addEventListener('input', (e) => {
       const target = e.target;
       const materialId = target.dataset.id;
