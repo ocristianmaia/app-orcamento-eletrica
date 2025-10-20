@@ -76,19 +76,23 @@
           </nav>
         </div>
 
-        <div class="mb-6 grid grid-cols-5 sm:hidden gap-2">
-            <button class="mobile-tab active text-white p-4 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Orçamentos</button>
-            <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-green-500" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
-            <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
-            <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-purple-500" data-tab="servicos" onclick="changeTab(event, 'servicos')">Serviços</button>
-            <button class="mobile-tab text-white p-4 rounded-lg shadow-md bg-gray-500" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Conf.</button>
-        </div>
+        <div class="mb-6 sm:hidden space-y-2">
+            <div class="grid grid-cols-3 gap-2">
+                <button class="mobile-tab active text-white p-3 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Orçamentos</button>
+                <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-green-500" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
+                <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-purple-500" data-tab="servicos" onclick="changeTab(event, 'servicos')">Serviços</button>
+                <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-gray-500" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Conf.</button>
+                <div class="h-full"></div> </div>
+            </div>
 
         <main>
           <div id="orcamentos" class="tab-content active space-y-4">
             <div class="grid grid-cols-2 gap-4">
               <button onclick="showAllOrcamentosPage()" class="bg-gray-800 text-white p-4 rounded-lg flex justify-center items-center shadow hover:bg-gray-900 transition-colors">
-                <h2 class="text-xl font-semibold text-center">Orçamentos Salvos</h2>
+                <h2 class="text-xl font-semibold text-center">Orçamentos</h2>
               </button>
               <button onclick="openOrcamentoModal()" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium flex justify-center items-center">
                 <span class="text-xl font-semibold">+ Novo Orçamento</span>
@@ -97,6 +101,7 @@
             <h3 class="text-lg font-semibold text-gray-700 pt-4">Últimos 3 Orçamentos</h3>
             <div id="orcamentos-list-recent" class="space-y-3"></div>
           </div>
+
           <div id="clientes" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
               <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Cliente</h2>
@@ -186,6 +191,7 @@
               </div>
             </div>
           </div>
+
           <div id="configuracoes" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
               <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
@@ -349,6 +355,7 @@
   messagingSenderId: "424397941585",
   appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
 };
+
     // Imports Firebase
     import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -794,7 +801,7 @@
       mainView.classList.remove('hidden');
     };
 
-    // ATUALIZADO: Função de editar mais robusta e com logs
+    // Função de editar orçamento
     window.editOrcamento = (id) => {
       console.log("Tentando editar ID:", id, `(tipo: ${typeof id})`);
       if (!appState.orcamentos || appState.orcamentos.length === 0) {
@@ -802,7 +809,6 @@
         return alert('Erro: Nenhuma lista de orçamentos carregada.');
       }
       
-      // Compara como strings e remove espaços em branco
       const orc = appState.orcamentos.find(o => String(o.id).trim() === String(id).trim());
       
       if (!orc) {
@@ -815,8 +821,23 @@
       openOrcamentoModal(orc);
     };
 
+    // REVISADO: Função de exclusão de orçamento
     window.deleteOrcamento = async (id) => {
-      if(confirm('Excluir este orçamento?')) { await deleteDoc(doc(db, `users/${userId}/orcamentos/${id}`)); }
+      if (!userId) {
+        alert('Faça login para excluir orçamentos.');
+        return;
+      }
+      if(confirm('Excluir este orçamento? Esta ação é irreversível.')) {
+        try {
+          // Utiliza a referência correta do documento no Firestore
+          await deleteDoc(doc(db, `users/${userId}/orcamentos/${id}`));
+          alert('Orçamento excluído com sucesso.');
+          // O onSnapshot se encarrega de atualizar a lista
+        } catch (e) {
+          console.error('Erro ao excluir orçamento:', e);
+          alert('Erro ao excluir o orçamento. Tente novamente.');
+        }
+      }
     };
 
     window.openOrcamentoModal = (orcamentoParaEditar = null) => {
