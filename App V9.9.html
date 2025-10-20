@@ -408,11 +408,12 @@
       };
     }
     
-    // FUNÇÃO AUXILIAR GLOBAL (CORREÇÃO DE SINTAXE: Dupla declaração de groupBy removida)
+    // FUNÇÃO AUXILIAR GERAL
     function groupBy(arr, key) { return (arr || []).reduce((acc,cur)=>{ const k=cur[key]||'OUTROS'; (acc[k]||(acc[k]=[])).push(cur); return acc; },{}); }
     
     // ==========================================================
-    // FUNÇÕES AUXILIARES DE POPULAMENTO (MOVIDAS PARA O TOPO)
+    // FUNÇÕES AUXILIARES DE POPULAMENTO (AGORA NO TOPO)
+    // Estas precisam vir antes da openOrcamentoModal e loadAllData
     // ==========================================================
     function populateClienteSelect() {
       const selectEl = document.getElementById('orc-cliente-select');
@@ -772,7 +773,7 @@
         const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
 
         // Normaliza nomes de colunas
-        const norm = (s) => String(s||'').normalize('NFD').replace(/\\p{Diacritic}/gu,'').toLowerCase().trim();
+        const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
         const headerMapCandidates = {
           categoria: ['categoria','grupo','setor'],
           descricao: ['descricao','descrição','servico','serviço','atividade','item'],
@@ -800,7 +801,7 @@
         rows.forEach(r => {
           const categoria = String(r[colMap.categoria]||'').toUpperCase().trim() || 'OUTROS';
           const descricao = String(r[colMap.descricao]||'').trim();
-          const rawValor = (r[colMap.valor] ?? '').toString().replace(',', '.').replace(/\\s/g,'');
+          const rawValor = (r[colMap.valor] ?? '').toString().replace(',', '.').replace(/\s/g,'');
           const valor = parseFloat(rawValor) || 0;
           if (!categoria || !descricao || !valor) return;
           const ref = doc(collection(db, `${prefix}/tiposdeservico`));
@@ -820,7 +821,7 @@
 
     async function clearAllTiposDeServico() {
       if (!userId) return alert('Faça login.');
-      if (!confirm('ATENÇÃO!\\n\\nIsso apagará TODOS os Tipos de Serviço cadastrados. Deseja continuar?')) return;
+      if (!confirm('ATENÇÃO!\n\nIsso apagará TODOS os Tipos de Serviço cadastrados. Deseja continuar?')) return;
       
       const status = document.getElementById('xlsx-status');
       status.textContent = 'Apagando todos os serviços...';
@@ -861,7 +862,7 @@
     function renderOrcamentosList(isFullList = false) {
       const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
       if (!el) return;
-      const list = (appState.orcamentos || []).filter(orc => orc.id).slice(0, isFullList ? appState.orcamentos.length : 3);
+      const list = (appState.orcamentos || []).filter(orc => orc.id).slice(0, isFullList ? appState.orcamentos.length : 3); // Filtra itens sem ID (null) e pega 3 ou todos
       
       if (!list.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; return; }
       
@@ -879,10 +880,12 @@
         // Nome abreviado (primeiro e segundo nome)
         const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
         
-        // Usa o nome completo para a lista completa e abreviado na lista recente
+        // Usa o nome completo para a lista completa (Desktop) e abreviado para a lista recente (Mobile)
         const nomeParaExibir = isFullList ? nome : nomeAbreviado; 
         
+        // Renderização para a lista COMPLETA (com checkbox) - Visível no desktop e na página "Todos"
         if (isFullList) {
+            // Verifica o estado no Set para garantir que a checkbox correta esteja marcada.
             const isChecked = appState.orcamentosParaExcluir.has(orc.id); 
             return `
               <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
@@ -901,6 +904,7 @@
               </div>`;
         }
         
+        // Renderização para a lista RECENTE (sem checkbox) - Visível na tela inicial
         return `
           <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
             <div class="flex justify-between items-baseline w-full">
@@ -919,14 +923,21 @@
     // NOVO: Adiciona/remove ID para exclusão (Tornando global para acesso via onclick)
     window.toggleOrcamentoExclusao = (checkbox) => {
         const id = checkbox.dataset.id;
-        if (checkbox.checked) appState.orcamentosParaExcluir.add(id);
-        else appState.orcamentosParaExcluir.delete(id);
+        // Lógica de Set/Unset está correta
+        if (checkbox.checked) {
+            appState.orcamentosParaExcluir.add(id);
+        } else {
+            appState.orcamentosParaExcluir.delete(id);
+        }
+        // Chamada de atualização deve vir aqui
         updateDeleteButtonState(); 
+        // Adicionando console log para verificar a contagem
         console.log("Itens selecionados para exclusão:", appState.orcamentosParaExcluir.size, Array.from(appState.orcamentosParaExcluir));
     };
 
-    // CORRIGIDO: Usa o novo modal de confirmação (Tornando global)
+    // CORRIGIDO: Usa o novo modal de confirmação para a contagem correta (Tornando global)
     window.confirmDeleteSelectedOrcamentos = () => {
+        // A contagem FINAL é feita aqui, garantindo que o Set esteja correto.
         const count = appState.orcamentosParaExcluir.size; 
         if (count === 0) {
             alert('Nenhum orçamento selecionado para exclusão.');
@@ -935,23 +946,29 @@
 
         const modal = document.getElementById('delete-confirm-modal');
         const messageEl = document.getElementById('delete-confirm-message');
+        
+        // A mensagem agora usa a contagem correta
         messageEl.innerHTML = `ATENÇÃO! Você irá excluir **${count}** orçamento(s) selecionado(s). Esta ação é irreversível. Deseja continuar?`;
         modal.classList.add('active');
     };
 
-    // Fechar/confirmar modal (Tornando global)
+    // NOVO: Função para fechar e processar o modal de confirmação de exclusão (Tornando global)
     window.closeDeleteConfirmModal = (confirmAction) => {
         const modal = document.getElementById('delete-confirm-modal');
         modal.classList.remove('active');
 
-        if (confirmAction) deleteOrcamentosEmLote(Array.from(appState.orcamentosParaExcluir));
+        if (confirmAction) {
+             // Passa o array de IDs correto para a exclusão
+             deleteOrcamentosEmLote(Array.from(appState.orcamentosParaExcluir));
+        }
     };
 
 
-    // Exclusão em lote
+    // REVISADO FINALMENTE: Função de exclusão de orçamento (em lote)
     async function deleteOrcamentosEmLote(ids) {
       if (!userId) {
-        console.error('ERRO DE EXCLUSÃO: userId não está definido.');
+        console.error('ERRO DE EXCLUSÃO: userId não está definido. O usuário não está logado ou a autenticação falhou.');
+        // Se o userId falhou aqui, o problema é na autenticação ou na variável global.
         alert('Falha crítica na autenticação (userId ausente). Por favor, saia e entre novamente.');
         return;
       }
@@ -965,7 +982,12 @@
         console.log(`Iniciando exclusão em lote para ${ids.length} IDs. userId: ${userId}`);
         
         ids.forEach(id => {
-            if (!id) { console.warn('ID inválido ignorado.'); return; }
+            // CORREÇÃO CRÍTICA: Ignora IDs nulos ou vazios para evitar a falha '.../orcamentos/null'
+            if (!id) {
+                console.warn(`AVISO: Tentativa de excluir um ID de orçamento inválido (null/undefined). Ignorado.`);
+                return; 
+            }
+            // AQUI está o caminho crítico. Ele PRECISA ser users/{userId}/orcamentos/{id}
             const docPath = `users/${userId}/orcamentos/${id}`;
             const docRef = doc(db, docPath);
             batch.delete(docRef);
@@ -974,38 +996,43 @@
         });
 
         if (validIdsCount === 0) {
-            console.warn("Nenhum ID válido para exclusão.");
+            console.warn("AVISO: Nenhum ID de orçamento válido encontrado para exclusão.");
             return;
         }
         
         await batch.commit();
+        
+        // Limpa a seleção e atualiza a UI
         appState.orcamentosParaExcluir.clear();
         alert(`${validIdsCount} orçamento(s) excluído(s) com sucesso.`);
+        // O onSnapshot se encarrega de atualizar as listas
       } catch (e) {
-        console.error('Erro ao excluir em lote:', e);
-        alert(`Erro ao excluir ${ids.length} orçamento(s). Detalhe: ${e.message}.`);
+        console.error('ERRO CRÍTICO ao excluir orçamentos em lote. Erro retornado:', e);
+        // Exibe o erro específico (que deve ser "Permission Denied" se for regra de segurança)
+        alert(`Erro ao excluir ${ids.length} orçamento(s). Detalhe: ${e.message}. Verifique a aba Console (F12).`);
       } finally {
         btn.disabled = false;
         updateDeleteButtonState();
       }
     };
 
-    // Navegação globais
+    // Tornando as funções de navegação globais para o HTML
     window.showAllOrcamentosPage = () => {
       mainView.classList.add('hidden');
       allOrcamentosView.classList.remove('hidden');
+      // Limpa a seleção para garantir a contagem correta
       appState.orcamentosParaExcluir.clear();
       updateDeleteButtonState();
-      renderOrcamentosList(true);
+      renderOrcamentosList(true); // Re-renderiza a lista completa ao mostrar
     };
     window.showMainPage = () => {
       allOrcamentosView.classList.add('hidden');
       mainView.classList.remove('hidden');
-      appState.orcamentosParaExcluir.clear();
+      appState.orcamentosParaExcluir.clear(); // Limpa a seleção ao voltar
       updateDeleteButtonState();
     };
 
-    // Editar orçamento
+    // Função de editar orçamento (Tornando global)
     window.editOrcamento = (id) => {
       console.log("Tentando editar ID:", id, `(tipo: ${typeof id})`);
       if (!appState.orcamentos || appState.orcamentos.length === 0) {
@@ -1022,105 +1049,28 @@
       }
       
       console.log("Orçamento encontrado:", orc);
-      window.openOrcamentoModal(orc);
+      window.openOrcamentoModal(orc); // Certifique-se de que openOrcamentoModal também está global
     };
 
-    // Troca de abas
+    // Tornando a função de troca de aba global
     window.changeTab = (event, tabName) => {
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
       document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
       document.getElementById(tabName).classList.add('active');
-      document.querySelectorAll(\`.tab[data-tab="\${tabName}"], .mobile-tab[data-tab="\${tabName}"]\`).forEach(tab => tab.classList.add('active'));
+      document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
     };
     
-    // Abrir modal orçamento + listeners funcionais
+    // Tornando a função de abrir modal global
     window.openOrcamentoModal = (orcamentoParaEditar = null) => {
+      // Conteúdo original da função openOrcamentoModal...
       try {
         const modal = document.getElementById('orcamento-modal');
         const clienteSelect = document.getElementById('orc-cliente-select');
         modal.classList.add('active');
+        // Chamadas para as funções de populamento
         populateClienteSelect();
         populateMateriaisOrcamento();
         populateTiposDeServicoOrcamento();
-
-        // Anexa listeners UMA única vez
-        if (!window._orcListenersAttached) {
-          window._orcListenersAttached = true;
-
-          // Materiais: marcar e quantidade
-          const matList = document.getElementById('orc-materiais-list');
-          matList.addEventListener('change', (ev) => {
-            const target = ev.target;
-            // Checkbox toggled
-            if (target.matches('input[type="checkbox"][data-id]')) {
-              const id = target.dataset.id;
-              const qtyInput = matList.querySelector(\`input[type="number"][data-id="\${id}"]\`);
-              if (target.checked) {
-                qtyInput.disabled = false;
-                const mat = (appState.materiais || []).find(m => m.id === id);
-                if (mat) {
-                  const exists = (appState.currentOrcamento.items || []).some(i => i.id === id);
-                  if (!exists) appState.currentOrcamento.items.push({ id, nome: mat.nome, valor: mat.valor, unidade: mat.unidade, quantidade: parseInt(qtyInput.value)||1 });
-                }
-              } else {
-                qtyInput.disabled = true;
-                appState.currentOrcamento.items = (appState.currentOrcamento.items || []).filter(i => i.id !== id);
-                qtyInput.value = '1';
-              }
-              updateOrcamentoPreview();
-            }
-            // Quantidade alterada
-            if (target.matches('input[type="number"][data-id]')) {
-              const id = target.dataset.id;
-              const item = (appState.currentOrcamento.items || []).find(i => i.id === id);
-              if (item) item.quantidade = parseInt(target.value) || 1;
-              updateOrcamentoPreview();
-            }
-          });
-
-          // Tipos de serviço: marcar
-          const tiposList = document.getElementById('orc-tiposdeservico-list');
-          tiposList.addEventListener('change', (ev) => {
-            const cb = ev.target;
-            if (!cb.matches('input[type="checkbox"][data-id]')) return;
-            const id = cb.dataset.id;
-            const s = (appState.tiposDeServico || []).find(x => x.id === id);
-            if (!s) return;
-            if (cb.checked) {
-              const exists = (appState.currentOrcamento.tiposDeServico || []).some(t => t.id === id);
-              if (!exists) appState.currentOrcamento.tiposDeServico.push({ id: s.id, descricao: s.descricao, valor: s.valor, categoria: s.categoria });
-            } else {
-              appState.currentOrcamento.tiposDeServico = (appState.currentOrcamento.tiposDeServico || []).filter(t => t.id !== id);
-            }
-            updateOrcamentoPreview();
-          });
-
-          // Filtro de tipos de serviço
-          document.getElementById('filter-tipos').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            // Varre todos labels dentro dos details
-            document.querySelectorAll('#orc-tiposdeservico-list details label').forEach(lbl => {
-              const txt = lbl.innerText.toLowerCase();
-              lbl.style.display = txt.includes(term) ? '' : 'none';
-            });
-          });
-
-          // Tipo de obra e mão de obra
-          const obraWrap = document.getElementById('orc-tipo-obra');
-          obraWrap.addEventListener('change', (e) => {
-            const sel = document.querySelector('input[name="tipo-obra"]:checked')?.value || 'residencial';
-            appState.currentOrcamento.tipoObra = sel;
-            // Ajusta label
-            const span = document.getElementById('ponto-label-span');
-            if (span) span.textContent = sel === 'industrial' ? 'Por Equipamento' : 'Por Ponto';
-            calculateMaoDeObra();
-            updateOrcamentoPreview();
-          });
-
-          // Mão de obra radios/inputs
-          document.getElementById('orc-mao-de-obra').addEventListener('input', () => { calculateMaoDeObra(); updateOrcamentoPreview(); });
-          document.getElementById('orc-mao-de-obra').addEventListener('change', () => { calculateMaoDeObra(); updateOrcamentoPreview(); });
-        }
 
         if (orcamentoParaEditar) {
           document.getElementById('modal-title').textContent = 'Editar Orçamento';
@@ -1135,12 +1085,12 @@
             clienteSelect.value = clone.cliente.id;
           } else { clienteSelect.value = ''; }
 
-          const obraRadio = document.querySelector(\`input[name="tipo-obra"][value="\${clone.tipoObra}"]\`);
+          const obraRadio = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
           if (obraRadio) obraRadio.checked = true;
 
           const mao = clone.maoDeObra;
           if (mao && mao.tipo) {
-            const tipoServicoRadio = document.querySelector(\`input[name="tipo-servico"][value="\${mao.tipo}"]\`);
+            const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${mao.tipo}"]`);
             if (tipoServicoRadio) {
               tipoServicoRadio.checked = true;
               const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
@@ -1153,14 +1103,14 @@
           clienteSelect.dispatchEvent(new Event('change'));
 
           setTimeout(() => {
-            (clone.items || '').length && (clone.items || []).forEach(item => {
-              const cb  = document.querySelector(\`#orc-materiais-list input[type="checkbox"][data-id="\${item.id}"]\`);
-              const qty = document.querySelector(\`#orc-materiais-list input[type="number"][data-id="\${item.id}"]\`);
+            (clone.items || []).forEach(item => {
+              const cb  = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
+              const qty = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
               if (cb) cb.checked = true;
               if (qty) { qty.disabled = false; qty.value = item.quantidade ?? 1; }
             });
-            (clone.tiposDeServico || '').length && (clone.tiposDeServico || []).forEach(service => {
-              const checkbox = document.querySelector(\`#orc-tiposdeservico-list input[data-id="\${service.id}"]\`);
+            (clone.tiposDeServico || []).forEach(service => {
+              const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
               if(checkbox) checkbox.checked = true;
             });
             const tipoObraWrap = document.getElementById('orc-tipo-obra');
@@ -1171,7 +1121,7 @@
         } else {
           document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
           resetCurrentOrcamento();
-          const obraRadio = document.querySelector(\`input[name="tipo-obra"][value="residencial"]\`);
+          const obraRadio = document.querySelector(`input[name="tipo-obra"][value="residencial"]`);
           if (obraRadio) obraRadio.checked = true;
           clienteSelect.value = '';
           clienteSelect.dispatchEvent(new Event('change'));
@@ -1179,11 +1129,12 @@
         }
       } catch (err) {
         console.error("[openOrcamentoModal] Erro:", err);
+        // O alerta de erro agora é mais claro sobre a causa
         alert("Ocorreu um erro ao abrir o modal. Provavelmente, dados essenciais não foram carregados do Firebase. Verifique o Console (F12) para detalhes.");
       }
     };
     
-    // Fechar modal
+    // Tornando a função de fechar modal global
     window.closeOrcamentoModal = () => {
       document.getElementById('orcamento-modal').classList.remove('active');
       resetCurrentOrcamento();
@@ -1200,7 +1151,7 @@
       document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
     };
     
-    // Salvar/atualizar orçamento
+    // Funções de salvamento (precisam estar completas no código final)
     window.saveOrcamento = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
       const data = { ...appState.currentOrcamento };
@@ -1235,7 +1186,7 @@
       hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
       document.body.appendChild(hidden);
       const { jsPDF } = window.jspdf;
-      const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\\s+/g, '-') || 'cliente';
+      const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
       const fileName = `orcamento-${clienteNome}.pdf`;
       try {
         const canvas = await html2canvas(hidden, { scale: 2 });
@@ -1266,17 +1217,16 @@
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
       const fullClient = appState.currentOrcamento.cliente;
       if (!fullClient) return alert('Cliente não encontrado.');
-      const telefone = String(fullClient.telefone||'').replace(/\\D/g, '');
-      if (!telefone) return alert('Telefone do cliente inválido.');
+      const telefone = fullClient.telefone.replace(/\D/g, '');
       const nomeProfissional = appState.config.nome || 'nós';
-      const mensagem = \`Olá \${fullClient.nome}! Segue o orçamento que você solicitou com \${nomeProfissional}, no valor total de R$ \${(appState.currentOrcamento.total||0).toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!\`;
-      const whatsappUrl = \`https://wa.me/55\${telefone}?text=\${encodeURIComponent(mensagem)}\`;
+      const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
+      const whatsappUrl = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
       window.open(whatsappUrl, '_blank');
     };
     
-    // Auxiliares de cálculo/preview
-    window.calculateMaoDeObra = calculateMaoDeObra;
-    window.updateOrcamentoPreview = updateOrcamentoPreview;
+    // Funções auxiliares (calculos, populamento, etc) que podem ser chamadas em outros escopos
+    window.calculateMaoDeObra = calculateMaoDeObra; // Tornando global
+    window.updateOrcamentoPreview = updateOrcamentoPreview; // Tornando global
     
     function calculateMaoDeObra() {
       const tipoSelecionado = document.querySelector('input[name="tipo-servico"]:checked');
@@ -1288,7 +1238,7 @@
       let valor = 0, label = '', raw_value = 0;
       const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
       const rates = {
-        empreitada: appState.config.residencial_empreitada || 0,
+        empreitada: appState.config.residencial_empreitada || 0, // NOVO CAMPO
         diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
         ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial_ponto) || 0,
         hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0,
@@ -1296,11 +1246,13 @@
       
       switch(tipo) {
         case 'empreitada':
+          // Se for residencial/predial, usa o valor da configuração (se definido)
           if (tipoObra === 'residencial' && rates.empreitada > 0) {
               valor = rates.empreitada;
               label = 'Empreitada (Valor Fixo da Configuração)';
               raw_value = rates.empreitada;
           } else {
+              // Permite entrada manual para Empreitada ou se não houver valor fixo em config
               raw_value = parseFloat(document.getElementById('empreitada-valor').value) || 0;
               valor = raw_value; 
               label = 'Empreitada (Valor Manual)';
@@ -1308,13 +1260,13 @@
           break;
         case 'diaria':
           raw_value = parseInt(document.getElementById('diaria-qtd').value) || 0;
-          valor = raw_value * rates.diaria; label = \`\${raw_value} diária(s)\`; break;
+          valor = raw_value * rates.diaria; label = `${raw_value} diária(s)`; break;
         case 'ponto':
           raw_value = parseInt(document.getElementById('ponto-qtd').value) || 0;
-          valor = raw_value * rates.ponto; label = tipoObra === 'industrial' ? \`\${raw_value} equipamento(s)\` : \`\${raw_value} ponto(s)\`; break;
+          valor = raw_value * rates.ponto; label = tipoObra === 'industrial' ? `${raw_value} equipamento(s)` : `${raw_value} ponto(s)`; break;
         case 'hora':
           raw_value = parseFloat(document.getElementById('hora-qtd').value) || 0;
-          valor = raw_value * rates.hora; label = \`\${raw_value} hora(s)\`; break;
+          valor = raw_value * rates.hora; label = `${raw_value} hora(s)`; break;
       }
       appState.currentOrcamento.maoDeObra = { tipo, valor, label, raw_value };
     }
@@ -1330,25 +1282,25 @@
 
       let tiposDeServicoHtml = '';
       if (currentOrcamento.tiposDeServico && currentOrcamento.tiposDeServico.length > 0) {
-        const servicosContent = currentOrcamento.tiposDeServico.map(s => `<tr><td style="padding: 4px 2px;">\${s.descricao}</td><td style="text-align: right;">R$ \${s.valor.toFixed(2)}</td></tr>`).join('');
+        const servicosContent = currentOrcamento.tiposDeServico.map(s => `<tr><td style="padding: 4px 2px;">${s.descricao}</td><td style="text-align: right;">R$ ${s.valor.toFixed(2)}</td></tr>`).join('');
         tiposDeServicoHtml = `
         <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">TIPOS DE SERVIÇO:</h4>
         <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 10px;">
           <thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">Valor</th></tr></thead>
-          <tbody>\${servicosContent}</tbody>
+          <tbody>${servicosContent}</tbody>
         </table>
         <hr style="margin: 15px 0;">`;
       }
 
-      const subtotalServicos = (currentOrcamento.tiposDeServico||[]).reduce((sum, service) => sum + (service.valor||0), 0);
-      const subtotalMateriais = (currentOrcamento.items||[]).reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
-      const itemsHtml = (currentOrcamento.items||[]).map(item => {
+      const subtotalServicos = currentOrcamento.tiposDeServico.reduce((sum, service) => sum + service.valor, 0);
+      const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
+      const itemsHtml = currentOrcamento.items.map(item => {
         const itemTotal = item.valor * (item.quantidade || 1);
         return `<tr>
-          <td style="padding: 4px 2px; text-align: left;">\${item.nome}</td>
-          <td style="padding: 4px 2px; text-align: center;">\${item.quantidade || 1} \${item.unidade || 'UNID'}</td>
-          <td style="padding: 4px 2px; text-align: right;">R$ \${item.valor.toFixed(2)}</td>
-          <td style="padding: 4px 2px; text-align: right;">R$ \${itemTotal.toFixed(2)}</td>
+          <td style="padding: 4px 2px; text-align: left;">${item.nome}</td>
+          <td style="padding: 4px 2px; text-align: center;">${item.quantidade || 1} ${item.unidade || 'UNID'}</td>
+          <td style="padding: 4px 2px; text-align: right;">R$ ${item.valor.toFixed(2)}</td>
+          <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
         </tr>`;
       }).join('');
       const totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
@@ -1356,27 +1308,27 @@
       const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
       previewEl.innerHTML = `
         <div style="padding: 10px;">
-          \${config.logo ? `<div style="text-align: center; margin-bottom: 20px;"><img src="\${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px; margin: 0 auto;"></div>` : ''}
+          ${config.logo ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px; margin: 0 auto;"></div>` : ''}
           <div style="text-align: center; margin-bottom: 20px;">
-            <strong style="font-size: 1.2em; display: block;">\${config.nome || 'Nome do Profissional'}</strong>
-            <span style="display: block;">\${config.endereco || ''}</span>
-            <span style="display: block;">Telefone: \${config.telefone || ''} | Doc: \${config.doc || ''}</span>
+            <strong style="font-size: 1.2em; display: block;">${config.nome || 'Nome do Profissional'}</strong>
+            <span style="display: block;">${config.endereco || ''}</span>
+            <span style="display: block;">Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
           </div>
           <hr style="margin: 15px 0;">
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Orçamento para:</h4>
-          <strong style="display: block;">\${fullClient.nome}</strong>
-          <span style="display: block;">\${fullClient.endereco}</span>
-          <span style="display: block;">Telefone: \${fullClient.telefone}</span>
+          <strong style="display: block;">${fullClient.nome}</strong>
+          <span style="display: block;">${fullClient.endereco}</span>
+          <span style="display: block;">Telefone: ${fullClient.telefone}</span>
           <hr style="margin: 15px 0;">
-          \${tiposDeServicoHtml}
+          ${tiposDeServicoHtml}
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">DESCRIÇÃO DOS MATERIAIS:</h4>
           <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
-            \${(currentOrcamento.items||[]).length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>\${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
+            ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
           </table>
-          \${(currentOrcamento.items||[]).length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ \${subtotalMateriais.toFixed(2)}</span></div>` : ''}
+          ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}
           <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">MÃO DE OBRA:</h4>
-          <div style="text-align: right;"><span>\${maoDeObraLabel}: R$ \${totalMaoDeObra.toFixed(2)}</span></div>
-          <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #333;"><span>TOTAL: R$ \${(currentOrcamento.total||0).toFixed(2)}</span></div>
+          <div style="text-align: right;"><span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>
+          <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #333;"><span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span></div>
           <div style="font-size: 0.8em; margin-top: 20px; text-align: center; color: #888;">Orçamento válido por 15 dias.</div>
         </div>`;
     }
