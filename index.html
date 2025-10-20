@@ -208,7 +208,7 @@
                       <label class="block"><span class="text-gray-700">Valor por Ponto (R$)</span><input type="number" step="0.01" id="config-residencial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
                       <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-residencial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
                     </div>
-          _       </div>
+                  </div>
                   <div class="mt-6">
                     <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Industrial</h3>
                     <div class="space-y-4">
@@ -236,7 +236,8 @@
       </div>
     </div>
 
-        <div id="all-orcamentos-view" class="hidden">
+    {/* Todos os Orçamentos */}
+    <div id="all-orcamentos-view" class="hidden">
        <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-2xl font-semibold">Todos os Orçamentos</h2>
@@ -246,7 +247,8 @@
       </div>
     </div>
 
-        <div id="orcamento-modal" class="modal">
+    {/* Modal do Orçamento */}
+    <div id="orcamento-modal" class="modal">
       <div class="bg-white rounded-lg p-6 w-[95%] max-w-[960px] max-height-[90vh] max-h-[90vh] overflow-y-auto shadow-xl">
         <div class="flex justify-between items-center mb-6">
           <h2 id="modal-title" class="text-2xl font-bold">Criar Novo Orçamento</h2>
@@ -254,7 +256,8 @@
         </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-           <div class="space-y-6">             <div>
+           <div class="space-y-6"> {/* Coluna esquerda */}
+            <div>
               <h4 class="text-md font-medium text-gray-800 mb-2">1. Selecione o Cliente</h4>
               <select id="orc-cliente-select" class="w-full p-2 border rounded-md">
                 <option value="">Selecione um cliente</option>
@@ -283,7 +286,7 @@
                   <input type="radio" name="tipo-obra" value="industrial" class="h-4 w-4 text-blue-600 border-gray-300">
                   <span class="ml-3 text-sm font-medium text-gray-900">Industrial</span>
                 </label>
-  t       </div>
+              </div>
             </div>
 
             <div>
@@ -305,7 +308,7 @@
                   <input type="number" step="1" id="ponto-qtd" placeholder="Qtd. pontos" class="ml-auto w-32 p-1 border rounded-md text-sm">
                 </label>
                 <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-_                 <input type="radio" name="tipo-servico" value="hora" class="h-4 w-4 text-blue-600 border-gray-300">
+                  <input type="radio" name="tipo-servico" value="hora" class="h-4 w-4 text-blue-600 border-gray-300">
                   <span class="ml-3 text-sm font-medium text-gray-900">Por Hora</span>
                   <input type="number" step="0.5" id="hora-qtd" placeholder="Qtd. horas" class="ml-auto w-32 p-1 border rounded-md text-sm">
                 </label>
@@ -313,7 +316,8 @@ _                 <input type="radio" name="tipo-servico" value="hora" c
             </div>
           </div>
 
-          <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">             <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
+          <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col"> {/* Coluna direita */}
+            <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
             <div id="pdf-preview" class="flex-grow text-sm">
               <p class="text-gray-500 text-center mt-8">Selecione um cliente e adicione itens para ver o orçamento.</p>
             </div>
@@ -415,7 +419,7 @@ _                 <input type="radio" name="tipo-servico" value="hora" c
       } catch (e) {
         console.error("Erro ao popular serviços padrão:", e);
       }
-  _ }
+    }
 
 
     // ===== Inicialização Firebase e Auth =====
@@ -462,7 +466,7 @@ _                 <input type="radio" name="tipo-servico" value="hora" c
         });
       } catch (e) {
         console.error('Erro ao inicializar Firebase:', e);
-section       loadingOverlay.innerHTML = '<p class="text-red-600">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
+        loadingOverlay.innerHTML = '<p class="text-red-600">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
       }
     }
 
@@ -513,7 +517,7 @@ section       loadingOverlay.innerHTML = '<p class="text-red-600">Erro críti
       });
 
       onSnapshot(query(collection(db, `${prefix}/materiais`)), (snapshot) => {
-section       appState.materiais = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        appState.materiais = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderMateriaisList();
       });
 
@@ -578,7 +582,7 @@ section       appState.materiais = snapshot.docs.map(d => ({ id: d.id, ...d.d
         alert('Configurações salvas!');
       } catch(e) { console.error(e); alert('Erro ao salvar.'); }
       finally { btn.disabled=false; textSpan.classList.remove('hidden'); spinSpan.classList.add('hidden'); }
-    });
+g   });
 
     // ===== Clientes =====
     document.getElementById('form-cliente').addEventListener('submit', async (e) => {
@@ -718,7 +722,7 @@ section       appState.materiais = snapshot.docs.map(d => ({ id: d.id, ...d.d
                 servicos.map(s => `
                   <div class="flex justify-between items-center p-1 border-b border-gray-100">
                     <p class="servico-slim">${s.descricao} — <span class="text-gray-700">R$ ${s.valor.toFixed(2)}</span></p>
-section                   <button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500 hover:text-red-700 text-xl leading-none">&times;</button>
+                    <button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500 hover:text-red-700 text-xl leading-none">&times;</button>
                   </div>
                 `).join('')
               }
@@ -748,7 +752,7 @@ section                   <button onclick="deleteTipoDeServico('${s.id}
       try {
         status.textContent = 'Lendo planilha...';
         const buf = await f.arrayBuffer();
-  _     const wb = XLSX.read(buf, { type:'array' });
+        const wb = XLSX.read(buf, { type:'array' });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
 
@@ -824,7 +828,7 @@ section                   <button onclick="deleteTipoDeServico('${s.id}
       } catch(e) {
         console.error(e);
         status.textContent = 'Erro ao apagar os serviços.';
-      _ alert('Erro ao apagar.');
+        alert('Erro ao apagar.');
       }
     }
     document.getElementById('btn-clear-tiposervico').addEventListener('click', clearAllTiposDeServico);
@@ -887,42 +891,30 @@ section                   <button onclick="deleteTipoDeServico('${s.id}
       openOrcamentoModal(orc);
     };
 
-    // ATUALIZADO: Função deleteOrcamento corrigida para limpar o ID
+    // ATUALIZADO: Função deleteOrcamento com verificação de userId reforçada e alert de sucesso
     window.deleteOrcamento = async (id) => {
-      console.log("deleteOrcamento chamado com ID:", id);
+      console.log("deleteOrcamento chamado com ID:", id); // Log 1: Verifica o ID recebido
       
-      if (!userId) {
+      if (!userId) { // Verifica se userId está definido ANTES de tudo
           console.error("Tentativa de exclusão sem userId.");
           return alert('Erro: Usuário não identificado. Faça login novamente.');
       }
       
       // Confirmação com o usuário
-      if (confirm('Excluir este orçamento permanentemente?')) {
-        // *** INÍCIO DA CORREÇÃO ***
-        // Limpa o ID de qualquer espaço em branco no início ou fim
-        const trimmedId = String(id || '').trim(); 
-        
-        // Se o ID ficar vazio após a limpeza, é inválido
-        if (!trimmedId) { 
-            console.error("Tentativa de exclusão com ID inválido após trim.");
-            return alert('Erro: ID do orçamento inválido.');
-        }
-        // *** FIM DA CORREÇÃO ***
-
-        console.log("Usuário confirmou exclusão. Tentando excluir ID limpo:", trimmedId, "para userId:", userId);
+      if(confirm('Excluir este orçamento permanentemente?')) { 
+        console.log("Usuário confirmou exclusão. Tentando excluir ID:", id, "para userId:", userId); // Log 2: Confirmação e dados
         try {
-          // Usa o ID limpo (trimmedId) para criar a referência do documento
-          const docRef = doc(db, `users/${userId}/orcamentos/${trimmedId}`); 
+          const docRef = doc(db, `users/${userId}/orcamentos/${id}`);
           await deleteDoc(docRef); 
-          console.log("Orçamento excluído com sucesso do Firestore (ID:", trimmedId, ")");
-          alert('Orçamento excluído com sucesso!');
+          console.log("Orçamento excluído com sucesso do Firestore (ID:", id, ")"); // Log 3: Sucesso no DB
+          alert('Orçamento excluído com sucesso!'); // Feedback visual explícito
           // O onSnapshot cuidará de remover da interface automaticamente.
         } catch (e) {
-          console.error("Erro ao excluir orçamento no Firestore:", e);
+          console.error("Erro ao excluir orçamento no Firestore:", e); // Log de Erro detalhado
           alert("Erro ao excluir o orçamento. Verifique o console (F12) para mais detalhes.");
         }
       } else {
-        console.log("Usuário cancelou a exclusão.");
+        console.log("Usuário cancelou a exclusão."); // Log 4: Cancelamento
       }
     };
 
@@ -950,7 +942,7 @@ section                   <button onclick="deleteTipoDeServico('${s.id}
           } else { clienteSelect.value = ''; }
 
           const obraRadio = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
-section           if (obraRadio) obraRadio.checked = true;
+          if (obraRadio) obraRadio.checked = true;
 
           const mao = clone.maoDeObra;
           if (mao && mao.tipo) {
@@ -993,7 +985,7 @@ section           if (obraRadio) obraRadio.checked = true;
         }
       } catch (err) {
         console.error("[openOrcamentoModal] Erro:", err);
-A       alert("Ocorreu um erro ao abrir o modal. Veja o console para detalhes.");
+        alert("Ocorreu um erro ao abrir o modal. Veja o console para detalhes.");
       }
     };
 
@@ -1032,7 +1024,7 @@ A       alert("Ocorreu um erro ao abrir o modal. Veja o console para detalhes
             <span class="ml-3 text-xs">${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</span>
           </label>
           <input type="number" min="1" value="1" data-id="${m.id}" class="w-20 p-1 border rounded-md text-sm ml-2" disabled>
-        </div>`).join('');
+  t     </div>`).join('');
     }
 
     function populateTiposDeServicoOrcamento() {
@@ -1043,7 +1035,7 @@ A       alert("Ocorreu um erro ao abrir o modal. Veja o console para detalhes
       const cats = Object.keys(grouped).sort();
       listEl.innerHTML = cats.map(cat => {
         const servicos = grouped[cat].sort((a,b) => (a.descricao || '').localeCompare(b.descricao || ''));
-section         return `
+        return `
           <details class="group border rounded">
             <summary class="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-200 rounded-md">
               <span class="font-medium text-sm text-gray-700">${cat}</span>
@@ -1097,15 +1089,14 @@ section         return `
       if (e.target.type === 'checkbox') {
         const serviceId = e.target.dataset.id;
         const service = appState.tiposDeServico.find(s => s.id === serviceId);
-Note: The end of the code block was truncated. 
         if (!service) return;
         if (e.target.checked) {
           if (!appState.currentOrcamento.tiposDeServico.some(s => s.id === serviceId)) {
-A           appState.currentOrcamento.tiposDeServico.push(service);
+            appState.currentOrcamento.tiposDeServico.push(service);
           }
         } else {
           appState.currentOrcamento.tiposDeServico = appState.currentOrcamento.tiposDeServico.filter(s => s.id !== serviceId);
-section         }
+        }
         updateOrcamentoPreview();
       }
     });
@@ -1137,7 +1128,7 @@ section         }
       const tipo = tipoSelecionado.value;
       let valor = 0, label = '', raw_value = 0;
       const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
-ci     const rates = {
+      const rates = {
         diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
         ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial_ponto) || 0,
         hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0,
@@ -1155,7 +1146,7 @@ ci     const rates = {
         case 'hora':
           raw_value = parseFloat(document.getElementById('hora-qtd').value) || 0;
           valor = raw_value * rates.hora; label = `${raw_value} hora(s)`; break;
-  s   }
+      }
       appState.currentOrcamento.maoDeObra = { tipo, valor, label, raw_value };
     }
 
@@ -1189,7 +1180,7 @@ ci     const rates = {
           <td style="padding: 4px 2px; text-align: center;">${item.quantidade || 1} ${item.unidade || 'UNID'}</td>
           <td style="padding: 4px 2px; text-align: right;">R$ ${item.valor.toFixed(2)}</td>
           <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
-section         </tr>`;
+        </tr>`;
       }).join('');
       const totalMaoDeObra = currentOrcamento.maoDeObra?.valor || 0; 
       currentOrcamento.total = subtotalServicos + subtotalMateriais + totalMaoDeObra;
@@ -1239,17 +1230,17 @@ section         </tr>`;
           const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), data);
           appState.currentOrcamento.id = ref.id; 
           appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
-A         alert('Orçamento salvo! Você já pode gerar o PDF.');
+          alert('Orçamento salvo! Você já pode gerar o PDF.');
         }
         closeOrcamentoModal();
       } catch(e) {
         console.error("Erro ao salvar orçamento:", e); alert('Erro ao salvar orçamento.');
-      }
+section   }
     };
 
     window.shareOrViewPDF = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
-s     const hidden = document.createElement('div');
+      const hidden = document.createElement('div');
       hidden.style.position = 'absolute'; hidden.style.left = '-9999px'; hidden.style.top = '-9999px';
       hidden.style.width = '210mm'; 
       hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
@@ -1260,7 +1251,7 @@ s     const hidden = document.createElement('div');
       const fileName = `orcamento-${clienteNome}.pdf`;
       
       try {
-        const canvas = await html2canvas(hidden, { scale: 2 });note  
+        const canvas = await html2canvas(hidden, { scale: 2 }); 
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -1272,7 +1263,7 @@ s     const hidden = document.createElement('div');
           let heightLeft = pdfHeight;
           while (heightLeft > 0) {
             pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-is         heightLeft -= pageHeight;
+            heightLeft -= pageHeight;
             if (heightLeft > 0) {
               pdf.addPage();
               position -= pageHeight; 
@@ -1285,8 +1276,8 @@ is         heightLeft -= pageHeight;
         if (navigator.share && navigator.canShare) {
           const blob = pdf.output('blob');
           const file = new File([blob], fileName, { type: 'application/pdf' });
-id         if (navigator.canShare({ files: [file] })) {
-      _       await navigator.share({ title: `Orçamento - ${clienteNome}`, text: 'Segue o orçamento em anexo.', files: [file] });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ title: `Orçamento - ${clienteNome}`, text: 'Segue o orçamento em anexo.', files: [file] });
             if (document.body.contains(hidden)) document.body.removeChild(hidden);
             return; 
           }
@@ -1298,7 +1289,6 @@ a     } catch(e) {
       } finally {
         if (document.body.contains(hidden)) {
           document.body.removeChild(hidden);
-Note: The end of the code block was truncated. 
         }
       }
     };
@@ -1309,15 +1299,14 @@ Note: The end of the code block was truncated.
       if (!fullClient) return alert('Cliente não encontrado.');
       const telefone = fullClient.telefone.replace(/\D/g, '');
       const nomeProfissional = appState.config.nome || 'nós';
-Note: The end of the code block was truncated. 
-      const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
+nbsp;     const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
       const whatsappUrl = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
       window.open(whatsappUrl, '_blank');
     };
 
     // Função de troca de abas
     window.changeTab = (event, tabName) => {
-  s   document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
       document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
       
       const contentEl = document.getElementById(tabName);
@@ -1325,7 +1314,7 @@ Note: The end of the code block was truncated.
       
       document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`)
               .forEach(tab => tab.classList.add('active'));
-section     };
+    };
 
     window.onload = initializeFirebase;
   </script>
