@@ -801,8 +801,11 @@
         const year = String((new Date(date)).getFullYear()).slice(-2);
         const orcamentoId = `OS${numeroFormatado}${month}${year}-${versaoFormatada}`;
         const nome = cliente ? cliente.nome : 'Cliente Excluído';
+        
+        // NOVO: Define a forma de exibição do nome com base no contexto (isFullList)
         const nomes = nome.split(' ');
         const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
+        const nomeParaExibir = isFullList ? nome : nomeAbreviado; 
         
         // Renderização para a lista COMPLETA (com checkbox)
         if (isFullList) {
@@ -813,7 +816,7 @@
                     <label class="flex items-center cursor-pointer flex-grow">
                         <input type="checkbox" data-id="${orc.id}" onchange="toggleOrcamentoExclusao(this)" ${isChecked ? 'checked' : ''} class="h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
                         <div class="ml-3">
-                            <p class="font-medium text-lg text-gray-800">${nomeAbreviado}</p>
+                            <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
                             <p class="text-sm text-gray-500">${orcamentoId}</p>
                         </div>
                     </label>
@@ -828,7 +831,7 @@
         return `
           <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
             <div class="flex justify-between items-baseline w-full">
-              <p class="font-medium text-lg text-gray-800">${nomeAbreviado}</p>
+              <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
               <p class="text-sm text-gray-500">${orcamentoId}</p>
             </div>
             <div class="flex gap-2 self-end">
@@ -864,7 +867,7 @@
         }
     };
 
-    // REVISADO MINUCIOSAMENTE: Função de exclusão de orçamento (em lote)
+    // REVISADO: Função de exclusão de orçamento (em lote)
     async function deleteOrcamentosEmLote(ids) {
       if (!userId) {
         console.error('ERRO DE EXCLUSÃO: userId não está definido. O usuário não está logado ou a autenticação falhou.');
@@ -880,10 +883,10 @@
         console.log(`Iniciando exclusão em lote para ${ids.length} IDs. userId: ${userId}`);
         
         ids.forEach(id => {
-            const docPath = `users/${userId}/orcamentos/${id}`;
-            const docRef = doc(db, docPath);
+            // Garante que a referência do documento está correta
+            const docRef = doc(db, `users/${userId}/orcamentos/${id}`); 
             batch.delete(docRef);
-            console.log(`Adicionado à exclusão: ${docPath}`);
+            console.log(`Adicionado à exclusão: users/${userId}/orcamentos/${id}`);
         });
         
         await batch.commit();
