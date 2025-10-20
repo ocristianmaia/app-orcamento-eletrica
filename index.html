@@ -62,7 +62,7 @@
 
         <div class="mb-6 border-b border-gray-200 hidden sm:block">
           <nav class="flex -mb-px space-x-6">
-            <button class="tab active py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Orçamentos</button>
+            <button class="tab active py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Tela Inicial</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais/Serviços</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="servicos" onclick="changeTab(event, 'servicos')">Serviços</button>
@@ -78,15 +78,21 @@
 
         <div class="mb-6 sm:hidden space-y-2">
             <div class="grid grid-cols-3 gap-2">
-                <button class="mobile-tab active text-white p-3 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Orçamentos</button>
+                <button class="mobile-tab active text-white p-3 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Inicial</button>
                 <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-green-500" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
                 <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
             </div>
             <div class="grid grid-cols-3 gap-2">
                 <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-purple-500" data-tab="servicos" onclick="changeTab(event, 'servicos')">Serviços</button>
-                <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-gray-500" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">Conf.</button>
+                <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-gray-500 flex items-center justify-center" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.525.322 1.017.575 1.558.75.244.081.503.14.767.17.844.088 1.517.766 1.517 1.61z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Conf.
+                </button>
                 <div class="h-full"></div> </div>
-            </div>
+        </div>
 
         <main>
           <div id="orcamentos" class="tab-content active space-y-4">
@@ -821,7 +827,7 @@
       openOrcamentoModal(orc);
     };
 
-    // REVISADO: Função de exclusão de orçamento
+    // REVISADO: Função de exclusão de orçamento (Ajustada para usar userId do escopo)
     window.deleteOrcamento = async (id) => {
       if (!userId) {
         alert('Faça login para excluir orçamentos.');
@@ -829,13 +835,13 @@
       }
       if(confirm('Excluir este orçamento? Esta ação é irreversível.')) {
         try {
-          // Utiliza a referência correta do documento no Firestore
+          // A chave é garantir que 'userId' esteja acessível aqui e que o ID do documento seja o correto.
           await deleteDoc(doc(db, `users/${userId}/orcamentos/${id}`));
           alert('Orçamento excluído com sucesso.');
-          // O onSnapshot se encarrega de atualizar a lista
+          // O onSnapshot se encarrega de atualizar a lista (verifique se a conexão Firebase está ok se a lista não atualizar)
         } catch (e) {
           console.error('Erro ao excluir orçamento:', e);
-          alert('Erro ao excluir o orçamento. Tente novamente.');
+          alert('Erro ao excluir o orçamento. Tente novamente ou verifique sua conexão com a internet.');
         }
       }
     };
