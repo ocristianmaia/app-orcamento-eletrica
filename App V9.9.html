@@ -408,11 +408,11 @@
       };
     }
     
-    // FUNÇÃO AUXILIAR GLOBAL (CORREÇÃO DE SINTAXE: Dupla declaração de groupBy removida)
+    // FUNÇÃO AUXILIAR GERAL
     function groupBy(arr, key) { return (arr || []).reduce((acc,cur)=>{ const k=cur[key]||'OUTROS'; (acc[k]||(acc[k]=[])).push(cur); return acc; },{}); }
     
     // ==========================================================
-    // FUNÇÕES AUXILIARES DE POPULAMENTO (MOVIDAS PARA O TOPO)
+    // FUNÇÕES AUXILIARES DE POPULAMENTO (AGORA NO TOPO)
     // ==========================================================
     function populateClienteSelect() {
       const selectEl = document.getElementById('orc-cliente-select');
@@ -782,7 +782,6 @@
         const keys = rows.length ? Object.keys(rows[0]) : [];
         const colMap = { categoria: null, descricao: null, valor: null };
         keys.forEach(k => {
-          // AQUI: A variável 'nk' não estava declarada como 'const' ou 'let' e era global, causando o SyntaxError.
           const nk = norm(k);
           for (const fld of Object.keys(headerMapCandidates)) {
             if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k;
