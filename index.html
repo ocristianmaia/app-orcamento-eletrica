@@ -259,10 +259,9 @@
           <button onclick="closeOrcamentoModal()" class="text-gray-500 text-2xl font-bold">&times;</button>
         </div>
 
-        {/* ATUALIZADO: Removidos comentários {/**/} */}
+        {/* ATUALIZADO: Comentários {/**/} removidos daqui */}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-           {/* Coluna esquerda */}
-           <div class="space-y-6">
+           <div class="space-y-6"> {/* Coluna esquerda */}
             <div>
               <h4 class="text-md font-medium text-gray-800 mb-2">1. Selecione o Cliente</h4>
               <select id="orc-cliente-select" class="w-full p-2 border rounded-md">
@@ -322,8 +321,7 @@
             </div>
           </div>
 
-          {/* Coluna direita */}
-          <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
+          <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col"> {/* Coluna direita */}
             <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
             <div id="pdf-preview" class="flex-grow text-sm">
               <p class="text-gray-500 text-center mt-8">Selecione um cliente e adicione itens para ver o orçamento.</p>
@@ -900,8 +898,7 @@
 
     // ATUALIZADO: Função deleteOrcamento com verificação de userId reforçada e alert de sucesso
     window.deleteOrcamento = async (id) => {
-      // Log inicial para debug
-      console.log("deleteOrcamento chamado com ID:", id); 
+      console.log("deleteOrcamento chamado com ID:", id); // Log 1: Verifica o ID recebido
       
       if (!userId) { // Verifica se userId está definido ANTES de tudo
           console.error("Tentativa de exclusão sem userId.");
@@ -910,19 +907,19 @@
       
       // Confirmação com o usuário
       if(confirm('Excluir este orçamento permanentemente?')) { 
-        console.log("Usuário confirmou exclusão. Tentando excluir ID:", id, "para userId:", userId);
+        console.log("Usuário confirmou exclusão. Tentando excluir ID:", id, "para userId:", userId); // Log 2: Confirmação e dados
         try {
           const docRef = doc(db, `users/${userId}/orcamentos/${id}`);
           await deleteDoc(docRef); 
-          console.log("Orçamento excluído com sucesso do Firestore (ID:", id, ")");
+          console.log("Orçamento excluído com sucesso do Firestore (ID:", id, ")"); // Log 3: Sucesso no DB
           alert('Orçamento excluído com sucesso!'); // Feedback visual explícito
           // O onSnapshot cuidará de remover da interface automaticamente.
         } catch (e) {
-          console.error("Erro ao excluir orçamento no Firestore:", e);
-          alert("Erro ao excluir o orçamento. Verifique o console para mais detalhes.");
+          console.error("Erro ao excluir orçamento no Firestore:", e); // Log de Erro detalhado
+          alert("Erro ao excluir o orçamento. Verifique o console (F12) para mais detalhes.");
         }
       } else {
-        console.log("Usuário cancelou a exclusão.");
+        console.log("Usuário cancelou a exclusão."); // Log 4: Cancelamento
       }
     };
 
