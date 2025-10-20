@@ -331,8 +331,6 @@
   </div> <script type="module">
     // ===== Firebase config (preservado do seu arquivo) =====
     // ATENÇÃO: SUBSTITUA COM SUAS PRÓPRIAS CHAVES DO FIREBASE
-    // Erros de "não encontrado" ou "conectando" podem ser
-    // causados por chaves incorretas.
     const firebaseConfig = {
   apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
   authDomain: "app-orcamentos-eletrica.firebaseapp.com",
@@ -374,6 +372,47 @@
       };
     }
 
+    // --- NOVO: Função para popular serviços padrão ---
+    async function populateDefaultServices(userId) {
+      console.log('Populando serviços padrão para novo usuário:', userId);
+      const defaultServices = [
+        { categoria: 'INSTALAÇÃO - TOMADAS', descricao: 'Instalação de Ponto de Tomada Simples (sem acabamento)', valor: 80.00 },
+        { categoria: 'INSTALAÇÃO - TOMADAS', descricao: 'Instalação de Ponto de Tomada Dupla (sem acabamento)', valor: 90.00 },
+        { categoria: 'INSTALAÇÃO - TOMADAS', descricao: 'Substituição de Tomada (simples)', valor: 45.00 },
+        { categoria: 'INSTALAÇÃO - TOMADAS', descricao: 'Substituição de Tomada (dupla)', valor: 50.00 },
+        { categoria: 'INSTALAÇÃO - ILUMINAÇÃO', descricao: 'Instalação de Ponto de Luz (simples)', valor: 75.00 },
+        { categoria: 'INSTALAÇÃO - ILUMINAÇÃO', descricao: 'Instalação de Luminária/Plafon Simples', valor: 60.00 },
+        { categoria: 'INSTALAÇÃO - ILUMINAÇÃO', descricao: 'Instalação de Lustre (simples)', valor: 120.00 },
+        { categoria: 'INSTALAÇÃO - ILUMINAÇÃO', descricao: 'Instalação de Interruptor Simples', valor: 45.00 },
+        { categoria: 'INSTALAÇÃO - ILUMINAÇÃO', descricao: 'Instalação de Interruptor Paralelo (Three-Way)', valor: 70.00 },
+        { categoria: 'INSTALAÇÃO - CHUVEIROS', descricao: 'Instalação de Chuveiro Elétrico (simples)', valor: 90.00 },
+        { categoria: 'INSTALAÇÃO - CHUVEIROS', descricao: 'Substituição de Resistência de Chuveiro', valor: 50.00 },
+        { categoria: 'QUADROS DE DISTRIBUIÇÃO', descricao: 'Instalação de Quadro de Distribuição (QDC) - 8 Disjuntores', valor: 250.00 },
+        { categoria: 'QUADROS DE DISTRIBUIÇÃO', descricao: 'Instalação de Disjuntor Monopolar (unid)', valor: 30.00 },
+        { categoria: 'QUADROS DE DISTRIBUIÇÃO', descricao: 'Instalação de Disjuntor Bipolar (unid)', valor: 45.00 },
+        { categoria: 'QUADROS DE DISTRIBUIÇÃO', descricao: 'Instalação de Dispositivo DR', valor: 90.00 },
+        { categoria: 'SERVIÇOS GERAIS', descricao: 'Visita Técnica / Orçamento (taxa de deslocamento)', valor: 70.00 },
+        { categoria: 'SERVIÇOS GERAIS', descricao: 'Ponto de Força (Ar Condicionado, Forno Elétrico)', valor: 150.00 },
+      ];
+      
+      try {
+        const prefix = `users/${userId}`;
+        const batch = writeBatch(db);
+        
+        defaultServices.forEach(service => {
+          const ref = doc(collection(db, `${prefix}/tiposdeservico`));
+          batch.set(ref, service);
+        });
+        
+        await batch.commit();
+        console.log('Serviços padrão populados com sucesso.');
+      } catch (e) {
+        console.error("Erro ao popular serviços padrão:", e);
+      }
+    }
+    // --- FIM DA NOVA FUNÇÃO ---
+
+
     // ===== Inicialização Firebase e Auth =====
     async function initializeFirebase() {
       try {
@@ -381,12 +420,43 @@
         db = getFirestore(app);
         auth = getAuth(app);
 
-        onAuthStateChanged(auth, (user) => {
+        // --- ATUALIZADO: Lógica para detectar novo usuário ---
+        onAuthStateChanged(auth, async (user) => { // Adicionado 'async'
           if (user) {
             userId = user.uid;
             userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
             loadingOverlay.querySelector('p').textContent = 'Carregando seus dados...';
-            loadAllData();
+            
+            // Verifica se é um usuário novo checando se a config existe
+            const configRef = doc(db, `users/${userId}/config/main`);
+            const configSnap = await getDoc(configRef);
+
+            if (!configSnap.exists()) {
+              // É um usuário novo!
+              console.log('Novo usuário detectado, populando dados padrão...');
+              // 1. Popula os serviços padrão
+              await populateDefaultServices(userId);
+              
+              // 2. Cria um documento de config básico para que isso não rode de novo
+              await setDoc(configRef, { 
+                nome: user.displayName || 'Novo Usuário', 
+                telefone: user.phoneNumber || '',
+                doc: '',
+                endereco: '',
+                logo: '',
+                residencial_diaria: 0,
+                residencial_ponto: 0,
+                residencial_hora: 0,
+                industrial_diaria: 0,
+                industrial_ponto: 0,
+                industrial_hora: 0
+              });
+              console.log('Configuração inicial criada.');
+            }
+            
+            // Carrega todos os dados (agora com os padrões, se for novo)
+            loadAllData(); 
+            
             loginView.classList.add('hidden');
             appView.classList.remove('hidden');
             loadingOverlay.style.display = 'none';
@@ -397,6 +467,7 @@
             loadingOverlay.style.display = 'none';
           }
         });
+        // --- FIM DA ATUALIZAÇÃO ---
       } catch (e) {
         console.error('Erro ao inicializar Firebase:', e);
         loadingOverlay.innerHTML = '<p class="text-red-600">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
@@ -512,7 +583,7 @@
           industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
           industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
         };
-        await setDoc(doc(db, `users/${userId}/config/main`), data);
+        await setDoc(doc(db, `users/${userId}/config/main`), data, { merge: true }); // Adicionado merge: true
         alert('Configurações salvas!');
       } catch(e) { console.error(e); alert('Erro ao salvar.'); }
       finally { btn.disabled=false; textSpan.classList.remove('hidden'); spinSpan.classList.add('hidden'); }
