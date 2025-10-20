@@ -802,9 +802,11 @@
         const orcamentoId = `OS${numeroFormatado}${month}${year}-${versaoFormatada}`;
         const nome = cliente ? cliente.nome : 'Cliente Excluído';
         
-        // NOVO: Define a forma de exibição do nome com base no contexto (isFullList)
+        // CORRIGIDO: Lógica de exibição de nome:
         const nomes = nome.split(' ');
+        // Nome abreviado (primeiro nome e primeiro sobrenome) para mobile
         const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
+        // Nome para exibir: Completo na lista completa (desktop) ou abreviado na lista recente (mobile/desktop)
         const nomeParaExibir = isFullList ? nome : nomeAbreviado; 
         
         // Renderização para a lista COMPLETA (com checkbox)
@@ -867,7 +869,7 @@
         }
     };
 
-    // REVISADO: Função de exclusão de orçamento (em lote)
+    // REVISADO: Função de exclusão de orçamento (em lote) - CORRIGIDA AQUI
     async function deleteOrcamentosEmLote(ids) {
       if (!userId) {
         console.error('ERRO DE EXCLUSÃO: userId não está definido. O usuário não está logado ou a autenticação falhou.');
