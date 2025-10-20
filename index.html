@@ -26,6 +26,12 @@
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
+  <div id="boot-error" class="hidden max-w-3xl mx-auto mt-4 bg-red-50 border border-red-200 text-red-800 rounded-lg p-4">
+    <div class="font-semibold mb-1">Não foi possível iniciar o aplicativo.</div>
+    <div id="boot-error-msg" class="text-sm"></div>
+    <ul id="boot-error-hints" class="list-disc pl-5 mt-2 text-sm"></ul>
+  </div>
+
   <div id="loading-overlay" class="fixed inset-0 bg-white/90 z-50 flex flex-col items-center justify-center">
     <div class="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-blue-500"></div>
     <p class="mt-3 text-gray-600">Conectando...</p>
@@ -254,6 +260,13 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
           <h2 class="text-2xl font-semibold">Todos os Orçamentos</h2>
           <div class="flex gap-2 w-full sm:w-auto justify-end">
+          <div class="flex items-center gap-3 mt-2 sm:mt-0 sm:order-first">
+            <label class="flex items-center cursor-pointer">
+              <input id="select-all-orcamentos" type="checkbox" onchange="selectAllOrcamentos(this)" class="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+              <span class="ml-2 text-sm text-gray-700">Selecionar todos</span>
+            </label>
+            <span id="selected-count" class="text-sm text-gray-500">(0 selecionados)</span>
+          </div>
              <button onclick="showMainPage()" class="bg-gray-500 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-600 transition-colors font-medium">Voltar</button>
              <button id="btn-delete-selected-orcamentos" onclick="confirmDeleteSelectedOrcamentos()" class="bg-red-600 text-white px-5 py-2 rounded-lg shadow hover:bg-red-700 transition-colors font-medium disabled:opacity-50" disabled>Excluir Selecionados</button>
           </div>
@@ -496,8 +509,8 @@
         appState.orcamentos.sort((a,b) => (b.numeroOrcamento||0) - (a.numeroOrcamento||0));
         
         // Atualiza ambas as listas de orçamentos (recente e completa)
-        renderOrcamentosList();
-        renderOrcamentosList(true); 
+        __markBootReady(); renderOrcamentosList();
+        __markBootReady(); renderOrcamentosList(true); 
       });
     }
 
@@ -779,21 +792,28 @@
 
 
     // ===== Orçamentos (lista / modal etc.) =====
+    
     function updateDeleteButtonState() {
         const btn = document.getElementById('btn-delete-selected-orcamentos');
         if (btn) {
             btn.disabled = appState.orcamentosParaExcluir.size === 0;
         }
+        const countEl = document.getElementById('selected-count');
+        if (countEl) {
+            const n = appState.orcamentosParaExcluir.size;
+            countEl.textContent = `(${n} selecionado${n===1?'':'s'})`;
+        }
     }
 
-    function renderOrcamentosList(isFullList = false) {
+    }
+
+    function __markBootReady(); renderOrcamentosList(isFullList = false) {
       const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
       if (!el) return;
-      const list = appState.orcamentos.filter(o => o.id); // Garante que só orçamentos com ID válido sejam renderizados
-      const displayList = isFullList ? list : list.slice(0,3);
-      if (!displayList.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; return; }
+      const list = isFullList ? appState.orcamentos : appState.orcamentos.slice(0,3);
+      if (!list.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; return; }
       
-      el.innerHTML = displayList.map(orc => {
+      el.innerHTML = list.map(orc => {
         const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
         const numeroFormatado = String(orc.numeroOrcamento || '').padStart(2, '0');
         const versaoFormatada = String(orc.versao || 1).padStart(2, '0');
@@ -820,7 +840,8 @@
                     </label>
                 </div>
                 <div class="flex gap-2 self-end">
-                    <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+                    <button onclick="editOrcamento(\'${orc.id}\')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+                    <button onclick="confirmAndDeleteSingleOrcamento(\'${orc.id}\')" class="bg-red-600 text-white px-4 py-1 rounded-md text-sm hover:bg-red-700">Excluir</button>
                     </div>
               </div>`;
         }
@@ -833,8 +854,9 @@
               <p class="text-sm text-gray-500">${orcamentoId}</p>
             </div>
             <div class="flex gap-2 self-end">
-              <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
-            </div>
+                    <button onclick="editOrcamento(\'${orc.id}\')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+                    <button onclick="confirmAndDeleteSingleOrcamento(\'${orc.id}\')" class="bg-red-600 text-white px-4 py-1 rounded-md text-sm hover:bg-red-700">Excluir</button>
+                    </div>
           </div>`;
       }).join('');
       
@@ -851,6 +873,27 @@
         }
         updateDeleteButtonState();
     };
+    // NOVO EXTRA: Selecionar todos e contador
+    window.selectAllOrcamentos = (checkbox) => {
+        const list = document.getElementById('all-orcamentos-list');
+        if (!list) return;
+        const boxes = list.querySelectorAll('input[type="checkbox"][data-id]');
+        appState.orcamentosParaExcluir.clear();
+        boxes.forEach(cb => {
+            cb.checked = checkbox.checked;
+            if (checkbox.checked) appState.orcamentosParaExcluir.add(cb.dataset.id);
+        });
+        updateDeleteButtonState();
+    };
+
+    // NOVO: Exclusão individual (atalho)
+    window.confirmAndDeleteSingleOrcamento = (id) => {
+        if (!id) return;
+        if (confirm('Excluir este orçamento? Esta ação é irreversível.')) {
+            deleteOrcamentosEmLote([id]);
+        }
+    };
+
 
     // NOVO: Confirma e executa a exclusão em lote
     window.confirmDeleteSelectedOrcamentos = () => {
@@ -868,7 +911,7 @@
     // REVISADO MINUCIOSAMENTE: Função de exclusão de orçamento (em lote)
     async function deleteOrcamentosEmLote(ids) {
       if (!userId) {
-        console.error('ERRO CRÍTICO: userId não está definido. O usuário não está logado.');
+        console.error('ERRO DE EXCLUSÃO: userId não está definido. O usuário não está logado ou a autenticação falhou.');
         alert('Falha na autenticação. Por favor, faça login novamente.');
         return;
       }
@@ -881,37 +924,21 @@
         console.log(`Iniciando exclusão em lote para ${ids.length} IDs. userId: ${userId}`);
         
         ids.forEach(id => {
-            if (id) {
-                const docPath = `users/${userId}/orcamentos/${id}`;
-                const docRef = doc(db, docPath);
-                batch.delete(docRef);
-                console.log(`Adicionado à exclusão: ${docPath}`);
-            } else {
-                console.warn('ID de orçamento nulo ou vazio encontrado e ignorado.');
-            }
+            const docPath = `users/${userId}/orcamentos/${id}`;
+            const docRef = doc(db, docPath);
+            batch.delete(docRef);
+            console.log(`Adicionado à exclusão: ${docPath}`);
         });
         
         await batch.commit();
         
-        // Limpa a seleção e informa sucesso
+        // Limpa a seleção e atualiza a UI
         appState.orcamentosParaExcluir.clear();
         alert(`${ids.length} orçamento(s) excluído(s) com sucesso.`);
-        
-        // Se a lista não está atualizando, o problema é nas Firebase Rules.
-        // A função onSnapshot deve disparar automaticamente.
-        
+        // O onSnapshot se encarrega de atualizar as listas
       } catch (e) {
-        console.error('ERRO CRÍTICO ao excluir orçamentos em lote.', e);
-        
-        // Verifica o tipo de erro para dar um feedback melhor
-        if (e.code === 'permission-denied') {
-            alert('ERRO DE PERMISSÃO: A exclusão falhou devido a regras de segurança do Firebase. Verifique suas regras do Firestore.');
-        } else if (e.code === 'unauthenticated') {
-            alert('ERRO DE AUTENTICAÇÃO: A exclusão falhou porque o usuário não está autenticado.');
-        } else {
-            alert(`Erro ao excluir ${ids.length} orçamento(s). Verifique o console do navegador (F12) para mais detalhes sobre a falha.`);
-        }
-        
+        console.error('ERRO CRÍTICO ao excluir orçamentos em lote. Verifique as Regras de Segurança do Firebase e o console do navegador.', e);
+        alert(`Erro ao excluir ${ids.length} orçamento(s). Verifique o console do navegador (F12) para detalhes. Possível problema: Regras de Segurança do Firebase.`);
       } finally {
         btn.disabled = false;
         updateDeleteButtonState();
@@ -922,7 +949,7 @@
     window.showAllOrcamentosPage = () => {
       mainView.classList.add('hidden');
       allOrcamentosView.classList.remove('hidden');
-      renderOrcamentosList(true); // Re-renderiza a lista completa ao mostrar
+      __markBootReady(); renderOrcamentosList(true); // Re-renderiza a lista completa ao mostrar
     };
     window.showMainPage = () => {
       allOrcamentosView.classList.add('hidden');
@@ -1037,7 +1064,7 @@
       if (tiposServicoList) { tiposServicoList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); }
       document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
       document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
-      document.querySelector('input[name="tipo-obra'][value="residencial"]').checked = true;
+      document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
     };
 
     function populateClienteSelect() {
@@ -1342,5 +1369,61 @@
 
     window.onload = initializeFirebase;
   </script>
+
+<script>
+// === Diagnóstico de boot ===
+let __bootReady = false;
+let __authObserved = false;
+
+function showBootError(msg, hints=[]) {
+  const box = document.getElementById('boot-error');
+  const msgEl = document.getElementById('boot-error-msg');
+  const hintsEl = document.getElementById('boot-error-hints');
+  if (!box || !msgEl || !hintsEl) return;
+  msgEl.textContent = msg;
+  hintsEl.innerHTML = "";
+  hints.forEach(h => {
+    const li = document.createElement('li');
+    li.textContent = h;
+    hintsEl.appendChild(li);
+  });
+  box.classList.remove('hidden');
+}
+
+(function watchdog(){
+  const BOOT_TIMEOUT_MS = 8000; // 8s
+  setTimeout(() => {
+    if (!__bootReady) {
+      const currentOrigin = window.location.origin;
+      showBootError(
+        'App ainda carregando...',
+        [
+          'Autorize o domínio em Firebase Authentication > Domínios autorizados: ' + currentOrigin,
+          'Se usa chave restrita por HTTP referrer, inclua ' + currentOrigin + ' nas restrições da API Key do Firebase.',
+          'Verifique se as regras do Firestore permitem leitura/escrita para usuários autenticados.',
+          'Erros também podem ocorrer ao bloquear o carregamento do ícone/recursos externos (veja o console).'
+        ]
+      );
+      console.warn('[boot] Timeout de inicialização. Verifique configurações do Firebase e console do navegador.');
+    }
+  }, BOOT_TIMEOUT_MS);
+})();
+
+// Marcar app pronto após primeira renderização de dados ou auth
+window.__markBootReady = function() { __bootReady = true; };
+
+// Se o código de auth usar onAuthStateChanged, chame isto lá:
+window.__markAuthObserved = function() { __authObserved = true; };
+
+// Interceptar erros globais para relatar no painel
+window.addEventListener('error', (e) => {
+  showBootError('Erro de JavaScript detectado: ' + (e.message || 'desconhecido'), []);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  const reason = (e && e.reason && (e.reason.message || e.reason)) || 'desconhecido';
+  showBootError('Falha de promessa não tratada: ' + reason, []);
+});
+</script>
+
 </body>
 </html>
