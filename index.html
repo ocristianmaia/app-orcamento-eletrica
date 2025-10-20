@@ -367,14 +367,15 @@
     // ===== Firebase config (preservado do seu arquivo) =====
     // ATENÇÃO: SUBSTITUA COM SUAS PRÓPRIAS CHAVES DO FIREBASE
     // Erros de "não encontrado" ou "conectando" podem ser
+    // causados por chaves incorretas.
     const firebaseConfig = {
-      apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
-      authDomain: "app-orcamentos-eletrica.firebaseapp.com",
-      projectId: "app-orcamentos-eletrica",
-      storageBucket: "app-orcamentos-eletrica.firebasestorage.app",
-      messagingSenderId: "424397941585",
-      appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
-    };
+  apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
+  authDomain: "app-orcamentos-eletrica.firebaseapp.com",
+  projectId: "app-orcamentos-eletrica",
+  storageBucket: "app-orcamentos-eletrica.firebasestorage.app",
+  messagingSenderId: "424397941585",
+  appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
+};
 
     // Imports Firebase
     import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -395,8 +396,9 @@
     const userInfo = document.getElementById('user-info');
 
     const appState = {
-      config: {}, clientes: [], materiais: [], orcamentos: [], tiposDeServico: [], 
-      orcamentosParaExcluir: new Set() 
+      config: {}, clientes: [], materiais: [], orcamentos: [],
+      tiposDeServico: [], currentOrcamento: null,
+      orcamentosParaExcluir: new Set() // Novo conjunto para IDs selecionados
     };
 
     function resetCurrentOrcamento() {
@@ -407,66 +409,6 @@
         numeroOrcamento: null, versao: 1
       };
     }
-    
-    // FUNÇÃO AUXILIAR GERAL
-    function groupBy(arr, key) { return (arr || []).reduce((acc,cur)=>{ const k=cur[key]||'OUTROS'; (acc[k]||(acc[k]=[])).push(cur); return acc; },{}); }
-    
-    // ==========================================================
-    // FUNÇÕES AUXILIARES DE POPULAMENTO (AGORA NO TOPO)
-    // ==========================================================
-    function populateClienteSelect() {
-      const selectEl = document.getElementById('orc-cliente-select');
-      selectEl.innerHTML = '<option value="">Selecione um cliente</option>';
-      if (Array.isArray(appState.clientes)) {
-        appState.clientes.forEach(c => {
-          const option = document.createElement('option');
-          option.value = c.id; option.textContent = c.nome; selectEl.appendChild(option);
-        });
-      }
-    }
-
-    function populateMateriaisOrcamento() {
-      const listEl = document.getElementById('orc-materiais-list');
-      if (!(appState.materiais || []).length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum material cadastrado.</p>'; return; }
-      listEl.innerHTML = (appState.materiais || []).map(m => `
-        <div class="flex items-center justify-between p-2 rounded-md hover:bg-gray-100">
-          <label class="flex items-center flex-grow cursor-pointer">
-            <input type="checkbox" data-id="${m.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-            <span class="ml-3 text-xs">${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</span>
-          </label>
-          <input type="number" min="1" value="1" data-id="${m.id}" class="w-20 p-1 border rounded-md text-sm ml-2" disabled>
-        </div>`).join('');
-    }
-
-    function populateTiposDeServicoOrcamento() {
-      const listEl = document.getElementById('orc-tiposdeservico-list');
-      if (!(appState.tiposDeServico || []).length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum tipo de serviço cadastrado em Serviços.</p>'; return; }
-
-      const grouped = groupBy(appState.tiposDeServico, 'categoria');
-      const cats = Object.keys(grouped).sort();
-      listEl.innerHTML = cats.map(cat => {
-        const servicos = grouped[cat].sort((a,b) => (a.descricao || '').localeCompare(b.descricao || ''));
-        return `
-          <details class="group border rounded">
-            <summary class="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-200 rounded-md">
-              <span class="font-medium text-sm text-gray-700">${cat}</span>
-              <svg class="w-4 h-4 arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-            </summary>
-            <div class="pl-3 pb-2">
-              ${
-                servicos.map(s => `
-                  <label class="flex items-center p-1 rounded-md hover:bg-gray-100 cursor-pointer">
-                    <input type="checkbox" data-id="${s.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    <span class="ml-2 servico-slim">${s.descricao} - R$ ${s.valor.toFixed(2)}</span>
-                  </label>
-                `).join('')
-              }
-            </div>
-          </details>`;
-      }).join('');
-    }
-    // ==========================================================
-
 
     // ===== Inicialização Firebase e Auth =====
     async function initializeFirebase() {
@@ -496,23 +438,21 @@
         loadingOverlay.innerHTML = '<p class="text-red-600">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
       }
     }
-    
-    
-    // CORREÇÃO: Funções que são chamadas via onclick no HTML DEVEM ser anexadas ao objeto window
-    window.loginWithGoogle = async () => {
+
+    const loginWithGoogle = async () => {
       const provider = new GoogleAuthProvider();
       try { loadingOverlay.style.display = 'flex'; await signInWithPopup(auth, provider); }
       catch (e) { console.error(e); alert('Falha no login Google.'); loadingOverlay.style.display = 'none'; }
     };
 
-    window.logout = async () => {
+    const logout = async () => {
       if (confirm('Tem certeza que deseja sair da sua conta?')) {
         try { await signOut(auth); } catch(e) { alert('Erro ao sair.'); }
       }
     };
 
-    loginButton?.addEventListener('click', window.loginWithGoogle);
-    logoutButton?.addEventListener('click', window.logout);
+    loginButton?.addEventListener('click', loginWithGoogle);
+    logoutButton?.addEventListener('click', logout);
 
     document.getElementById('orc-cliente-select').addEventListener('change', (e) => {
       if (!appState.currentOrcamento) resetCurrentOrcamento();
@@ -572,7 +512,6 @@
         renderOrcamentosList(true); 
       });
     }
-
 
     // ===== Config =====
     function updateConfigForm() {
@@ -655,7 +594,7 @@
         </div>`).join('');
     }
 
-    window.deleteCliente = async (id) => { // Tornando global
+    window.deleteCliente = async (id) => {
       if (confirm('Excluir este cliente?')) { await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); }
     };
 
@@ -685,7 +624,7 @@
         </div>`).join('');
     }
 
-    window.deleteMaterial = async (id) => { // Tornando global
+    window.deleteMaterial = async (id) => {
       if (confirm('Excluir este item?')) { await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); }
     };
 
@@ -696,8 +635,7 @@
     function populateCategorySelect() {
       // Preserva primeiras 2 opções
       while (catSelect.options.length > 2) catSelect.remove(2);
-      // Usando || [] para garantir que appState.tiposDeServico seja um array
-      const cats = [...new Set((appState.tiposDeServico || []).map(s => s.categoria).filter(Boolean))].sort();
+      const cats = [...new Set(appState.tiposDeServico.map(s => s.categoria).filter(Boolean))].sort();
       cats.forEach(cat => { const o=document.createElement('option'); o.value=cat; o.textContent=cat; catSelect.appendChild(o); });
     }
 
@@ -727,9 +665,11 @@
       finally { btn.disabled=false; btn.textContent='Salvar'; }
     });
 
+    function groupBy(arr, key) { return arr.reduce((acc,cur)=>{ const k=cur[key]||'OUTROS'; (acc[k]||(acc[k]=[])).push(cur); return acc; },{}); }
+
     function renderTiposDeServicoList() {
       const el = document.getElementById('tiposdeservico-list');
-      if (!(appState.tiposDeServico || []).length) { el.innerHTML = '<p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>'; return; }
+      if (!appState.tiposDeServico.length) { el.innerHTML = '<p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>'; return; }
       const byCat = groupBy(appState.tiposDeServico, 'categoria');
       const cats = Object.keys(byCat).sort();
       el.innerHTML = cats.map(cat => {
@@ -754,7 +694,7 @@
       }).join('');
     }
 
-    window.deleteTipoDeServico = async (id) => { // Tornando global
+    window.deleteTipoDeServico = async (id) => {
       if (confirm('Excluir este tipo de serviço?')) { await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`)); }
     };
 
@@ -861,12 +801,11 @@
     function renderOrcamentosList(isFullList = false) {
       const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
       if (!el) return;
-      const list = (appState.orcamentos || []).filter(orc => orc.id).slice(0, isFullList ? appState.orcamentos.length : 3); // Filtra itens sem ID (null) e pega 3 ou todos
-      
+      const list = isFullList ? appState.orcamentos : appState.orcamentos.slice(0,3);
       if (!list.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; return; }
       
       el.innerHTML = list.map(orc => {
-        const cliente = (appState.clientes || []).find(c => c.id === orc.cliente?.id);
+        const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
         const numeroFormatado = String(orc.numeroOrcamento || '').padStart(2, '0');
         const versaoFormatada = String(orc.versao || 1).padStart(2, '0');
         const date = orc.createdAt || new Date();
@@ -876,16 +815,15 @@
         const nome = cliente ? cliente.nome : 'Cliente Excluído';
         const nomes = nome.split(' ');
 
-        // Nome abreviado (primeiro e segundo nome)
+        // CORRIGIDO: Nome abreviado (primeiro e segundo nome)
         const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
         
-        // Usa o nome completo para a lista completa (Desktop) e abreviado para a lista recente (Mobile)
+        // NOVO: Usa o nome completo para a lista completa (Desktop) e abreviado para a lista recente (Mobile)
         const nomeParaExibir = isFullList ? nome : nomeAbreviado; 
         
         // Renderização para a lista COMPLETA (com checkbox) - Visível no desktop e na página "Todos"
         if (isFullList) {
-            // Verifica o estado no Set para garantir que a checkbox correta esteja marcada.
-            const isChecked = appState.orcamentosParaExcluir.has(orc.id); 
+            const isChecked = appState.orcamentosParaExcluir.has(orc.id);
             return `
               <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
                 <div class="flex justify-between items-start w-full">
@@ -919,25 +857,20 @@
       if (isFullList) updateDeleteButtonState();
     }
 
-    // NOVO: Adiciona/remove ID para exclusão (Tornando global para acesso via onclick)
+    // NOVO: Adiciona/remove ID para exclusão
     window.toggleOrcamentoExclusao = (checkbox) => {
         const id = checkbox.dataset.id;
-        // Lógica de Set/Unset está correta
         if (checkbox.checked) {
             appState.orcamentosParaExcluir.add(id);
         } else {
             appState.orcamentosParaExcluir.delete(id);
         }
-        // Chamada de atualização deve vir aqui
-        updateDeleteButtonState(); 
-        // Adicionando console log para verificar a contagem
-        console.log("Itens selecionados para exclusão:", appState.orcamentosParaExcluir.size, Array.from(appState.orcamentosParaExcluir));
+        updateDeleteButtonState();
     };
 
-    // CORRIGIDO: Usa o novo modal de confirmação para a contagem correta (Tornando global)
+    // CORRIGIDO: Usa o novo modal de confirmação para a contagem correta
     window.confirmDeleteSelectedOrcamentos = () => {
-        // A contagem FINAL é feita aqui, garantindo que o Set esteja correto.
-        const count = appState.orcamentosParaExcluir.size; 
+        const count = appState.orcamentosParaExcluir.size;
         if (count === 0) {
             alert('Nenhum orçamento selecionado para exclusão.');
             return;
@@ -946,18 +879,16 @@
         const modal = document.getElementById('delete-confirm-modal');
         const messageEl = document.getElementById('delete-confirm-message');
         
-        // A mensagem agora usa a contagem correta
         messageEl.innerHTML = `ATENÇÃO! Você irá excluir **${count}** orçamento(s) selecionado(s). Esta ação é irreversível. Deseja continuar?`;
         modal.classList.add('active');
     };
 
-    // NOVO: Função para fechar e processar o modal de confirmação de exclusão (Tornando global)
+    // NOVO: Função para fechar e processar o modal de confirmação de exclusão
     window.closeDeleteConfirmModal = (confirmAction) => {
         const modal = document.getElementById('delete-confirm-modal');
         modal.classList.remove('active');
 
         if (confirmAction) {
-             // Passa o array de IDs correto para a exclusão
              deleteOrcamentosEmLote(Array.from(appState.orcamentosParaExcluir));
         }
     };
@@ -977,51 +908,36 @@
       
       try {
         const batch = writeBatch(db);
-        let validIdsCount = 0;
         console.log(`Iniciando exclusão em lote para ${ids.length} IDs. userId: ${userId}`);
         
         ids.forEach(id => {
-            // CORREÇÃO CRÍTICA: Ignora IDs nulos ou vazios para evitar a falha '.../orcamentos/null'
-            if (!id) {
-                console.warn(`AVISO: Tentativa de excluir um ID de orçamento inválido (null/undefined). Ignorado.`);
-                return; 
-            }
             // AQUI está o caminho crítico. Ele PRECISA ser users/{userId}/orcamentos/{id}
             const docPath = `users/${userId}/orcamentos/${id}`;
             const docRef = doc(db, docPath);
             batch.delete(docRef);
             console.log(`Adicionado à exclusão: ${docPath}`);
-            validIdsCount++;
         });
-
-        if (validIdsCount === 0) {
-            console.warn("AVISO: Nenhum ID de orçamento válido encontrado para exclusão.");
-            return;
-        }
         
         await batch.commit();
         
         // Limpa a seleção e atualiza a UI
         appState.orcamentosParaExcluir.clear();
-        alert(`${validIdsCount} orçamento(s) excluído(s) com sucesso.`);
+        alert(`${ids.length} orçamento(s) excluído(s) com sucesso.`);
         // O onSnapshot se encarrega de atualizar as listas
       } catch (e) {
         console.error('ERRO CRÍTICO ao excluir orçamentos em lote. Erro retornado:', e);
-        // Exibe o erro específico (que deve ser "Permission Denied" se for regra de segurança)
-        alert(`Erro ao excluir ${ids.length} orçamento(s). Detalhe: ${e.message}. Verifique a aba Console (F12).`);
+        // Exibe o erro específico
+        alert(`Erro ao excluir ${ids.length} orçamento(s). Possível falha nas Regras de Segurança (Permission Denied). Detalhe: ${e.message}`);
       } finally {
         btn.disabled = false;
         updateDeleteButtonState();
       }
     };
 
-    // Tornando as funções de navegação globais para o HTML
+
     window.showAllOrcamentosPage = () => {
       mainView.classList.add('hidden');
       allOrcamentosView.classList.remove('hidden');
-      // Limpa a seleção para garantir a contagem correta
-      appState.orcamentosParaExcluir.clear();
-      updateDeleteButtonState();
       renderOrcamentosList(true); // Re-renderiza a lista completa ao mostrar
     };
     window.showMainPage = () => {
@@ -1031,7 +947,7 @@
       updateDeleteButtonState();
     };
 
-    // Função de editar orçamento (Tornando global)
+    // Função de editar orçamento
     window.editOrcamento = (id) => {
       console.log("Tentando editar ID:", id, `(tipo: ${typeof id})`);
       if (!appState.orcamentos || appState.orcamentos.length === 0) {
@@ -1048,25 +964,17 @@
       }
       
       console.log("Orçamento encontrado:", orc);
-      window.openOrcamentoModal(orc); // Certifique-se de que openOrcamentoModal também está global
+      openOrcamentoModal(orc);
     };
 
-    // Tornando a função de troca de aba global
-    window.changeTab = (event, tabName) => {
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(tabName).classList.add('active');
-      document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
-    };
-    
-    // Tornando a função de abrir modal global
+    // A função deleteOrcamento individual não é mais usada (exclusão por lote)
+    // window.deleteOrcamento = async (id) => { ... };
+
     window.openOrcamentoModal = (orcamentoParaEditar = null) => {
-      // Conteúdo original da função openOrcamentoModal...
       try {
         const modal = document.getElementById('orcamento-modal');
         const clienteSelect = document.getElementById('orc-cliente-select');
         modal.classList.add('active');
-        // Chamadas para as funções de populamento
         populateClienteSelect();
         populateMateriaisOrcamento();
         populateTiposDeServicoOrcamento();
@@ -1128,12 +1036,10 @@
         }
       } catch (err) {
         console.error("[openOrcamentoModal] Erro:", err);
-        // O alerta de erro agora é mais claro sobre a causa
-        alert("Ocorreu um erro ao abrir o modal. Provavelmente, dados essenciais não foram carregados do Firebase. Verifique o Console (F12) para detalhes.");
+        alert("Ocorreu um erro ao abrir o modal. Veja o console para detalhes.");
       }
     };
-    
-    // Tornando a função de fechar modal global
+
     window.closeOrcamentoModal = () => {
       document.getElementById('orcamento-modal').classList.remove('active');
       resetCurrentOrcamento();
@@ -1149,85 +1055,123 @@
       document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
       document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
     };
-    
-    // Funções de salvamento (precisam estar completas no código final)
-    window.saveOrcamento = async () => {
-      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
-      const data = { ...appState.currentOrcamento };
-      try {
-        if (data.id) {
-          data.versao = (data.versao || 1) + 1;
-          const ref = doc(db, `users/${userId}/orcamentos/${data.id}`);
-          delete data.createdAt;
-          await setDoc(ref, data, { merge: true });
-          alert('Orçamento atualizado!');
+
+    function populateClienteSelect() {
+      const selectEl = document.getElementById('orc-cliente-select');
+      selectEl.innerHTML = '<option value="">Selecione um cliente</option>';
+      appState.clientes.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.id; option.textContent = c.nome; selectEl.appendChild(option);
+      });
+    }
+
+    function populateMateriaisOrcamento() {
+      const listEl = document.getElementById('orc-materiais-list');
+      if (!appState.materiais.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum material cadastrado.</p>'; return; }
+      listEl.innerHTML = appState.materiais.map(m => `
+        <div class="flex items-center justify-between p-2 rounded-md hover:bg-gray-100">
+          <label class="flex items-center flex-grow cursor-pointer">
+            <input type="checkbox" data-id="${m.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+            <span class="ml-3 text-xs">${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</span>
+          </label>
+          <input type="number" min="1" value="1" data-id="${m.id}" class="w-20 p-1 border rounded-md text-sm ml-2" disabled>
+        </div>`).join('');
+    }
+
+    function populateTiposDeServicoOrcamento() {
+      const listEl = document.getElementById('orc-tiposdeservico-list');
+      if (!appState.tiposDeServico.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum tipo de serviço cadastrado em Serviços.</p>'; return; }
+
+      const grouped = groupBy(appState.tiposDeServico, 'categoria');
+      const cats = Object.keys(grouped).sort();
+      listEl.innerHTML = cats.map(cat => {
+        const servicos = grouped[cat].sort((a,b) => (a.descricao || '').localeCompare(b.descricao || ''));
+        return `
+          <details class="group border rounded">
+            <summary class="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-200 rounded-md">
+              <span class="font-medium text-sm text-gray-700">${cat}</span>
+              <svg class="w-4 h-4 arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+            </summary>
+            <div class="pl-3 pb-2">
+              ${
+                servicos.map(s => `
+                  <label class="flex items-center p-1 rounded-md hover:bg-gray-100 cursor-pointer">
+                    <input type="checkbox" data-id="${s.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <span class="ml-2 servico-slim">${s.descricao} - R$ ${s.valor.toFixed(2)}</span>
+                  </label>
+                `).join('')
+              }
+            </div>
+          </details>`;
+      }).join('');
+    }
+
+    // Filtro de serviços por texto
+    document.getElementById('filter-tipos').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const boxes = document.querySelectorAll('#orc-tiposdeservico-list label span');
+      boxes.forEach(span => {
+        const row = span.closest('label');
+        row.style.display = span.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+
+    // Interações do modal com materiais e serviços
+    document.getElementById('orc-materiais-list').addEventListener('input', (e) => {
+      const target = e.target;
+      const materialId = target.dataset.id;
+      const material = appState.materiais.find(m => m.id === materialId);
+      if (!material) return;
+      const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${materialId}"]`);
+      if (target.type === 'checkbox') {
+        if (target.checked) {
+          qtyInput.disabled = false;
+          const newItem = { ...material, quantidade: parseInt(qtyInput.value) || 1 };
+          appState.currentOrcamento.items.push(newItem);
         } else {
-          const maxNumero = appState.orcamentos.reduce((max, o) => Math.max(max, o.numeroOrcamento || 0), 0);
-          data.numeroOrcamento = maxNumero + 1;
-          data.versao = 1;
-          data.createdAt = serverTimestamp();
-          const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), data);
-          appState.currentOrcamento.id = ref.id;
-          appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
-          alert('Orçamento salvo! Você já pode gerar o PDF.');
+          qtyInput.disabled = true;
+          appState.currentOrcamento.items = appState.currentOrcamento.items.filter(item => item.id !== materialId);
         }
-        closeOrcamentoModal();
-      } catch(e) {
-        console.error('ERRO AO SALVAR NO FIREBASE:', e); // Logging melhorado
-        alert(`ERRO CRÍTICO ao salvar: ${e.message}. Verifique o Console (F12).`);
+      } else if (target.type === 'number') {
+        const itemInOrcamento = appState.currentOrcamento.items.find(item => item.id === materialId);
+        if (itemInOrcamento) itemInOrcamento.quantidade = parseInt(target.value) || 1;
       }
-    };
+      updateOrcamentoPreview();
+    });
 
-    window.shareOrViewPDF = async () => {
-      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
-      const hidden = document.createElement('div');
-      hidden.style.position = 'absolute'; hidden.style.left = '-9999px'; hidden.style.top = '-9999px';
-      hidden.style.width = '210mm';
-      hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
-      document.body.appendChild(hidden);
-      const { jsPDF } = window.jspdf;
-      const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
-      const fileName = `orcamento-${clienteNome}.pdf`;
-      try {
-        const canvas = await html2canvas(hidden, { scale: 2 });
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        if (navigator.share && navigator.canShare) {
-          const blob = pdf.output('blob');
-          const file = new File([blob], fileName, { type: 'application/pdf' });
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({ title: `Orçamento - ${clienteNome}`, text: 'Segue o orçamento em anexo.', files: [file] });
-            document.body.removeChild(hidden);
-            return;
+    document.getElementById('orc-tiposdeservico-list').addEventListener('change', (e) => {
+      if (e.target.type === 'checkbox') {
+        const serviceId = e.target.dataset.id;
+        const service = appState.tiposDeServico.find(s => s.id === serviceId);
+        if (!service) return;
+        if (e.target.checked) {
+          if (!appState.currentOrcamento.tiposDeServico.some(s => s.id === serviceId)) {
+            appState.currentOrcamento.tiposDeServico.push(service);
           }
+        } else {
+          appState.currentOrcamento.tiposDeServico = appState.currentOrcamento.tiposDeServico.filter(s => s.id !== serviceId);
         }
-        pdf.save(fileName);
-      } catch(e) {
-        console.error(e);
-        if (e.name !== 'AbortError') alert('Erro ao gerar o PDF.');
-      } finally {
-        document.body.removeChild(hidden);
+        updateOrcamentoPreview();
       }
-    };
+    });
 
-    window.sendWhatsAppText = () => {
-      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
-      const fullClient = appState.currentOrcamento.cliente;
-      if (!fullClient) return alert('Cliente não encontrado.');
-      const telefone = fullClient.telefone.replace(/\D/g, '');
-      const nomeProfissional = appState.config.nome || 'nós';
-      const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
-      const whatsappUrl = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
-      window.open(whatsappUrl, '_blank');
-    };
-    
-    // Funções auxiliares (calculos, populamento, etc) que podem ser chamadas em outros escopos
-    window.calculateMaoDeObra = calculateMaoDeObra; // Tornando global
-    window.updateOrcamentoPreview = updateOrcamentoPreview; // Tornando global
-    
+    document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
+      if (!e.target || e.target.name !== 'tipo-obra') return;
+      const novoValor = e.target.value === 'industrial' ? 'industrial' : 'residencial';
+      if (appState.currentOrcamento) appState.currentOrcamento.tipoObra = novoValor;
+      const pontoLabel = document.getElementById('ponto-label-span');
+      const pontoQtdInput = document.getElementById('ponto-qtd');
+      if (pontoLabel) pontoLabel.textContent = novoValor === 'industrial' ? 'Por Equipamento' : 'Por Ponto';
+      if (pontoQtdInput) pontoQtdInput.placeholder = novoValor === 'industrial' ? 'Qtd. equip.' : 'Qtd. pontos';
+      calculateMaoDeObra();
+      updateOrcamentoPreview();
+    });
+
+    document.getElementById('orc-mao-de-obra').addEventListener('input', () => {
+      calculateMaoDeObra();
+      updateOrcamentoPreview();
+    });
+
     function calculateMaoDeObra() {
       const tipoSelecionado = document.querySelector('input[name="tipo-servico"]:checked');
       if (!appState.currentOrcamento || !tipoSelecionado) {
@@ -1279,11 +1223,6 @@
         return;
       }
       const fullClient = currentOrcamento.cliente;
-      
-      // LOGO: Verifica se a URL do logo existe e não está vazia.
-      const logoHtml = (config.logo && config.logo.trim() !== '') 
-          ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px; margin: 0 auto;"></div>` 
-          : '';
 
       let tiposDeServicoHtml = '';
       if (currentOrcamento.tiposDeServico && currentOrcamento.tiposDeServico.length > 0) {
@@ -1313,7 +1252,7 @@
       const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
       previewEl.innerHTML = `
         <div style="padding: 10px;">
-          ${logoHtml}
+          ${config.logo ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px; margin: 0 auto;"></div>` : ''}
           <div style="text-align: center; margin-bottom: 20px;">
             <strong style="font-size: 1.2em; display: block;">${config.nome || 'Nome do Profissional'}</strong>
             <span style="display: block;">${config.endereco || ''}</span>
@@ -1338,8 +1277,86 @@
         </div>`;
     }
 
-    // Inicialização final do Firebase ao carregar o módulo
-    document.addEventListener('DOMContentLoaded', initializeFirebase);
+    window.saveOrcamento = async () => {
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
+      const data = { ...appState.currentOrcamento };
+      try {
+        if (data.id) {
+          data.versao = (data.versao || 1) + 1;
+          const ref = doc(db, `users/${userId}/orcamentos/${data.id}`);
+          delete data.createdAt;
+          await setDoc(ref, data, { merge: true });
+          alert('Orçamento atualizado!');
+        } else {
+          const maxNumero = appState.orcamentos.reduce((max, o) => Math.max(max, o.numeroOrcamento || 0), 0);
+          data.numeroOrcamento = maxNumero + 1;
+          data.versao = 1;
+          data.createdAt = serverTimestamp();
+          const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), data);
+          appState.currentOrcamento.id = ref.id;
+          appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
+          alert('Orçamento salvo! Você já pode gerar o PDF.');
+        }
+        closeOrcamentoModal();
+      } catch(e) {
+        console.error(e); alert('Erro ao salvar.');
+      }
+    };
+
+    window.shareOrViewPDF = async () => {
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+      const hidden = document.createElement('div');
+      hidden.style.position = 'absolute'; hidden.style.left = '-9999px'; hidden.style.top = '-9999px';
+      hidden.style.width = '210mm';
+      hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
+      document.body.appendChild(hidden);
+      const { jsPDF } = window.jspdf;
+      const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
+      const fileName = `orcamento-${clienteNome}.pdf`;
+      try {
+        const canvas = await html2canvas(hidden, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        if (navigator.share && navigator.canShare) {
+          const blob = pdf.output('blob');
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ title: `Orçamento - ${clienteNome}`, text: 'Segue o orçamento em anexo.', files: [file] });
+            document.body.removeChild(hidden);
+            return;
+          }
+        }
+        pdf.save(fileName);
+      } catch(e) {
+        console.error(e);
+        if (e.name !== 'AbortError') alert('Erro ao gerar o PDF.');
+      } finally {
+        document.body.removeChild(hidden);
+      }
+    };
+
+    window.sendWhatsAppText = () => {
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
+      const fullClient = appState.currentOrcamento.cliente;
+      if (!fullClient) return alert('Cliente não encontrado.');
+      const telefone = fullClient.telefone.replace(/\D/g, '');
+      const nomeProfissional = appState.config.nome || 'nós';
+      const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
+      const whatsappUrl = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
+      window.open(whatsappUrl, '_blank');
+    };
+
+    window.changeTab = (event, tabName) => {
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
+    };
+
+    window.onload = initializeFirebase;
   </script>
 </body>
 </html>
