@@ -524,7 +524,7 @@
       });
 
       onSnapshot(query(collection(db, `${prefix}/clientes`)), (snapshot) => {
-        appState.clientes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        appState.clientes = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
         renderClientesList();
         // ADICIONE ESTAS DUAS LINHAS
         // Isso força a atualização dos nomes nos orçamentos
