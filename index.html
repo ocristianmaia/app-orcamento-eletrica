@@ -849,16 +849,19 @@
         }
         
         // Renderização para a lista RECENTE (sem checkbox) - Visível na tela inicial
-        return `
-          <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
-            <div class="flex justify-between items-baseline w-full">
-              <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
-              <p class="text-sm text-gray-500">${orcamentoId}</p>
-            </div>
-            <div class="flex gap-2 self-end">
-              <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
-            </div>
-          </div>`;
+    return `
+      <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center w-full">
+        
+        <div class="flex-grow truncate mr-2">
+          <span class="font-medium text-base text-gray-800">${nome}</span>
+          <span class="text-sm text-gray-500 ml-2">${orcamentoId}</span>
+        </div>
+        
+        <div class="flex-shrink-0">
+          <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+        </div>
+        
+      </div>`;
       }).join('');
       
       if (isFullList) updateDeleteButtonState();
