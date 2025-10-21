@@ -495,6 +495,19 @@
       });
 
       onSnapshot(query(collection(db, `${prefix}/tiposdeservico`)), (snapshot) => {
+
+        // ADICIONE ESTA LINHA (LOG 1)
+        console.log(`[DEBUG] Recebeu ${snapshot.docs.length} orçamentos do Firebase.`);
+
+        appState.orcamentos = snapshot.docs.map(d => {
+          const data = d.data();
+          if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
+          
+          // ADICIONE ESTA LINHA (LOG 2)
+          console.log(`[DEBUG] Mapeando doc. ID do Firebase (d.id):`, d.id);
+
+          return { id: d.id, ...data };
+        
         appState.tiposDeServico = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
                                               .filter(s => s.descricao && s.valor > 0);
         
