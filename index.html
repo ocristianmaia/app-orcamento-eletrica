@@ -510,7 +510,7 @@
           if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
           // ADICIONE ESTA LINHA (LOG 2)
       console.log(`[DEBUG] Mapeando doc. ID do Firebase (d.id):`, d.id);
-          return { id: d.id, ...data };
+          return { ...data, id: d.id };
         });
         appState.orcamentos.sort((a,b) => (b.numeroOrcamento||0) - (a.numeroOrcamento||0));
         
