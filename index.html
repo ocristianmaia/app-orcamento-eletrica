@@ -228,6 +228,19 @@
             </div>
             <div class="bg-white p-6 rounded-lg shadow-sm">
               <h2 class="text-xl font-semibold mb-4">Itens Cadastrados</h2>
+              
+                 <div class="bg-white p-6 rounded-lg shadow-sm">
+              
+                <h2 class="text-xl font-semibold mb-4">Itens Cadastrados</h2>
+                
+                <div class="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-md mb-4" role="alert">
+                  <p class="text-sm font-medium">Para editar um item, clique sobre o nome dele. Para excluir, clique no &times;.</p>
+                </div>
+  
+                <div id="materiais-list" class="space-y-2"><p class="text-gray-500">Nenhum material cadastrado.</p></div>
+              ```
+Me avise quando colar, e aí vamos para a parte final (o JavaScript)!
+              
               <div id="materiais-list" class="space-y-2"><p class="text-gray-500">Nenhum material cadastrado.</p></div>
             </div>
           </div>
@@ -783,20 +796,74 @@
       finally { btn.disabled=false; btn.textContent='Salvar Item'; }
     });
 
-    function renderMateriaisList() {
+    // Listener para o NOVO formulário de EDIÇÃO de material
+    document.getElementById('form-edit-material').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      
+      const materialId = document.getElementById('edit-material-id').value;
+      if (!materialId) return alert('Erro: ID do material não encontrado.');
+
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent='Salvando...';
+
+      try {
+        const data = {
+          nome: document.getElementById('edit-material-nome').value,
+          unidade: document.getElementById('edit-material-unidade').value,
+          valor: parseFloat(document.getElementById('edit-material-valor').value) || 0,
+        };
+        
+        // Atualiza o documento no Firebase
+        await setDoc(doc(db, `users/${userId}/materiais/${materialId}`), data);
+        
+        alert('Material atualizado com sucesso!');
+        closeEditMaterialModal();
+      } catch(e) {
+        console.error(e); 
+        alert('Erro ao atualizar material.'); 
+      } finally { 
+        btn.disabled=false; 
+        btn.textContent='Salvar Alterações'; 
+      }
+    });
+
+   function renderMateriaisList() {
       const el = document.getElementById('materiais-list');
       if (!appState.materiais.length) { el.innerHTML = '<p class="text-gray-500">Nenhum material cadastrado.</p>'; return; }
       el.innerHTML = appState.materiais.map(m => `
         <div class="flex justify-between items-center p-2 border rounded-md">
-          <p class="servico-slim"><strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${m.valor.toFixed(2)}</p>
-          <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 text-2xl">&times;</button>
+          <div class="flex-grow cursor-pointer" onclick="openEditMaterialModal('${m.id}')">
+            <p class="servico-slim"><strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${m.valor.toFixed(2)}</p>
+          </div>
+          <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 text-2xl ml-3 flex-shrink-0">&times;</button>
         </div>`).join('');
     }
 
     window.deleteMaterial = async (id) => {
       if (confirm('Excluir este item?')) { await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); }
     };
+     window.openEditMaterialModal = (id) => {
+      const material = appState.materiais.find(m => m.id === id);
+      if (!material) {
+        alert('Material não encontrado.');
+        return;
+      }
+      
+      // Preenche o modal com os dados do material
+      document.getElementById('edit-material-id').value = material.id;
+      document.getElementById('edit-material-nome').value = material.nome || '';
+      document.getElementById('edit-material-unidade').value = material.unidade || 'UNID';
+      document.getElementById('edit-material-valor').value = material.valor || 0;
+      
+      // Abre o modal
+      document.getElementById('edit-material-modal').classList.add('active');
+    };
 
+    window.closeEditMaterialModal = () => {
+      document.getElementById('edit-material-modal').classList.remove('active');
+      document.getElementById('form-edit-material').reset(); // Limpa o formulário
+    };
     // ===== Tipos de Serviço com Categoria & Submenu (AGORA EM #servicos) =====
     const catSelect = document.getElementById('tiposervico-categoria-select');
     const catNew = document.getElementById('tiposervico-categoria-new');
