@@ -670,23 +670,53 @@
     window.deleteCliente = async (id) => {
       if (confirm('Excluir este cliente?')) { await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); }
     };
+   // SUBSTITUA A FUNÇÃO openEditClienteModal INTEIRA POR ESTA:
     window.openEditClienteModal = (id) => {
-      // ADICIONE ESTA LINHA DE DEBUG (NA LINHA 674)
-      console.log(`[DEBUG-CLIENTE] A função openEditClienteModal foi chamada com o ID:`, id);
-      const cliente = appState.clientes.find(c => c.id === id);
-      if (!cliente) {
-        alert('Cliente não encontrado.');
-        return;
+      console.log(`[DEBUG-CLIENTE] 1. Função chamada com ID:`, id);
+      try {
+        const cliente = appState.clientes.find(c => c.id === id);
+        if (!cliente) {
+          alert('Cliente não encontrado no appState.');
+          return;
+        }
+        console.log("[DEBUG-CLIENTE] 2. Cliente encontrado:", cliente.nome);
+
+        // Agora vamos testar cada elemento do modal
+        const modalEl = document.getElementById('edit-cliente-modal');
+        if (!modalEl) throw new Error("Elemento 'edit-cliente-modal' não foi encontrado no HTML!");
+        
+        const idInput = document.getElementById('edit-cliente-id');
+        if (!idInput) throw new Error("Elemento 'edit-cliente-id' não foi encontrado no HTML!");
+        
+        const nomeInput = document.getElementById('edit-cliente-nome');
+        if (!nomeInput) throw new Error("Elemento 'edit-cliente-nome' não foi encontrado no HTML!");
+        
+        const telInput = document.getElementById('edit-cliente-telefone');
+        if (!telInput) throw new Error("Elemento 'edit-cliente-telefone' não foi encontrado no HTML!");
+        
+        const endInput = document.getElementById('edit-cliente-endereco');
+        if (!endInput) throw new Error("Elemento 'edit-cliente-endereco' não foi encontrado no HTML!");
+        
+        console.log("[DEBUG-CLIENTE] 3. Todos os elementos do modal foram encontrados. Preenchendo...");
+
+        // Preenche os dados
+        idInput.value = cliente.id;
+        nomeInput.value = cliente.nome || '';
+        telInput.value = cliente.telefone || '';
+        endInput.value = cliente.endereco || '';
+        
+        console.log("[DEBUG-CLIENTE] 4. Dados preenchidos. Abrindo modal...");
+
+        // Abre o modal
+        modalEl.classList.add('active');
+        
+        console.log("[DEBUG-CLIENTE] 5. Modal aberto com sucesso!");
+
+      } catch (e) {
+        // Se qualquer coisa falhar, o erro aparecerá aqui
+        console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição:", e.message);
+        alert("Ocorreu um erro ao tentar abrir a edição. Verifique o console (F12).");
       }
-      
-      // Preenche o modal com os dados do cliente
-      document.getElementById('edit-cliente-id').value = cliente.id;
-      document.getElementById('edit-cliente-nome').value = cliente.nome || '';
-      document.getElementById('edit-cliente-telefone').value = cliente.telefone || '';
-      document.getElementById('edit-cliente-endereco').value = cliente.endereco || '';
-      
-      // Abre o modal
-      document.getElementById('edit-cliente-modal').classList.add('active');
     };
 
     window.closeEditClienteModal = () => {
