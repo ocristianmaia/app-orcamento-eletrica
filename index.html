@@ -867,6 +867,8 @@
     // NOVO: Adiciona/remove ID para exclusão
     window.toggleOrcamentoExclusao = (checkbox) => {
         const id = checkbox.dataset.id;
+      // ADICIONE ESTA LINHA (O TESTE FINAL)
+        console.log(`[DEBUG-CLICK] Checkbox clicado! ID lido do HTML (data-id):`, id);
         if (checkbox.checked) {
             appState.orcamentosParaExcluir.add(id);
         } else {
