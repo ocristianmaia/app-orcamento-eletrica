@@ -671,6 +671,8 @@
       if (confirm('Excluir este cliente?')) { await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); }
     };
     window.openEditClienteModal = (id) => {
+      // ADICIONE ESTA LINHA DE DEBUG (NA LINHA 674)
+      console.log(`[DEBUG-CLIENTE] A função openEditClienteModal foi chamada com o ID:`, id);
       const cliente = appState.clientes.find(c => c.id === id);
       if (!cliente) {
         alert('Cliente não encontrado.');
