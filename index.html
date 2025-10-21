@@ -526,6 +526,11 @@
       onSnapshot(query(collection(db, `${prefix}/clientes`)), (snapshot) => {
         appState.clientes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderClientesList();
+        // ADICIONE ESTAS DUAS LINHAS
+        // Isso força a atualização dos nomes nos orçamentos
+        // assim que a lista de clientes carregar.
+        renderOrcamentosList();
+        renderOrcamentosList(true);
       });
 
       onSnapshot(query(collection(db, `${prefix}/materiais`)), (snapshot) => {
