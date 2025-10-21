@@ -15,7 +15,15 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     .tab.active { border-bottom: 2px solid #2563EB; color: #2563EB; font-weight: 600; }
-    .modal { display:none; position:fixed; inset:0; background: rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center; }
+   .modal { 
+      display:none; 
+      position:fixed; 
+      inset:0; 
+      background: rgba(0,0,0,.5); 
+      z-index: 9999; /* <-- MUDE PARA 9999 */
+      align-items:center; 
+      justify-content:center; 
+    }
     .modal.active { display:flex; }
     /* Slim look for serviços */
     .servico-slim { font-size: 0.80rem; line-height: 1.1rem; font-weight: 300; }
