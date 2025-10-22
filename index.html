@@ -541,7 +541,7 @@
             appView.classList.add('hidden');
             loadingOverlay.style.display = 'none';
           }
-        });
+      
       } catch (e) {
         console.error('Erro ao inicializar Firebase:', e);
         loadingOverlay.innerHTML = '<p class="text-red-600">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
@@ -607,6 +607,7 @@
         renderTiposDeServicoList();
         populateCategorySelect();
       });
+        });
 
       onSnapshot(query(collection(db, `${prefix}/orcamentos`)), (snapshot) => {
         console.log(`[DEBUG] Recebeu ${snapshot.docs.length} orçamentos do Firebase.`); // Mantido
