@@ -91,11 +91,351 @@ window.shareOrViewPDF = async function shareOrViewPDF() {
   }
 };
 
+
+async function saveOrcamento() {
+  try {
+    const selCliente = document.getElementById('orc-cliente-select');
+    const tipoObra  = (document.querySelector('#orc-tipo-obra input[type=radio]:checked')||{}).value || 'residencial';
+    // mão de obra
+    const tipoServico = (document.querySelector('#orc-mao-de-obra input[name=tipo-servico]:checked')||{}).value || 'empreitada';
+    let maoDeObra = 0;
+    if (tipoServico === 'empreitada') {
+      maoDeObra = parseFloat((document.getElementById('empreitada-total')||{}).value||0)||0;
+    } else if (tipoServico === 'diaria') {
+      const qtd = parseFloat((document.getElementById('diaria-qtd')||{}).value||0)||0;
+      const val = parseFloat((document.getElementById('diaria-valor')||{}).value||0)||0;
+      maoDeObra = qtd * val;
+    } else if (tipoServico === 'industrial') {
+      const horas = parseFloat((document.getElementById('industrial-horas')||{}).value||0)||0;
+      const hora  = parseFloat((document.getElementById('config-industrial-hora')||{}).value||0)||0;
+      maoDeObra = horas * hora;
+    }
+    const gather = (containerId, prefix) => {
+      const cont = document.getElementById(containerId);
+      if (!cont) return [];
+      const rows = Array.from(cont.children);
+      const itens = [];
+      for (const r of rows) {
+        const chk = r.querySelector('input.'+prefix+'-check');
+        const qtdEl = r.querySelector('input.'+prefix+'-qtd');
+        if (chk && chk.checked) {
+          const qtd = parseFloat((qtdEl && qtdEl.value)||'1')||1;
+          const nome = r.dataset.nome || 'Item';
+          const valor = parseFloat(r.dataset.valor||'0')||0;
+          itens.push({nome, valor, qtd, subtotal: valor*qtd, tipo: prefix});
+        }
+      }
+      return itens;
+    };
+    const itens = [...gather('orc-materiais-list','mat'), ...gather('orc-tiposdeservico-list','srv')];
+    const subtotal = itens.reduce((a,b)=>a+b.subtotal,0);
+    const total = subtotal + maoDeObra;
+
+    // Atualiza preview
+    const prev = document.getElementById('pdf-preview');
+    if (prev) {
+      const rows = itens.map(i=>`<tr><td>${i.nome}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor.toFixed(2)}</td><td style="text-align:right">R$ ${i.subtotal.toFixed(2)}</td></tr>`).join('');
+      prev.innerHTML = `
+        <div style="font-weight:600;margin-bottom:8px">Cliente: ${(selCliente && selCliente.options[selCliente.selectedIndex] && selCliente.options[selCliente.selectedIndex].text) || '-'}</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px">Tipo de Obra: ${tipoObra||'-'}</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr><th style="text-align:left">Item</th><th>Qtd</th><th style="text-align:right">Valor</th><th style="text-align:right">Subtotal</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:12px">Nenhum item selecionado</td></tr>'}</tbody>
+          <tfoot>
+            <tr><td colspan="3" style="text-align:right;font-weight:600">Mão de obra</td><td style="text-align:right;font-weight:600">R$ ${maoDeObra.toFixed(2)}</td></tr>
+            <tr><td colspan="3" style="text-align:right;font-weight:700;font-size:14px">Total</td><td style="text-align:right;font-weight:700;font-size:14px">R$ ${total.toFixed(2)}</td></tr>
+          </tfoot>
+        </table>
+      `;
+    }
+
+    // Persistir no Firebase (se disponível)
+    if (window.db && window.addDoc && window.collection) {
+      const prefix = `users/${(window.user && user.uid) || (window.userId)}`; // usa padrão existente
+      try {
+        const nextNumber = (Array.isArray(appState.orcamentos) && appState.orcamentos.length)
+          ? Math.max(...appState.orcamentos.map(o => o.numeroOrcamento || 0)) + 1
+          : 1;
+        const payload = {
+          clienteId: selCliente && selCliente.value,
+          itens, maoDeObra, tipoObra, total,
+          numeroOrcamento: nextNumber,
+          createdAt: (typeof serverTimestamp === 'function') ? serverTimestamp() : new Date()
+        };
+        await addDoc(collection(db, `${prefix}/orcamentos`), payload);
+        console.log('[orcamento] gravado no Firebase');
+      } catch (pfErr) {
+        console.error('[orcamento] falha ao gravar no Firebase', pfErr);
+      }
+    }
+
+    // Fecha modal
+    if (typeof closeOrcamentoModal === 'function') closeOrcamentoModal();
+  } catch(e) {
+    console.error('[orcamento] erro ao salvar', e);
+    alert('Erro ao salvar orçamento (veja console).');
+  }
+}
 </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+async function saveOrcamento() {
+  try {
+    const selCliente = document.getElementById('orc-cliente-select');
+    const tipoObra  = (document.querySelector('#orc-tipo-obra input[type=radio]:checked')||{}).value || 'residencial';
+    // mão de obra
+    const tipoServico = (document.querySelector('#orc-mao-de-obra input[name=tipo-servico]:checked')||{}).value || 'empreitada';
+    let maoDeObra = 0;
+    if (tipoServico === 'empreitada') {
+      maoDeObra = parseFloat((document.getElementById('empreitada-total')||{}).value||0)||0;
+    } else if (tipoServico === 'diaria') {
+      const qtd = parseFloat((document.getElementById('diaria-qtd')||{}).value||0)||0;
+      const val = parseFloat((document.getElementById('diaria-valor')||{}).value||0)||0;
+      maoDeObra = qtd * val;
+    } else if (tipoServico === 'industrial') {
+      const horas = parseFloat((document.getElementById('industrial-horas')||{}).value||0)||0;
+      const hora  = parseFloat((document.getElementById('config-industrial-hora')||{}).value||0)||0;
+      maoDeObra = horas * hora;
+    }
+    const gather = (containerId, prefix) => {
+      const cont = document.getElementById(containerId);
+      if (!cont) return [];
+      const rows = Array.from(cont.children);
+      const itens = [];
+      for (const r of rows) {
+        const chk = r.querySelector('input.'+prefix+'-check');
+        const qtdEl = r.querySelector('input.'+prefix+'-qtd');
+        if (chk && chk.checked) {
+          const qtd = parseFloat((qtdEl && qtdEl.value)||'1')||1;
+          const nome = r.dataset.nome || 'Item';
+          const valor = parseFloat(r.dataset.valor||'0')||0;
+          itens.push({nome, valor, qtd, subtotal: valor*qtd, tipo: prefix});
+        }
+      }
+      return itens;
+    };
+    const itens = [...gather('orc-materiais-list','mat'), ...gather('orc-tiposdeservico-list','srv')];
+    const subtotal = itens.reduce((a,b)=>a+b.subtotal,0);
+    const total = subtotal + maoDeObra;
+
+    // Atualiza preview
+    const prev = document.getElementById('pdf-preview');
+    if (prev) {
+      const rows = itens.map(i=>`<tr><td>${i.nome}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor.toFixed(2)}</td><td style="text-align:right">R$ ${i.subtotal.toFixed(2)}</td></tr>`).join('');
+      prev.innerHTML = `
+        <div style="font-weight:600;margin-bottom:8px">Cliente: ${(selCliente && selCliente.options[selCliente.selectedIndex] && selCliente.options[selCliente.selectedIndex].text) || '-'}</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px">Tipo de Obra: ${tipoObra||'-'}</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr><th style="text-align:left">Item</th><th>Qtd</th><th style="text-align:right">Valor</th><th style="text-align:right">Subtotal</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:12px">Nenhum item selecionado</td></tr>'}</tbody>
+          <tfoot>
+            <tr><td colspan="3" style="text-align:right;font-weight:600">Mão de obra</td><td style="text-align:right;font-weight:600">R$ ${maoDeObra.toFixed(2)}</td></tr>
+            <tr><td colspan="3" style="text-align:right;font-weight:700;font-size:14px">Total</td><td style="text-align:right;font-weight:700;font-size:14px">R$ ${total.toFixed(2)}</td></tr>
+          </tfoot>
+        </table>
+      `;
+    }
+
+    // Persistir no Firebase (se disponível)
+    if (window.db && window.addDoc && window.collection) {
+      const prefix = `users/${(window.user && user.uid) || (window.userId)}`; // usa padrão existente
+      try {
+        const nextNumber = (Array.isArray(appState.orcamentos) && appState.orcamentos.length)
+          ? Math.max(...appState.orcamentos.map(o => o.numeroOrcamento || 0)) + 1
+          : 1;
+        const payload = {
+          clienteId: selCliente && selCliente.value,
+          itens, maoDeObra, tipoObra, total,
+          numeroOrcamento: nextNumber,
+          createdAt: (typeof serverTimestamp === 'function') ? serverTimestamp() : new Date()
+        };
+        await addDoc(collection(db, `${prefix}/orcamentos`), payload);
+        console.log('[orcamento] gravado no Firebase');
+      } catch (pfErr) {
+        console.error('[orcamento] falha ao gravar no Firebase', pfErr);
+      }
+    }
+
+    // Fecha modal
+    if (typeof closeOrcamentoModal === 'function') closeOrcamentoModal();
+  } catch(e) {
+    console.error('[orcamento] erro ao salvar', e);
+    alert('Erro ao salvar orçamento (veja console).');
+  }
+}
+</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+async function saveOrcamento() {
+  try {
+    const selCliente = document.getElementById('orc-cliente-select');
+    const tipoObra  = (document.querySelector('#orc-tipo-obra input[type=radio]:checked')||{}).value || 'residencial';
+    // mão de obra
+    const tipoServico = (document.querySelector('#orc-mao-de-obra input[name=tipo-servico]:checked')||{}).value || 'empreitada';
+    let maoDeObra = 0;
+    if (tipoServico === 'empreitada') {
+      maoDeObra = parseFloat((document.getElementById('empreitada-total')||{}).value||0)||0;
+    } else if (tipoServico === 'diaria') {
+      const qtd = parseFloat((document.getElementById('diaria-qtd')||{}).value||0)||0;
+      const val = parseFloat((document.getElementById('diaria-valor')||{}).value||0)||0;
+      maoDeObra = qtd * val;
+    } else if (tipoServico === 'industrial') {
+      const horas = parseFloat((document.getElementById('industrial-horas')||{}).value||0)||0;
+      const hora  = parseFloat((document.getElementById('config-industrial-hora')||{}).value||0)||0;
+      maoDeObra = horas * hora;
+    }
+    const gather = (containerId, prefix) => {
+      const cont = document.getElementById(containerId);
+      if (!cont) return [];
+      const rows = Array.from(cont.children);
+      const itens = [];
+      for (const r of rows) {
+        const chk = r.querySelector('input.'+prefix+'-check');
+        const qtdEl = r.querySelector('input.'+prefix+'-qtd');
+        if (chk && chk.checked) {
+          const qtd = parseFloat((qtdEl && qtdEl.value)||'1')||1;
+          const nome = r.dataset.nome || 'Item';
+          const valor = parseFloat(r.dataset.valor||'0')||0;
+          itens.push({nome, valor, qtd, subtotal: valor*qtd, tipo: prefix});
+        }
+      }
+      return itens;
+    };
+    const itens = [...gather('orc-materiais-list','mat'), ...gather('orc-tiposdeservico-list','srv')];
+    const subtotal = itens.reduce((a,b)=>a+b.subtotal,0);
+    const total = subtotal + maoDeObra;
+
+    // Atualiza preview
+    const prev = document.getElementById('pdf-preview');
+    if (prev) {
+      const rows = itens.map(i=>`<tr><td>${i.nome}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor.toFixed(2)}</td><td style="text-align:right">R$ ${i.subtotal.toFixed(2)}</td></tr>`).join('');
+      prev.innerHTML = `
+        <div style="font-weight:600;margin-bottom:8px">Cliente: ${(selCliente && selCliente.options[selCliente.selectedIndex] && selCliente.options[selCliente.selectedIndex].text) || '-'}</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px">Tipo de Obra: ${tipoObra||'-'}</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr><th style="text-align:left">Item</th><th>Qtd</th><th style="text-align:right">Valor</th><th style="text-align:right">Subtotal</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:12px">Nenhum item selecionado</td></tr>'}</tbody>
+          <tfoot>
+            <tr><td colspan="3" style="text-align:right;font-weight:600">Mão de obra</td><td style="text-align:right;font-weight:600">R$ ${maoDeObra.toFixed(2)}</td></tr>
+            <tr><td colspan="3" style="text-align:right;font-weight:700;font-size:14px">Total</td><td style="text-align:right;font-weight:700;font-size:14px">R$ ${total.toFixed(2)}</td></tr>
+          </tfoot>
+        </table>
+      `;
+    }
+
+    // Persistir no Firebase (se disponível)
+    if (window.db && window.addDoc && window.collection) {
+      const prefix = `users/${(window.user && user.uid) || (window.userId)}`; // usa padrão existente
+      try {
+        const nextNumber = (Array.isArray(appState.orcamentos) && appState.orcamentos.length)
+          ? Math.max(...appState.orcamentos.map(o => o.numeroOrcamento || 0)) + 1
+          : 1;
+        const payload = {
+          clienteId: selCliente && selCliente.value,
+          itens, maoDeObra, tipoObra, total,
+          numeroOrcamento: nextNumber,
+          createdAt: (typeof serverTimestamp === 'function') ? serverTimestamp() : new Date()
+        };
+        await addDoc(collection(db, `${prefix}/orcamentos`), payload);
+        console.log('[orcamento] gravado no Firebase');
+      } catch (pfErr) {
+        console.error('[orcamento] falha ao gravar no Firebase', pfErr);
+      }
+    }
+
+    // Fecha modal
+    if (typeof closeOrcamentoModal === 'function') closeOrcamentoModal();
+  } catch(e) {
+    console.error('[orcamento] erro ao salvar', e);
+    alert('Erro ao salvar orçamento (veja console).');
+  }
+}
+</script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
+async function saveOrcamento() {
+  try {
+    const selCliente = document.getElementById('orc-cliente-select');
+    const tipoObra  = (document.querySelector('#orc-tipo-obra input[type=radio]:checked')||{}).value || 'residencial';
+    // mão de obra
+    const tipoServico = (document.querySelector('#orc-mao-de-obra input[name=tipo-servico]:checked')||{}).value || 'empreitada';
+    let maoDeObra = 0;
+    if (tipoServico === 'empreitada') {
+      maoDeObra = parseFloat((document.getElementById('empreitada-total')||{}).value||0)||0;
+    } else if (tipoServico === 'diaria') {
+      const qtd = parseFloat((document.getElementById('diaria-qtd')||{}).value||0)||0;
+      const val = parseFloat((document.getElementById('diaria-valor')||{}).value||0)||0;
+      maoDeObra = qtd * val;
+    } else if (tipoServico === 'industrial') {
+      const horas = parseFloat((document.getElementById('industrial-horas')||{}).value||0)||0;
+      const hora  = parseFloat((document.getElementById('config-industrial-hora')||{}).value||0)||0;
+      maoDeObra = horas * hora;
+    }
+    const gather = (containerId, prefix) => {
+      const cont = document.getElementById(containerId);
+      if (!cont) return [];
+      const rows = Array.from(cont.children);
+      const itens = [];
+      for (const r of rows) {
+        const chk = r.querySelector('input.'+prefix+'-check');
+        const qtdEl = r.querySelector('input.'+prefix+'-qtd');
+        if (chk && chk.checked) {
+          const qtd = parseFloat((qtdEl && qtdEl.value)||'1')||1;
+          const nome = r.dataset.nome || 'Item';
+          const valor = parseFloat(r.dataset.valor||'0')||0;
+          itens.push({nome, valor, qtd, subtotal: valor*qtd, tipo: prefix});
+        }
+      }
+      return itens;
+    };
+    const itens = [...gather('orc-materiais-list','mat'), ...gather('orc-tiposdeservico-list','srv')];
+    const subtotal = itens.reduce((a,b)=>a+b.subtotal,0);
+    const total = subtotal + maoDeObra;
+
+    // Atualiza preview
+    const prev = document.getElementById('pdf-preview');
+    if (prev) {
+      const rows = itens.map(i=>`<tr><td>${i.nome}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor.toFixed(2)}</td><td style="text-align:right">R$ ${i.subtotal.toFixed(2)}</td></tr>`).join('');
+      prev.innerHTML = `
+        <div style="font-weight:600;margin-bottom:8px">Cliente: ${(selCliente && selCliente.options[selCliente.selectedIndex] && selCliente.options[selCliente.selectedIndex].text) || '-'}</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px">Tipo de Obra: ${tipoObra||'-'}</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr><th style="text-align:left">Item</th><th>Qtd</th><th style="text-align:right">Valor</th><th style="text-align:right">Subtotal</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:12px">Nenhum item selecionado</td></tr>'}</tbody>
+          <tfoot>
+            <tr><td colspan="3" style="text-align:right;font-weight:600">Mão de obra</td><td style="text-align:right;font-weight:600">R$ ${maoDeObra.toFixed(2)}</td></tr>
+            <tr><td colspan="3" style="text-align:right;font-weight:700;font-size:14px">Total</td><td style="text-align:right;font-weight:700;font-size:14px">R$ ${total.toFixed(2)}</td></tr>
+          </tfoot>
+        </table>
+      `;
+    }
+
+    // Persistir no Firebase (se disponível)
+    if (window.db && window.addDoc && window.collection) {
+      const prefix = `users/${(window.user && user.uid) || (window.userId)}`; // usa padrão existente
+      try {
+        const nextNumber = (Array.isArray(appState.orcamentos) && appState.orcamentos.length)
+          ? Math.max(...appState.orcamentos.map(o => o.numeroOrcamento || 0)) + 1
+          : 1;
+        const payload = {
+          clienteId: selCliente && selCliente.value,
+          itens, maoDeObra, tipoObra, total,
+          numeroOrcamento: nextNumber,
+          createdAt: (typeof serverTimestamp === 'function') ? serverTimestamp() : new Date()
+        };
+        await addDoc(collection(db, `${prefix}/orcamentos`), payload);
+        console.log('[orcamento] gravado no Firebase');
+      } catch (pfErr) {
+        console.error('[orcamento] falha ao gravar no Firebase', pfErr);
+      }
+    }
+
+    // Fecha modal
+    if (typeof closeOrcamentoModal === 'function') closeOrcamentoModal();
+  } catch(e) {
+    console.error('[orcamento] erro ao salvar', e);
+    alert('Erro ao salvar orçamento (veja console).');
+  }
+}
+</script>
   <style>
     body { font-family: 'Inter', sans-serif; }
     .tab-content { display: none; }
@@ -1162,15 +1502,83 @@ window.shareOrViewPDF = async function shareOrViewPDF() {
 
     // ===== Orçamentos (lista / modal etc.) =====
     function updateDeleteButtonState() { /* ... (código mantido) ... */ }
-    function renderOrcamentosList(isFullList = false) { /* ... (código mantido) ... */ }
-    window.toggleOrcamentoExclusao = (checkbox) => { /* ... (código mantido, com debug) ... */ };
+    function renderOrcamentosList(isFullList = false) {
+  try {
+    const recentBox = document.getElementById('orcamentos-list-recent');
+    const fullBox = document.getElementById('all-orcamentos-list');
+    const orcs = Array.isArray(appState.orcamentos) ? appState.orcamentos.slice() : [];
+    // ordena
+    orcs.sort((a,b) => (b.numeroOrcamento||0)-(a.numeroOrcamento||0));
+    const fmt = (v)=> new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
+    const clienteNome = (id)=> {
+      const c = (appState.clientes||[]).find(x => (x.id||x.docId)===id);
+      return c ? (c.nome || 'Cliente') : 'Cliente';
+    };
+    if (recentBox) {
+      recentBox.innerHTML = '';
+      const recents = orcs.slice(0,3);
+      if (!recents.length) {
+        recentBox.innerHTML = '<div class="text-gray-400 text-sm py-4">Nenhum orçamento ainda.</div>';
+      } else {
+        for (const o of recents) {
+          const div = document.createElement('div');
+          div.className = 'flex items-center justify-between p-3 rounded border mb-2 bg-white';
+          div.innerHTML = `<div class="text-sm">
+              <div class="font-medium">#${o.numeroOrcamento || '—'} — ${clienteNome(o.clienteId)}</div>
+              <div class="text-gray-500">${(o.createdAt && new Date(o.createdAt).toLocaleString('pt-BR')) || ''}</div>
+            </div>
+            <div class="text-right font-semibold">${fmt(o.total)}</div>`;
+          recentBox.appendChild(div);
+        }
+      }
+    }
+    if (isFullList && fullBox) {
+      fullBox.innerHTML = '';
+      if (!orcs.length) {
+        fullBox.innerHTML = '<div class="text-gray-400 text-sm py-4">Nenhum orçamento cadastrado.</div>';
+      } else {
+        for (const o of orcs) {
+          const row = document.createElement('div');
+          row.className = 'grid grid-cols-12 gap-2 p-3 border-b items-center bg-white';
+          row.innerHTML = `
+            <div class="col-span-2 font-medium">#${o.numeroOrcamento || '—'}</div>
+            <div class="col-span-4">${clienteNome(o.clienteId)}</div>
+            <div class="col-span-2">${(o.createdAt && new Date(o.createdAt).toLocaleDateString('pt-BR')) || ''}</div>
+            <div class="col-span-2 text-right font-semibold">${fmt(o.total)}</div>
+            <div class="col-span-2 text-right">
+              <button class="text-blue-600 underline text-sm" onclick="shareOrViewPDF()">PDF</button>
+            </div>`;
+          fullBox.appendChild(row);
+        }
+      }
+    }
+  } catch(e) { console.error('[orcamentos] falha ao renderizar', e); }
+}window.toggleOrcamentoExclusao = (checkbox) => { /* ... (código mantido, com debug) ... */ };
     window.confirmDeleteSelectedOrcamentos = () => { /* ... (código mantido) ... */ };
     window.closeDeleteConfirmModal = (confirmAction) => { /* ... (código mantido) ... */ };
     async function deleteOrcamentosEmLote(ids) { /* ... (código mantido, com debug) ... */ }
     window.showAllOrcamentosPage = () => { /* ... (código mantido) ... */ };
     window.showMainPage = () => { /* ... (código mantido) ... */ };
     window.editOrcamento = (id) => { /* ... (código mantido, com debug) ... */ };
-    window.openOrcamentoModal = (orcamentoParaEditar = null) => { /* ... (código mantido) ... */ };
+    window.openOrcamentoModal = (orcamentoParaEditar = null) => {
+  try {
+    const modal = document.getElementById('orcamento-modal');
+    if (!modal) return console.warn('[orcamento] modal não encontrado');
+    // título
+    const title = document.getElementById('modal-title');
+    if (title) title.textContent = orcamentoParaEditar ? 'Editar Orçamento' : 'Criar Novo Orçamento';
+    // limpar listas
+    const clear = (id)=>{ const el = document.getElementById(id); if (el) el.innerHTML=''; };
+    clear('orc-materiais-list'); clear('orc-tiposdeservico-list');
+    // preencher selects/listas
+    if (typeof populateClienteSelect === 'function') populateClienteSelect();
+    if (typeof populateMateriaisOrcamento === 'function') populateMateriaisOrcamento();
+    // exibir modal
+    modal.style.display = 'flex';
+  } catch(e) {
+    console.error('[orcamento] erro ao abrir modal', e);
+  }
+};
     window.closeOrcamentoModal = () => { /* ... (código mantido) ... */ };
     function populateClienteSelect() { /* ... (código mantido) ... */ }
     function populateMateriaisOrcamento() { /* ... (código mantido) ... */ }
@@ -1195,6 +1603,91 @@ window.shareOrViewPDF = async function shareOrViewPDF() {
     };
 
     window.onload = initializeFirebase;
-  </script>
+  
+async function saveOrcamento() {
+  try {
+    const selCliente = document.getElementById('orc-cliente-select');
+    const tipoObra  = (document.querySelector('#orc-tipo-obra input[type=radio]:checked')||{}).value || 'residencial';
+    // mão de obra
+    const tipoServico = (document.querySelector('#orc-mao-de-obra input[name=tipo-servico]:checked')||{}).value || 'empreitada';
+    let maoDeObra = 0;
+    if (tipoServico === 'empreitada') {
+      maoDeObra = parseFloat((document.getElementById('empreitada-total')||{}).value||0)||0;
+    } else if (tipoServico === 'diaria') {
+      const qtd = parseFloat((document.getElementById('diaria-qtd')||{}).value||0)||0;
+      const val = parseFloat((document.getElementById('diaria-valor')||{}).value||0)||0;
+      maoDeObra = qtd * val;
+    } else if (tipoServico === 'industrial') {
+      const horas = parseFloat((document.getElementById('industrial-horas')||{}).value||0)||0;
+      const hora  = parseFloat((document.getElementById('config-industrial-hora')||{}).value||0)||0;
+      maoDeObra = horas * hora;
+    }
+    const gather = (containerId, prefix) => {
+      const cont = document.getElementById(containerId);
+      if (!cont) return [];
+      const rows = Array.from(cont.children);
+      const itens = [];
+      for (const r of rows) {
+        const chk = r.querySelector('input.'+prefix+'-check');
+        const qtdEl = r.querySelector('input.'+prefix+'-qtd');
+        if (chk && chk.checked) {
+          const qtd = parseFloat((qtdEl && qtdEl.value)||'1')||1;
+          const nome = r.dataset.nome || 'Item';
+          const valor = parseFloat(r.dataset.valor||'0')||0;
+          itens.push({nome, valor, qtd, subtotal: valor*qtd, tipo: prefix});
+        }
+      }
+      return itens;
+    };
+    const itens = [...gather('orc-materiais-list','mat'), ...gather('orc-tiposdeservico-list','srv')];
+    const subtotal = itens.reduce((a,b)=>a+b.subtotal,0);
+    const total = subtotal + maoDeObra;
+
+    // Atualiza preview
+    const prev = document.getElementById('pdf-preview');
+    if (prev) {
+      const rows = itens.map(i=>`<tr><td>${i.nome}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.valor.toFixed(2)}</td><td style="text-align:right">R$ ${i.subtotal.toFixed(2)}</td></tr>`).join('');
+      prev.innerHTML = `
+        <div style="font-weight:600;margin-bottom:8px">Cliente: ${(selCliente && selCliente.options[selCliente.selectedIndex] && selCliente.options[selCliente.selectedIndex].text) || '-'}</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px">Tipo de Obra: ${tipoObra||'-'}</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr><th style="text-align:left">Item</th><th>Qtd</th><th style="text-align:right">Valor</th><th style="text-align:right">Subtotal</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:12px">Nenhum item selecionado</td></tr>'}</tbody>
+          <tfoot>
+            <tr><td colspan="3" style="text-align:right;font-weight:600">Mão de obra</td><td style="text-align:right;font-weight:600">R$ ${maoDeObra.toFixed(2)}</td></tr>
+            <tr><td colspan="3" style="text-align:right;font-weight:700;font-size:14px">Total</td><td style="text-align:right;font-weight:700;font-size:14px">R$ ${total.toFixed(2)}</td></tr>
+          </tfoot>
+        </table>
+      `;
+    }
+
+    // Persistir no Firebase (se disponível)
+    if (window.db && window.addDoc && window.collection) {
+      const prefix = `users/${(window.user && user.uid) || (window.userId)}`; // usa padrão existente
+      try {
+        const nextNumber = (Array.isArray(appState.orcamentos) && appState.orcamentos.length)
+          ? Math.max(...appState.orcamentos.map(o => o.numeroOrcamento || 0)) + 1
+          : 1;
+        const payload = {
+          clienteId: selCliente && selCliente.value,
+          itens, maoDeObra, tipoObra, total,
+          numeroOrcamento: nextNumber,
+          createdAt: (typeof serverTimestamp === 'function') ? serverTimestamp() : new Date()
+        };
+        await addDoc(collection(db, `${prefix}/orcamentos`), payload);
+        console.log('[orcamento] gravado no Firebase');
+      } catch (pfErr) {
+        console.error('[orcamento] falha ao gravar no Firebase', pfErr);
+      }
+    }
+
+    // Fecha modal
+    if (typeof closeOrcamentoModal === 'function') closeOrcamentoModal();
+  } catch(e) {
+    console.error('[orcamento] erro ao salvar', e);
+    alert('Erro ao salvar orçamento (veja console).');
+  }
+}
+</script>
 </body>
 </html>
