@@ -185,6 +185,47 @@ function refreshOrcamentoModal() {
   if (typeof populateMateriaisOrcamento === 'function') populateMateriaisOrcamento();
 }
 
+
+// === Guardas de inicialização e captura de erros ===
+(function(){
+  const hideOverlay = () => {
+    const ov = document.getElementById('loading-overlay');
+    if (ov) ov.style.display = 'none';
+  };
+  // Fallback: some after 6s regardless (não deixa travado na UI)
+  setTimeout(hideOverlay, 6000);
+
+  // Captura erros globais e exibe alerta para diagnóstico
+  window.onerror = function(msg, src, line, col, err){
+    console.error('[BOOT] Erro global:', msg, src, line, col, err);
+    hideOverlay();
+    const box = document.createElement('div');
+    box.style.position='fixed'; box.style.bottom='8px'; box.style.left='8px';
+    box.style.background='#fee2e2'; box.style.color='#991b1b';
+    box.style.padding='8px 12px'; box.style.borderRadius='8px'; box.style.zIndex=10000;
+    box.style.maxWidth='90vw'; box.style.fontSize='12px'; box.style.boxShadow='0 2px 8px rgba(0,0,0,.15)';
+    box.textContent = 'Erro de inicialização: ' + msg + ' (' + (line||'?') + ':' + (col||'?') + ')';
+    document.body.appendChild(box);
+    return false;
+  };
+  window.addEventListener('unhandledrejection', (e)=>{
+    console.error('[BOOT] Promise rejeitada não tratada:', e.reason);
+    hideOverlay();
+  });
+
+  // Hook no Firebase auth (se disponível) para esconder overlay no sucesso
+  const tryHook = () => {
+    try {
+      if (typeof onAuthStateChanged === 'function' && window.auth) {
+        onAuthStateChanged(auth, (user) => {
+          hideOverlay();
+        });
+      }
+    } catch(e){ /* silencioso */ }
+  };
+  tryHook();
+})();
+
 </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
@@ -367,6 +408,47 @@ function refreshOrcamentoModal() {
   if (typeof populateMateriaisOrcamento === 'function') populateMateriaisOrcamento();
 }
 
+
+// === Guardas de inicialização e captura de erros ===
+(function(){
+  const hideOverlay = () => {
+    const ov = document.getElementById('loading-overlay');
+    if (ov) ov.style.display = 'none';
+  };
+  // Fallback: some after 6s regardless (não deixa travado na UI)
+  setTimeout(hideOverlay, 6000);
+
+  // Captura erros globais e exibe alerta para diagnóstico
+  window.onerror = function(msg, src, line, col, err){
+    console.error('[BOOT] Erro global:', msg, src, line, col, err);
+    hideOverlay();
+    const box = document.createElement('div');
+    box.style.position='fixed'; box.style.bottom='8px'; box.style.left='8px';
+    box.style.background='#fee2e2'; box.style.color='#991b1b';
+    box.style.padding='8px 12px'; box.style.borderRadius='8px'; box.style.zIndex=10000;
+    box.style.maxWidth='90vw'; box.style.fontSize='12px'; box.style.boxShadow='0 2px 8px rgba(0,0,0,.15)';
+    box.textContent = 'Erro de inicialização: ' + msg + ' (' + (line||'?') + ':' + (col||'?') + ')';
+    document.body.appendChild(box);
+    return false;
+  };
+  window.addEventListener('unhandledrejection', (e)=>{
+    console.error('[BOOT] Promise rejeitada não tratada:', e.reason);
+    hideOverlay();
+  });
+
+  // Hook no Firebase auth (se disponível) para esconder overlay no sucesso
+  const tryHook = () => {
+    try {
+      if (typeof onAuthStateChanged === 'function' && window.auth) {
+        onAuthStateChanged(auth, (user) => {
+          hideOverlay();
+        });
+      }
+    } catch(e){ /* silencioso */ }
+  };
+  tryHook();
+})();
+
 </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
 // === OVERRIDE: shareOrViewPDF com logo e rodapé de pagamentos ===
@@ -548,6 +630,47 @@ function refreshOrcamentoModal() {
   if (typeof populateMateriaisOrcamento === 'function') populateMateriaisOrcamento();
 }
 
+
+// === Guardas de inicialização e captura de erros ===
+(function(){
+  const hideOverlay = () => {
+    const ov = document.getElementById('loading-overlay');
+    if (ov) ov.style.display = 'none';
+  };
+  // Fallback: some after 6s regardless (não deixa travado na UI)
+  setTimeout(hideOverlay, 6000);
+
+  // Captura erros globais e exibe alerta para diagnóstico
+  window.onerror = function(msg, src, line, col, err){
+    console.error('[BOOT] Erro global:', msg, src, line, col, err);
+    hideOverlay();
+    const box = document.createElement('div');
+    box.style.position='fixed'; box.style.bottom='8px'; box.style.left='8px';
+    box.style.background='#fee2e2'; box.style.color='#991b1b';
+    box.style.padding='8px 12px'; box.style.borderRadius='8px'; box.style.zIndex=10000;
+    box.style.maxWidth='90vw'; box.style.fontSize='12px'; box.style.boxShadow='0 2px 8px rgba(0,0,0,.15)';
+    box.textContent = 'Erro de inicialização: ' + msg + ' (' + (line||'?') + ':' + (col||'?') + ')';
+    document.body.appendChild(box);
+    return false;
+  };
+  window.addEventListener('unhandledrejection', (e)=>{
+    console.error('[BOOT] Promise rejeitada não tratada:', e.reason);
+    hideOverlay();
+  });
+
+  // Hook no Firebase auth (se disponível) para esconder overlay no sucesso
+  const tryHook = () => {
+    try {
+      if (typeof onAuthStateChanged === 'function' && window.auth) {
+        onAuthStateChanged(auth, (user) => {
+          hideOverlay();
+        });
+      }
+    } catch(e){ /* silencioso */ }
+  };
+  tryHook();
+})();
+
 </script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
 // === OVERRIDE: shareOrViewPDF com logo e rodapé de pagamentos ===
@@ -728,6 +851,47 @@ function refreshOrcamentoModal() {
   if (typeof populateClienteSelect === 'function') populateClienteSelect();
   if (typeof populateMateriaisOrcamento === 'function') populateMateriaisOrcamento();
 }
+
+
+// === Guardas de inicialização e captura de erros ===
+(function(){
+  const hideOverlay = () => {
+    const ov = document.getElementById('loading-overlay');
+    if (ov) ov.style.display = 'none';
+  };
+  // Fallback: some after 6s regardless (não deixa travado na UI)
+  setTimeout(hideOverlay, 6000);
+
+  // Captura erros globais e exibe alerta para diagnóstico
+  window.onerror = function(msg, src, line, col, err){
+    console.error('[BOOT] Erro global:', msg, src, line, col, err);
+    hideOverlay();
+    const box = document.createElement('div');
+    box.style.position='fixed'; box.style.bottom='8px'; box.style.left='8px';
+    box.style.background='#fee2e2'; box.style.color='#991b1b';
+    box.style.padding='8px 12px'; box.style.borderRadius='8px'; box.style.zIndex=10000;
+    box.style.maxWidth='90vw'; box.style.fontSize='12px'; box.style.boxShadow='0 2px 8px rgba(0,0,0,.15)';
+    box.textContent = 'Erro de inicialização: ' + msg + ' (' + (line||'?') + ':' + (col||'?') + ')';
+    document.body.appendChild(box);
+    return false;
+  };
+  window.addEventListener('unhandledrejection', (e)=>{
+    console.error('[BOOT] Promise rejeitada não tratada:', e.reason);
+    hideOverlay();
+  });
+
+  // Hook no Firebase auth (se disponível) para esconder overlay no sucesso
+  const tryHook = () => {
+    try {
+      if (typeof onAuthStateChanged === 'function' && window.auth) {
+        onAuthStateChanged(auth, (user) => {
+          hideOverlay();
+        });
+      }
+    } catch(e){ /* silencioso */ }
+  };
+  tryHook();
+})();
 
 </script>
   <style>
@@ -2139,6 +2303,47 @@ function refreshOrcamentoModal() {
   if (typeof populateClienteSelect === 'function') populateClienteSelect();
   if (typeof populateMateriaisOrcamento === 'function') populateMateriaisOrcamento();
 }
+
+
+// === Guardas de inicialização e captura de erros ===
+(function(){
+  const hideOverlay = () => {
+    const ov = document.getElementById('loading-overlay');
+    if (ov) ov.style.display = 'none';
+  };
+  // Fallback: some after 6s regardless (não deixa travado na UI)
+  setTimeout(hideOverlay, 6000);
+
+  // Captura erros globais e exibe alerta para diagnóstico
+  window.onerror = function(msg, src, line, col, err){
+    console.error('[BOOT] Erro global:', msg, src, line, col, err);
+    hideOverlay();
+    const box = document.createElement('div');
+    box.style.position='fixed'; box.style.bottom='8px'; box.style.left='8px';
+    box.style.background='#fee2e2'; box.style.color='#991b1b';
+    box.style.padding='8px 12px'; box.style.borderRadius='8px'; box.style.zIndex=10000;
+    box.style.maxWidth='90vw'; box.style.fontSize='12px'; box.style.boxShadow='0 2px 8px rgba(0,0,0,.15)';
+    box.textContent = 'Erro de inicialização: ' + msg + ' (' + (line||'?') + ':' + (col||'?') + ')';
+    document.body.appendChild(box);
+    return false;
+  };
+  window.addEventListener('unhandledrejection', (e)=>{
+    console.error('[BOOT] Promise rejeitada não tratada:', e.reason);
+    hideOverlay();
+  });
+
+  // Hook no Firebase auth (se disponível) para esconder overlay no sucesso
+  const tryHook = () => {
+    try {
+      if (typeof onAuthStateChanged === 'function' && window.auth) {
+        onAuthStateChanged(auth, (user) => {
+          hideOverlay();
+        });
+      }
+    } catch(e){ /* silencioso */ }
+  };
+  tryHook();
+})();
 
 </script>
 </body>
