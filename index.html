@@ -606,8 +606,8 @@
         appState.tiposDeServico = snapshot.docs.map(d => ({ ...d.data(), id: d.id })); // Corrigido aqui também
         renderTiposDeServicoList();
         populateCategorySelect();
-        });
-     
+    
+         });
 
       onSnapshot(query(collection(db, `${prefix}/orcamentos`)), (snapshot) => {
         console.log(`[DEBUG] Recebeu ${snapshot.docs.length} orçamentos do Firebase.`); // Mantido
