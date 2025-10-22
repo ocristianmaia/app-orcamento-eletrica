@@ -154,6 +154,23 @@ function saveOrcamento() {
     // Fecha modal
     if (typeof closeOrcamentoModal === 'function') closeOrcamentoModal();
     console.log('[orcamento] salvo (preview atualizado)', appState.currentOrcamento);
+
+    // --- Persistência no Firestore ---
+    try {
+      const nextNumber = (Array.isArray(appState.orcamentos) && appState.orcamentos.length)
+        ? Math.max(...appState.orcamentos.map(o => o.numeroOrcamento || 0)) + 1
+        : 1;
+      const payload = {
+        ...appState.currentOrcamento,
+        numeroOrcamento: nextNumber,
+        createdAt: (typeof serverTimestamp === 'function') ? serverTimestamp() : new Date()
+      };
+      const ref = await addDoc(collection(db, `${prefix}/orcamentos`), payload);
+      console.log('[orcamento] gravado no Firebase com id', ref.id);
+    } catch (pfErr) {
+      console.error('[orcamento] falha ao gravar no Firebase', pfErr);
+      // segue adiante, pois o preview já foi renderizado
+    }
   } catch(e) {
     console.error('[orcamento] erro ao salvar orçamento', e);
     alert('Erro ao salvar orçamento (ver console).');
@@ -319,6 +336,23 @@ function saveOrcamento() {
     // Fecha modal
     if (typeof closeOrcamentoModal === 'function') closeOrcamentoModal();
     console.log('[orcamento] salvo (preview atualizado)', appState.currentOrcamento);
+
+    // --- Persistência no Firestore ---
+    try {
+      const nextNumber = (Array.isArray(appState.orcamentos) && appState.orcamentos.length)
+        ? Math.max(...appState.orcamentos.map(o => o.numeroOrcamento || 0)) + 1
+        : 1;
+      const payload = {
+        ...appState.currentOrcamento,
+        numeroOrcamento: nextNumber,
+        createdAt: (typeof serverTimestamp === 'function') ? serverTimestamp() : new Date()
+      };
+      const ref = await addDoc(collection(db, `${prefix}/orcamentos`), payload);
+      console.log('[orcamento] gravado no Firebase com id', ref.id);
+    } catch (pfErr) {
+      console.error('[orcamento] falha ao gravar no Firebase', pfErr);
+      // segue adiante, pois o preview já foi renderizado
+    }
   } catch(e) {
     console.error('[orcamento] erro ao salvar orçamento', e);
     alert('Erro ao salvar orçamento (ver console).');
@@ -483,6 +517,23 @@ function saveOrcamento() {
     // Fecha modal
     if (typeof closeOrcamentoModal === 'function') closeOrcamentoModal();
     console.log('[orcamento] salvo (preview atualizado)', appState.currentOrcamento);
+
+    // --- Persistência no Firestore ---
+    try {
+      const nextNumber = (Array.isArray(appState.orcamentos) && appState.orcamentos.length)
+        ? Math.max(...appState.orcamentos.map(o => o.numeroOrcamento || 0)) + 1
+        : 1;
+      const payload = {
+        ...appState.currentOrcamento,
+        numeroOrcamento: nextNumber,
+        createdAt: (typeof serverTimestamp === 'function') ? serverTimestamp() : new Date()
+      };
+      const ref = await addDoc(collection(db, `${prefix}/orcamentos`), payload);
+      console.log('[orcamento] gravado no Firebase com id', ref.id);
+    } catch (pfErr) {
+      console.error('[orcamento] falha ao gravar no Firebase', pfErr);
+      // segue adiante, pois o preview já foi renderizado
+    }
   } catch(e) {
     console.error('[orcamento] erro ao salvar orçamento', e);
     alert('Erro ao salvar orçamento (ver console).');
@@ -647,6 +698,23 @@ function saveOrcamento() {
     // Fecha modal
     if (typeof closeOrcamentoModal === 'function') closeOrcamentoModal();
     console.log('[orcamento] salvo (preview atualizado)', appState.currentOrcamento);
+
+    // --- Persistência no Firestore ---
+    try {
+      const nextNumber = (Array.isArray(appState.orcamentos) && appState.orcamentos.length)
+        ? Math.max(...appState.orcamentos.map(o => o.numeroOrcamento || 0)) + 1
+        : 1;
+      const payload = {
+        ...appState.currentOrcamento,
+        numeroOrcamento: nextNumber,
+        createdAt: (typeof serverTimestamp === 'function') ? serverTimestamp() : new Date()
+      };
+      const ref = await addDoc(collection(db, `${prefix}/orcamentos`), payload);
+      console.log('[orcamento] gravado no Firebase com id', ref.id);
+    } catch (pfErr) {
+      console.error('[orcamento] falha ao gravar no Firebase', pfErr);
+      // segue adiante, pois o preview já foi renderizado
+    }
   } catch(e) {
     console.error('[orcamento] erro ao salvar orçamento', e);
     alert('Erro ao salvar orçamento (ver console).');
@@ -1725,8 +1793,70 @@ refreshOrcamentoModal();
 
     // ===== Orçamentos (lista / modal etc.) =====
     function updateDeleteButtonState() { /* ... (código mantido) ... */ }
-    function renderOrcamentosList(isFullList = false) { /* ... (código mantido) ... */ }
-    window.toggleOrcamentoExclusao = (checkbox) => { /* ... (código mantido, com debug) ... */ };
+    
+function renderOrcamentosList(isFullList = false) {
+  try {
+    const recentBox = document.getElementById('orcamentos-list-recent');
+    const fullBox = document.getElementById('all-orcamentos-list');
+    const orcs = Array.isArray(appState.orcamentos) ? appState.orcamentos.slice() : [];
+    // Ordena por numeroOrcamento desc (fallback createdAt)
+    orcs.sort((a,b) => {
+      const na = a.numeroOrcamento || 0, nb = b.numeroOrcamento || 0;
+      if (nb !== na) return nb - na;
+      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return tb - ta;
+    });
+    const fmt = (v)=> new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(v||0);
+    const clienteNome = (id)=> {
+      const c = (appState.clientes||[]).find(x => (x.id || x.docId) === id);
+      return c ? (c.nome || c.razao || 'Cliente') : 'Cliente';
+    };
+    // Recentes (máx 3)
+    if (recentBox) {
+      recentBox.innerHTML = '';
+      const recents = orcs.slice(0,3);
+      if (!recents.length) {
+        recentBox.innerHTML = '<div class="text-gray-400 text-sm py-4">Nenhum orçamento ainda.</div>';
+      } else {
+        for (const o of recents) {
+          const div = document.createElement('div');
+          div.className = 'flex items-center justify-between p-3 rounded border mb-2';
+          div.innerHTML = `<div class="text-sm">
+              <div class="font-medium">#${o.numeroOrcamento || '—'} — ${clienteNome(o.clienteId)}</div>
+              <div class="text-gray-500">${(o.createdAt && new Date(o.createdAt).toLocaleString('pt-BR')) || ''}</div>
+            </div>
+            <div class="text-right font-semibold">${fmt(o.total)}</div>`;
+          recentBox.appendChild(div);
+        }
+      }
+    }
+    // Lista completa
+    if (isFullList && fullBox) {
+      fullBox.innerHTML = '';
+      if (!orcs.length) {
+        fullBox.innerHTML = '<div class="text-gray-400 text-sm py-4">Nenhum orçamento cadastrado.</div>';
+      } else {
+        for (const o of orcs) {
+          const row = document.createElement('div');
+          row.className = 'grid grid-cols-12 gap-2 p-3 border-b items-center';
+          row.innerHTML = `
+            <div class="col-span-2 font-medium">#${o.numeroOrcamento || '—'}</div>
+            <div class="col-span-4">${clienteNome(o.clienteId)}</div>
+            <div class="col-span-2">${(o.createdAt && new Date(o.createdAt).toLocaleDateString('pt-BR')) || ''}</div>
+            <div class="col-span-2 text-right font-semibold">${fmt(o.total)}</div>
+            <div class="col-span-2 text-right">
+              <button class="text-blue-600 underline text-sm" onclick="shareOrViewPDF()">PDF</button>
+            </div>`;
+          fullBox.appendChild(row);
+        }
+      }
+    }
+  } catch(e) {
+    console.error('[orcamentos] erro ao renderizar lista', e);
+  }
+}
+window.toggleOrcamentoExclusao = (checkbox) => { /* ... (código mantido, com debug) ... */ };
     window.confirmDeleteSelectedOrcamentos = () => { /* ... (código mantido) ... */ };
     window.closeDeleteConfirmModal = (confirmAction) => { /* ... (código mantido) ... */ };
     async function deleteOrcamentosEmLote(ids) { /* ... (código mantido, com debug) ... */ }
@@ -1979,6 +2109,23 @@ function saveOrcamento() {
     // Fecha modal
     if (typeof closeOrcamentoModal === 'function') closeOrcamentoModal();
     console.log('[orcamento] salvo (preview atualizado)', appState.currentOrcamento);
+
+    // --- Persistência no Firestore ---
+    try {
+      const nextNumber = (Array.isArray(appState.orcamentos) && appState.orcamentos.length)
+        ? Math.max(...appState.orcamentos.map(o => o.numeroOrcamento || 0)) + 1
+        : 1;
+      const payload = {
+        ...appState.currentOrcamento,
+        numeroOrcamento: nextNumber,
+        createdAt: (typeof serverTimestamp === 'function') ? serverTimestamp() : new Date()
+      };
+      const ref = await addDoc(collection(db, `${prefix}/orcamentos`), payload);
+      console.log('[orcamento] gravado no Firebase com id', ref.id);
+    } catch (pfErr) {
+      console.error('[orcamento] falha ao gravar no Firebase', pfErr);
+      // segue adiante, pois o preview já foi renderizado
+    }
   } catch(e) {
     console.error('[orcamento] erro ao salvar orçamento', e);
     alert('Erro ao salvar orçamento (ver console).');
