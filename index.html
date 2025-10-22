@@ -162,7 +162,7 @@
           <nav class="flex -mb-px space-x-6">
             <button class="tab active py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Tela Inicial</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
-            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais/Serviços</button>
+            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="servicos" onclick="changeTab(event, 'servicos')">Serviços</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600 flex items-center" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -173,7 +173,6 @@
             </button>
           </nav>
         </div>
-
         <div class="mb-6 sm:hidden space-y-2">
             <div class="grid grid-cols-3 gap-2">
                 <button class="mobile-tab active text-white p-3 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Início</button>
@@ -472,7 +471,7 @@
 
   </div> <script type="module">
 
-    console.log("VERSÃO 4.0 DO SCRIPT CARREGADA - TESTE FINAL"); 
+    console.log("VERSÃO 4.0 DO SCRIPT CARREGADA - TESTE FINAL (com merge de Edição)"); 
     // ===== Firebase config (preservado do seu arquivo) =====
     const firebaseConfig = {
       apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
@@ -801,7 +800,6 @@
       finally { btn.disabled=false; btn.textContent='Salvar Item'; }
     });
 
-    // ADICIONADO: Listener para Edição de Material
     document.getElementById('form-edit-material').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
@@ -822,7 +820,6 @@
       finally { btn.disabled=false; btn.textContent='Salvar Alterações'; }
     });
 
-    // MODIFICADO: renderMateriaisList para incluir edição
     function renderMateriaisList() {
       const el = document.getElementById('materiais-list');
       if (!appState.materiais.length) { el.innerHTML = '<p class="text-gray-500">Nenhum material cadastrado.</p>'; return; }
@@ -839,7 +836,6 @@
       if (confirm('Excluir este item?')) { await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); }
     };
 
-    // ADICIONADO: Funções do modal Editar Material
     window.openEditMaterialModal = (id) => {
       try {
         const material = appState.materiais.find(m => m.id === id);
@@ -892,7 +888,6 @@
       finally { btn.disabled=false; btn.textContent='Salvar'; }
     });
 
-    // ADICIONADO: Listener para Edição de Tipo de Serviço
     document.getElementById('form-edit-tiposervico').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
@@ -915,7 +910,6 @@
 
     function groupBy(arr, key) { return arr.reduce((acc,cur)=>{ const k=cur[key]||'OUTROS'; (acc[k]||(acc[k]=[])).push(cur); return acc; },{}); }
 
-    // MODIFICADO: renderTiposDeServicoList para incluir edição
     function renderTiposDeServicoList() {
       const el = document.getElementById('tiposdeservico-list');
       if (!appState.tiposDeServico.length) { el.innerHTML = '<p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>'; return; }
@@ -949,7 +943,6 @@
       if (confirm('Excluir este tipo de serviço?')) { await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`)); }
     };
 
-    // ADICIONADO: Funções do modal Editar Tipo de Serviço
     window.openEditTipoServicoModal = (id) => {
       try {
         const servico = appState.tiposDeServico.find(s => s.id === id);
