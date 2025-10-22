@@ -146,7 +146,7 @@ window.shareOrViewPDF = async function shareOrViewPDF() {
 };
 
 
-function saveOrcamento() {
+async function saveOrcamento() {
   try {
     const selCliente = document.getElementById('orc-cliente-select');
     const maoDeObra = parseFloat((document.getElementById('orc-mao-de-obra')||{}).value||0) || 0;
