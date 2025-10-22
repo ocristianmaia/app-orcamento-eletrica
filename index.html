@@ -640,7 +640,9 @@
       document.getElementById('config-industrial-hora').value = c.industrial_hora || '';
     }
 
-   document.getElementById('form-config')?.addEventListener('submit', async (e) => { /* ... código interno mantido ... */ });
+   // ========== INÍCIO DA CORREÇÃO (DIAGNÓSTICO 1) ==========
+   // O '});' foi removido do final da primeira linha e o código movido para dentro.
+   document.getElementById('form-config')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
       const btn = e.target.querySelector('button[type="submit"]');
@@ -667,6 +669,7 @@
       } catch(e) { console.error(e); alert('Erro ao salvar.'); }
       finally { btn.disabled=false; textSpan.classList.remove('hidden'); spinSpan.classList.add('hidden'); }
     });
+    // ========== FIM DA CORREÇÃO ==========
 
     // ===== Clientes =====
     document.getElementById('form-cliente').addEventListener('submit', async (e) => {
@@ -945,8 +948,12 @@
         status.textContent = `Importação concluída: ${count} itens adicionados.`; inp.value = ''; // Limpa o input
       } catch(e) { console.error(e); alert('Erro ao importar planilha: ' + e.message); status.textContent = 'Falha na importação.'; }
     });
-    // Função para Limpar Serviços
+    
+    // ===== INÍCIO CÓDIGO FALTANTE (DIAGNÓSTICO 2) =====
+    // Esta função estava com o código faltando. Você precisará adicionar o código original aqui.
     async function clearAllTiposDeServico() { /* ... (código mantido) ... */ }
+    // ===== FIM CÓDIGO FALTANTE =====
+    
     document.getElementById('btn-clear-tiposervico').addEventListener('click', clearAllTiposDeServico);
 
 
@@ -998,6 +1005,11 @@
 
 
     // ===== Orçamentos (lista / modal etc.) =====
+    
+    // ===== INÍCIO CÓDIGO FALTANTE (DIAGNÓSTICO 2) =====
+    // Todas as funções a seguir estavam com o código faltando.
+    // Os botões de orçamento NÃO FUNCIONARÃO até que o código original seja inserido aqui.
+    
     function updateDeleteButtonState() { /* ... (código mantido) ... */ }
     function renderOrcamentosList(isFullList = false) { /* ... (código mantido) ... */ }
     window.toggleOrcamentoExclusao = (checkbox) => { /* ... (código mantido, com debug) ... */ };
@@ -1022,6 +1034,8 @@
     window.saveOrcamento = async () => { /* ... (código mantido) ... */ };
     window.shareOrViewPDF = async () => { /* ... (código mantido) ... */ };
     window.sendWhatsAppText = () => { /* ... (código mantido) ... */ };
+
+    // ===== FIM CÓDIGO FALTANTE =====
 
     // ===== Navegação =====
     window.changeTab = (event, tabName) => {
