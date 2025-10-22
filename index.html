@@ -563,7 +563,7 @@
     loginButton?.addEventListener('click', loginWithGoogle);
     logoutButton?.addEventListener('click', logout);
 
-    document.getElementById('orc-cliente-select').addEventListener('change', (e) => { ... });
+    document.getElementById('orc-cliente-select').addEventListener('change', (e) => {
       if (!appState.currentOrcamento) resetCurrentOrcamento();
 
       const clienteId = e.target.value;
@@ -577,9 +577,10 @@
       } else {
         appState.currentOrcamento.cliente = null;
       }
+
       updateOrcamentoPreview();
     });
-
+    
     // ===== Carregamento reativo de dados =====
     function loadAllData() {
       if (!userId) return;
