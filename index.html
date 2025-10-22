@@ -1,6 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+\1
+  <script>
+  (function(){
+    function hide(){ var ov = document.getElementById('loading-overlay'); if (ov) ov.style.display='none'; }
+    setTimeout(hide, 6000);
+    window.addEventListener('error', function(e){
+      hide();
+      console.error('[BOOT ERROR]', e.message, e.filename, e.lineno, e.colno, e.error);
+      var box = document.createElement('div');
+      box.style.position='fixed'; box.style.bottom='8px'; box.style.left='8px';
+      box.style.background='#fee2e2'; box.style.color='#991b1b';
+      box.style.padding='8px 12px'; box.style.borderRadius='8px';
+      box.style.zIndex=10000; box.style.fontSize='12px'; box.style.boxShadow='0 2px 8px rgba(0,0,0,.15)';
+      box.textContent = 'Erro: ' + e.message + ' — ' + (e.filename||'') + ':' + (e.lineno||'?') + ':' + (e.colno||'?');
+      document.body.appendChild(box);
+    }, true);
+    window.addEventListener('unhandledrejection', function(e){
+      hide();
+      console.error('[BOOT REJECTION]', e.reason);
+      var box = document.createElement('div');
+      box.style.position='fixed'; box.style.bottom='8px'; box.style.left='8px';
+      box.style.background='#fee2e2'; box.style.color='#991b1b';
+      box.style.padding='8px 12px'; box.style.borderRadius='8px';
+      box.style.zIndex=10000; box.style.fontSize='12px'; box.style.boxShadow='0 2px 8px rgba(0,0,0,.15)';
+      box.textContent = 'Erro (promise): ' + (e.reason && (e.reason.message || e.reason));
+      document.body.appendChild(box);
+    });
+  })();
+  </script>
+
   <!-- Early boot guard: runs before other scripts -->
   <script>
   (function(){
