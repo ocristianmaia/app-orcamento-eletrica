@@ -563,7 +563,7 @@
     loginButton?.addEventListener('click', loginWithGoogle);
     logoutButton?.addEventListener('click', logout);
 
-    document.getElementById('orc-cliente-select')?.addEventListener('change', (e) => { /* ... código interno mantido ... */ });
+    document.getElementById('orc-cliente-select').addEventListener('change', (e) => { ... });
       if (!appState.currentOrcamento) resetCurrentOrcamento();
 
       const clienteId = e.target.value;
