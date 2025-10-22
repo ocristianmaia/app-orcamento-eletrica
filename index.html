@@ -160,6 +160,14 @@ function saveOrcamento() {
   }
 }
 
+
+function refreshOrcamentoModal() {
+  const modal = document.getElementById('orcamento-modal');
+  if (!modal || modal.style.display === 'none') return;
+  if (typeof populateClienteSelect === 'function') populateClienteSelect();
+  if (typeof populateMateriaisOrcamento === 'function') populateMateriaisOrcamento();
+}
+
 </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
@@ -315,6 +323,14 @@ function saveOrcamento() {
     console.error('[orcamento] erro ao salvar orçamento', e);
     alert('Erro ao salvar orçamento (ver console).');
   }
+}
+
+
+function refreshOrcamentoModal() {
+  const modal = document.getElementById('orcamento-modal');
+  if (!modal || modal.style.display === 'none') return;
+  if (typeof populateClienteSelect === 'function') populateClienteSelect();
+  if (typeof populateMateriaisOrcamento === 'function') populateMateriaisOrcamento();
 }
 
 </script>
@@ -473,6 +489,14 @@ function saveOrcamento() {
   }
 }
 
+
+function refreshOrcamentoModal() {
+  const modal = document.getElementById('orcamento-modal');
+  if (!modal || modal.style.display === 'none') return;
+  if (typeof populateClienteSelect === 'function') populateClienteSelect();
+  if (typeof populateMateriaisOrcamento === 'function') populateMateriaisOrcamento();
+}
+
 </script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
 // === OVERRIDE: shareOrViewPDF com logo e rodapé de pagamentos ===
@@ -627,6 +651,14 @@ function saveOrcamento() {
     console.error('[orcamento] erro ao salvar orçamento', e);
     alert('Erro ao salvar orçamento (ver console).');
   }
+}
+
+
+function refreshOrcamentoModal() {
+  const modal = document.getElementById('orcamento-modal');
+  if (!modal || modal.style.display === 'none') return;
+  if (typeof populateClienteSelect === 'function') populateClienteSelect();
+  if (typeof populateMateriaisOrcamento === 'function') populateMateriaisOrcamento();
 }
 
 </script>
@@ -1263,12 +1295,14 @@ function saveOrcamento() {
         appState.materiais = snapshot.docs.map(d => ({ ...d.data(), id: d.id })); // Corrigido aqui também
         renderMateriaisList();
       });
+refreshOrcamentoModal();
 
       onSnapshot(query(collection(db, `${prefix}/tiposdeservico`)), (snapshot) => {
         appState.tiposDeServico = snapshot.docs.map(d => ({ ...d.data(), id: d.id })); // Corrigido aqui também
         renderTiposDeServicoList();
         populateCategorySelect();
       });
+refreshOrcamentoModal();
 
       onSnapshot(query(collection(db, `${prefix}/orcamentos`)), (snapshot) => {
         console.log(`[DEBUG] Recebeu ${snapshot.docs.length} orçamentos do Firebase.`); // Mantido
@@ -1282,6 +1316,7 @@ function saveOrcamento() {
         renderOrcamentosList();
         renderOrcamentosList(true);
       });
+refreshOrcamentoModal();
     }
 
     // ===== Config =====
@@ -1948,6 +1983,14 @@ function saveOrcamento() {
     console.error('[orcamento] erro ao salvar orçamento', e);
     alert('Erro ao salvar orçamento (ver console).');
   }
+}
+
+
+function refreshOrcamentoModal() {
+  const modal = document.getElementById('orcamento-modal');
+  if (!modal || modal.style.display === 'none') return;
+  if (typeof populateClienteSelect === 'function') populateClienteSelect();
+  if (typeof populateMateriaisOrcamento === 'function') populateMateriaisOrcamento();
 }
 
 </script>
