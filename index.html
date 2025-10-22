@@ -2009,7 +2009,7 @@ refreshOrcamentoModal();
         } catch(e) { console.error(e); alert('Erro ao importar planilha de materiais: ' + e.message); status.textContent = 'Falha na importação de materiais.'; }
     });
     // NOVA Função para Limpar Materiais
-    async function clearAllMateriais() {
+    async async function clearAllMateriais(){
         if (!userId) return alert('Faça login.');
         if (!confirm('ATENÇÃO!\n\nIsso apagará TODOS os Materiais/Itens cadastrados. Deseja continuar?')) return;
         const status = document.getElementById('materiais-xlsx-status');
