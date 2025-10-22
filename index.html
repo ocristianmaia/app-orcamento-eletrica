@@ -1,6 +1,46 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <!-- Early boot guard: runs before other scripts -->
+  <script>
+  (function(){
+    function hideOverlay(){
+      var ov = document.getElementById('loading-overlay');
+      if (ov) ov.style.display = 'none';
+    }
+    // Always hide after 6s so UI never stays locked
+    setTimeout(hideOverlay, 6000);
+
+    // Show small error toast on any global error
+    window.addEventListener('error', function(e){
+      hideOverlay();
+      try {
+        var box = document.createElement('div');
+        box.style.position='fixed'; box.style.bottom='8px'; box.style.left='8px';
+        box.style.background='#fee2e2'; box.style.color='#991b1b';
+        box.style.padding='8px 12px'; box.style.borderRadius='8px';
+        box.style.zIndex=10000; box.style.fontSize='12px'; box.style.boxShadow='0 2px 8px rgba(0,0,0,.15)';
+        box.textContent = 'Erro de inicialização: ' + (e.message || e.error);
+        document.body.appendChild(box);
+      } catch(_){}
+    }, true);
+
+    // Also catch unhandled promise rejections
+    window.addEventListener('unhandledrejection', function(e){
+      hideOverlay();
+      try {
+        var box = document.createElement('div');
+        box.style.position='fixed'; box.style.bottom='8px'; box.style.left='8px';
+        box.style.background='#fee2e2'; box.style.color='#991b1b';
+        box.style.padding='8px 12px'; box.style.borderRadius='8px';
+        box.style.zIndex=10000; box.style.fontSize='12px'; box.style.boxShadow='0 2px 8px rgba(0,0,0,.15)';
+        box.textContent = 'Erro (promise): ' + (e.reason && (e.reason.message || e.reason)) ;
+        document.body.appendChild(box);
+      } catch(_){}
+    });
+  })();
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gerador de Orçamentos 5.0 — Categorias & Submenus</title>
