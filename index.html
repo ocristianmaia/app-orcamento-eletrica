@@ -20,7 +20,7 @@
       position:fixed; 
       inset:0; 
       background: rgba(0,0,0,.5); 
-      z-index: 9999;
+      z-index: 9999; /* <-- MUDE PARA 9999 */
       align-items:center; 
       justify-content:center; 
     }
@@ -39,6 +39,7 @@
     <p class="mt-3 text-gray-600">Conectando...</p>
   </div>
 
+  <!-- NOVO MODAL: Confirmação de Exclusão (Para substituir o confirm() nativo) -->
   <div id="delete-confirm-modal" class="modal">
     <div class="bg-white rounded-lg p-6 w-[95%] max-w-sm shadow-xl text-center">
       <h3 class="text-xl font-bold text-red-600 mb-4">Confirmação de Exclusão</h3>
@@ -49,12 +50,12 @@
       </div>
       </div>
   </div>
-  
-  <div id="edit-cliente-modal" class="modal">
+      <div id="edit-cliente-modal" class="modal">
     <div class="bg-white rounded-lg p-6 w-[95%] max-w-lg shadow-xl">
       <h3 class="text-xl font-bold text-gray-800 mb-6">Editar Cliente</h3>
       <form id="form-edit-cliente" class="space-y-4">
         <input type="hidden" id="edit-cliente-id">
+        
         <div>
           <label for="edit-cliente-nome" class="block text-sm font-medium text-gray-700">Nome</label>
           <input type="text" id="edit-cliente-nome" class="w-full p-2 border rounded-md mt-1" required>
@@ -67,6 +68,7 @@
           <label for="edit-cliente-endereco" class="block text-sm font-medium text-gray-700">Endereço</label>
           <input type="text" id="edit-cliente-endereco" class="w-full p-2 border rounded-md mt-1" required>
         </div>
+        
         <div class="flex justify-end gap-3 pt-4">
           <button type="button" onclick="closeEditClienteModal()" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">Cancelar</button>
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Salvar Alterações</button>
@@ -75,59 +77,7 @@
     </div>
   </div>
       
-  <div id="edit-material-modal" class="modal">
-    <div class="bg-white rounded-lg p-6 w-[95%] max-w-lg shadow-xl">
-      <h3 class="text-xl font-bold text-gray-800 mb-6">Editar Material/Serviço</h3>
-      <form id="form-edit-material" class="space-y-4">
-        <input type="hidden" id="edit-material-id">
-        <div>
-          <label for="edit-material-nome" class="block text-sm font-medium text-gray-700">Descrição</label>
-          <input type="text" id="edit-material-nome" class="w-full p-2 border rounded-md mt-1" required>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label for="edit-material-unidade" class="block text-sm font-medium text-gray-700">Unidade</label>
-            <select id="edit-material-unidade" class="w-full p-2 border rounded-md mt-1 h-10">
-              <option>UNID</option><option>Pç</option><option>m</option><option>cx</option><option>kit</option>
-            </select>
-          </div>
-          <div>
-            <label for="edit-material-valor" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
-            <input type="number" step="0.01" id="edit-material-valor" class="w-full p-2 border rounded-md mt-1" required>
-          </div>
-        </div>
-        <div class="flex justify-end gap-3 pt-4">
-          <button type="button" onclick="closeEditMaterialModal()" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">Cancelar</button>
-          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Salvar Alterações</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div id="edit-tiposervico-modal" class="modal">
-    <div class="bg-white rounded-lg p-6 w-[95%] max-w-lg shadow-xl">
-        <h3 class="text-xl font-bold text-gray-800 mb-6">Editar Tipo de Serviço</h3>
-        <form id="form-edit-tiposervico" class="space-y-4">
-            <input type="hidden" id="edit-tiposervico-id">
-            <div>
-                <label for="edit-tiposervico-categoria" class="block text-sm font-medium text-gray-700">Categoria</label>
-                <input type="text" id="edit-tiposervico-categoria" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: INSTALAÇÕES" required>
-            </div>
-            <div>
-                <label for="edit-tiposervico-descricao" class="block text-sm font-medium text-gray-700">Descrição</label>
-                <input type="text" id="edit-tiposervico-descricao" class="w-full p-2 border rounded-md mt-1" required>
-            </div>
-            <div>
-                <label for="edit-tiposervico-valor" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
-                <input type="number" step="0.01" id="edit-tiposervico-valor" class="w-full p-2 border rounded-md mt-1" required>
-            </div>
-            <div class="flex justify-end gap-3 pt-4">
-                <button type="button" onclick="closeEditTipoServicoModal()" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">Cancelar</button>
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Salvar Alterações</button>
-            </div>
-        </form>
-    </div>
-  </div>
+    
 
   <div id="login-view" class="hidden h-screen flex flex-col justify-center items-center text-center p-6 bg-gray-100">
     <h1 class="text-4xl font-bold text-gray-800">Bem-vindo ao</h1>
@@ -178,7 +128,7 @@
             <div class="grid grid-cols-3 gap-2">
                 <button class="mobile-tab active text-white p-3 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Início</button>
                 <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-green-500" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
-                <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
+                <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-yellow-500" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais/Serviços</button>
             </div>
             <div class="grid grid-cols-3 gap-2">
                 <button class="mobile-tab text-white p-3 rounded-lg shadow-md bg-purple-500" data-tab="servicos" onclick="changeTab(event, 'servicos')">Serviços</button>
@@ -246,25 +196,8 @@
                 <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors h-10 w-full sm:w-auto">Salvar Item</button>
               </form>
             </div>
-            
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h2 class="text-xl font-semibold mb-4">Importar Materiais</h2>
-                <div class="mb-6 p-4 border rounded-lg bg-gray-50">
-                    <p class="text-sm text-gray-600 mb-2">Importar planilha (.xlsx) com as colunas <strong>Descrição</strong>, <strong>Unidade</strong> e <strong>Valor</strong>.</p>
-                    <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                      <input type="file" id="materiais-xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm text-gray-700 flex-1">
-                      <button id="btn-import-materiais-xlsx" class="whitespace-nowrap bg-emerald-600 text-white px-4 py-2 rounded-lg shadow hover:bg-emerald-700 transition">Importar Materiais</button>
-                      <button id="btn-clear-materiais" class="whitespace-nowrap bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">Limpar Materiais</button>
-                    </div>
-                    <p id="materiais-xlsx-status" class="text-xs text-gray-500 mt-2"></p>
-                </div>
-            </div>
-
             <div class="bg-white p-6 rounded-lg shadow-sm">
               <h2 class="text-xl font-semibold mb-4">Itens Cadastrados</h2>
-              <div class="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-md mb-4" role="alert">
-                <p class="text-sm font-medium">Para editar um item, clique sobre o nome dele. Para excluir, clique no &times;.</p>
-              </div>
               <div id="materiais-list" class="space-y-2"><p class="text-gray-500">Nenhum material cadastrado.</p></div>
             </div>
           </div>
@@ -284,8 +217,7 @@
               </div>
 
               <div class="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-md mb-4" role="alert">
-                <p class="text-sm font-medium">Para editar um serviço, clique sobre o nome dele. Para excluir, clique no &times;.</p>
-                <p class="text-sm mt-1">Adicione um novo serviço escolhendo uma das categorias, ou adicione uma nova categoria.</p>
+                <p class="text-sm font-medium">Adicione um novo serviço escolhendo uma das categorias, ou adicione uma nova categoria para o serviço desejado.</p>
               </div>
               <form id="form-tiposervico" class="space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -473,15 +405,19 @@
   </div> <script type="module">
 
     console.log("VERSÃO 4.0 DO SCRIPT CARREGADA - TESTE FINAL"); 
+// ===== Firebase config (preservado do seu arquivo) =====
     // ===== Firebase config (preservado do seu arquivo) =====
+    // ATENÇÃO: SUBSTITUA COM SUAS PRÓPRIAS CHAVES DO FIREBASE
+    // Erros de "não encontrado" ou "conectando" podem ser
+    // causados por chaves incorretas.
     const firebaseConfig = {
-      apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
-      authDomain: "app-orcamentos-eletrica.firebaseapp.com",
-      projectId: "app-orcamentos-eletrica",
-      storageBucket: "app-orcamentos-eletrica.firebasestorage.app",
-      messagingSenderId: "424397941585",
-      appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
-    };
+  apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
+  authDomain: "app-orcamentos-eletrica.firebaseapp.com",
+  projectId: "app-orcamentos-eletrica",
+  storageBucket: "app-orcamentos-eletrica.firebasestorage.app",
+  messagingSenderId: "424397941585",
+  appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
+};
 
     // Imports Firebase
     import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -490,7 +426,7 @@
 
     // ===== Estado e elementos =====
     let app, db, auth, userId;
-    setLogLevel('error'); // 'debug' | 'error'
+    setLogLevel('debug'); // 'debug' | 'error'
 
     const loadingOverlay = document.getElementById('loading-overlay');
     const loginView = document.getElementById('login-view');
@@ -504,7 +440,7 @@
     const appState = {
       config: {}, clientes: [], materiais: [], orcamentos: [],
       tiposDeServico: [], currentOrcamento: null,
-      orcamentosParaExcluir: new Set()
+      orcamentosParaExcluir: new Set() // Novo conjunto para IDs selecionados
     };
 
     function resetCurrentOrcamento() {
@@ -590,6 +526,9 @@
       onSnapshot(query(collection(db, `${prefix}/clientes`)), (snapshot) => {
         appState.clientes = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
         renderClientesList();
+        // ADICIONE ESTAS DUAS LINHAS
+        // Isso força a atualização dos nomes nos orçamentos
+        // assim que a lista de clientes carregar.
         renderOrcamentosList();
         renderOrcamentosList(true);
       });
@@ -608,15 +547,18 @@
       });
 
       onSnapshot(query(collection(db, `${prefix}/orcamentos`)), (snapshot) => {
-        console.log(`[DEBUG] Recebeu ${snapshot.docs.length} orçamentos do Firebase.`);
+        // ADICIONE ESTA LINHA (LOG 1)
+    console.log(`[DEBUG] Recebeu ${snapshot.docs.length} orçamentos do Firebase.`);
         appState.orcamentos = snapshot.docs.map(d => {
           const data = d.data();
           if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
-          console.log(`[DEBUG] Mapeando doc. ID do Firebase (d.id):`, d.id);
+          // ADICIONE ESTA LINHA (LOG 2)
+      console.log(`[DEBUG] Mapeando doc. ID do Firebase (d.id):`, d.id);
           return { ...data, id: d.id };
         });
         appState.orcamentos.sort((a,b) => (b.numeroOrcamento||0) - (a.numeroOrcamento||0));
         
+        // Atualiza ambas as listas de orçamentos (recente e completa)
         renderOrcamentosList();
         renderOrcamentosList(true); 
       });
@@ -631,6 +573,7 @@
       document.getElementById('config-endereco').value = c.endereco || '';
       document.getElementById('config-logo').value = c.logo || '';
       
+      // NOVO CAMPO: Residencial Empreitada
       document.getElementById('config-residencial-empreitada').value = c.residencial_empreitada || '';
       document.getElementById('config-residencial-diaria').value = c.residencial_diaria || '';
       document.getElementById('config-residencial-ponto').value = c.residencial_ponto || '';
@@ -655,6 +598,7 @@
           endereco: document.getElementById('config-endereco').value,
           logo: document.getElementById('config-logo').value,
           
+          // NOVO CAMPO SALVO: Residencial Empreitada
           residencial_empreitada: parseFloat(document.getElementById('config-residencial-empreitada').value) || 0,
           residencial_diaria: parseFloat(document.getElementById('config-residencial-diaria').value) || 0,
           residencial_ponto: parseFloat(document.getElementById('config-residencial-ponto').value) || 0,
@@ -687,7 +631,7 @@
       } catch(e) { console.error(e); alert('Erro ao salvar cliente.'); }
       finally { btn.disabled=false; btn.textContent='Salvar Cliente'; }
     });
-    
+    // Listener para o NOVO formulário de EDIÇÃO de cliente
     document.getElementById('form-edit-cliente').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
@@ -705,9 +649,11 @@
           endereco: document.getElementById('edit-cliente-endereco').value,
         };
         
+        // Encontra o cliente original para preservar o numeroCadastro
         const originalCliente = appState.clientes.find(c => c.id === clienteId);
         data.numeroCadastro = originalCliente.numeroCadastro || ''; 
         
+        // Atualiza o documento no Firebase
         await setDoc(doc(db, `users/${userId}/clientes/${clienteId}`), data);
         
         alert('Cliente atualizado com sucesso!');
@@ -737,7 +683,7 @@
     window.deleteCliente = async (id) => {
       if (confirm('Excluir este cliente?')) { await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); }
     };
-
+   // SUBSTITUA A FUNÇÃO openEditClienteModal INTEIRA POR ESTA:
     window.openEditClienteModal = (id) => {
       console.log(`[DEBUG-CLIENTE] 1. Função chamada com ID:`, id);
       try {
@@ -748,6 +694,7 @@
         }
         console.log("[DEBUG-CLIENTE] 2. Cliente encontrado:", cliente.nome);
 
+        // Agora vamos testar cada elemento do modal
         const modalEl = document.getElementById('edit-cliente-modal');
         if (!modalEl) throw new Error("Elemento 'edit-cliente-modal' não foi encontrado no HTML!");
         
@@ -765,16 +712,21 @@
         
         console.log("[DEBUG-CLIENTE] 3. Todos os elementos do modal foram encontrados. Preenchendo...");
 
+        // Preenche os dados
         idInput.value = cliente.id;
         nomeInput.value = cliente.nome || '';
         telInput.value = cliente.telefone || '';
         endInput.value = cliente.endereco || '';
         
         console.log("[DEBUG-CLIENTE] 4. Dados preenchidos. Abrindo modal...");
+
+        // Abre o modal
         modalEl.classList.add('active');
+        
         console.log("[DEBUG-CLIENTE] 5. Modal aberto com sucesso!");
 
       } catch (e) {
+        // Se qualquer coisa falhar, o erro aparecerá aqui
         console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição:", e.message);
         alert("Ocorreu um erro ao tentar abrir a edição. Verifique o console (F12).");
       }
@@ -782,7 +734,7 @@
 
     window.closeEditClienteModal = () => {
       document.getElementById('edit-cliente-modal').classList.remove('active');
-      document.getElementById('form-edit-cliente').reset();
+      document.getElementById('form-edit-cliente').reset(); // Limpa o formulário
     };
 
     // ===== Materiais =====
@@ -801,37 +753,13 @@
       finally { btn.disabled=false; btn.textContent='Salvar Item'; }
     });
 
-    // ADICIONADO: Listener para Edição de Material
-    document.getElementById('form-edit-material').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!userId) return alert('Faça login novamente.');
-      const materialId = document.getElementById('edit-material-id').value;
-      if (!materialId) return alert('Erro: ID do material não encontrado.');
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.disabled = true; btn.textContent='Salvando...';
-      try {
-        const data = {
-          nome: document.getElementById('edit-material-nome').value,
-          unidade: document.getElementById('edit-material-unidade').value,
-          valor: parseFloat(document.getElementById('edit-material-valor').value) || 0,
-        };
-        await setDoc(doc(db, `users/${userId}/materiais/${materialId}`), data);
-        alert('Material atualizado com sucesso!');
-        closeEditMaterialModal();
-      } catch(e) { console.error(e); alert('Erro ao atualizar material.'); }
-      finally { btn.disabled=false; btn.textContent='Salvar Alterações'; }
-    });
-
-    // MODIFICADO: renderMateriaisList para incluir edição
     function renderMateriaisList() {
       const el = document.getElementById('materiais-list');
       if (!appState.materiais.length) { el.innerHTML = '<p class="text-gray-500">Nenhum material cadastrado.</p>'; return; }
       el.innerHTML = appState.materiais.map(m => `
         <div class="flex justify-between items-center p-2 border rounded-md">
-          <div class="flex-grow cursor-pointer" onclick="openEditMaterialModal('${m.id}')">
-            <p class="servico-slim"><strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${m.valor.toFixed(2)}</p>
-          </div>
-          <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 text-2xl ml-3 flex-shrink-0">&times;</button>
+          <p class="servico-slim"><strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${m.valor.toFixed(2)}</p>
+          <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 text-2xl">&times;</button>
         </div>`).join('');
     }
 
@@ -839,28 +767,12 @@
       if (confirm('Excluir este item?')) { await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); }
     };
 
-    // ADICIONADO: Funções do modal Editar Material
-    window.openEditMaterialModal = (id) => {
-      try {
-        const material = appState.materiais.find(m => m.id === id);
-        if (!material) throw new Error('Material não encontrado no appState.');
-        const modalEl = document.getElementById('edit-material-modal'); if (!modalEl) throw new Error("Elemento 'edit-material-modal' não foi encontrado!");
-        const idInput = document.getElementById('edit-material-id'); if (!idInput) throw new Error("Elemento 'edit-material-id' não foi encontrado!");
-        const nomeInput = document.getElementById('edit-material-nome'); if (!nomeInput) throw new Error("Elemento 'edit-material-nome' não foi encontrado!");
-        const unInput = document.getElementById('edit-material-unidade'); if (!unInput) throw new Error("Elemento 'edit-material-unidade' não foi encontrado!");
-        const valInput = document.getElementById('edit-material-valor'); if (!valInput) throw new Error("Elemento 'edit-material-valor' não foi encontrado!");
-        idInput.value = material.id; nomeInput.value = material.nome || ''; unInput.value = material.unidade || 'UNID'; valInput.value = material.valor || 0;
-        modalEl.classList.add('active');
-      } catch (e) { console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição material:", e.message); alert("Ocorreu um erro ao tentar abrir a edição de material. Verifique o console (F12)."); }
-    };
-    window.closeEditMaterialModal = () => { document.getElementById('edit-material-modal').classList.remove('active'); document.getElementById('form-edit-material').reset(); };
-
-
     // ===== Tipos de Serviço com Categoria & Submenu (AGORA EM #servicos) =====
     const catSelect = document.getElementById('tiposervico-categoria-select');
     const catNew = document.getElementById('tiposervico-categoria-new');
 
     function populateCategorySelect() {
+      // Preserva primeiras 2 opções
       while (catSelect.options.length > 2) catSelect.remove(2);
       const cats = [...new Set(appState.tiposDeServico.map(s => s.categoria).filter(Boolean))].sort();
       cats.forEach(cat => { const o=document.createElement('option'); o.value=cat; o.textContent=cat; catSelect.appendChild(o); });
@@ -892,30 +804,8 @@
       finally { btn.disabled=false; btn.textContent='Salvar'; }
     });
 
-    // ADICIONADO: Listener para Edição de Tipo de Serviço
-    document.getElementById('form-edit-tiposervico').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!userId) return alert('Faça login novamente.');
-      const tipoServicoId = document.getElementById('edit-tiposervico-id').value;
-      if (!tipoServicoId) return alert('Erro: ID do tipo de serviço não encontrado.');
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.disabled = true; btn.textContent='Salvando...';
-      try {
-        const categoria = document.getElementById('edit-tiposervico-categoria').value.toUpperCase().trim() || 'OUTROS';
-        const descricao = document.getElementById('edit-tiposervico-descricao').value;
-        const valor = parseFloat(document.getElementById('edit-tiposervico-valor').value);
-        if (!categoria || !descricao || isNaN(valor) || valor <= 0) throw new Error('Preencha categoria, descrição e um valor válido maior que zero.');
-        const data = { categoria, descricao, valor };
-        await setDoc(doc(db, `users/${userId}/tiposdeservico/${tipoServicoId}`), data);
-        alert('Tipo de serviço atualizado com sucesso!');
-        closeEditTipoServicoModal();
-      } catch(e) { console.error(e); alert('Erro ao atualizar tipo de serviço: ' + e.message); }
-      finally { btn.disabled=false; btn.textContent='Salvar Alterações'; }
-    });
-
     function groupBy(arr, key) { return arr.reduce((acc,cur)=>{ const k=cur[key]||'OUTROS'; (acc[k]||(acc[k]=[])).push(cur); return acc; },{}); }
 
-    // MODIFICADO: renderTiposDeServicoList para incluir edição
     function renderTiposDeServicoList() {
       const el = document.getElementById('tiposdeservico-list');
       if (!appState.tiposDeServico.length) { el.innerHTML = '<p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>'; return; }
@@ -933,10 +823,8 @@
               ${
                 servicos.map(s => `
                   <div class="flex justify-between items-center p-1 border-b border-gray-100">
-                    <div class="flex-grow cursor-pointer" onclick="openEditTipoServicoModal('${s.id}')">
-                       <p class="servico-slim">${s.descricao} — <span class="text-gray-700">R$ ${s.valor.toFixed(2)}</span></p>
-                    </div>
-                    <button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500 hover:text-red-700 text-xl leading-none ml-3 flex-shrink-0">&times;</button>
+                    <p class="servico-slim">${s.descricao} — <span class="text-gray-700">R$ ${s.valor.toFixed(2)}</span></p>
+                    <button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500 hover:text-red-700 text-xl leading-none">&times;</button>
                   </div>
                 `).join('')
               }
@@ -949,24 +837,7 @@
       if (confirm('Excluir este tipo de serviço?')) { await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`)); }
     };
 
-    // ADICIONADO: Funções do modal Editar Tipo de Serviço
-    window.openEditTipoServicoModal = (id) => {
-      try {
-        const servico = appState.tiposDeServico.find(s => s.id === id);
-        if (!servico) throw new Error('Tipo de serviço não encontrado no appState.');
-        const modalEl = document.getElementById('edit-tiposervico-modal'); if (!modalEl) throw new Error("Elemento 'edit-tiposervico-modal' não foi encontrado!");
-        const idInput = document.getElementById('edit-tiposervico-id'); if (!idInput) throw new Error("Elemento 'edit-tiposervico-id' não foi encontrado!");
-        const catInput = document.getElementById('edit-tiposervico-categoria'); if (!catInput) throw new Error("Elemento 'edit-tiposervico-categoria' não foi encontrado!");
-        const descInput = document.getElementById('edit-tiposervico-descricao'); if (!descInput) throw new Error("Elemento 'edit-tiposervico-descricao' não foi encontrado!");
-        const valInput = document.getElementById('edit-tiposervico-valor'); if (!valInput) throw new Error("Elemento 'edit-tiposervico-valor' não foi encontrado!");
-        idInput.value = servico.id; catInput.value = servico.categoria || 'OUTROS'; descInput.value = servico.descricao || ''; valInput.value = servico.valor || 0;
-        modalEl.classList.add('active');
-      } catch (e) { console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição de serviço:", e.message); alert("Ocorreu um erro ao tentar abrir a edição de serviço. Verifique o console (F12)."); }
-    };
-    window.closeEditTipoServicoModal = () => { document.getElementById('edit-tiposervico-modal').classList.remove('active'); document.getElementById('form-edit-tiposervico').reset(); };
-
-
-    // ===== Importar Excel (Serviços) =====
+    // ===== Importar Excel =====
     document.getElementById('btn-import-xlsx').addEventListener('click', async () => {
       const inp = document.getElementById('xlsx-input');
       const status = document.getElementById('xlsx-status');
@@ -979,6 +850,7 @@
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
 
+        // Normaliza nomes de colunas
         const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
         const headerMapCandidates = {
           categoria: ['categoria','grupo','setor'],
@@ -1056,51 +928,6 @@
     }
     document.getElementById('btn-clear-tiposervico').addEventListener('click', clearAllTiposDeServico);
 
-    // ADICIONADO: Seção de Importar/Limpar Materiais
-    document.getElementById('btn-import-materiais-xlsx').addEventListener('click', async () => {
-        const inp = document.getElementById('materiais-xlsx-input');
-        const status = document.getElementById('materiais-xlsx-status');
-        if (!inp.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx para materiais.'); return; }
-        const f = inp.files[0];
-        try {
-            status.textContent = 'Lendo planilha de materiais...';
-            const buf = await f.arrayBuffer(); const wb = XLSX.read(buf, { type:'array' }); const ws = wb.Sheets[wb.SheetNames[0]];
-            const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-            const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
-            const headerMapCandidates = { nome: ['descricao','descrição','material','item'], unidade: ['unidade','unid','und'], valor: ['valor','preco','preço','price'] };
-            const keys = rows.length ? Object.keys(rows[0]) : [];
-            const colMap = { nome: null, unidade: null, valor: null };
-            keys.forEach(k => { const nk = norm(k); for (const fld of Object.keys(headerMapCandidates)) { if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k; } });
-            if (!colMap.nome || !colMap.valor) throw new Error('Não encontrei colunas suficientes. Garanta que a planilha tenha pelo menos: Descrição e Valor. A coluna Unidade é opcional (padrão UNID).');
-            const prefix = `users/${userId}`; const batch = writeBatch(db); let count = 0;
-            rows.forEach(r => {
-                const nome = String(r[colMap.nome]||'').trim();
-                const unidade = String(r[colMap.unidade]||'').trim().toUpperCase() || 'UNID';
-                const rawValor = (r[colMap.valor] ?? '').toString().replace(',', '.').replace(/\s/g,'');
-                const valor = parseFloat(rawValor) || 0;
-                if (!nome || isNaN(valor) || valor <= 0) return;
-                const ref = doc(collection(db, `${prefix}/materiais`)); batch.set(ref, { nome, unidade, valor }); count++;
-            });
-            if (!count) { alert('Nenhuma linha válida encontrada na planilha de materiais.'); return; }
-            status.textContent = 'Enviando materiais para o banco...'; await batch.commit();
-            status.textContent = `Importação de materiais concluída: ${count} itens adicionados.`; inp.value = '';
-        } catch(e) { console.error(e); alert('Erro ao importar planilha de materiais: ' + e.message); status.textContent = 'Falha na importação de materiais.'; }
-    });
-    
-    async function clearAllMateriais() {
-        if (!userId) return alert('Faça login.');
-        if (!confirm('ATENÇÃO!\n\nIsso apagará TODOS os Materiais/Itens cadastrados. Deseja continuar?')) return;
-        const status = document.getElementById('materiais-xlsx-status');
-        status.textContent = 'Apagando todos os materiais...';
-        try {
-            const prefix = `users/${userId}`; const ref = collection(db, `${prefix}/materiais`); const snapshot = await getDocs(ref);
-            if (snapshot.empty) { status.textContent = 'Nenhum material para apagar.'; return; }
-            const batch = writeBatch(db); snapshot.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit();
-            status.textContent = `Todos os ${snapshot.size} materiais foram apagados.`;
-        } catch(e) { console.error(e); status.textContent = 'Erro ao apagar os materiais.'; alert('Erro ao apagar materiais.'); }
-    }
-    document.getElementById('btn-clear-materiais').addEventListener('click', clearAllMateriais);
-
 
     // ===== Orçamentos (lista / modal etc.) =====
     function updateDeleteButtonState() {
@@ -1126,9 +953,14 @@
         const orcamentoId = `OS${numeroFormatado}${month}${year}-${versaoFormatada}`;
         const nome = cliente ? cliente.nome : 'Cliente Excluído';
         const nomes = nome.split(' ');
+
+        // CORRIGIDO: Nome abreviado (primeiro e segundo nome)
         const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
+        
+        // NOVO: Usa o nome completo para a lista completa (Desktop) e abreviado para a lista recente (Mobile)
         const nomeParaExibir = isFullList ? nome : nomeAbreviado; 
         
+        // Renderização para a lista COMPLETA (com checkbox) - Visível no desktop e na página "Todos"
         if (isFullList) {
             const isChecked = appState.orcamentosParaExcluir.has(orc.id);
             return `
@@ -1148,23 +980,29 @@
               </div>`;
         }
         
-        return `
+        // Renderização para a lista RECENTE (sem checkbox) - Visível na tela inicial
+    return `
       <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center w-full">
+        
         <div class="flex-grow truncate mr-2">
           <span class="font-medium text-base text-gray-800">${nome}</span>
           <span class="text-sm text-gray-500 ml-2">${orcamentoId}</span>
         </div>
+        
         <div class="flex-shrink-0">
           <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
         </div>
+        
       </div>`;
       }).join('');
       
       if (isFullList) updateDeleteButtonState();
     }
 
+    // NOVO: Adiciona/remove ID para exclusão
     window.toggleOrcamentoExclusao = (checkbox) => {
         const id = checkbox.dataset.id;
+      // ADICIONE ESTA LINHA (O TESTE FINAL)
         console.log(`[DEBUG-CLICK] Checkbox clicado! ID lido do HTML (data-id):`, id);
         if (checkbox.checked) {
             appState.orcamentosParaExcluir.add(id);
@@ -1174,48 +1012,65 @@
         updateDeleteButtonState();
     };
 
+    // CORRIGIDO: Usa o novo modal de confirmação para a contagem correta
     window.confirmDeleteSelectedOrcamentos = () => {
         const count = appState.orcamentosParaExcluir.size;
         if (count === 0) {
             alert('Nenhum orçamento selecionado para exclusão.');
             return;
         }
+
         const modal = document.getElementById('delete-confirm-modal');
         const messageEl = document.getElementById('delete-confirm-message');
+        
         messageEl.innerHTML = `ATENÇÃO! Você irá excluir **${count}** orçamento(s) selecionado(s). Esta ação é irreversível. Deseja continuar?`;
         modal.classList.add('active');
     };
 
+    // NOVO: Função para fechar e processar o modal de confirmação de exclusão
     window.closeDeleteConfirmModal = (confirmAction) => {
         const modal = document.getElementById('delete-confirm-modal');
         modal.classList.remove('active');
+
         if (confirmAction) {
              deleteOrcamentosEmLote(Array.from(appState.orcamentosParaExcluir));
         }
     };
 
+
+    // REVISADO FINALMENTE: Função de exclusão de orçamento (em lote)
     async function deleteOrcamentosEmLote(ids) {
       if (!userId) {
-        console.error('ERRO DE EXCLUSÃO: userId não está definido.');
+        console.error('ERRO DE EXCLUSÃO: userId não está definido. O usuário não está logado ou a autenticação falhou.');
+        // Se o userId falhou aqui, o problema é na autenticação ou na variável global.
         alert('Falha crítica na autenticação (userId ausente). Por favor, saia e entre novamente.');
         return;
       }
+      
       const btn = document.getElementById('btn-delete-selected-orcamentos');
       btn.disabled = true;
+      
       try {
         const batch = writeBatch(db);
         console.log(`Iniciando exclusão em lote para ${ids.length} IDs. userId: ${userId}`);
+        
         ids.forEach(id => {
+            // AQUI está o caminho crítico. Ele PRECISA ser users/{userId}/orcamentos/{id}
             const docPath = `users/${userId}/orcamentos/${id}`;
             const docRef = doc(db, docPath);
             batch.delete(docRef);
             console.log(`Adicionado à exclusão: ${docPath}`);
         });
+        
         await batch.commit();
+        
+        // Limpa a seleção e atualiza a UI
         appState.orcamentosParaExcluir.clear();
         alert(`${ids.length} orçamento(s) excluído(s) com sucesso.`);
+        // O onSnapshot se encarrega de atualizar as listas
       } catch (e) {
         console.error('ERRO CRÍTICO ao excluir orçamentos em lote. Erro retornado:', e);
+        // Exibe o erro específico
         alert(`Erro ao excluir ${ids.length} orçamento(s). Possível falha nas Regras de Segurança (Permission Denied). Detalhe: ${e.message}`);
       } finally {
         btn.disabled = false;
@@ -1223,33 +1078,41 @@
       }
     };
 
+
     window.showAllOrcamentosPage = () => {
       mainView.classList.add('hidden');
       allOrcamentosView.classList.remove('hidden');
-      renderOrcamentosList(true);
+      renderOrcamentosList(true); // Re-renderiza a lista completa ao mostrar
     };
     window.showMainPage = () => {
       allOrcamentosView.classList.add('hidden');
       mainView.classList.remove('hidden');
-      appState.orcamentosParaExcluir.clear();
+      appState.orcamentosParaExcluir.clear(); // Limpa a seleção ao voltar
       updateDeleteButtonState();
     };
 
+    // Função de editar orçamento
     window.editOrcamento = (id) => {
       console.log("Tentando editar ID:", id, `(tipo: ${typeof id})`);
       if (!appState.orcamentos || appState.orcamentos.length === 0) {
         console.error("appState.orcamentos está vazio!");
         return alert('Erro: Nenhuma lista de orçamentos carregada.');
       }
+      
       const orc = appState.orcamentos.find(o => String(o.id).trim() === String(id).trim());
+      
       if (!orc) {
         console.error("ID não encontrado no appState.orcamentos.");
         console.log("IDs disponíveis:", appState.orcamentos.map(o => o.id));
         return alert('Orçamento não encontrado. Tente recarregar a página.');
       }
+      
       console.log("Orçamento encontrado:", orc);
       openOrcamentoModal(orc);
     };
+
+    // A função deleteOrcamento individual não é mais usada (exclusão por lote)
+    // window.deleteOrcamento = async (id) => { ... };
 
     window.openOrcamentoModal = (orcamentoParaEditar = null) => {
       try {
@@ -1387,6 +1250,7 @@
       }).join('');
     }
 
+    // Filtro de serviços por texto
     document.getElementById('filter-tipos').addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase().trim();
       const boxes = document.querySelectorAll('#orc-tiposdeservico-list label span');
@@ -1396,6 +1260,7 @@
       });
     });
 
+    // Interações do modal com materiais e serviços
     document.getElementById('orc-materiais-list').addEventListener('input', (e) => {
       const target = e.target;
       const materialId = target.dataset.id;
@@ -1461,7 +1326,7 @@
       let valor = 0, label = '', raw_value = 0;
       const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
       const rates = {
-        empreitada: appState.config.residencial_empreitada || 0,
+        empreitada: appState.config.residencial_empreitada || 0, // NOVO CAMPO
         diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
         ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial_ponto) || 0,
         hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0,
@@ -1469,11 +1334,13 @@
       
       switch(tipo) {
         case 'empreitada':
+          // Se for residencial/predial, usa o valor da configuração (se definido)
           if (tipoObra === 'residencial' && rates.empreitada > 0) {
               valor = rates.empreitada;
               label = 'Empreitada (Valor Fixo da Configuração)';
               raw_value = rates.empreitada;
           } else {
+              // Permite entrada manual para Empreitada ou se não houver valor fixo em config
               raw_value = parseFloat(document.getElementById('empreitada-valor').value) || 0;
               valor = raw_value; 
               label = 'Empreitada (Valor Manual)';
@@ -1587,11 +1454,44 @@
       hidden.style.width = '210mm';
       hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
       document.body.appendChild(hidden);
+// === inject LOGO + payments into hidden preview (PDF) ===
+try {
+  const c = appState?.config || {};
+  const root = hidden.firstElementChild || hidden;
+  if (c.logo && !hidden.querySelector('#pdf-logo')) {
+    const logo = document.createElement('img');
+    logo.id = 'pdf-logo'; logo.src = c.logo; logo.setAttribute('crossorigin','anonymous');
+    logo.style.maxHeight='60px'; logo.style.maxWidth='180px'; logo.style.objectFit='contain'; logo.style.float='right';
+    root.insertBefore(logo, root.firstChild);
+    try { const resp = await fetch(logo.src, {mode:'cors'}); const blob = await resp.blob(); const fr = new FileReader();
+      const dataURL = await new Promise((res, rej)=>{ fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(blob); });
+      logo.src = dataURL; } catch (_) {}
+  }
+  const acceptsPix = (c.pg_pix_aceita ?? c.pg_aceita_pix) ? true : false;
+  const acceptsCard = (c.pg_cartao_aceita ?? c.pg_aceita_cartao) ? true : false;
+  const acceptsCash = (c.pg_dinheiro_aceita ?? c.pg_aceita_dinheiro) ? true : false;
+  const acceptsDep = (c.pg_deposito_aceita ?? c.pg_aceita_deposito) ? true : false;
+  if (acceptsPix || acceptsCard || acceptsCash || acceptsDep) {
+    const pay = document.createElement('div');
+    pay.style.marginTop='20px'; pay.style.paddingTop='10px'; pay.style.borderTop='1px solid #ccc';
+    const parcelas = c.pg_cartao_parcelas || 0; const juros = c.pg_cartao_juros || 0;
+    const pixLine = acceptsPix ? `PIX: ${c.pg_pix_chave || ''}` : '';
+    const cardLine = acceptsCard ? `Cartão: até ${parcelas}x${juros ? ` com ${juros}%/mês` : ''}` : '';
+    const cashLine = acceptsCash ? 'Dinheiro' : '';
+    const depInfo = [c.pg_banco, c.pg_agencia, c.pg_conta, c.pg_dados_bancarios].filter(Boolean).join(' / ');
+    const depLine = acceptsDep ? `Depósito/Transf.: ${depInfo}` : '';
+    const items = [pixLine, cardLine, cashLine, depLine].filter(Boolean).map(x=>`<li>${x}</li>`).join('');
+    const title = document.createElement('h4'); title.textContent = 'Formas de pagamento'; title.style.fontWeight='600'; title.style.marginBottom='6px';
+    const ul = document.createElement('ul'); ul.style.listStyle='none'; ul.style.padding='0'; ul.style.margin='0'; ul.innerHTML = items;
+    pay.appendChild(title); pay.appendChild(ul); root.appendChild(pay);
+  }
+} catch(_) {}
+// === end inject ===
       const { jsPDF } = window.jspdf;
       const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
       const fileName = `orcamento-${clienteNome}.pdf`;
       try {
-        const canvas = await html2canvas(hidden, { scale: 2 });
+        const canvas = await html2canvas(hidden, { scale: 2, useCORS: true, allowTaint: true });
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -1634,6 +1534,91 @@
     };
 
     window.onload = initializeFirebase;
-  </script>
+  
+
+// ==== EDIT modals & listeners (importado do index (1)) ====
+window.openEditMaterialModal = (id) => {
+      try {
+        const material = appState.materiais.find(m => m.id === id);
+        if (!material) throw new Error('Material não encontrado no appState.');
+        const modalEl = document.getElementById('edit-material-modal'); if (!modalEl) throw new Error("Elemento 'edit-material-modal' não foi encontrado!");
+        const idInput = document.getElementById('edit-material-id'); if (!idInput) throw new Error("Elemento 'edit-material-id' não foi encontrado!");
+        const nomeInput = document.getElementById('edit-material-nome'); if (!nomeInput) throw new Error("Elemento 'edit-material-nome' não foi encontrado!");
+        const unInput = document.getElementById('edit-material-unidade'); if (!unInput) throw new Error("Elemento 'edit-material-unidade' não foi encontrado!");
+        const valInput = document.getElementById('edit-material-valor'); if (!valInput) throw new Error("Elemento 'edit-material-valor' não foi encontrado!");
+        idInput.value = material.id; nomeInput.value = material.nome || ''; unInput.value = material.unidade || 'UNID'; valInput.value = material.valor || 0;
+        modalEl.classList.add('active');
+      } catch (e) { console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição material:", e.message); alert("Ocorreu um erro ao tentar abrir a edição de material. Verifique o console (F12)."); }
+    };
+
+window.openEditTipoServicoModal = (id) => {
+      try {
+        const servico = appState.tiposDeServico.find(s => s.id === id);
+        if (!servico) throw new Error('Tipo de serviço não encontrado no appState.');
+        const modalEl = document.getElementById('edit-tiposervico-modal'); if (!modalEl) throw new Error("Elemento 'edit-tiposervico-modal' não foi encontrado!");
+        const idInput = document.getElementById('edit-tiposervico-id'); if (!idInput) throw new Error("Elemento 'edit-tiposervico-id' não foi encontrado!");
+        const catInput = document.getElementById('edit-tiposervico-categoria'); if (!catInput) throw new Error("Elemento 'edit-tiposervico-categoria' não foi encontrado!");
+        const descInput = document.getElementById('edit-tiposervico-descricao'); if (!descInput) throw new Error("Elemento 'edit-tiposervico-descricao' não foi encontrado!");
+        const valInput = document.getElementById('edit-tiposervico-valor'); if (!valInput) throw new Error("Elemento 'edit-tiposervico-valor' não foi encontrado!");
+        idInput.value = servico.id; catInput.value = servico.categoria || 'OUTROS'; descInput.value = servico.descricao || ''; valInput.value = servico.valor || 0;
+        modalEl.classList.add('active');
+      } catch (e) { console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição de serviço:", e.message); alert("Ocorreu um erro ao tentar abrir a edição de serviço. Verifique o console (F12)."); }
+    };
+
+</script>
+
+<div id="edit-material-modal" class="modal">
+    <div class="bg-white rounded-lg p-6 w-[95%] max-w-lg shadow-xl">
+      <h3 class="text-xl font-bold text-gray-800 mb-6">Editar Material/Serviço</h3>
+      <form id="form-edit-material" class="space-y-4">
+        <input type="hidden" id="edit-material-id">
+        <div>
+          <label for="edit-material-nome" class="block text-sm font-medium text-gray-700">Descrição</label>
+          <input type="text" id="edit-material-nome" class="w-full p-2 border rounded-md mt-1" required>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="edit-material-unidade" class="block text-sm font-medium text-gray-700">Unidade</label>
+            <select id="edit-material-unidade" class="w-full p-2 border rounded-md mt-1 h-10">
+              <option>UNID</option><option>Pç</option><option>m</option><option>cx</option><option>kit</option>
+            </select>
+          </div>
+          <div>
+            <label for="edit-material-valor" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+            <input type="number" step="0.01" id="edit-material-valor" class="w-full p-2 border rounded-md mt-1" required>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" onclick="closeEditMaterialModal()" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">Cancelar</button>
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<div id="edit-tiposervico-modal" class="modal">
+    <div class="bg-white rounded-lg p-6 w-[95%] max-w-lg shadow-xl">
+        <h3 class="text-xl font-bold text-gray-800 mb-6">Editar Tipo de Serviço</h3>
+        <form id="form-edit-tiposervico" class="space-y-4">
+            <input type="hidden" id="edit-tiposervico-id">
+            <div>
+                <label for="edit-tiposervico-categoria" class="block text-sm font-medium text-gray-700">Categoria</label>
+                <input type="text" id="edit-tiposervico-categoria" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: INSTALAÇÕES" required>
+            </div>
+            <div>
+                <label for="edit-tiposervico-descricao" class="block text-sm font-medium text-gray-700">Descrição</label>
+                <input type="text" id="edit-tiposervico-descricao" class="w-full p-2 border rounded-md mt-1" required>
+            </div>
+            <div>
+                <label for="edit-tiposervico-valor" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                <input type="number" step="0.01" id="edit-tiposervico-valor" class="w-full p-2 border rounded-md mt-1" required>
+            </div>
+            <div class="flex justify-end gap-3 pt-4">
+                <button type="button" onclick="closeEditTipoServicoModal()" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">Cancelar</button>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
+  </div>
 </body>
 </html>
