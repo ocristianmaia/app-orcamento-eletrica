@@ -5,7 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gerador de Orçamentos 5.0 — Categorias & Submenus</title>
   <link rel="icon" href="https://eusoueletricista.com.br/wp-content/uploads/2025/09/cropped-cropped-Mascote-Eletricista-5.0-1-1.png">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com">
+
+// ==== BLOCO: Editar Serviços/Materiais (mesclado do index (1)) ====
+EditTipoServicoModal = (id) => {
+      try {
+        const servico = appState.tiposDeServico.find(s => s.id === id);
+        if (!servico) throw new Error('Tipo de serviço não encontrado no appState.');
+        const modalEl = document.getElementById('edit-tiposervico-modal'); if (!modalEl) throw new Error("Elemento 'edit-tiposervico-modal' não foi encontrado!");
+        const idInput = document.getElementById('edit-tiposervico-id'); if (!idInput) throw new Error("Elemento 'edit-tiposervico-id' não foi encontrado!");
+        const catInput = document.getElementById('edit-tiposervico-categoria'); if (!catInput) throw new Error("Elemento 'edit-tiposervico-categoria' não foi encontrado!");
+        const descInput = document.getElementById('edit-tiposervico-descricao'); if (!descInput) throw new Error("Elemento 'edit-tiposervico-descricao' não foi encontrado!");
+        const valInput = document.getElementById('edit-tiposervico-valor'); if (!valInput) throw new Error("Elemento 'edit-tiposervico-valor' não foi encontrado!");
+        idInput.value = servico.id; catInput.value = servico.categoria || 'OUTROS'; descInput.value = servico.descricao || ''; valInput.value = servico.valor || 0;
+        modalEl.classList.add('active');
+      } catch (e) { console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição de serviço:", e.message); alert("Ocorreu um erro ao tentar abrir a edição de serviço. Verifique o console (F12)."); }
+    };
+
+EditTipoServicoModal = () => { document.getElementById('edit-tiposervico-modal').classList.remove('active'); document.getElementById('form-edit-tiposervico').reset(); };
+
+EditMaterialModal = (id) => {
+      try {
+        const material = appState.materiais.find(m => m.id === id);
+        if (!material) throw new Error('Material não encontrado no appState.');
+        const modalEl = document.getElementById('edit-material-modal'); if (!modalEl) throw new Error("Elemento 'edit-material-modal' não foi encontrado!");
+        const idInput = document.getElementById('edit-material-id'); if (!idInput) throw new Error("Elemento 'edit-material-id' não foi encontrado!");
+        const nomeInput = document.getElementById('edit-material-nome'); if (!nomeInput) throw new Error("Elemento 'edit-material-nome' não foi encontrado!");
+        const unInput = document.getElementById('edit-material-unidade'); if (!unInput) throw new Error("Elemento 'edit-material-unidade' não foi encontrado!");
+        const valInput = document.getElementById('edit-material-valor'); if (!valInput) throw new Error("Elemento 'edit-material-valor' não foi encontrado!");
+        idInput.value = material.id; nomeInput.value = material.nome || ''; unInput.value = material.unidade || 'UNID'; valInput.value = material.valor || 0;
+        modalEl.classList.add('active');
+      } catch (e) { console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição material:", e.message); alert("Ocorreu um erro ao tentar abrir a edição de material. Verifique o console (F12)."); }
+    };
+
+EditMaterialModal = () => { document.getElementById('edit-material-modal').classList.remove('active'); document.getElementById('form-edit-material').reset(); };
+
+</script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -112,7 +147,7 @@
           <nav class="flex -mb-px space-x-6">
             <button class="tab active py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Tela Inicial</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
-            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
+            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais/Serviços</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="servicos" onclick="changeTab(event, 'servicos')">Serviços</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600 flex items-center" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -288,25 +323,7 @@
                     <span id="save-config-spinner" class="hidden">Salvando...</span>
                   </button>
                 </div>
-              
-    <h3 class="text-lg font-semibold mt-6 mb-2">Formas de Pagamento</h3>
-    <div class="grid gap-3">
-      <label class="flex items-center gap-2"><input type="checkbox" id="pg-aceita-pix" class="h-4 w-4"> <span>PIX</span></label>
-      <input type="text" id="pg-pix-chave" class="w-full p-2 border rounded-md" placeholder="Chave PIX">
-      <label class="flex items-center gap-2"><input type="checkbox" id="pg-aceita-cartao" class="h-4 w-4"> <span>Cartão</span></label>
-      <div class="grid grid-cols-2 gap-2">
-        <input type="number" id="pg-cartao-parcelas" class="p-2 border rounded-md" placeholder="Parcelas máx">
-        <input type="number" step="0.01" id="pg-cartao-juros" class="p-2 border rounded-md" placeholder="% juros/mês">
-      </div>
-      <label class="flex items-center gap-2"><input type="checkbox" id="pg-aceita-dinheiro" class="h-4 w-4"> <span>Dinheiro</span></label>
-      <label class="flex items-center gap-2"><input type="checkbox" id="pg-aceita-deposito" class="h-4 w-4"> <span>Depósito</span></label>
-      <div class="grid grid-cols-3 gap-2">
-        <input type="text" id="pg-banco" class="p-2 border rounded-md" placeholder="Banco">
-        <input type="text" id="pg-agencia" class="p-2 border rounded-md" placeholder="Agência">
-        <input type="text" id="pg-conta" class="p-2 border rounded-md" placeholder="Conta">
-      </div>
-    </div>
-    </form>
+              </form>
             </div>
 
             <div class="mt-8 border-t pt-6 text-center">
@@ -624,17 +641,6 @@
           industrial_diaria: parseFloat(document.getElementById('config-industrial-diaria').value) || 0,
           industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
           industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
-          pg_aceita_pix: document.getElementById('pg-aceita-pix').checked,
-          pg_pix_chave: document.getElementById('pg-pix-chave').value,
-          pg_aceita_cartao: document.getElementById('pg-aceita-cartao').checked,
-          pg_cartao_parcelas: parseInt(document.getElementById('pg-cartao-parcelas').value) || 0,
-          pg_cartao_juros: parseFloat(document.getElementById('pg-cartao-juros').value) || 0,
-          pg_aceita_dinheiro: document.getElementById('pg-aceita-dinheiro').checked,
-          pg_aceita_deposito: document.getElementById('pg-aceita-deposito').checked,
-          pg_banco: document.getElementById('pg-banco').value,
-          pg_agencia: document.getElementById('pg-agencia').value,
-          pg_conta: document.getElementById('pg-conta').value,
-    
         };
         await setDoc(doc(db, `users/${userId}/config/main`), data);
         alert('Configurações salvas!');
@@ -1483,31 +1489,48 @@
       hidden.style.width = '210mm';
       hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
       document.body.appendChild(hidden);
-// === Inject logo and payment block ===
+// === inject logo in PDF header ===
+// === append configured payment methods to the PDF ===
 try {
-  const c = appState.config || {};
+  const c = appState?.config || {};
   const root = hidden.firstElementChild || hidden;
-  if (c.logo) {
-    const logo = document.createElement('img');
-    logo.id = 'pdf-logo'; logo.src = c.logo; logo.setAttribute('crossorigin','anonymous');
-    logo.style.maxHeight = '60px'; logo.style.maxWidth = '180px'; logo.style.objectFit = 'contain'; logo.style.float='right';
-    root.insertBefore(logo, root.firstChild);
-    try { const resp = await fetch(logo.src, {mode:'cors'}); const blob = await resp.blob(); const fr = new FileReader(); const dataURL = await new Promise((res, rej)=>{ fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(blob); }); logo.src = dataURL; } catch(_) {}
-  }
-  if (c.pg_aceita_pix || c.pg_aceita_cartao || c.pg_aceita_dinheiro || c.pg_aceita_deposito) {
-    const pay = document.createElement('div'); pay.style.marginTop='20px'; pay.style.paddingTop='10px'; pay.style.borderTop='1px solid #ccc';
-    pay.innerHTML = `<h4 style="font-weight:600;margin-bottom:6px;">Formas de pagamento</h4>
-      <ul style="list-style:none;padding:0;margin:0;">
-        ${c.pg_aceita_pix ? `<li>PIX: ${c.pg_pix_chave||''}</li>`:''}
-        ${c.pg_aceita_cartao ? `<li>Cartão: até ${c.pg_cartao_parcelas||0}x${c.pg_cartao_juros?` com ${c.pg_cartao_juros}%/mês`:''}</li>`:''}
-        ${c.pg_aceita_dinheiro ? `<li>Dinheiro</li>`:''}
-        ${c.pg_aceita_deposito ? `<li>Depósito: ${[c.pg_banco,c.pg_agencia,c.pg_conta].filter(Boolean).join(' / ')}</li>`:''}
-      </ul>`;
+  const acceptsPix = (c.pg_pix_aceita ?? c.pg_aceita_pix) ? true : false;
+  const acceptsCard = (c.pg_cartao_aceita ?? c.pg_aceita_cartao) ? true : false;
+  const acceptsCash = (c.pg_dinheiro_aceita ?? c.pg_aceita_dinheiro) ? true : false;
+  const acceptsDep = (c.pg_deposito_aceita ?? c.pg_aceita_deposito) ? true : false;
+  if (acceptsPix || acceptsCard || acceptsCash || acceptsDep) {
+    const pay = document.createElement('div');
+    pay.style.marginTop = '20px';
+    pay.style.paddingTop = '10px';
+    pay.style.borderTop = '1px solid #ccc';
+    const parcelas = c.pg_cartao_parcelas || 0;
+    const juros = c.pg_cartao_juros || 0;
+    const pixLine = acceptsPix ? `PIX: ${c.pg_pix_chave || ''}` : '';
+    const cartaoLine = acceptsCard ? `Cartão: até ${parcelas}x${juros ? ` com ${juros}%/mês` : ''}` : '';
+    const dinheiroLine = acceptsCash ? 'Dinheiro' : '';
+    const depInfo = [c.pg_banco, c.pg_agencia, c.pg_conta].filter(Boolean).join(' / ');
+    const depLine = acceptsDep ? `Depósito/Transf.: ${depInfo}` : '';
+    const items = [pixLine, cartaoLine, dinheiroLine, depLine].filter(Boolean).map(x=>`<li>${x}</li>`).join('');
+    pay.innerHTML = `<h4 style="font-weight:600;margin-bottom:6px;">Formas de pagamento</h4><ul style="list-style:none;padding:0;margin:0;">${items}</ul>`;
     root.appendChild(pay);
   }
 } catch(_) {}
-// === end inject ===
+// === end payments append ===
 
+try {
+  const c = appState?.config || {};
+  const root = hidden.firstElementChild || hidden;
+  if (c.logo && !hidden.querySelector('#pdf-logo')) {
+    const logo = document.createElement('img');
+    logo.id = 'pdf-logo'; logo.src = c.logo; logo.setAttribute('crossorigin','anonymous');
+    logo.style.maxHeight='60px'; logo.style.maxWidth='180px'; logo.style.objectFit='contain'; logo.style.float='right';
+    root.insertBefore(logo, root.firstChild);
+    try { const resp = await fetch(logo.src, {mode:'cors'}); const blob = await resp.blob(); const fr = new FileReader();
+      const dataURL = await new Promise((res, rej)=>{ fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(blob); });
+      logo.src = dataURL; } catch (_) {}
+  }
+} catch(_) {}
+// === end inject ===
       const { jsPDF } = window.jspdf;
       const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
       const fileName = `orcamento-${clienteNome}.pdf`;
