@@ -15,14 +15,14 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     .tab.active { border-bottom: 2px solid #2563EB; color: #2563EB; font-weight: 600; }
-   .modal { 
-      display:none; 
-      position:fixed; 
-      inset:0; 
-      background: rgba(0,0,0,.5); 
+   .modal {
+      display:none;
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.5);
       z-index: 9999;
-      align-items:center; 
-      justify-content:center; 
+      align-items:center;
+      justify-content:center;
     }
     .modal.active { display:flex; }
     /* Slim look for serviços */
@@ -49,7 +49,7 @@
       </div>
       </div>
   </div>
-  
+
   <div id="edit-cliente-modal" class="modal">
     <div class="bg-white rounded-lg p-6 w-[95%] max-w-lg shadow-xl">
       <h3 class="text-xl font-bold text-gray-800 mb-6">Editar Cliente</h3>
@@ -74,7 +74,7 @@
       </form>
     </div>
   </div>
-      
+
   <div id="edit-material-modal" class="modal">
     <div class="bg-white rounded-lg p-6 w-[95%] max-w-lg shadow-xl">
       <h3 class="text-xl font-bold text-gray-800 mb-6">Editar Material/Serviço</h3>
@@ -146,9 +146,9 @@
           Gerador de Orçamentos
           <span class="block text-3xl sm:text-4xl">ELETRICISTA 5.0</span>
         </h1>
-        <img 
-          src="https://eusoueletricista.com.br/wp-content/uploads/2025/09/cropped-cropped-Mascote-Eletricista-5.0-1-1.png" 
-          alt="Logo Eletricista 5.0" 
+        <img
+          src="https://eusoueletricista.com.br/wp-content/uploads/2025/09/cropped-cropped-Mascote-Eletricista-5.0-1-1.png"
+          alt="Logo Eletricista 5.0"
           class="h-12 sm:h-14 w-auto"
         >
       </div>
@@ -173,6 +173,7 @@
             </button>
           </nav>
         </div>
+
         <div class="mb-6 sm:hidden space-y-2">
             <div class="grid grid-cols-3 gap-2">
                 <button class="mobile-tab active text-white p-3 rounded-lg shadow-md bg-blue-500" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">Início</button>
@@ -226,7 +227,7 @@
 
           <div id="materiais" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
-              <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Material/Serviço</h2>
+              <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Material</h2>
               <form id="form-material" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
                 <div class="flex-grow">
                   <label class="block text-sm font-medium text-gray-700">Descrição</label>
@@ -245,7 +246,7 @@
                 <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors h-10 w-full sm:w-auto">Salvar Item</button>
               </form>
             </div>
-            
+
             <div class="bg-white p-6 rounded-lg shadow-sm">
                 <h2 class="text-xl font-semibold mb-4">Importar Materiais</h2>
                 <div class="mb-6 p-4 border rounded-lg bg-gray-50">
@@ -296,12 +297,12 @@
                     </select>
                     <input type="text" id="tiposervico-categoria-new" placeholder="Nome da Nova Categoria" class="w-full p-2 border rounded-md mt-2 hidden">
                   </div>
-                  
+
                   <div>
                     <label class="block text-sm font-medium text-gray-700">Descrição</label>
                     <input type="text" id="tiposervico-descricao" placeholder="Ex: Instalação de Padrão" class="w-full p-2 border rounded-md mt-1" required>
                   </div>
-                  
+
                   <div>
                     <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
                     <input type="number" step="0.01" id="tiposervico-valor" placeholder="150.00" class="w-full p-2 border rounded-md mt-1" required>
@@ -320,18 +321,48 @@
             <div class="bg-white p-6 rounded-lg shadow-sm">
               <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
               <form id="form-config" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <div>
-                  <h3 class="text-lg font-medium mb-4 border-b pb-2">Seus Dados Profissionais</h3>
-                  <div class="space-y-4">
-                    <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md" required>
-                    <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md" required>
-                    <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
-                    <input type="text" id="config-endereco" placeholder="Seu Endereço" class="w-full p-2 border rounded-md">
-                    <input type="text" id="config-logo" placeholder="URL da sua Logomarca (opcional)" class="w-full p-2 border rounded-md">
-                  </div>
-                </div>
-                <div>
+
+                <div class="space-y-6">
                   <div>
+                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Seus Dados Profissionais</h3>
+                    <div class="space-y-4">
+                      <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md" required>
+                      <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md" required>
+                      <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
+                      <input type="text" id="config-endereco" placeholder="Seu Endereço" class="w-full p-2 border rounded-md">
+                      <input type="text" id="config-logo" placeholder="URL da sua Logomarca (opcional)" class="w-full p-2 border rounded-md">
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Formas de Pagamento</h3>
+                    <div class="space-y-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">PIX</label>
+                        <input type="text" id="config-pix" placeholder="Sua chave PIX (CPF, CNPJ, E-mail, Telefone, Aleatória)" class="w-full p-2 border rounded-md mt-1">
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">Cartão de Crédito</label>
+                        <div class="grid grid-cols-2 gap-4 mt-1">
+                          <input type="number" min="1" id="config-cartao-parcelas" placeholder="Max. Parcelas (ex: 12)" class="w-full p-2 border rounded-md">
+                          <input type="number" step="0.01" min="0" id="config-cartao-juros" placeholder="Juros % a.m. (ex: 1.99)" class="w-full p-2 border rounded-md">
+                        </div>
+                      </div>
+                       <div>
+                        <label class="block text-sm font-medium text-gray-700">Depósito Bancário</label>
+                        <div class="space-y-2 mt-1">
+                           <input type="text" id="config-deposito-banco" placeholder="Nome do Banco" class="w-full p-2 border rounded-md">
+                           <input type="text" id="config-deposito-agencia" placeholder="Agência (com dígito, se houver)" class="w-full p-2 border rounded-md">
+                           <input type="text" id="config-deposito-conta" placeholder="Conta Corrente/Poupança (com dígito)" class="w-full p-2 border rounded-md">
+                        </div>
+                      </div>
+                      <p class="text-xs text-gray-500">Deixe os campos em branco para não oferecer a forma de pagamento. Dinheiro é sempre considerado.</p>
+                    </div>
+                  </div>
+                  </div>
+
+                <div class="space-y-6">
+                   <div>
                     <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Residencial/Predial</h3>
                     <div class="space-y-4">
                       <label class="block"><span class="text-gray-700">Valor por Empreitada (R$)</span><input type="number" step="0.01" id="config-residencial-empreitada" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
@@ -340,7 +371,7 @@
                       <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-residencial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
                     </div>
                   </div>
-                  <div class="mt-6">
+                  <div>
                     <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Industrial</h3>
                     <div class="space-y-4">
                       <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-industrial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
@@ -349,6 +380,7 @@
                     </div>
                   </div>
                 </div>
+
                 <div class="md:col-span-2 text-right">
                   <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
                     <span id="save-config-text">Salvar Configurações</span>
@@ -461,7 +493,7 @@
         </div>
       </div>
     </div>
-    
+
     <footer class="bg-gray-900 text-white text-center py-6 mt-12">
       <div class="max-w-4xl mx-auto px-4 md:px-6">
         <p class="mb-4">Para ajustes ou sugestões de melhorias, mande uma mensagem.</p>
@@ -471,8 +503,8 @@
 
   </div> <script type="module">
 
-    console.log("VERSÃO 4.0 DO SCRIPT CARREGADA - TESTE FINAL (com merge de Edição)"); 
-    // ===== Firebase config (preservado do seu arquivo) =====
+    console.log("VERSÃO 4.1 DO SCRIPT CARREGADA - Pagamentos, Logo, Layout");
+    // ===== Firebase config =====
     const firebaseConfig = {
       apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
       authDomain: "app-orcamentos-eletrica.firebaseapp.com",
@@ -561,15 +593,11 @@
 
     document.getElementById('orc-cliente-select').addEventListener('change', (e) => {
       if (!appState.currentOrcamento) resetCurrentOrcamento();
-      
+
       const clienteId = e.target.value;
       if (clienteId) {
         const cliente = appState.clientes.find(c => c.id === clienteId);
-        if (cliente) {
-          appState.currentOrcamento.cliente = cliente;
-        } else {
-          appState.currentOrcamento.cliente = null;
-        }
+        appState.currentOrcamento.cliente = cliente || null;
       } else {
         appState.currentOrcamento.cliente = null;
       }
@@ -582,8 +610,10 @@
       const prefix = `users/${userId}`;
 
       onSnapshot(doc(db, `${prefix}/config/main`), (snap) => {
-        if (snap.exists()) appState.config = snap.data();
+        if (snap.exists()) appState.config = snap.data(); else appState.config = {}; // Garante que config seja um objeto
         updateConfigForm();
+        // Atualiza preview se um orçamento estiver aberto, para refletir config (logo, etc)
+        if(appState.currentOrcamento) updateOrcamentoPreview();
       });
 
       onSnapshot(query(collection(db, `${prefix}/clientes`)), (snapshot) => {
@@ -598,10 +628,9 @@
         renderMateriaisList();
       });
 
-      onSnapshot(query(collection(db, `${prefix}/tiposdeservico`)), (snapshot) => {        
+      onSnapshot(query(collection(db, `${prefix}/tiposdeservico`)), (snapshot) => {
         appState.tiposDeServico = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
                                               .filter(s => s.descricao && s.valor > 0);
-        
         renderTiposDeServicoList();
         populateCategorySelect();
       });
@@ -611,32 +640,42 @@
         appState.orcamentos = snapshot.docs.map(d => {
           const data = d.data();
           if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
-          console.log(`[DEBUG] Mapeando doc. ID do Firebase (d.id):`, d.id);
           return { ...data, id: d.id };
         });
         appState.orcamentos.sort((a,b) => (b.numeroOrcamento||0) - (a.numeroOrcamento||0));
-        
         renderOrcamentosList();
-        renderOrcamentosList(true); 
+        renderOrcamentosList(true);
       });
     }
 
     // ===== Config =====
     function updateConfigForm() {
       const c = appState.config || {};
-      document.getElementById('config-nome').value = c.nome || '';
-      document.getElementById('config-telefone').value = c.telefone || '';
-      document.getElementById('config-doc').value = c.doc || '';
-      document.getElementById('config-endereco').value = c.endereco || '';
-      document.getElementById('config-logo').value = c.logo || '';
-      
-      document.getElementById('config-residencial-empreitada').value = c.residencial_empreitada || '';
-      document.getElementById('config-residencial-diaria').value = c.residencial_diaria || '';
-      document.getElementById('config-residencial-ponto').value = c.residencial_ponto || '';
-      document.getElementById('config-residencial-hora').value = c.residencial_hora || '';
-      document.getElementById('config-industrial-diaria').value = c.industrial_diaria || '';
-      document.getElementById('config-industrial-ponto').value = c.industrial_ponto || '';
-      document.getElementById('config-industrial-hora').value = c.industrial_hora || '';
+      // Helper para definir valor do input
+      const setVal = (id, value) => { const el = document.getElementById(id); if (el) el.value = value || ''; };
+
+      setVal('config-nome', c.nome);
+      setVal('config-telefone', c.telefone);
+      setVal('config-doc', c.doc);
+      setVal('config-endereco', c.endereco);
+      setVal('config-logo', c.logo);
+
+      setVal('config-residencial-empreitada', c.residencial_empreitada);
+      setVal('config-residencial-diaria', c.residencial_diaria);
+      setVal('config-residencial-ponto', c.residencial_ponto);
+      setVal('config-residencial-hora', c.residencial_hora);
+
+      setVal('config-industrial-diaria', c.industrial_diaria);
+      setVal('config-industrial-ponto', c.industrial_ponto);
+      setVal('config-industrial-hora', c.industrial_hora);
+
+      // Carregar Formas de Pagamento
+      setVal('config-pix', c.pix);
+      setVal('config-cartao-parcelas', c.cartao_parcelas);
+      setVal('config-cartao-juros', c.cartao_juros);
+      setVal('config-deposito-banco', c.deposito_banco);
+      setVal('config-deposito-agencia', c.deposito_agencia);
+      setVal('config-deposito-conta', c.deposito_conta);
     }
 
     document.getElementById('form-config').addEventListener('submit', async (e) => {
@@ -646,21 +685,36 @@
       const textSpan = document.getElementById('save-config-text');
       const spinSpan = document.getElementById('save-config-spinner');
       btn.disabled = true; textSpan.classList.add('hidden'); spinSpan.classList.remove('hidden');
+
+      // Helper para obter valor do input
+      const getVal = (id) => document.getElementById(id)?.value || '';
+      const getFloat = (id) => parseFloat(document.getElementById(id)?.value) || 0;
+      const getInt = (id) => parseInt(document.getElementById(id)?.value) || 0;
+
       try {
         const data = {
-          nome: document.getElementById('config-nome').value,
-          telefone: document.getElementById('config-telefone').value,
-          doc: document.getElementById('config-doc').value,
-          endereco: document.getElementById('config-endereco').value,
-          logo: document.getElementById('config-logo').value,
-          
-          residencial_empreitada: parseFloat(document.getElementById('config-residencial-empreitada').value) || 0,
-          residencial_diaria: parseFloat(document.getElementById('config-residencial-diaria').value) || 0,
-          residencial_ponto: parseFloat(document.getElementById('config-residencial-ponto').value) || 0,
-          residencial_hora: parseFloat(document.getElementById('config-residencial-hora').value) || 0,
-          industrial_diaria: parseFloat(document.getElementById('config-industrial-diaria').value) || 0,
-          industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
-          industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
+          nome: getVal('config-nome'),
+          telefone: getVal('config-telefone'),
+          doc: getVal('config-doc'),
+          endereco: getVal('config-endereco'),
+          logo: getVal('config-logo'),
+
+          residencial_empreitada: getFloat('config-residencial-empreitada'),
+          residencial_diaria: getFloat('config-residencial-diaria'),
+          residencial_ponto: getFloat('config-residencial-ponto'),
+          residencial_hora: getFloat('config-residencial-hora'),
+
+          industrial_diaria: getFloat('config-industrial-diaria'),
+          industrial_ponto: getFloat('config-industrial-ponto'),
+          industrial_hora: getFloat('config-industrial-hora'),
+
+          // Salvar Formas de Pagamento
+          pix: getVal('config-pix'),
+          cartao_parcelas: getInt('config-cartao-parcelas'),
+          cartao_juros: getFloat('config-cartao-juros'),
+          deposito_banco: getVal('config-deposito-banco'),
+          deposito_agencia: getVal('config-deposito-agencia'),
+          deposito_conta: getVal('config-deposito-conta'),
         };
         await setDoc(doc(db, `users/${userId}/config/main`), data);
         alert('Configurações salvas!');
@@ -669,6 +723,13 @@
     });
 
     // ===== Clientes =====
+    document.getElementById('form-cliente').addEventListener('submit', async (e) => { /* ...código mantido... */ });
+    document.getElementById('form-edit-cliente').addEventListener('submit', async (e) => { /* ...código mantido... */ });
+    function renderClientesList() { /* ...código mantido... */ }
+    window.deleteCliente = async (id) => { /* ...código mantido... */ };
+    window.openEditClienteModal = (id) => { /* ...código mantido... */ };
+    window.closeEditClienteModal = () => { /* ...código mantido... */ };
+    // --- (Código Clientes omitido para brevidade, mas está igual ao anterior) ---
     document.getElementById('form-cliente').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
@@ -686,40 +747,27 @@
       } catch(e) { console.error(e); alert('Erro ao salvar cliente.'); }
       finally { btn.disabled=false; btn.textContent='Salvar Cliente'; }
     });
-    
     document.getElementById('form-edit-cliente').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
-      
       const clienteId = document.getElementById('edit-cliente-id').value;
       if (!clienteId) return alert('Erro: ID do cliente não encontrado.');
-
       const btn = e.target.querySelector('button[type="submit"]');
       btn.disabled = true; btn.textContent='Salvando...';
-
       try {
         const data = {
           nome: document.getElementById('edit-cliente-nome').value,
           telefone: document.getElementById('edit-cliente-telefone').value,
           endereco: document.getElementById('edit-cliente-endereco').value,
         };
-        
         const originalCliente = appState.clientes.find(c => c.id === clienteId);
-        data.numeroCadastro = originalCliente.numeroCadastro || ''; 
-        
+        data.numeroCadastro = originalCliente?.numeroCadastro || '';
         await setDoc(doc(db, `users/${userId}/clientes/${clienteId}`), data);
-        
         alert('Cliente atualizado com sucesso!');
         closeEditClienteModal();
-      } catch(e) {
-        console.error(e); 
-        alert('Erro ao atualizar cliente.'); 
-      } finally { 
-        btn.disabled=false; 
-        btn.textContent='Salvar Alterações'; 
-      }
+      } catch(e) { console.error(e); alert('Erro ao atualizar cliente.'); }
+      finally { btn.disabled=false; btn.textContent='Salvar Alterações'; }
     });
-
     function renderClientesList() {
       const el = document.getElementById('clientes-list');
       if (!appState.clientes.length) { el.innerHTML = '<p class="text-gray-500">Nenhum cliente cadastrado.</p>'; return; }
@@ -732,60 +780,33 @@
           <button onclick="deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700 text-2xl ml-3 flex-shrink-0">&times;</button>
         </div>`).join('');
     }
-
     window.deleteCliente = async (id) => {
       if (confirm('Excluir este cliente?')) { await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); }
     };
-
     window.openEditClienteModal = (id) => {
-      console.log(`[DEBUG-CLIENTE] 1. Função chamada com ID:`, id);
       try {
         const cliente = appState.clientes.find(c => c.id === id);
-        if (!cliente) {
-          alert('Cliente não encontrado no appState.');
-          return;
-        }
-        console.log("[DEBUG-CLIENTE] 2. Cliente encontrado:", cliente.nome);
-
-        const modalEl = document.getElementById('edit-cliente-modal');
-        if (!modalEl) throw new Error("Elemento 'edit-cliente-modal' não foi encontrado no HTML!");
-        
-        const idInput = document.getElementById('edit-cliente-id');
-        if (!idInput) throw new Error("Elemento 'edit-cliente-id' não foi encontrado no HTML!");
-        
-        const nomeInput = document.getElementById('edit-cliente-nome');
-        if (!nomeInput) throw new Error("Elemento 'edit-cliente-nome' não foi encontrado no HTML!");
-        
-        const telInput = document.getElementById('edit-cliente-telefone');
-        if (!telInput) throw new Error("Elemento 'edit-cliente-telefone' não foi encontrado no HTML!");
-        
-        const endInput = document.getElementById('edit-cliente-endereco');
-        if (!endInput) throw new Error("Elemento 'edit-cliente-endereco' não foi encontrado no HTML!");
-        
-        console.log("[DEBUG-CLIENTE] 3. Todos os elementos do modal foram encontrados. Preenchendo...");
-
-        idInput.value = cliente.id;
-        nomeInput.value = cliente.nome || '';
-        telInput.value = cliente.telefone || '';
-        endInput.value = cliente.endereco || '';
-        
-        console.log("[DEBUG-CLIENTE] 4. Dados preenchidos. Abrindo modal...");
+        if (!cliente) throw new Error('Cliente não encontrado no appState.');
+        const modalEl = document.getElementById('edit-cliente-modal'); if (!modalEl) throw new Error("Elemento 'edit-cliente-modal' não foi encontrado!");
+        const idInput = document.getElementById('edit-cliente-id'); if (!idInput) throw new Error("Elemento 'edit-cliente-id' não foi encontrado!");
+        const nomeInput = document.getElementById('edit-cliente-nome'); if (!nomeInput) throw new Error("Elemento 'edit-cliente-nome' não foi encontrado!");
+        const telInput = document.getElementById('edit-cliente-telefone'); if (!telInput) throw new Error("Elemento 'edit-cliente-telefone' não foi encontrado!");
+        const endInput = document.getElementById('edit-cliente-endereco'); if (!endInput) throw new Error("Elemento 'edit-cliente-endereco' não foi encontrado!");
+        idInput.value = cliente.id; nomeInput.value = cliente.nome || ''; telInput.value = cliente.telefone || ''; endInput.value = cliente.endereco || '';
         modalEl.classList.add('active');
-        console.log("[DEBUG-CLIENTE] 5. Modal aberto com sucesso!");
-
-      } catch (e) {
-        console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição:", e.message);
-        alert("Ocorreu um erro ao tentar abrir a edição. Verifique o console (F12).");
-      }
+      } catch (e) { console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição cliente:", e.message); alert("Ocorreu um erro ao tentar abrir a edição. Verifique o console (F12)."); }
     };
-
-    window.closeEditClienteModal = () => {
-      document.getElementById('edit-cliente-modal').classList.remove('active');
-      document.getElementById('form-edit-cliente').reset();
-    };
+    window.closeEditClienteModal = () => { document.getElementById('edit-cliente-modal').classList.remove('active'); document.getElementById('form-edit-cliente').reset(); };
 
     // ===== Materiais =====
-    document.getElementById('form-material').addEventListener('submit', async (e) => {
+    document.getElementById('form-material').addEventListener('submit', async (e) => { /* ...código mantido... */ });
+    document.getElementById('form-edit-material').addEventListener('submit', async (e) => { /* ...código mantido... */ });
+    function renderMateriaisList() { /* ...código mantido... */ }
+    window.deleteMaterial = async (id) => { /* ...código mantido... */ };
+    window.openEditMaterialModal = (id) => { /* ...código mantido... */ };
+    window.closeEditMaterialModal = () => { /* ...código mantido... */ };
+    // --- (Código Materiais omitido para brevidade) ---
+     document.getElementById('form-material').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
       const btn = e.target.querySelector('button[type="submit"]');
@@ -799,7 +820,6 @@
       } catch(e) { console.error(e); alert('Erro ao salvar item.'); }
       finally { btn.disabled=false; btn.textContent='Salvar Item'; }
     });
-
     document.getElementById('form-edit-material').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
@@ -819,7 +839,6 @@
       } catch(e) { console.error(e); alert('Erro ao atualizar material.'); }
       finally { btn.disabled=false; btn.textContent='Salvar Alterações'; }
     });
-
     function renderMateriaisList() {
       const el = document.getElementById('materiais-list');
       if (!appState.materiais.length) { el.innerHTML = '<p class="text-gray-500">Nenhum material cadastrado.</p>'; return; }
@@ -831,11 +850,9 @@
           <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 text-2xl ml-3 flex-shrink-0">&times;</button>
         </div>`).join('');
     }
-
     window.deleteMaterial = async (id) => {
       if (confirm('Excluir este item?')) { await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); }
     };
-
     window.openEditMaterialModal = (id) => {
       try {
         const material = appState.materiais.find(m => m.id === id);
@@ -852,21 +869,27 @@
     window.closeEditMaterialModal = () => { document.getElementById('edit-material-modal').classList.remove('active'); document.getElementById('form-edit-material').reset(); };
 
 
-    // ===== Tipos de Serviço com Categoria & Submenu (AGORA EM #servicos) =====
-    const catSelect = document.getElementById('tiposervico-categoria-select');
+    // ===== Tipos de Serviço =====
+    document.getElementById('form-tiposervico').addEventListener('submit', async (e) => { /* ...código mantido... */ });
+    document.getElementById('form-edit-tiposervico').addEventListener('submit', async (e) => { /* ...código mantido... */ });
+    function renderTiposDeServicoList() { /* ...código mantido... */ }
+    window.deleteTipoDeServico = async (id) => { /* ...código mantido... */ };
+    window.openEditTipoServicoModal = (id) => { /* ...código mantido... */ };
+    window.closeEditTipoServicoModal = () => { /* ...código mantido... */ };
+    function populateCategorySelect() { /* ...código mantido... */ }
+    function groupBy(arr, key) { /* ...código mantido... */ }
+    // --- (Código Tipos de Serviço omitido para brevidade) ---
+     const catSelect = document.getElementById('tiposervico-categoria-select');
     const catNew = document.getElementById('tiposervico-categoria-new');
-
     function populateCategorySelect() {
       while (catSelect.options.length > 2) catSelect.remove(2);
       const cats = [...new Set(appState.tiposDeServico.map(s => s.categoria).filter(Boolean))].sort();
       cats.forEach(cat => { const o=document.createElement('option'); o.value=cat; o.textContent=cat; catSelect.appendChild(o); });
     }
-
     catSelect.addEventListener('change', () => {
       if (catSelect.value === 'new_category') { catNew.classList.remove('hidden'); catNew.focus(); }
       else { catNew.classList.add('hidden'); }
     });
-
     document.getElementById('form-tiposervico').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
@@ -879,7 +902,6 @@
         const valor = parseFloat(document.getElementById('tiposervico-valor').value);
         if (!categoria || !descricao || isNaN(valor)) throw new Error('Preencha categoria, descrição e valor.');
         if (valor <= 0) throw new Error('O valor deve ser maior que zero.');
-        
         await addDoc(collection(db, `users/${userId}/tiposdeservico`), { descricao, valor, categoria });
         e.target.reset();
         catNew.classList.add('hidden');
@@ -887,7 +909,6 @@
       } catch(e) { console.error(e); alert('Erro ao salvar tipo de serviço: ' + e.message); }
       finally { btn.disabled=false; btn.textContent='Salvar'; }
     });
-
     document.getElementById('form-edit-tiposervico').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
@@ -907,9 +928,7 @@
       } catch(e) { console.error(e); alert('Erro ao atualizar tipo de serviço: ' + e.message); }
       finally { btn.disabled=false; btn.textContent='Salvar Alterações'; }
     });
-
     function groupBy(arr, key) { return arr.reduce((acc,cur)=>{ const k=cur[key]||'OUTROS'; (acc[k]||(acc[k]=[])).push(cur); return acc; },{}); }
-
     function renderTiposDeServicoList() {
       const el = document.getElementById('tiposdeservico-list');
       if (!appState.tiposDeServico.length) { el.innerHTML = '<p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>'; return; }
@@ -938,11 +957,9 @@
           </details>`;
       }).join('');
     }
-
     window.deleteTipoDeServico = async (id) => {
       if (confirm('Excluir este tipo de serviço?')) { await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`)); }
     };
-
     window.openEditTipoServicoModal = (id) => {
       try {
         const servico = appState.tiposDeServico.find(s => s.id === id);
@@ -958,98 +975,56 @@
     };
     window.closeEditTipoServicoModal = () => { document.getElementById('edit-tiposervico-modal').classList.remove('active'); document.getElementById('form-edit-tiposervico').reset(); };
 
-
-    // ===== Importar Excel (Serviços) =====
-    document.getElementById('btn-import-xlsx').addEventListener('click', async () => {
+    // ===== Import/Export =====
+    document.getElementById('btn-import-xlsx').addEventListener('click', async () => { /* ...código mantido... */ });
+    async function clearAllTiposDeServico() { /* ...código mantido... */ }
+    document.getElementById('btn-clear-tiposervico').addEventListener('click', clearAllTiposDeServico);
+    document.getElementById('btn-import-materiais-xlsx').addEventListener('click', async () => { /* ...código mantido... */ });
+    async function clearAllMateriais() { /* ...código mantido... */ }
+    document.getElementById('btn-clear-materiais').addEventListener('click', clearAllMateriais);
+    // --- (Código Import/Export omitido para brevidade) ---
+     document.getElementById('btn-import-xlsx').addEventListener('click', async () => {
       const inp = document.getElementById('xlsx-input');
       const status = document.getElementById('xlsx-status');
       if (!inp.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx'); return; }
       const f = inp.files[0];
       try {
         status.textContent = 'Lendo planilha...';
-        const buf = await f.arrayBuffer();
-        const wb = XLSX.read(buf, { type:'array' });
-        const ws = wb.Sheets[wb.SheetNames[0]];
+        const buf = await f.arrayBuffer(); const wb = XLSX.read(buf, { type:'array' }); const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-
         const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
-        const headerMapCandidates = {
-          categoria: ['categoria','grupo','setor'],
-          descricao: ['descricao','descrição','servico','serviço','atividade','item'],
-          valor: ['valor','preco','preço','price']
-        };
-
+        const headerMapCandidates = { categoria: ['categoria','grupo','setor'], descricao: ['descricao','descrição','servico','serviço','atividade','item'], valor: ['valor','preco','preço','price'] };
         const keys = rows.length ? Object.keys(rows[0]) : [];
         const colMap = { categoria: null, descricao: null, valor: null };
-        keys.forEach(k => {
-          const nk = norm(k);
-          for (const fld of Object.keys(headerMapCandidates)) {
-            if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k;
-          }
-        });
-
-        if (!colMap.categoria || !colMap.descricao || !colMap.valor) {
-          alert('Não encontrei colunas suficientes. Garanta que a planilha tenha: Categoria, Descrição e Valor.');
-          return;
-        }
-
-        const prefix = `users/${userId}`;
-        const batch = writeBatch(db);
-        let count = 0;
-
+        keys.forEach(k => { const nk = norm(k); for (const fld of Object.keys(headerMapCandidates)) { if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k; } });
+        if (!colMap.categoria || !colMap.descricao || !colMap.valor) throw new Error('Não encontrei colunas suficientes. Garanta que a planilha tenha: Categoria, Descrição e Valor.');
+        const prefix = `users/${userId}`; const batch = writeBatch(db); let count = 0;
         rows.forEach(r => {
           const categoria = String(r[colMap.categoria]||'').toUpperCase().trim() || 'OUTROS';
           const descricao = String(r[colMap.descricao]||'').trim();
           const rawValor = (r[colMap.valor] ?? '').toString().replace(',', '.').replace(/\s/g,'');
           const valor = parseFloat(rawValor) || 0;
-          if (!categoria || !descricao || !valor) return;
-          const ref = doc(collection(db, `${prefix}/tiposdeservico`));
-          batch.set(ref, { categoria, descricao, valor });
-          count++;
+          if (!categoria || !descricao || isNaN(valor) || valor <= 0) return;
+          const ref = doc(collection(db, `${prefix}/tiposdeservico`)); batch.set(ref, { categoria, descricao, valor }); count++;
         });
-
         if (!count) { alert('Nenhuma linha válida encontrada.'); return; }
-        status.textContent = 'Enviando para o banco...';
-        await batch.commit();
-        status.textContent = `Importação concluída: ${count} itens adicionados.`;
-      } catch(e) {
-        console.error(e);
-        alert('Erro ao importar planilha.');
-      }
+        status.textContent = 'Enviando para o banco...'; await batch.commit();
+        status.textContent = `Importação concluída: ${count} itens adicionados.`; inp.value = '';
+      } catch(e) { console.error(e); alert('Erro ao importar planilha: ' + e.message); status.textContent = 'Falha na importação.'; }
     });
-
     async function clearAllTiposDeServico() {
       if (!userId) return alert('Faça login.');
       if (!confirm('ATENÇÃO!\n\nIsso apagará TODOS os Tipos de Serviço cadastrados. Deseja continuar?')) return;
-      
       const status = document.getElementById('xlsx-status');
       status.textContent = 'Apagando todos os serviços...';
       try {
-        const prefix = `users/${userId}`;
-        const ref = collection(db, `${prefix}/tiposdeservico`);
-        const snapshot = await getDocs(ref);
-        
-        if (snapshot.empty) {
-          status.textContent = 'Nenhum serviço para apagar.';
-          return;
-        }
-        
-        const batch = writeBatch(db);
-        snapshot.docs.forEach(doc => {
-          batch.delete(doc.ref);
-        });
-        await batch.commit();
-        
+        const prefix = `users/${userId}`; const ref = collection(db, `${prefix}/tiposdeservico`); const snapshot = await getDocs(ref);
+        if (snapshot.empty) { status.textContent = 'Nenhum serviço para apagar.'; return; }
+        const batch = writeBatch(db); snapshot.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit();
         status.textContent = `Todos os ${snapshot.size} serviços foram apagados.`;
-      } catch(e) {
-        console.error(e);
-        status.textContent = 'Erro ao apagar os serviços.';
-        alert('Erro ao apagar.');
-      }
+      } catch(e) { console.error(e); status.textContent = 'Erro ao apagar os serviços.'; alert('Erro ao apagar.'); }
     }
     document.getElementById('btn-clear-tiposervico').addEventListener('click', clearAllTiposDeServico);
-
-    // ADICIONADO: Seção de Importar/Limpar Materiais
     document.getElementById('btn-import-materiais-xlsx').addEventListener('click', async () => {
         const inp = document.getElementById('materiais-xlsx-input');
         const status = document.getElementById('materiais-xlsx-status');
@@ -1079,7 +1054,6 @@
             status.textContent = `Importação de materiais concluída: ${count} itens adicionados.`; inp.value = '';
         } catch(e) { console.error(e); alert('Erro ao importar planilha de materiais: ' + e.message); status.textContent = 'Falha na importação de materiais.'; }
     });
-    
     async function clearAllMateriais() {
         if (!userId) return alert('Faça login.');
         if (!confirm('ATENÇÃO!\n\nIsso apagará TODOS os Materiais/Itens cadastrados. Deseja continuar?')) return;
@@ -1096,32 +1070,48 @@
 
 
     // ===== Orçamentos (lista / modal etc.) =====
+    function updateDeleteButtonState() { /* ...código mantido... */ }
+    function renderOrcamentosList(isFullList = false) { /* ...código mantido... */ }
+    window.toggleOrcamentoExclusao = (checkbox) => { /* ...código mantido... */ };
+    window.confirmDeleteSelectedOrcamentos = () => { /* ...código mantido... */ };
+    window.closeDeleteConfirmModal = (confirmAction) => { /* ...código mantido... */ };
+    async function deleteOrcamentosEmLote(ids) { /* ...código mantido... */ };
+    window.showAllOrcamentosPage = () => { /* ...código mantido... */ };
+    window.showMainPage = () => { /* ...código mantido... */ };
+    window.editOrcamento = (id) => { /* ...código mantido... */ };
+    window.openOrcamentoModal = (orcamentoParaEditar = null) => { /* ...código mantido... */ };
+    window.closeOrcamentoModal = () => { /* ...código mantido... */ };
+    function populateClienteSelect() { /* ...código mantido... */ }
+    function populateMateriaisOrcamento() { /* ...código mantido... */ }
+    function populateTiposDeServicoOrcamento() { /* ...código mantido... */ }
+    document.getElementById('filter-tipos').addEventListener('input', (e) => { /* ...código mantido... */ });
+    document.getElementById('orc-materiais-list').addEventListener('input', (e) => { /* ...código mantido... */ });
+    document.getElementById('orc-tiposdeservico-list').addEventListener('change', (e) => { /* ...código mantido... */ });
+    document.getElementById('orc-tipo-obra').addEventListener('change', (e) => { /* ...código mantido... */ });
+    document.getElementById('orc-mao-de-obra').addEventListener('input', () => { /* ...código mantido... */ });
+    function calculateMaoDeObra() { /* ...código mantido... */ }
+    // --- (Código Orçamentos e Modal omitido para brevidade) ---
     function updateDeleteButtonState() {
         const btn = document.getElementById('btn-delete-selected-orcamentos');
-        if (btn) {
-            btn.disabled = appState.orcamentosParaExcluir.size === 0;
-        }
+        if (btn) btn.disabled = appState.orcamentosParaExcluir.size === 0;
     }
-
     function renderOrcamentosList(isFullList = false) {
       const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
       if (!el) return;
       const list = isFullList ? appState.orcamentos : appState.orcamentos.slice(0,3);
       if (!list.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; return; }
-      
       el.innerHTML = list.map(orc => {
         const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
         const numeroFormatado = String(orc.numeroOrcamento || '').padStart(2, '0');
         const versaoFormatada = String(orc.versao || 1).padStart(2, '0');
-        const date = orc.createdAt || new Date();
-        const month = String((new Date(date)).getMonth() + 1).padStart(2, '0');
-        const year = String((new Date(date)).getFullYear()).slice(-2);
+        const date = orc.createdAt instanceof Date ? orc.createdAt : new Date(); // Garante que é Date
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = String(date.getFullYear()).slice(-2);
         const orcamentoId = `OS${numeroFormatado}${month}${year}-${versaoFormatada}`;
         const nome = cliente ? cliente.nome : 'Cliente Excluído';
         const nomes = nome.split(' ');
         const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
-        const nomeParaExibir = isFullList ? nome : nomeAbreviado; 
-        
+        const nomeParaExibir = isFullList ? nome : nomeAbreviado;
         if (isFullList) {
             const isChecked = appState.orcamentosParaExcluir.has(orc.id);
             return `
@@ -1140,7 +1130,6 @@
                     </div>
               </div>`;
         }
-        
         return `
       <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center w-full">
         <div class="flex-grow truncate mr-2">
@@ -1152,98 +1141,48 @@
         </div>
       </div>`;
       }).join('');
-      
       if (isFullList) updateDeleteButtonState();
     }
-
     window.toggleOrcamentoExclusao = (checkbox) => {
         const id = checkbox.dataset.id;
-        console.log(`[DEBUG-CLICK] Checkbox clicado! ID lido do HTML (data-id):`, id);
-        if (checkbox.checked) {
-            appState.orcamentosParaExcluir.add(id);
-        } else {
-            appState.orcamentosParaExcluir.delete(id);
-        }
+        if (checkbox.checked) { appState.orcamentosParaExcluir.add(id); }
+        else { appState.orcamentosParaExcluir.delete(id); }
         updateDeleteButtonState();
     };
-
     window.confirmDeleteSelectedOrcamentos = () => {
         const count = appState.orcamentosParaExcluir.size;
-        if (count === 0) {
-            alert('Nenhum orçamento selecionado para exclusão.');
-            return;
-        }
+        if (count === 0) { alert('Nenhum orçamento selecionado para exclusão.'); return; }
         const modal = document.getElementById('delete-confirm-modal');
         const messageEl = document.getElementById('delete-confirm-message');
         messageEl.innerHTML = `ATENÇÃO! Você irá excluir **${count}** orçamento(s) selecionado(s). Esta ação é irreversível. Deseja continuar?`;
         modal.classList.add('active');
     };
-
     window.closeDeleteConfirmModal = (confirmAction) => {
         const modal = document.getElementById('delete-confirm-modal');
         modal.classList.remove('active');
-        if (confirmAction) {
-             deleteOrcamentosEmLote(Array.from(appState.orcamentosParaExcluir));
-        }
+        if (confirmAction) { deleteOrcamentosEmLote(Array.from(appState.orcamentosParaExcluir)); }
     };
-
     async function deleteOrcamentosEmLote(ids) {
-      if (!userId) {
-        console.error('ERRO DE EXCLUSÃO: userId não está definido.');
-        alert('Falha crítica na autenticação (userId ausente). Por favor, saia e entre novamente.');
-        return;
-      }
+      if (!userId) { alert('Falha crítica na autenticação (userId ausente). Por favor, saia e entre novamente.'); return; }
       const btn = document.getElementById('btn-delete-selected-orcamentos');
       btn.disabled = true;
       try {
         const batch = writeBatch(db);
-        console.log(`Iniciando exclusão em lote para ${ids.length} IDs. userId: ${userId}`);
-        ids.forEach(id => {
-            const docPath = `users/${userId}/orcamentos/${id}`;
-            const docRef = doc(db, docPath);
-            batch.delete(docRef);
-            console.log(`Adicionado à exclusão: ${docPath}`);
-        });
+        ids.forEach(id => { const docRef = doc(db, `users/${userId}/orcamentos/${id}`); batch.delete(docRef); });
         await batch.commit();
         appState.orcamentosParaExcluir.clear();
         alert(`${ids.length} orçamento(s) excluído(s) com sucesso.`);
-      } catch (e) {
-        console.error('ERRO CRÍTICO ao excluir orçamentos em lote. Erro retornado:', e);
-        alert(`Erro ao excluir ${ids.length} orçamento(s). Possível falha nas Regras de Segurança (Permission Denied). Detalhe: ${e.message}`);
-      } finally {
-        btn.disabled = false;
-        updateDeleteButtonState();
-      }
+      } catch (e) { console.error('ERRO CRÍTICO ao excluir orçamentos em lote:', e); alert(`Erro ao excluir ${ids.length} orçamento(s): ${e.message}`); }
+      finally { btn.disabled = false; updateDeleteButtonState(); }
     };
-
-    window.showAllOrcamentosPage = () => {
-      mainView.classList.add('hidden');
-      allOrcamentosView.classList.remove('hidden');
-      renderOrcamentosList(true);
-    };
-    window.showMainPage = () => {
-      allOrcamentosView.classList.add('hidden');
-      mainView.classList.remove('hidden');
-      appState.orcamentosParaExcluir.clear();
-      updateDeleteButtonState();
-    };
-
+    window.showAllOrcamentosPage = () => { mainView.classList.add('hidden'); allOrcamentosView.classList.remove('hidden'); renderOrcamentosList(true); };
+    window.showMainPage = () => { allOrcamentosView.classList.add('hidden'); mainView.classList.remove('hidden'); appState.orcamentosParaExcluir.clear(); updateDeleteButtonState(); };
     window.editOrcamento = (id) => {
-      console.log("Tentando editar ID:", id, `(tipo: ${typeof id})`);
-      if (!appState.orcamentos || appState.orcamentos.length === 0) {
-        console.error("appState.orcamentos está vazio!");
-        return alert('Erro: Nenhuma lista de orçamentos carregada.');
-      }
-      const orc = appState.orcamentos.find(o => String(o.id).trim() === String(id).trim());
-      if (!orc) {
-        console.error("ID não encontrado no appState.orcamentos.");
-        console.log("IDs disponíveis:", appState.orcamentos.map(o => o.id));
-        return alert('Orçamento não encontrado. Tente recarregar a página.');
-      }
-      console.log("Orçamento encontrado:", orc);
+      if (!appState.orcamentos) { alert('Erro: Lista de orçamentos não carregada.'); return; }
+      const orc = appState.orcamentos.find(o => String(o.id) === String(id));
+      if (!orc) { alert('Orçamento não encontrado. Tente recarregar.'); return; }
       openOrcamentoModal(orc);
     };
-
     window.openOrcamentoModal = (orcamentoParaEditar = null) => {
       try {
         const modal = document.getElementById('orcamento-modal');
@@ -1252,239 +1191,148 @@
         populateClienteSelect();
         populateMateriaisOrcamento();
         populateTiposDeServicoOrcamento();
-
         if (orcamentoParaEditar) {
           document.getElementById('modal-title').textContent = 'Editar Orçamento';
-          const clone = JSON.parse(JSON.stringify(orcamentoParaEditar || {}));
-          clone.tipoObra = (clone.tipoObra === 'industrial' || clone.tipoObra === 'residencial') ? clone.tipoObra : 'residencial';
+          const clone = JSON.parse(JSON.stringify(orcamentoParaEditar)); // Deep clone
+          clone.tipoObra = ['industrial', 'residencial'].includes(clone.tipoObra) ? clone.tipoObra : 'residencial';
           clone.maoDeObra = clone.maoDeObra || { tipo: '', valor: 0, label: '', raw_value: '' };
           clone.items = Array.isArray(clone.items) ? clone.items : [];
           clone.tiposDeServico = Array.isArray(clone.tiposDeServico) ? clone.tiposDeServico : [];
           appState.currentOrcamento = clone;
 
-          if (clone.cliente?.id && Array.from(clienteSelect.options).some(o => o.value === clone.cliente.id)) {
-            clienteSelect.value = clone.cliente.id;
-          } else { clienteSelect.value = ''; }
-
-          const obraRadio = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
-          if (obraRadio) obraRadio.checked = true;
-
+          clienteSelect.value = clone.cliente?.id || '';
+          const obraRadio = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`); if (obraRadio) obraRadio.checked = true;
           const mao = clone.maoDeObra;
-          if (mao && mao.tipo) {
+          if (mao?.tipo) {
             const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${mao.tipo}"]`);
             if (tipoServicoRadio) {
               tipoServicoRadio.checked = true;
               const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
               set('empreitada-valor', mao.tipo === 'empreitada' ? mao.raw_value : '');
-              set('diaria-qtd',       mao.tipo === 'diaria'    ? mao.raw_value : '');
-              set('ponto-qtd',        mao.tipo === 'ponto'     ? mao.raw_value : '');
-              set('hora-qtd',         mao.tipo === 'hora'      ? mao.raw_value : '');
+              set('diaria-qtd', mao.tipo === 'diaria' ? mao.raw_value : '');
+              set('ponto-qtd', mao.tipo === 'ponto' ? mao.raw_value : '');
+              set('hora-qtd', mao.tipo === 'hora' ? mao.raw_value : '');
             }
           }
-          clienteSelect.dispatchEvent(new Event('change'));
-
-          setTimeout(() => {
-            (clone.items || []).forEach(item => {
+          clienteSelect.dispatchEvent(new Event('change')); // Trigger preview update
+          setTimeout(() => { // Delay to ensure elements are rendered
+            clone.items.forEach(item => {
               const cb  = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
               const qty = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
               if (cb) cb.checked = true;
               if (qty) { qty.disabled = false; qty.value = item.quantidade ?? 1; }
             });
-            (clone.tiposDeServico || []).forEach(service => {
+            clone.tiposDeServico.forEach(service => {
               const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
               if(checkbox) checkbox.checked = true;
             });
-            const tipoObraWrap = document.getElementById('orc-tipo-obra');
-            if (tipoObraWrap) tipoObraWrap.dispatchEvent(new Event('change', { bubbles: true }));
-            calculateMaoDeObra();
-            updateOrcamentoPreview();
-          }, 300);
+            document.getElementById('orc-tipo-obra')?.dispatchEvent(new Event('change', { bubbles: true }));
+            calculateMaoDeObra(); // Recalculate MO
+            updateOrcamentoPreview(); // Final update
+          }, 100); // Small delay might be needed
         } else {
           document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
           resetCurrentOrcamento();
-          const obraRadio = document.querySelector(`input[name="tipo-obra"][value="residencial"]`);
-          if (obraRadio) obraRadio.checked = true;
+          document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
           clienteSelect.value = '';
           clienteSelect.dispatchEvent(new Event('change'));
           updateOrcamentoPreview();
         }
-      } catch (err) {
-        console.error("[openOrcamentoModal] Erro:", err);
-        alert("Ocorreu um erro ao abrir o modal. Veja o console para detalhes.");
-      }
+      } catch (err) { console.error("[openOrcamentoModal] Erro:", err); alert("Erro ao abrir o modal."); }
     };
-
     window.closeOrcamentoModal = () => {
       document.getElementById('orcamento-modal').classList.remove('active');
       resetCurrentOrcamento();
       document.getElementById('orc-cliente-select').value = '';
-      const materiaisList = document.querySelector('#orc-materiais-list');
-      if (materiaisList) {
-        materiaisList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-        materiaisList.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
-      }
-      const tiposServicoList = document.querySelector('#orc-tiposdeservico-list');
-      if (tiposServicoList) { tiposServicoList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); }
+      document.querySelectorAll('#orc-materiais-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+      document.querySelectorAll('#orc-materiais-list input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
+      document.querySelectorAll('#orc-tiposdeservico-list input[type="checkbox"]').forEach(cb => cb.checked = false);
       document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
       document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
       document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
+      document.getElementById('filter-tipos').value = ''; // Limpa filtro
+      document.querySelectorAll('#orc-tiposdeservico-list label').forEach(lbl => lbl.style.display = ''); // Reseta filtro visual
     };
-
     function populateClienteSelect() {
-      const selectEl = document.getElementById('orc-cliente-select');
-      selectEl.innerHTML = '<option value="">Selecione um cliente</option>';
-      appState.clientes.forEach(c => {
-        const option = document.createElement('option');
-        option.value = c.id; option.textContent = c.nome; selectEl.appendChild(option);
-      });
+      const selectEl = document.getElementById('orc-cliente-select'); selectEl.innerHTML = '<option value="">Selecione um cliente</option>';
+      appState.clientes.forEach(c => { const option = document.createElement('option'); option.value = c.id; option.textContent = c.nome; selectEl.appendChild(option); });
     }
-
     function populateMateriaisOrcamento() {
       const listEl = document.getElementById('orc-materiais-list');
       if (!appState.materiais.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum material cadastrado.</p>'; return; }
       listEl.innerHTML = appState.materiais.map(m => `
         <div class="flex items-center justify-between p-2 rounded-md hover:bg-gray-100">
-          <label class="flex items-center flex-grow cursor-pointer">
+          <label class="flex items-center flex-grow cursor-pointer mr-2">
             <input type="checkbox" data-id="${m.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
             <span class="ml-3 text-xs">${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</span>
           </label>
-          <input type="number" min="1" value="1" data-id="${m.id}" class="w-20 p-1 border rounded-md text-sm ml-2" disabled>
+          <input type="number" min="1" value="1" data-id="${m.id}" class="w-20 p-1 border rounded-md text-sm" disabled>
         </div>`).join('');
     }
-
-    function populateTiposDeServicoOrcamento() {
+     function populateTiposDeServicoOrcamento() {
       const listEl = document.getElementById('orc-tiposdeservico-list');
       if (!appState.tiposDeServico.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum tipo de serviço cadastrado em Serviços.</p>'; return; }
-
-      const grouped = groupBy(appState.tiposDeServico, 'categoria');
-      const cats = Object.keys(grouped).sort();
+      const grouped = groupBy(appState.tiposDeServico, 'categoria'); const cats = Object.keys(grouped).sort();
       listEl.innerHTML = cats.map(cat => {
         const servicos = grouped[cat].sort((a,b) => (a.descricao || '').localeCompare(b.descricao || ''));
         return `
-          <details class="group border rounded">
-            <summary class="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-200 rounded-md">
-              <span class="font-medium text-sm text-gray-700">${cat}</span>
-              <svg class="w-4 h-4 arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-            </summary>
-            <div class="pl-3 pb-2">
-              ${
-                servicos.map(s => `
-                  <label class="flex items-center p-1 rounded-md hover:bg-gray-100 cursor-pointer">
-                    <input type="checkbox" data-id="${s.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    <span class="ml-2 servico-slim">${s.descricao} - R$ ${s.valor.toFixed(2)}</span>
-                  </label>
-                `).join('')
-              }
-            </div>
-          </details>`;
-      }).join('');
-    }
-
+          <details class="group border rounded mb-1"> <summary class="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-200 rounded-t-md"><span class="font-medium text-sm text-gray-700">${cat}</span><svg class="w-4 h-4 arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></summary>
+            <div class="pl-3 pb-1 pt-1 border-t"> ${ servicos.map(s => ` <label class="flex items-center p-1 rounded-md hover:bg-gray-100 cursor-pointer"> <input type="checkbox" data-id="${s.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"> <span class="ml-2 servico-slim">${s.descricao} - R$ ${s.valor.toFixed(2)}</span> </label>`).join('') } </div>
+          </details>`; }).join(''); }
     document.getElementById('filter-tipos').addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase().trim();
-      const boxes = document.querySelectorAll('#orc-tiposdeservico-list label span');
-      boxes.forEach(span => {
-        const row = span.closest('label');
-        row.style.display = span.textContent.toLowerCase().includes(q) ? '' : 'none';
+      document.querySelectorAll('#orc-tiposdeservico-list label').forEach(label => {
+        const text = label.textContent.toLowerCase(); const details = label.closest('details');
+        label.style.display = text.includes(q) ? '' : 'none';
+        // Opcional: manter categoria visível se algum item dentro dela corresponder
+        if (details) { const anyVisible = Array.from(details.querySelectorAll('label')).some(l => l.style.display !== 'none'); details.style.display = anyVisible ? '' : 'none'; }
       });
+      // Garante que todas as categorias sejam verificadas mesmo se o filtro estiver vazio
+      if (q === '') { document.querySelectorAll('#orc-tiposdeservico-list details').forEach(d => d.style.display = ''); }
     });
-
     document.getElementById('orc-materiais-list').addEventListener('input', (e) => {
-      const target = e.target;
-      const materialId = target.dataset.id;
-      const material = appState.materiais.find(m => m.id === materialId);
-      if (!material) return;
+      const target = e.target; const materialId = target.dataset.id; const material = appState.materiais.find(m => m.id === materialId); if (!material) return;
       const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${materialId}"]`);
       if (target.type === 'checkbox') {
-        if (target.checked) {
-          qtyInput.disabled = false;
-          const newItem = { ...material, quantidade: parseInt(qtyInput.value) || 1 };
-          appState.currentOrcamento.items.push(newItem);
-        } else {
-          qtyInput.disabled = true;
-          appState.currentOrcamento.items = appState.currentOrcamento.items.filter(item => item.id !== materialId);
-        }
+        qtyInput.disabled = !target.checked;
+        if (target.checked) { const newItem = { ...material, quantidade: parseInt(qtyInput.value) || 1 }; appState.currentOrcamento.items.push(newItem); }
+        else { appState.currentOrcamento.items = appState.currentOrcamento.items.filter(item => item.id !== materialId); }
       } else if (target.type === 'number') {
         const itemInOrcamento = appState.currentOrcamento.items.find(item => item.id === materialId);
         if (itemInOrcamento) itemInOrcamento.quantidade = parseInt(target.value) || 1;
-      }
-      updateOrcamentoPreview();
-    });
-
+      } updateOrcamentoPreview(); });
     document.getElementById('orc-tiposdeservico-list').addEventListener('change', (e) => {
       if (e.target.type === 'checkbox') {
-        const serviceId = e.target.dataset.id;
-        const service = appState.tiposDeServico.find(s => s.id === serviceId);
-        if (!service) return;
-        if (e.target.checked) {
-          if (!appState.currentOrcamento.tiposDeServico.some(s => s.id === serviceId)) {
-            appState.currentOrcamento.tiposDeServico.push(service);
-          }
-        } else {
-          appState.currentOrcamento.tiposDeServico = appState.currentOrcamento.tiposDeServico.filter(s => s.id !== serviceId);
-        }
-        updateOrcamentoPreview();
-      }
-    });
-
+        const serviceId = e.target.dataset.id; const service = appState.tiposDeServico.find(s => s.id === serviceId); if (!service) return;
+        if (e.target.checked) { if (!appState.currentOrcamento.tiposDeServico.some(s => s.id === serviceId)) { appState.currentOrcamento.tiposDeServico.push(service); } }
+        else { appState.currentOrcamento.tiposDeServico = appState.currentOrcamento.tiposDeServico.filter(s => s.id !== serviceId); }
+        updateOrcamentoPreview(); } });
     document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
       if (!e.target || e.target.name !== 'tipo-obra') return;
       const novoValor = e.target.value === 'industrial' ? 'industrial' : 'residencial';
       if (appState.currentOrcamento) appState.currentOrcamento.tipoObra = novoValor;
-      const pontoLabel = document.getElementById('ponto-label-span');
-      const pontoQtdInput = document.getElementById('ponto-qtd');
+      const pontoLabel = document.getElementById('ponto-label-span'); const pontoQtdInput = document.getElementById('ponto-qtd');
       if (pontoLabel) pontoLabel.textContent = novoValor === 'industrial' ? 'Por Equipamento' : 'Por Ponto';
       if (pontoQtdInput) pontoQtdInput.placeholder = novoValor === 'industrial' ? 'Qtd. equip.' : 'Qtd. pontos';
-      calculateMaoDeObra();
-      updateOrcamentoPreview();
-    });
-
-    document.getElementById('orc-mao-de-obra').addEventListener('input', () => {
-      calculateMaoDeObra();
-      updateOrcamentoPreview();
-    });
-
+      calculateMaoDeObra(); updateOrcamentoPreview(); });
+    document.getElementById('orc-mao-de-obra').addEventListener('input', () => { calculateMaoDeObra(); updateOrcamentoPreview(); });
     function calculateMaoDeObra() {
       const tipoSelecionado = document.querySelector('input[name="tipo-servico"]:checked');
-      if (!appState.currentOrcamento || !tipoSelecionado) {
-        if(appState.currentOrcamento) appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
-        return;
-      }
-      const tipo = tipoSelecionado.value;
-      let valor = 0, label = '', raw_value = 0;
-      const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
+      if (!appState.currentOrcamento || !tipoSelecionado) { if(appState.currentOrcamento) appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' }; return; }
+      const tipo = tipoSelecionado.value; let valor = 0, label = '', raw_value = 0; const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
       const rates = {
         empreitada: appState.config.residencial_empreitada || 0,
         diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
         ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial_ponto) || 0,
-        hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0,
-      };
-      
+        hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0, };
       switch(tipo) {
-        case 'empreitada':
-          if (tipoObra === 'residencial' && rates.empreitada > 0) {
-              valor = rates.empreitada;
-              label = 'Empreitada (Valor Fixo da Configuração)';
-              raw_value = rates.empreitada;
-          } else {
-              raw_value = parseFloat(document.getElementById('empreitada-valor').value) || 0;
-              valor = raw_value; 
-              label = 'Empreitada (Valor Manual)';
-          }
-          break;
-        case 'diaria':
-          raw_value = parseInt(document.getElementById('diaria-qtd').value) || 0;
-          valor = raw_value * rates.diaria; label = `${raw_value} diária(s)`; break;
-        case 'ponto':
-          raw_value = parseInt(document.getElementById('ponto-qtd').value) || 0;
-          valor = raw_value * rates.ponto; label = tipoObra === 'industrial' ? `${raw_value} equipamento(s)` : `${raw_value} ponto(s)`; break;
-        case 'hora':
-          raw_value = parseFloat(document.getElementById('hora-qtd').value) || 0;
-          valor = raw_value * rates.hora; label = `${raw_value} hora(s)`; break;
-      }
-      appState.currentOrcamento.maoDeObra = { tipo, valor, label, raw_value };
-    }
+        case 'empreitada': if (tipoObra === 'residencial' && rates.empreitada > 0) { valor = rates.empreitada; label = 'Empreitada (Valor Fixo da Configuração)'; raw_value = rates.empreitada; } else { raw_value = parseFloat(document.getElementById('empreitada-valor').value) || 0; valor = raw_value; label = 'Empreitada (Valor Manual)'; } break;
+        case 'diaria': raw_value = parseInt(document.getElementById('diaria-qtd').value) || 0; valor = raw_value * rates.diaria; label = `${raw_value} diária(s)`; break;
+        case 'ponto': raw_value = parseInt(document.getElementById('ponto-qtd').value) || 0; valor = raw_value * rates.ponto; label = tipoObra === 'industrial' ? `${raw_value} equipamento(s)` : `${raw_value} ponto(s)`; break;
+        case 'hora': raw_value = parseFloat(document.getElementById('hora-qtd').value) || 0; valor = raw_value * rates.hora; label = `${raw_value} hora(s)`; break; }
+      appState.currentOrcamento.maoDeObra = { tipo, valor, label, raw_value }; }
 
+    // ===== Geração do Preview / PDF =====
     function updateOrcamentoPreview() {
       const { config, currentOrcamento } = appState;
       const previewEl = document.getElementById('pdf-preview');
@@ -1494,8 +1342,9 @@
       }
       const fullClient = currentOrcamento.cliente;
 
+      // Monta HTML para tipos de serviço
       let tiposDeServicoHtml = '';
-      if (currentOrcamento.tiposDeServico && currentOrcamento.tiposDeServico.length > 0) {
+      if (currentOrcamento.tiposDeServico?.length > 0) {
         const servicosContent = currentOrcamento.tiposDeServico.map(s => `<tr><td style="padding: 4px 2px;">${s.descricao}</td><td style="text-align: right;">R$ ${s.valor.toFixed(2)}</td></tr>`).join('');
         tiposDeServicoHtml = `
         <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">TIPOS DE SERVIÇO:</h4>
@@ -1506,10 +1355,11 @@
         <hr style="margin: 15px 0;">`;
       }
 
-      const subtotalServicos = currentOrcamento.tiposDeServico.reduce((sum, service) => sum + service.valor, 0);
-      const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
+      // Monta HTML para materiais
+      const subtotalServicos = currentOrcamento.tiposDeServico.reduce((sum, service) => sum + (service.valor || 0), 0);
+      const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + ((item.valor || 0) * (item.quantidade || 1)), 0);
       const itemsHtml = currentOrcamento.items.map(item => {
-        const itemTotal = item.valor * (item.quantidade || 1);
+        const itemTotal = (item.valor || 0) * (item.quantidade || 1);
         return `<tr>
           <td style="padding: 4px 2px; text-align: left;">${item.nome}</td>
           <td style="padding: 4px 2px; text-align: center;">${item.quantidade || 1} ${item.unidade || 'UNID'}</td>
@@ -1517,109 +1367,160 @@
           <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
         </tr>`;
       }).join('');
-      const totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
+
+      // Calcula total e Mão de Obra
+      const totalMaoDeObra = currentOrcamento.maoDeObra?.valor || 0;
       currentOrcamento.total = subtotalServicos + subtotalMateriais + totalMaoDeObra;
-      const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
+      const maoDeObraLabel = currentOrcamento.maoDeObra?.label || 'Não definida';
+
+      // Monta HTML para formas de pagamento
+      let formasPagamentoHtml = '<h4 style="font-size: 1.0em; font-weight: bold; margin-top: 20px; margin-bottom: 5px;">FORMAS DE PAGAMENTO ACEITAS:</h4><ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9em;">';
+      let hasPayment = false;
+      formasPagamentoHtml += '<li>- Dinheiro</li>'; // Dinheiro sempre aceito (suposição)
+      if (config.pix) { formasPagamentoHtml += `<li>- PIX: ${config.pix}</li>`; hasPayment = true; }
+      if (config.cartao_parcelas > 0) {
+          const jurosTxt = config.cartao_juros > 0 ? ` (Juros: ${config.cartao_juros.toFixed(2)}% a.m.)` : '';
+          formasPagamentoHtml += `<li>- Cartão de Crédito: Até ${config.cartao_parcelas}x${jurosTxt}</li>`;
+          hasPayment = true;
+      }
+      if (config.deposito_banco && config.deposito_agencia && config.deposito_conta) {
+          formasPagamentoHtml += `<li>- Depósito: ${config.deposito_banco}, Ag: ${config.deposito_agencia}, Conta: ${config.deposito_conta}</li>`;
+          hasPayment = true;
+      }
+      formasPagamentoHtml += '</ul>';
+      // Se nenhuma forma além de dinheiro foi configurada, não mostra a seção
+      if (!hasPayment && !config.pix && !(config.cartao_parcelas > 0) && !config.deposito_banco) {
+          formasPagamentoHtml = ''; // Remove a seção se só tiver dinheiro
+      }
+
+
+      // Monta o HTML final da pré-visualização
       previewEl.innerHTML = `
         <div style="padding: 10px;">
-          ${config.logo ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px; margin: 0 auto;"></div>` : ''}
-          <div style="text-align: center; margin-bottom: 20px;">
-            <strong style="font-size: 1.2em; display: block;">${config.nome || 'Nome do Profissional'}</strong>
-            <span style="display: block;">${config.endereco || ''}</span>
-            <span style="display: block;">Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div style="text-align: left;">
+              <strong style="font-size: 1.2em; display: block;">${config.nome || 'Nome do Profissional'}</strong>
+              <span style="display: block; font-size: 0.9em;">${config.endereco || ''}</span>
+              <span style="display: block; font-size: 0.9em;">Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
+            </div>
+            ${config.logo ? `<div style="text-align: right;"><img src="${config.logo}" alt="Logomarca" style="max-width: 120px; max-height: 60px;"></div>` : ''}
           </div>
           <hr style="margin: 15px 0;">
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Orçamento para:</h4>
           <strong style="display: block;">${fullClient.nome}</strong>
-          <span style="display: block;">${fullClient.endereco}</span>
-          <span style="display: block;">Telefone: ${fullClient.telefone}</span>
+          <span style="display: block; font-size: 0.9em;">${fullClient.endereco}</span>
+          <span style="display: block; font-size: 0.9em;">Telefone: ${fullClient.telefone}</span>
           <hr style="margin: 15px 0;">
           ${tiposDeServicoHtml}
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">DESCRIÇÃO DOS MATERIAIS:</h4>
           <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
-            ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
+            ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888; text-align: center;">Nenhum material adicionado.</td></tr></tbody>'}
           </table>
           ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}
           <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">MÃO DE OBRA:</h4>
           <div style="text-align: right;"><span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>
           <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #333;"><span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span></div>
           <div style="font-size: 0.8em; margin-top: 20px; text-align: center; color: #888;">Orçamento válido por 15 dias.</div>
+          ${formasPagamentoHtml}
         </div>`;
     }
 
-    window.saveOrcamento = async () => {
+    window.saveOrcamento = async () => { /* ...código mantido... */ };
+    window.shareOrViewPDF = async () => { /* ...código mantido... */ };
+    window.sendWhatsAppText = () => { /* ...código mantido... */ };
+    // --- (Código Save/PDF/WhatsApp omitido para brevidade) ---
+     window.saveOrcamento = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
       const data = { ...appState.currentOrcamento };
       try {
-        if (data.id) {
+        if (data.id) { // Atualiza existente
           data.versao = (data.versao || 1) + 1;
           const ref = doc(db, `users/${userId}/orcamentos/${data.id}`);
-          delete data.createdAt;
+          delete data.createdAt; // Não sobrescrever data original
           await setDoc(ref, data, { merge: true });
           alert('Orçamento atualizado!');
-        } else {
+        } else { // Cria novo
           const maxNumero = appState.orcamentos.reduce((max, o) => Math.max(max, o.numeroOrcamento || 0), 0);
           data.numeroOrcamento = maxNumero + 1;
           data.versao = 1;
           data.createdAt = serverTimestamp();
           const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), data);
-          appState.currentOrcamento.id = ref.id;
+          appState.currentOrcamento.id = ref.id; // Atualiza ID no estado atual para gerar PDF
           appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
           alert('Orçamento salvo! Você já pode gerar o PDF.');
         }
         closeOrcamentoModal();
-      } catch(e) {
-        console.error(e); alert('Erro ao salvar.');
-      }
+      } catch(e) { console.error("Erro ao salvar orçamento:", e); alert('Erro ao salvar.'); }
     };
-
     window.shareOrViewPDF = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+      const previewContent = document.getElementById('pdf-preview').innerHTML;
+      if (!previewContent || previewContent.includes('Selecione um cliente')) { alert('Pré-visualização vazia. Adicione itens ao orçamento.'); return; }
+
       const hidden = document.createElement('div');
       hidden.style.position = 'absolute'; hidden.style.left = '-9999px'; hidden.style.top = '-9999px';
-      hidden.style.width = '210mm';
-      hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
+      hidden.style.width = '210mm'; // A4 width
+      hidden.innerHTML = previewContent; // Usa o conteúdo já formatado
       document.body.appendChild(hidden);
+
       const { jsPDF } = window.jspdf;
       const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
       const fileName = `orcamento-${clienteNome}.pdf`;
+
       try {
-        const canvas = await html2canvas(hidden, { scale: 2 });
+        const canvas = await html2canvas(hidden, { scale: 2 }); // Aumenta a escala para melhor resolução
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        let heightLeft = pdfHeight;
+        let position = 0;
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth - 20, pdfHeight - 20); // Add margins
+        heightLeft -= pageHeight;
+
+        // Add new pages if content overflows (basic implementation)
+        while (heightLeft >= 0) {
+          position = heightLeft - pdfHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 10, position - 10, pdfWidth - 20, pdfHeight + 20); // Adjust position slightly
+          heightLeft -= pageHeight;
+        }
+
+        // Tenta compartilhar via Web Share API
         if (navigator.share && navigator.canShare) {
           const blob = pdf.output('blob');
           const file = new File([blob], fileName, { type: 'application/pdf' });
           if (navigator.canShare({ files: [file] })) {
             await navigator.share({ title: `Orçamento - ${clienteNome}`, text: 'Segue o orçamento em anexo.', files: [file] });
             document.body.removeChild(hidden);
-            return;
+            return; // Sai se compartilhou com sucesso
           }
         }
+        // Fallback: Download do PDF
         pdf.save(fileName);
       } catch(e) {
-        console.error(e);
-        if (e.name !== 'AbortError') alert('Erro ao gerar o PDF.');
+        console.error("Erro ao gerar/compartilhar PDF:", e);
+        if (e.name !== 'AbortError') alert('Erro ao gerar o PDF.'); // Não mostra alerta se o usuário cancelou o compartilhamento
       } finally {
-        document.body.removeChild(hidden);
+        if (document.body.contains(hidden)) document.body.removeChild(hidden); // Garante remoção
       }
     };
-
     window.sendWhatsAppText = () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
-      const fullClient = appState.currentOrcamento.cliente;
-      if (!fullClient) return alert('Cliente não encontrado.');
-      const telefone = fullClient.telefone.replace(/\D/g, '');
+      const fullClient = appState.currentOrcamento.cliente; if (!fullClient) return alert('Cliente não encontrado.');
+      const telefone = fullClient.telefone.replace(/\D/g, ''); if (!telefone) return alert('Telefone do cliente inválido.');
       const nomeProfissional = appState.config.nome || 'nós';
       const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
       const whatsappUrl = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
-      window.open(whatsappUrl, '_blank');
-    };
+      window.open(whatsappUrl, '_blank'); };
 
-    window.changeTab = (event, tabName) => {
+    // ===== Navegação =====
+    window.changeTab = (event, tabName) => { /* ...código mantido... */ };
+    // --- (Código Navegação omitido para brevidade) ---
+     window.changeTab = (event, tabName) => {
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
       document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
       document.getElementById(tabName).classList.add('active');
