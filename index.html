@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gerador de Orçamentos 5.0 — Categorias & Submenus</title>
-  <link rel="icon" href="https://eusoueletricista.com.br/wp-content/uploads/2025/09/cropped-cropped-Mascote-Eletricista-5.0-1-1.png">
+  <link rel="icon" href="https://eusoueletricista.com.br/wp-c...ds/2025/09/cropped-cropped-Mascote-Eletricista-5.0-1-1.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -364,122 +364,171 @@
                   </div>
                 </div>
                 <div class="md:col-span-2 text-right">
-                  <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
+                  <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors inline-flex items-center" id="save-config-btn">
                     <span id="save-config-text">Salvar Configurações</span>
-                    <span id="save-config-spinner" class="hidden">Salvando...</span>
+                    <span id="save-config-spinner" class="hidden ml-2 animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
                   </button>
                 </div>
               </form>
             </div>
-
-            <div class="mt-8 border-t pt-6 text-center">
-              <p id="user-info" class="text-gray-600 mb-4"></p>
-              <button id="logout-button" class="bg-red-500 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700 transition-colors">Sair da Conta</button>
-            </div>
           </div>
         </main>
+
       </div>
     </div>
 
-    <div id="all-orcamentos-view" class="hidden">
-      <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
-          <h2 class="text-2xl font-semibold">Todos os Orçamentos</h2>
-          <div class="flex gap-2 w-full sm:w-auto justify-end">
-             <button onclick="showMainPage()" class="bg-gray-500 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-600 transition-colors font-medium">Voltar</button>
-             <button id="btn-delete-selected-orcamentos" onclick="confirmDeleteSelectedOrcamentos()" class="bg-red-600 text-white px-5 py-2 rounded-lg shadow hover:bg-red-700 transition-colors font-medium disabled:opacity-50" disabled>Excluir Selecionados</button>
+    <div id="all-orcamentos-view" class="hidden max-w-4xl mx-auto p-4 md:p-6 w-full">
+      <div class="flex items-center justify-between mb-4">
+        <button onclick="closeAllOrcamentosPage()" class="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-300 transition text-sm flex items-center">
+          <span class="mr-1">&larr;</span> Voltar
+        </button>
+        <h2 class="text-xl font-semibold text-gray-800">Todos os Orçamentos</h2>
+      </div>
+
+      <div class="bg-white p-4 sm:p-6 rounded-lg shadow-sm mb-4">
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm text-left">
+            <thead class="text-xs uppercase text-gray-500 border-b">
+              <tr>
+                <th class="py-2 px-2">#</th>
+                <th class="py-2 px-2">Cliente</th>
+                <th class="py-2 px-2 hidden sm:table-cell">Endereço</th>
+                <th class="py-2 px-2">Total</th>
+                <th class="py-2 px-2 hidden sm:table-cell">Criado em</th>
+                <th class="py-2 px-2 text-center">Excluir</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-orcamentos-list"></tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 text-right">
+          <button class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center" id="btn-excluir-selecionados" disabled>
+            <span id="btn-excluir-selecionados-texto">Excluir Selecionados</span>
+            <span id="btn-excluir-spinner" class="hidden ml-2 animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="text-sm text-gray-500 italic">Somente seus orçamentos estão listados aqui.</div>
+    </div>
+
+    <div id="orcamento-modal" class="fixed inset-0 bg-black/50 hidden z-[10000] items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-start p-4 border-b">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800 leading-tight flex flex-col sm:flex-row sm:items-center sm:gap-3">
+              <span>Orçamento</span>
+              <span class="text-xs font-normal text-gray-600 block sm:inline" id="orcamento-numero-label">(Novo)</span>
+            </h3>
+            <p class="text-xs text-gray-500" id="orcamento-versao-label"></p>
           </div>
-        </div>
-        <div id="all-orcamentos-list" class="space-y-3"></div>
-      </div>
-    </div>
-    <div id="orcamento-modal" class="modal">
-      <div class="bg-white rounded-lg p-6 w-[95%] max-w-[960px] max-height-[90vh] max-h-[90vh] overflow-y-auto shadow-xl">
-        <div class="flex justify-between items-center mb-6">
-          <h2 id="modal-title" class="text-2xl font-bold">Criar Novo Orçamento</h2>
-          <button onclick="closeOrcamentoModal()" class="text-gray-500 text-2xl font-bold">&times;</button>
+          <button onclick="closeOrcamentoModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div class="space-y-6">
-            <div>
-              <h4 class="text-md font-medium text-gray-800 mb-2">1. Selecione o Cliente</h4>
-              <select id="orc-cliente-select" class="w-full p-2 border rounded-md">
-                <option value="">Selecione um cliente</option>
+        <div class="p-4 overflow-y-auto flex-1 space-y-6 text-sm">
+
+          <div class="space-y-2">
+            <label class="block text-gray-700 text-sm font-medium">Cliente</label>
+            <select id="orc-cliente" class="w-full border p-2 rounded-md">
+              <option value="">Selecione um cliente</option>
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-gray-700 text-sm font-medium">Serviços</label>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <select id="orc-servico" class="w-full border p-2 rounded-md flex-1">
+                <option value="">Selecionar serviço</option>
               </select>
+              <button type="button" onclick="adicionarTipoDeServicoAoOrcamento()" class="bg-blue-600 text-white px-3 py-2 rounded-md shadow hover:bg-blue-700 transition-colors text-sm whitespace-nowrap">Adicionar Serviço</button>
             </div>
+            <ul id="orc-servico-list" class="text-xs text-gray-700 border rounded-md p-2 space-y-1 bg-gray-50"></ul>
+          </div>
 
-            <div>
-              <h4 class="text-md font-medium text-gray-800 mb-2">2. Tipo de Serviço</h4>
-              <input id="filter-tipos" placeholder="Pesquisar serviço..." class="w-full p-2 border rounded-md mb-2 text-sm" />
-              <div id="orc-tiposdeservico-list" class="h-48 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50"></div>
+          <div class="space-y-2">
+            <label class="block text-gray-700 text-sm font-medium">Materiais</label>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <select id="orc-item" class="w-full border p-2 rounded-md flex-1">
+                <option value="">Selecionar material</option>
+              </select>
+              <input type="number" min="1" step="1" id="orc-item-qtd" class="border p-2 rounded-md w-full sm:w-24" placeholder="Qtd">
+              <button type="button" onclick="adicionarItemAoOrcamento()" class="bg-blue-600 text-white px-3 py-2 rounded-md shadow hover:bg-blue-700 transition-colors text-sm whitespace-nowrap">Adicionar Material</button>
             </div>
+            <ul id="orc-itens-list" class="text-xs text-gray-700 border rounded-md p-2 space-y-1 bg-gray-50"></ul>
+          </div>
 
-            <div>
-              <h4 class="text-md font-medium text-gray-800 mb-2">3. Materiais</h4>
-              <div id="orc-materiais-list" class="h-48 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50"></div>
+          <div class="space-y-2">
+            <label class="block text-gray-700 text-sm font-medium">Tipo de Obra</label>
+            <select id="orc-tipo-obra" class="w-full border p-2 rounded-md" onchange="updateMaoDeObraOptions()">
+              <option value="residencial">Residencial / Predial</option>
+              <option value="industrial">Industrial</option>
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-gray-700 text-sm font-medium">Mão de Obra</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <select id="mao-obra-tipo" class="w-full border p-2 rounded-md" onchange="updateMaoDeObraValor()">
+                <option value="">Selecionar tipo</option>
+                <option value="empreitada">Empreitada (Fixo)</option>
+                <option value="diaria">Diária</option>
+                <option value="ponto">Por Ponto / Equipamento</option>
+                <option value="hora">Por Hora</option>
+              </select>
+              <input type="number" min="0" step="0.01" id="mao-obra-valor" class="border p-2 rounded-md w-full" placeholder="0.00" oninput="setMaoDeObraManual()">
             </div>
+            <div class="text-xs text-gray-500 leading-snug">
+              <div><strong>Empreitada:</strong> Valor fechado total.</div>
+              <div><strong>Diária:</strong> Valor por dia de serviço.</div>
+              <div><strong>Ponto / Equipamento:</strong> Valor fixo por instalação.</div>
+              <div><strong>Hora:</strong> Valor por hora trabalhada.</div>
+            </div>
+          </div>
 
-            <div>
-              <h4 class="text-md font-medium text-gray-800 mb-2">4. ESPECIALIDADE</h4>
-              <div id="orc-tipo-obra" class="flex gap-3">
-                <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                  <input type="radio" name="tipo-obra" value="residencial" class="h-4 w-4 text-blue-600 border-gray-300" checked>
-                  <span class="ml-3 text-sm font-medium text-gray-900">Residencial/Predial</span>
-                </label>
-                <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                  <input type="radio" name="tipo-obra" value="industrial" class="h-4 w-4 text-blue-600 border-gray-300">
-                  <span class="ml-3 text-sm font-medium text-gray-900">Industrial</span>
-                </label>
+          <div class="space-y-2">
+            <label class="block text-gray-700 text-sm font-medium">Observações Internas (não vai para o cliente)</label>
+            <textarea id="orc-observacoes" class="w-full border p-2 rounded-md text-xs min-h-[60px]" placeholder="Ex.: Cliente pediu urgência; voltar com material X; acesso ao local restrito."></textarea>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-gray-700 text-sm font-semibold">Pré-visualização (vai para o PDF)</h4>
+            <div class="border rounded-lg bg-white max-h-[300px] overflow-y-auto p-3">
+              <div id="orcamento-preview-note" class="text-xs text-gray-500 italic mb-2">
+                Sempre confira antes de enviar.
               </div>
-            </div>
-
-            <div>
-              <h4 class="text-md font-medium text-gray-800 mb-2">5. Mão de Obra</h4>
-              <div id="orc-mao-de-obra" class="space-y-2">
-                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                  <input type="radio" name="tipo-servico" value="empreitada" class="h-4 w-4 text-blue-600 border-gray-300">
-                  <span class="ml-3 text-sm font-medium text-gray-900">Empreitada</span>
-                  <input type="number" step="0.01" id="empreitada-valor" placeholder="Valor total R$" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                </label>
-                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                  <input type="radio" name="tipo-servico" value="diaria" class="h-4 w-4 text-blue-600 border-gray-300">
-                  <span class="ml-3 text-sm font-medium text-gray-900">Diária</span>
-                  <input type="number" step="1" id="diaria-qtd" placeholder="Qtd. dias" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                </label>
-                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                  <input type="radio" name="tipo-servico" value="ponto" class="h-4 w-4 text-blue-600 border-gray-300">
-                  <span id="ponto-label-span" class="ml-3 text-sm font-medium text-gray-900">Por Ponto</span>
-                  <input type="number" step="1" id="ponto-qtd" placeholder="Qtd. pontos" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                </label>
-                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                  <input type="radio" name="tipo-servico" value="hora" class="h-4 w-4 text-blue-600 border-gray-300">
-                  <span class="ml-3 text-sm font-medium text-gray-900">Por Hora</span>
-                  <input type="number" step="0.5" id="hora-qtd" placeholder="Qtd. horas" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                </label>
+              <div id="orcamento-preview" class="text-xs leading-relaxed text-gray-800">
+                <p class="text-gray-400">Nenhum cliente selecionado.</p>
               </div>
             </div>
           </div>
 
-          <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
-            <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
-            <div id="pdf-preview" class="flex-grow text-sm">
-              <p class="text-gray-500 text-center mt-8">Selecione um cliente e adicione itens para ver o orçamento.</p>
-            </div>
-            <div class="mt-6 flex flex-col sm:flex-row gap-2 justify-end">
-              <button onclick="saveOrcamento()" class="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar Orçamento</button>
-              <button onclick="shareOrViewPDF()" class="bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition-colors">Enviar PDF</button>
-              <button onclick="sendWhatsAppText()" class="bg-teal-500 text-white px-5 py-2 rounded-lg shadow hover:bg-teal-600 transition-colors">Enviar (só texto)</button>
-            </div>
+          <div class="space-y-2">
+            <label class="block text-gray-700 text-sm font-medium">Texto para WhatsApp (opcional)</label>
+            <textarea id="orc-whats-msg" class="w-full border p-2 rounded-md text-xs min-h-[60px]" placeholder="Mensagem personalizada que será enviada junto com o PDF."></textarea>
+          </div>
+
+        </div>
+
+        <div class="border-t p-4 bg-gray-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div class="text-xs text-gray-500 leading-tight">
+            <div id="orcamento-createdAt-label"></div>
+            <div id="orcamento-debug-label" class="text-[10px] text-gray-400"></div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2 sm:items-center w-full sm:w-auto">
+            <button onclick="saveOrcamento()" class="bg-blue-600 text-white text-xs px-4 py-2 rounded-md shadow hover:bg-blue-700 transition-colors">Salvar Orçamento</button>
+            <button onclick="shareOrViewPDF()" class="bg-green-600 text-white text-xs px-4 py-2 rounded-md shadow hover:bg-green-700 transition-colors">Enviar PDF</button>
+            <button onclick="sendWhatsAppText()" class="bg-teal-500 text-white text-xs px-4 py-2 rounded-md shadow hover:bg-teal-600 transition-colors">Enviar (só texto)</button>
           </div>
         </div>
       </div>
     </div>
-    
+
     <footer class="bg-gray-900 text-white text-center py-6 mt-12">
       <div class="max-w-4xl mx-auto px-4 md:px-6">
         <p class="mb-4">Para ajustes ou sugestões de melhorias, mande uma mensagem.</p>
-        <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">Enviar mensagem ao desenvolvedor</a>
+        <a href="https://wa.me/5551999600889" target="_blank" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md inline-block">Enviar mensagem ao desenvolvedor</a>
       </div>
     </footer>
 
@@ -499,7 +548,7 @@
     // Imports Firebase
     import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc, collection, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // ===== Estado e elementos =====
     let app, db, auth, userId;
@@ -554,88 +603,10 @@
         });
       } catch (e) {
         console.error('Erro ao inicializar Firebase:', e);
-        loadingOverlay.innerHTML = '<p class="text-red-600">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
+        loadingOverlay.innerHTML = '<p class="text-red-600 font-semibold">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
       }
     }
 
-    const loginWithGoogle = async () => {
-      const provider = new GoogleAuthProvider();
-      try { loadingOverlay.style.display = 'flex'; await signInWithPopup(auth, provider); }
-      catch (e) { console.error(e); alert('Falha no login Google.'); loadingOverlay.style.display = 'none'; }
-    };
-
-    const logout = async () => {
-      if (confirm('Tem certeza que deseja sair da sua conta?')) {
-        try { await signOut(auth); } catch(e) { alert('Erro ao sair.'); }
-      }
-    };
-
-    loginButton?.addEventListener('click', loginWithGoogle);
-    logoutButton?.addEventListener('click', logout);
-
-    document.getElementById('orc-cliente-select').addEventListener('change', (e) => {
-      if (!appState.currentOrcamento) resetCurrentOrcamento();
-      
-      const clienteId = e.target.value;
-      if (clienteId) {
-        const cliente = appState.clientes.find(c => c.id === clienteId);
-        if (cliente) {
-          appState.currentOrcamento.cliente = cliente;
-        } else {
-          appState.currentOrcamento.cliente = null;
-        }
-      } else {
-        appState.currentOrcamento.cliente = null;
-      }
-      updateOrcamentoPreview();
-    });
-
-    // ===== Carregamento reativo de dados =====
-    function loadAllData() {
-      if (!userId) return;
-      const prefix = `users/${userId}`;
-
-      onSnapshot(doc(db, `${prefix}/config/main`), (snap) => {
-        if (snap.exists()) appState.config = snap.data();
-        updateConfigForm();
-      });
-
-      onSnapshot(query(collection(db, `${prefix}/clientes`)), (snapshot) => {
-        appState.clientes = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
-        renderClientesList();
-        renderOrcamentosList();
-        renderOrcamentosList(true);
-      });
-
-      onSnapshot(query(collection(db, `${prefix}/materiais`)), (snapshot) => {
-        appState.materiais = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderMateriaisList();
-      });
-
-      onSnapshot(query(collection(db, `${prefix}/tiposdeservico`)), (snapshot) => {        
-        appState.tiposDeServico = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
-                                              .filter(s => s.descricao && s.valor > 0);
-        
-        renderTiposDeServicoList();
-        populateCategorySelect();
-      });
-
-      onSnapshot(query(collection(db, `${prefix}/orcamentos`)), (snapshot) => {
-        console.log(`[DEBUG] Recebeu ${snapshot.docs.length} orçamentos do Firebase.`);
-        appState.orcamentos = snapshot.docs.map(d => {
-          const data = d.data();
-          if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
-          console.log(`[DEBUG] Mapeando doc. ID do Firebase (d.id):`, d.id);
-          return { ...data, id: d.id };
-        });
-        appState.orcamentos.sort((a,b) => (b.numeroOrcamento||0) - (a.numeroOrcamento||0));
-        
-        renderOrcamentosList();
-        renderOrcamentosList(true); 
-      });
-    }
-
-    // ===== Config =====
     function updateConfigForm() {
       const c = appState.config || {};
       document.getElementById('config-nome').value = c.nome || '';
@@ -662,10 +633,12 @@
       document.getElementById('config-deposito-conta').value = c.config_deposito_conta || '';
     }
 
+    // ===== Form Config =====
     document.getElementById('form-config').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
-      const btn = e.target.querySelector('button[type="submit"]');
+
+      const btn = document.getElementById('save-config-btn');
       const textSpan = document.getElementById('save-config-text');
       const spinSpan = document.getElementById('save-config-spinner');
       btn.disabled = true; textSpan.classList.add('hidden'); spinSpan.classList.remove('hidden');
@@ -685,10 +658,9 @@
           industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
           industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
 
-          // NOVOS CAMPOS
           config_pix_chave: document.getElementById('config-pix-chave').value,
-          config_cartao_vezes: parseInt(document.getElementById('config-cartao-vezes').value) || 0,
-          config_cartao_juros: parseFloat(document.getElementById('config-cartao-juros').value) || 0,
+          config_cartao_vezes: document.getElementById('config-cartao-vezes').value,
+          config_cartao_juros: document.getElementById('config-cartao-juros').value,
           config_pagamento_dinheiro: document.getElementById('config-pagamento-dinheiro').checked,
           config_deposito_banco: document.getElementById('config-deposito-banco').value,
           config_deposito_ag: document.getElementById('config-deposito-ag').value,
@@ -710,111 +682,89 @@
         const nome = document.getElementById('cliente-nome').value;
         const telefone = document.getElementById('cliente-telefone').value;
         const endereco = document.getElementById('cliente-endereco').value;
-        const d = new Date(), month = String(d.getMonth()+1).padStart(2,'0'), year = String(d.getFullYear()).slice(-2);
-        const count = appState.clientes.length + 1; const num = String(count).padStart(2,'0');
-        const numeroCadastro = `${num}${month}${year}`;
-        await addDoc(collection(db, `users/${userId}/clientes`), { nome, telefone, endereco, numeroCadastro });
+        await addDoc(collection(db, `users/${userId}/clientes`), { nome, telefone, endereco });
         e.target.reset();
       } catch(e) { console.error(e); alert('Erro ao salvar cliente.'); }
       finally { btn.disabled=false; btn.textContent='Salvar Cliente'; }
     });
-    
-    document.getElementById('form-edit-cliente').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!userId) return alert('Faça login novamente.');
-      
-      const clienteId = document.getElementById('edit-cliente-id').value;
-      if (!clienteId) return alert('Erro: ID do cliente não encontrado.');
-
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.disabled = true; btn.textContent='Salvando...';
-
-      try {
-        const data = {
-          nome: document.getElementById('edit-cliente-nome').value,
-          telefone: document.getElementById('edit-cliente-telefone').value,
-          endereco: document.getElementById('edit-cliente-endereco').value,
-        };
-        
-        const originalCliente = appState.clientes.find(c => c.id === clienteId);
-        data.numeroCadastro = originalCliente.numeroCadastro || ''; 
-        
-        await setDoc(doc(db, `users/${userId}/clientes/${clienteId}`), data);
-        
-        alert('Cliente atualizado com sucesso!');
-        closeEditClienteModal();
-      } catch(e) {
-        console.error(e); 
-        alert('Erro ao atualizar cliente.'); 
-      } finally { 
-        btn.disabled=false; 
-        btn.textContent='Salvar Alterações'; 
-      }
-    });
 
     function renderClientesList() {
-      const el = document.getElementById('clientes-list');
-      if (!appState.clientes.length) { el.innerHTML = '<p class="text-gray-500">Nenhum cliente cadastrado.</p>'; return; }
-      el.innerHTML = appState.clientes.map(c => `
-        <div class="flex justify-between items-center p-2 border rounded-md">
-          <div class="flex-grow cursor-pointer" onclick="openEditClienteModal('${c.id}')">
-            <p class="font-medium">${c.nome} <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">${c.numeroCadastro||''}</span></p>
-            <p class="text-sm text-gray-600">${c.telefone} | ${c.endereco}</p>
+      const listEl = document.getElementById('clientes-list');
+      if (!appState.clientes.length) {
+        listEl.innerHTML = '<p class="text-gray-500">Nenhum cliente cadastrado.</p>';
+        return;
+      }
+      listEl.innerHTML = appState.clientes.map(c => `
+        <div class="flex justify-between items-start bg-gray-50 border rounded-md p-3 text-sm">
+          <div class="flex-1 min-w-0 cursor-pointer" onclick="openEditClienteModal('${c.id || ''}')">
+            <div class="font-semibold text-gray-800 truncate">${c.nome}</div>
+            <div class="text-gray-600 text-xs break-words">${c.telefone}</div>
+            <div class="text-gray-500 text-[10px] leading-tight break-words">${c.endereco}</div>
           </div>
-          <button onclick="deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700 text-2xl ml-3 flex-shrink-0">&times;</button>
-        </div>`).join('');
+          <button class="text-red-600 hover:text-red-800 text-lg leading-none pl-3" onclick="deleteCliente('${c.id || ''}')">&times;</button>
+        </div>
+      `).join('');
+    }
+
+    function populateClientesDropdown() {
+      const select = document.getElementById('orc-cliente');
+      select.innerHTML = '<option value="">Selecione um cliente</option>';
+      appState.clientes.forEach(c => {
+        select.innerHTML += `<option value="${c.id}">${c.nome} - ${c.telefone}</option>`;
+      });
+      if (appState.currentOrcamento?.cliente?.id) {
+        select.value = appState.currentOrcamento.cliente.id;
+      }
     }
 
     window.deleteCliente = async (id) => {
-      if (confirm('Excluir este cliente?')) { await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); }
-    };
-
-    window.openEditClienteModal = (id) => {
-      console.log(`[DEBUG-CLIENTE] 1. Função chamada com ID:`, id);
+      if (!confirm('Excluir este cliente?')) return;
+      if (!userId) return alert('Faça login novamente.');
       try {
-        const cliente = appState.clientes.find(c => c.id === id);
-        if (!cliente) {
-          alert('Cliente não encontrado no appState.');
-          return;
-        }
-        console.log("[DEBUG-CLIENTE] 2. Cliente encontrado:", cliente.nome);
-
-        const modalEl = document.getElementById('edit-cliente-modal');
-        if (!modalEl) throw new Error("Elemento 'edit-cliente-modal' não foi encontrado no HTML!");
-        
-        const idInput = document.getElementById('edit-cliente-id');
-        if (!idInput) throw new Error("Elemento 'edit-cliente-id' não foi encontrado no HTML!");
-        
-        const nomeInput = document.getElementById('edit-cliente-nome');
-        if (!nomeInput) throw new Error("Elemento 'edit-cliente-nome' não foi encontrado no HTML!");
-        
-        const telInput = document.getElementById('edit-cliente-telefone');
-        if (!telInput) throw new Error("Elemento 'edit-cliente-telefone' não foi encontrado no HTML!");
-        
-        const endInput = document.getElementById('edit-cliente-endereco');
-        if (!endInput) throw new Error("Elemento 'edit-cliente-endereco' não foi encontrado no HTML!");
-        
-        console.log("[DEBUG-CLIENTE] 3. Todos os elementos do modal foram encontrados. Preenchendo...");
-
-        idInput.value = cliente.id;
-        nomeInput.value = cliente.nome || '';
-        telInput.value = cliente.telefone || '';
-        endInput.value = cliente.endereco || '';
-        
-        console.log("[DEBUG-CLIENTE] 4. Dados preenchidos. Abrindo modal...");
-        modalEl.classList.add('active');
-        console.log("[DEBUG-CLIENTE] 5. Modal aberto com sucesso!");
-
-      } catch (e) {
-        console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição:", e.message);
-        alert("Ocorreu um erro ao tentar abrir a edição. Verifique o console (F12).");
+        await deleteDoc(doc(db, `users/${userId}/clientes/${id}`));
+      } catch(err) {
+        console.error(err);
+        alert('Erro ao excluir cliente.');
       }
     };
 
-    window.closeEditClienteModal = () => {
-      document.getElementById('edit-cliente-modal').classList.remove('active');
-      document.getElementById('form-edit-cliente').reset();
+    window.openEditClienteModal = (id) => {
+      try {
+        const cliente = appState.clientes.find(c => c.id === id);
+        if (!cliente) return alert('Cliente não encontrado.');
+        document.getElementById('edit-cliente-id').value = cliente.id || '';
+        document.getElementById('edit-cliente-nome').value = cliente.nome || '';
+        document.getElementById('edit-cliente-telefone').value = cliente.telefone || '';
+        document.getElementById('edit-cliente-endereco').value = cliente.endereco || '';
+        document.getElementById('edit-cliente-modal').classList.add('active');
+      } catch (err) {
+        console.error('[openEditClienteModal] Erro:', err);
+        alert('Erro ao abrir modal de edição de cliente.');
+      }
     };
+
+    function closeEditClienteModal() {
+      document.getElementById('edit-cliente-modal').classList.remove('active');
+    }
+
+    document.getElementById('form-edit-cliente').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit-cliente-id').value;
+      const nome = document.getElementById('edit-cliente-nome').value;
+      const telefone = document.getElementById('edit-cliente-telefone').value;
+      const endereco = document.getElementById('edit-cliente-endereco').value;
+
+      if (!id) return alert('Cliente inválido.');
+      if (!userId) return alert('Faça login novamente.');
+
+      try {
+        await updateDoc(doc(db, `users/${userId}/clientes/${id}`), { nome, telefone, endereco });
+        closeEditClienteModal();
+      } catch (err) {
+        console.error('[form-edit-cliente submit] Erro:', err);
+        alert('Erro ao salvar alterações do cliente.');
+      }
+    });
 
     // ===== Materiais =====
     document.getElementById('form-material').addEventListener('submit', async (e) => {
@@ -824,79 +774,151 @@
       btn.disabled = true; btn.textContent='Salvando...';
       try {
         const nome = document.getElementById('material-nome').value;
-        const valor = parseFloat(document.getElementById('material-valor').value);
         const unidade = document.getElementById('material-unidade').value;
-        await addDoc(collection(db, `users/${userId}/materiais`), { nome, valor, unidade });
+        const v = parseFloat(document.getElementById('material-valor').value) || 0;
+        if (!nome || v<=0) throw new Error('Nome e valor devem ser preenchidos.');
+        await addDoc(collection(db, `users/${userId}/materiais`), { nome, unidade, valor:v });
         e.target.reset();
-      } catch(e) { console.error(e); alert('Erro ao salvar item.'); }
+      } catch(e) { console.error(e); alert('Erro ao salvar material.'); }
       finally { btn.disabled=false; btn.textContent='Salvar Item'; }
     });
 
-    document.getElementById('form-edit-material').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!userId) return alert('Faça login novamente.');
-      const materialId = document.getElementById('edit-material-id').value;
-      if (!materialId) return alert('Erro: ID do material não encontrado.');
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.disabled = true; btn.textContent='Salvando...';
-      try {
-        const data = {
-          nome: document.getElementById('edit-material-nome').value,
-          unidade: document.getElementById('edit-material-unidade').value,
-          valor: parseFloat(document.getElementById('edit-material-valor').value) || 0,
-        };
-        await setDoc(doc(db, `users/${userId}/materiais/${materialId}`), data);
-        alert('Material atualizado com sucesso!');
-        closeEditMaterialModal();
-      } catch(e) { console.error(e); alert('Erro ao atualizar material.'); }
-      finally { btn.disabled=false; btn.textContent='Salvar Alterações'; }
-    });
-
     function renderMateriaisList() {
-      const el = document.getElementById('materiais-list');
-      if (!appState.materiais.length) { el.innerHTML = '<p class="text-gray-500">Nenhum material cadastrado.</p>'; return; }
-      el.innerHTML = appState.materiais.map(m => `
-        <div class="flex justify-between items-center p-2 border rounded-md">
-          <div class="flex-grow cursor-pointer" onclick="openEditMaterialModal('${m.id}')">
-            <p class="servico-slim"><strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${m.valor.toFixed(2)}</p>
+      const listEl = document.getElementById('materiais-list');
+      const selectEl = document.getElementById('orc-item');
+      listEl.innerHTML = '';
+      selectEl.innerHTML = '<option value="">Selecionar material</option>';
+      if (!appState.materiais.length) {
+        listEl.innerHTML = '<p class="text-gray-500">Nenhum material cadastrado.</p>';
+        return;
+      }
+      appState.materiais.forEach(item => {
+        listEl.innerHTML += `
+          <div class="flex justify-between items-start bg-gray-50 border rounded-md p-3 text-sm">
+            <div class="flex-1 min-w-0 cursor-pointer" onclick="openEditMaterialModal('${item.id || ''}')">
+              <div class="font-semibold text-gray-800 truncate">${item.nome}</div>
+              <div class="text-gray-600 text-xs">${item.unidade || 'UN'} — R$ ${item.valor?.toFixed(2) || '0.00'}</div>
+            </div>
+            <button class="text-red-600 hover:text-red-800 text-lg leading-none pl-3" onclick="deleteMaterial('${item.id || ''}')">&times;</button>
           </div>
-          <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 text-2xl ml-3 flex-shrink-0">&times;</button>
-        </div>`).join('');
+        `;
+        selectEl.innerHTML += `<option value="${item.id}">${item.nome} - R$ ${item.valor?.toFixed(2) || '0.00'}</option>`;
+      });
     }
 
     window.deleteMaterial = async (id) => {
-      if (confirm('Excluir este item?')) { await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); }
+      if (!confirm('Excluir este material?')) return;
+      if (!userId) return alert('Faça login novamente.');
+      try {
+        await deleteDoc(doc(db, `users/${userId}/materiais/${id}`));
+      } catch(e) { console.error(e); alert('Erro ao excluir item.'); }
     };
 
     window.openEditMaterialModal = (id) => {
       try {
-        const material = appState.materiais.find(m => m.id === id);
-        if (!material) throw new Error('Material não encontrado no appState.');
-        const modalEl = document.getElementById('edit-material-modal'); if (!modalEl) throw new Error("Elemento 'edit-material-modal' não foi encontrado!");
-        const idInput = document.getElementById('edit-material-id'); if (!idInput) throw new Error("Elemento 'edit-material-id' não foi encontrado!");
-        const nomeInput = document.getElementById('edit-material-nome'); if (!nomeInput) throw new Error("Elemento 'edit-material-nome' não foi encontrado!");
-        const unInput = document.getElementById('edit-material-unidade'); if (!unInput) throw new Error("Elemento 'edit-material-unidade' não foi encontrado!");
-        const valInput = document.getElementById('edit-material-valor'); if (!valInput) throw new Error("Elemento 'edit-material-valor' não foi encontrado!");
-        idInput.value = material.id; nomeInput.value = material.nome || ''; unInput.value = material.unidade || 'UNID'; valInput.value = material.valor || 0;
-        modalEl.classList.add('active');
-      } catch (e) { console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição material:", e.message); alert("Ocorreu um erro ao tentar abrir a edição de material. Verifique o console (F12)."); }
+        const mat = appState.materiais.find(m => m.id === id);
+        if (!mat) return alert('Material não encontrado.');
+        document.getElementById('edit-material-id').value = mat.id || '';
+        document.getElementById('edit-material-nome').value = mat.nome || '';
+        document.getElementById('edit-material-unidade').value = mat.unidade || '';
+        document.getElementById('edit-material-valor').value = mat.valor || '';
+        document.getElementById('edit-material-modal').classList.add('active');
+      } catch (err) {
+        console.error('[openEditMaterialModal] Erro:', err);
+        alert('Erro ao abrir modal de edição de material.');
+      }
     };
-    window.closeEditMaterialModal = () => { document.getElementById('edit-material-modal').classList.remove('active'); document.getElementById('form-edit-material').reset(); };
 
+    function closeEditMaterialModal() {
+      document.getElementById('edit-material-modal').classList.remove('active');
+    }
 
-    // ===== Tipos de Serviço com Categoria & Submenu (AGORA EM #servicos) =====
+    document.getElementById('form-edit-material').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit-material-id').value;
+      const nome = document.getElementById('edit-material-nome').value;
+      const unidade = document.getElementById('edit-material-unidade').value;
+      const valor = parseFloat(document.getElementById('edit-material-valor').value) || 0;
+
+      if (!id) return alert('Material inválido.');
+      if (!userId) return alert('Faça login novamente.');
+
+      try {
+        await updateDoc(doc(db, `users/${userId}/materiais/${id}`), { nome, unidade, valor });
+        closeEditMaterialModal();
+      } catch (err) {
+        console.error('[form-edit-material submit] Erro:', err);
+        alert('Erro ao salvar alterações do material.');
+      }
+    });
+
+    // Importar Materiais XLSX
+    document.getElementById('btn-import-materiais-xlsx').addEventListener('click', async () => {
+      if (!userId) return alert('Faça login novamente.');
+      const fileInput = document.getElementById('materiais-xlsx-input');
+      const statusEl = document.getElementById('materiais-xlsx-status');
+      if (!fileInput.files[0]) {
+        statusEl.textContent = 'Nenhum arquivo selecionado.';
+        return;
+      }
+      statusEl.textContent = 'Lendo arquivo...';
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const data = evt.target.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+          const rows = json.slice(1);
+          let count = 0;
+          for (const row of rows) {
+            const [descricao, unidade, valorStr] = row;
+            if (!descricao) continue;
+            const valor = parseFloat(valorStr) || 0;
+            await addDoc(collection(db, `users/${userId}/materiais`), {
+              nome: descricao,
+              unidade: unidade || 'UNID',
+              valor
+            });
+            count++;
+          }
+          statusEl.textContent = `${count} materiais importados com sucesso.`;
+        } catch(e) {
+          console.error(e);
+          statusEl.textContent = 'Erro ao importar.';
+        }
+      };
+      reader.readAsBinaryString(file);
+    });
+
+    document.getElementById('btn-clear-materiais').addEventListener('click', async () => {
+      if (!confirm('Tem certeza que deseja apagar TODOS os materiais?')) return;
+      if (!userId) return alert('Faça login novamente.');
+      try {
+        const snap = await getDocs(collection(db, `users/${userId}/materiais`));
+        for (const docRef of snap.docs) {
+          await deleteDoc(doc(db, `users/${userId}/materiais/${docRef.id}`));
+        }
+        alert('Todos os materiais foram apagados.');
+      } catch(e) {
+        console.error(e);
+        alert('Erro ao limpar materiais.');
+      }
+    });
+
+    // ===== Tipos de Serviço =====
     const catSelect = document.getElementById('tiposervico-categoria-select');
     const catNew = document.getElementById('tiposervico-categoria-new');
 
-    function populateCategorySelect() {
-      while (catSelect.options.length > 2) catSelect.remove(2);
-      const cats = [...new Set(appState.tiposDeServico.map(s => s.categoria).filter(Boolean))].sort();
-      cats.forEach(cat => { const o=document.createElement('option'); o.value=cat; o.textContent=cat; catSelect.appendChild(o); });
-    }
-
     catSelect.addEventListener('change', () => {
-      if (catSelect.value === 'new_category') { catNew.classList.remove('hidden'); catNew.focus(); }
-      else { catNew.classList.add('hidden'); }
+      if (catSelect.value === 'new_category') {
+        catNew.classList.remove('hidden');
+        catNew.focus();
+      } else {
+        catNew.classList.add('hidden');
+      }
     });
 
     document.getElementById('form-tiposervico').addEventListener('submit', async (e) => {
@@ -914,61 +936,62 @@
         
         await addDoc(collection(db, `users/${userId}/tiposdeservico`), { descricao, valor, categoria });
         e.target.reset();
+        catSelect.value = '';
+        catNew.value = '';
         catNew.classList.add('hidden');
-        catSelect.value='';
-      } catch(e) { console.error(e); alert('Erro ao salvar tipo de serviço: ' + e.message); }
+      } catch(e) {
+        console.error(e);
+        alert(e.message || 'Erro ao salvar serviço.');
+      }
       finally { btn.disabled=false; btn.textContent='Salvar'; }
     });
 
-    document.getElementById('form-edit-tiposervico').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!userId) return alert('Faça login novamente.');
-      const tipoServicoId = document.getElementById('edit-tiposervico-id').value;
-      if (!tipoServicoId) return alert('Erro: ID do tipo de serviço não encontrado.');
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.disabled = true; btn.textContent='Salvando...';
-      try {
-        const categoria = document.getElementById('edit-tiposervico-categoria').value.toUpperCase().trim() || 'OUTROS';
-        const descricao = document.getElementById('edit-tiposervico-descricao').value;
-        const valor = parseFloat(document.getElementById('edit-tiposervico-valor').value);
-        if (!categoria || !descricao || isNaN(valor) || valor <= 0) throw new Error('Preencha categoria, descrição e um valor válido maior que zero.');
-        const data = { categoria, descricao, valor };
-        await setDoc(doc(db, `users/${userId}/tiposdeservico/${tipoServicoId}`), data);
-        alert('Tipo de serviço atualizado com sucesso!');
-        closeEditTipoServicoModal();
-      } catch(e) { console.error(e); alert('Erro ao atualizar tipo de serviço: ' + e.message); }
-      finally { btn.disabled=false; btn.textContent='Salvar Alterações'; }
-    });
-
-    function groupBy(arr, key) { return arr.reduce((acc,cur)=>{ const k=cur[key]||'OUTROS'; (acc[k]||(acc[k]=[])).push(cur); return acc; },{}); }
-
     function renderTiposDeServicoList() {
-      const el = document.getElementById('tiposdeservico-list');
-      if (!appState.tiposDeServico.length) { el.innerHTML = '<p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>'; return; }
-      const byCat = groupBy(appState.tiposDeServico, 'categoria');
-      const cats = Object.keys(byCat).sort();
-      el.innerHTML = cats.map(cat => {
-        const servicos = byCat[cat].sort((a,b) => (a.descricao || '').localeCompare(b.descricao || ''));
-        return `
-          <details class="border rounded-md mb-2">
-            <summary class="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-gray-100">
-              <span class="text-sm font-medium text-gray-800">${cat}</span>
-              <svg class="w-4 h-4 arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      const listWrapper = document.getElementById('tiposdeservico-list');
+      const orcServicoSelect = document.getElementById('orc-servico');
+      if (!appState.tiposDeServico.length) {
+        listWrapper.innerHTML = '<p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>';
+        orcServicoSelect.innerHTML = '<option value="">Selecionar serviço</option>';
+        return;
+      }
+
+      const byCat = {};
+      appState.tiposDeServico.forEach(s => {
+        const cat = s.categoria || 'OUTROS';
+        if (!byCat[cat]) byCat[cat] = [];
+        byCat[cat].push(s);
+      });
+
+      let html = '';
+      let selectHTML = '<option value="">Selecionar serviço</option>';
+
+      Object.keys(byCat).sort().forEach(cat => {
+        const servicos = byCat[cat];
+        html += `
+          <details class="border rounded-md p-3 bg-gray-50">
+            <summary class="flex items-center justify-between cursor-pointer">
+              <span class="font-semibold text-gray-800 text-sm">${cat}</span>
+              <span class="arrow text-gray-500 text-xs">&#9660;</span>
             </summary>
-            <div class="p-2 space-y-1">
-              ${
-                servicos.map(s => `
-                  <div class="flex justify-between items-center p-1 border-b border-gray-100">
-                    <div class="flex-grow cursor-pointer" onclick="openEditTipoServicoModal('${s.id}')">
-                       <p class="servico-slim">${s.descricao} — <span class="text-gray-700">R$ ${s.valor.toFixed(2)}</span></p>
-                    </div>
-                    <button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500 hover:text-red-700 text-xl leading-none ml-3 flex-shrink-0">&times;</button>
+            <div class="mt-2 space-y-2">
+              ${servicos.map(s => `
+                <div class="flex justify-between items-start bg-white border rounded-md p-2 text-[0.8rem] leading-tight servico-slim">
+                  <div class="flex-1 min-w-0 cursor-pointer" onclick="openEditTipoServicoModal('${s.id || ''}')">
+                    <div class="font-semibold text-gray-800 truncate">${s.descricao}</div>
+                    <div class="text-gray-600 text-[0.7rem]">R$ ${s.valor?.toFixed(2) || '0.00'}</div>
                   </div>
-                `).join('')
-              }
+                  <button class="text-red-600 hover:text-red-800 text-lg leading-none pl-3" onclick="deleteTipoDeServico('${s.id || ''}')">&times;</button>
+                </div>
+              `).join('')}
             </div>
           </details>`;
-      }).join('');
+        servicos.forEach(s => {
+          selectHTML += `<option value="${s.id}">${cat} - ${s.descricao} (R$ ${s.valor?.toFixed(2) || '0.00'})</option>`;
+        });
+      });
+
+      listWrapper.innerHTML = html;
+      orcServicoSelect.innerHTML = selectHTML;
     }
 
     window.deleteTipoDeServico = async (id) => {
@@ -978,513 +1001,288 @@
     window.openEditTipoServicoModal = (id) => {
       try {
         const servico = appState.tiposDeServico.find(s => s.id === id);
-        if (!servico) throw new Error('Tipo de serviço não encontrado no appState.');
-        const modalEl = document.getElementById('edit-tiposervico-modal'); if (!modalEl) throw new Error("Elemento 'edit-tiposervico-modal' não foi encontrado!");
-        const idInput = document.getElementById('edit-tiposervico-id'); if (!idInput) throw new Error("Elemento 'edit-tiposervico-id' não foi encontrado!");
-        const catInput = document.getElementById('edit-tiposervico-categoria'); if (!catInput) throw new Error("Elemento 'edit-tiposervico-categoria' não foi encontrado!");
-        const descInput = document.getElementById('edit-tiposervico-descricao'); if (!descInput) throw new Error("Elemento 'edit-tiposervico-descricao' não foi encontrado!");
-        const valInput = document.getElementById('edit-tiposervico-valor'); if (!valInput) throw new Error("Elemento 'edit-tiposervico-valor' não foi encontrado!");
-        idInput.value = servico.id; catInput.value = servico.categoria || 'OUTROS'; descInput.value = servico.descricao || ''; valInput.value = servico.valor || 0;
-        modalEl.classList.add('active');
-      } catch (e) { console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição de serviço:", e.message); alert("Ocorreu um erro ao tentar abrir a edição de serviço. Verifique o console (F12)."); }
-    };
-    window.closeEditTipoServicoModal = () => { document.getElementById('edit-tiposervico-modal').classList.remove('active'); document.getElementById('form-edit-tiposervico').reset(); };
-
-
-    // ===== Importar Excel (Serviços) =====
-    document.getElementById('btn-import-xlsx').addEventListener('click', async () => {
-      const inp = document.getElementById('xlsx-input');
-      const status = document.getElementById('xlsx-status');
-      if (!inp.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx'); return; }
-      const f = inp.files[0];
-      try {
-        status.textContent = 'Lendo planilha...';
-        const buf = await f.arrayBuffer();
-        const wb = XLSX.read(buf, { type:'array' });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-
-        const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
-        const headerMapCandidates = {
-          categoria: ['categoria','grupo','setor'],
-          descricao: ['descricao','descrição','servico','serviço','atividade','item'],
-          valor: ['valor','preco','preço','price']
-        };
-
-        const keys = rows.length ? Object.keys(rows[0]) : [];
-        const colMap = { categoria: null, descricao: null, valor: null };
-        keys.forEach(k => {
-          const nk = norm(k);
-          for (const fld of Object.keys(headerMapCandidates)) {
-            if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k;
-          }
-        });
-
-        if (!colMap.categoria || !colMap.descricao || !colMap.valor) {
-          alert('Não encontrei colunas suficientes. Garanta que a planilha tenha: Categoria, Descrição e Valor.');
-          return;
-        }
-
-        const prefix = `users/${userId}`;
-        const batch = writeBatch(db);
-        let count = 0;
-
-        rows.forEach(r => {
-          const categoria = String(r[colMap.categoria]||'').toUpperCase().trim() || 'OUTROS';
-          const descricao = String(r[colMap.descricao]||'').trim();
-          const rawValor = (r[colMap.valor] ?? '').toString().replace(',', '.').replace(/\s/g,'');
-          const valor = parseFloat(rawValor) || 0;
-          if (!categoria || !descricao || !valor) return;
-          const ref = doc(collection(db, `${prefix}/tiposdeservico`));
-          batch.set(ref, { categoria, descricao, valor });
-          count++;
-        });
-
-        if (!count) { alert('Nenhuma linha válida encontrada.'); return; }
-        status.textContent = 'Enviando para o banco...';
-        await batch.commit();
-        status.textContent = `Importação concluída: ${count} itens adicionados.`;
-      } catch(e) {
-        console.error(e);
-        alert('Erro ao importar planilha.');
-      }
-    });
-
-    async function clearAllTiposDeServico() {
-      if (!userId) return alert('Faça login.');
-      if (!confirm('ATENÇÃO!\n\nIsso apagará TODOS os Tipos de Serviço cadastrados. Deseja continuar?')) return;
-      
-      const status = document.getElementById('xlsx-status');
-      status.textContent = 'Apagando todos os serviços...';
-      try {
-        const prefix = `users/${userId}`;
-        const ref = collection(db, `${prefix}/tiposdeservico`);
-        const snapshot = await getDocs(ref);
-        
-        if (snapshot.empty) {
-          status.textContent = 'Nenhum serviço para apagar.';
-          return;
-        }
-        
-        const batch = writeBatch(db);
-        snapshot.docs.forEach(doc => {
-          batch.delete(doc.ref);
-        });
-        await batch.commit();
-        
-        status.textContent = `Todos os ${snapshot.size} serviços foram apagados.`;
-      } catch(e) {
-        console.error(e);
-        status.textContent = 'Erro ao apagar os serviços.';
-        alert('Erro ao apagar.');
-      }
-    }
-    document.getElementById('btn-clear-tiposervico').addEventListener('click', clearAllTiposDeServico);
-
-    // ADICIONADO: Seção de Importar/Limpar Materiais
-    document.getElementById('btn-import-materiais-xlsx').addEventListener('click', async () => {
-        const inp = document.getElementById('materiais-xlsx-input');
-        const status = document.getElementById('materiais-xlsx-status');
-        if (!inp.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx para materiais.'); return; }
-        const f = inp.files[0];
-        try {
-            status.textContent = 'Lendo planilha de materiais...';
-            const buf = await f.arrayBuffer(); const wb = XLSX.read(buf, { type:'array' }); const ws = wb.Sheets[wb.SheetNames[0]];
-            const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-            const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
-            const headerMapCandidates = { nome: ['descricao','descrição','material','item'], unidade: ['unidade','unid','und'], valor: ['valor','preco','preço','price'] };
-            const keys = rows.length ? Object.keys(rows[0]) : [];
-            const colMap = { nome: null, unidade: null, valor: null };
-            keys.forEach(k => { const nk = norm(k); for (const fld of Object.keys(headerMapCandidates)) { if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k; } });
-            if (!colMap.nome || !colMap.valor) throw new Error('Não encontrei colunas suficientes. Garanta que a planilha tenha pelo menos: Descrição e Valor. A coluna Unidade é opcional (padrão UNID).');
-            const prefix = `users/${userId}`; const batch = writeBatch(db); let count = 0;
-            rows.forEach(r => {
-                const nome = String(r[colMap.nome]||'').trim();
-                const unidade = String(r[colMap.unidade]||'').trim().toUpperCase() || 'UNID';
-                const rawValor = (r[colMap.valor] ?? '').toString().replace(',', '.').replace(/\s/g,'');
-                const valor = parseFloat(rawValor) || 0;
-                if (!nome || isNaN(valor) || valor <= 0) return;
-                const ref = doc(collection(db, `${prefix}/materiais`)); batch.set(ref, { nome, unidade, valor }); count++;
-            });
-            if (!count) { alert('Nenhuma linha válida encontrada na planilha de materiais.'); return; }
-            status.textContent = 'Enviando materiais para o banco...'; await batch.commit();
-            status.textContent = `Importação de materiais concluída: ${count} itens adicionados.`; inp.value = '';
-        } catch(e) { console.error(e); alert('Erro ao importar planilha de materiais: ' + e.message); status.textContent = 'Falha na importação de materiais.'; }
-    });
-    
-    async function clearAllMateriais() {
-        if (!userId) return alert('Faça login.');
-        if (!confirm('ATENÇÃO!\n\nIsso apagará TODOS os Materiais cadastrados. Deseja continuar?')) return;
-        const status = document.getElementById('materiais-xlsx-status');
-        status.textContent = 'Apagando todos os materiais...';
-        try {
-            const prefix = `users/${userId}`; const ref = collection(db, `${prefix}/materiais`); const snapshot = await getDocs(ref);
-            if (snapshot.empty) { status.textContent = 'Nenhum material para apagar.'; return; }
-            const batch = writeBatch(db); snapshot.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit();
-            status.textContent = `Todos os ${snapshot.size} materiais foram apagados.`;
-        } catch(e) { console.error(e); status.textContent = 'Erro ao apagar os materiais.'; alert('Erro ao apagar materiais.'); }
-    }
-    document.getElementById('btn-clear-materiais').addEventListener('click', clearAllMateriais);
-
-
-    // ===== Orçamentos (lista / modal etc.) =====
-    function updateDeleteButtonState() {
-        const btn = document.getElementById('btn-delete-selected-orcamentos');
-        if (btn) {
-            btn.disabled = appState.orcamentosParaExcluir.size === 0;
-        }
-    }
-
-    function renderOrcamentosList(isFullList = false) {
-      const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
-      if (!el) return;
-      const list = isFullList ? appState.orcamentos : appState.orcamentos.slice(0,3);
-      if (!list.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; return; }
-      
-      el.innerHTML = list.map(orc => {
-        const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
-        const numeroFormatado = String(orc.numeroOrcamento || '').padStart(2, '0');
-        const versaoFormatada = String(orc.versao || 1).padStart(2, '0');
-        const date = orc.createdAt || new Date();
-        const month = String((new Date(date)).getMonth() + 1).padStart(2, '0');
-        const year = String((new Date(date)).getFullYear()).slice(-2);
-        const orcamentoId = `OS${numeroFormatado}${month}${year}-${versaoFormatada}`;
-        const nome = cliente ? cliente.nome : 'Cliente Excluído';
-        const nomes = nome.split(' ');
-        const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
-        const nomeParaExibir = isFullList ? nome : nomeAbreviado; 
-        
-        if (isFullList) {
-            const isChecked = appState.orcamentosParaExcluir.has(orc.id);
-            return `
-              <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
-                <div class="flex justify-between items-start w-full">
-                    <label class="flex items-center cursor-pointer flex-grow">
-                        <input type="checkbox" data-id="${orc.id}" onchange="toggleOrcamentoExclusao(this)" ${isChecked ? 'checked' : ''} class="h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
-                        <div class="ml-3">
-                            <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
-                            <p class="text-sm text-gray-500">${orcamentoId}</p>
-                        </div>
-                    </label>
-                </div>
-                <div class="flex gap-2 self-end">
-                    <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
-                    </div>
-              </div>`;
-        }
-        
-        return `
-      <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center w-full">
-        <div class="flex-grow truncate mr-2">
-          <span class="font-medium text-base text-gray-800">${nome}</span>
-          <span class="text-sm text-gray-500 ml-2">${orcamentoId}</span>
-        </div>
-        <div class="flex-shrink-0">
-          <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
-        </div>
-      </div>`;
-      }).join('');
-      
-      if (isFullList) updateDeleteButtonState();
-    }
-
-    window.toggleOrcamentoExclusao = (checkbox) => {
-        const id = checkbox.dataset.id;
-        console.log(`[DEBUG-CLICK] Checkbox clicado! ID lido do HTML (data-id):`, id);
-        if (checkbox.checked) {
-            appState.orcamentosParaExcluir.add(id);
-        } else {
-            appState.orcamentosParaExcluir.delete(id);
-        }
-        updateDeleteButtonState();
-    };
-
-    window.confirmDeleteSelectedOrcamentos = () => {
-        const count = appState.orcamentosParaExcluir.size;
-        if (count === 0) {
-            alert('Nenhum orçamento selecionado para exclusão.');
-            return;
-        }
-        const modal = document.getElementById('delete-confirm-modal');
-        const messageEl = document.getElementById('delete-confirm-message');
-        messageEl.innerHTML = `ATENÇÃO! Você irá excluir **${count}** orçamento(s) selecionado(s). Esta ação é irreversível. Deseja continuar?`;
-        modal.classList.add('active');
-    };
-
-    window.closeDeleteConfirmModal = (confirmAction) => {
-        const modal = document.getElementById('delete-confirm-modal');
-        modal.classList.remove('active');
-        if (confirmAction) {
-             deleteOrcamentosEmLote(Array.from(appState.orcamentosParaExcluir));
-        }
-    };
-
-    async function deleteOrcamentosEmLote(ids) {
-      if (!userId) {
-        console.error('ERRO DE EXCLUSÃO: userId não está definido.');
-        alert('Falha crítica na autenticação (userId ausente). Por favor, saia e entre novamente.');
-        return;
-      }
-      const btn = document.getElementById('btn-delete-selected-orcamentos');
-      btn.disabled = true;
-      try {
-        const batch = writeBatch(db);
-        console.log(`Iniciando exclusão em lote para ${ids.length} IDs. userId: ${userId}`);
-        ids.forEach(id => {
-            const docPath = `users/${userId}/orcamentos/${id}`;
-            const docRef = doc(db, docPath);
-            batch.delete(docRef);
-            console.log(`Adicionado à exclusão: ${docPath}`);
-        });
-        await batch.commit();
-        appState.orcamentosParaExcluir.clear();
-        alert(`${ids.length} orçamento(s) excluído(s) com sucesso.`);
-      } catch (e) {
-        console.error('ERRO CRÍTICO ao excluir orçamentos em lote. Erro retornado:', e);
-        alert(`Erro ao excluir ${ids.length} orçamento(s). Possível falha nas Regras de Segurança (Permission Denied). Detalhe: ${e.message}`);
-      } finally {
-        btn.disabled = false;
-        updateDeleteButtonState();
-      }
-    };
-
-    window.showAllOrcamentosPage = () => {
-      mainView.classList.add('hidden');
-      allOrcamentosView.classList.remove('hidden');
-      renderOrcamentosList(true);
-    };
-    window.showMainPage = () => {
-      allOrcamentosView.classList.add('hidden');
-      mainView.classList.remove('hidden');
-      appState.orcamentosParaExcluir.clear();
-      updateDeleteButtonState();
-    };
-
-    window.editOrcamento = (id) => {
-      console.log("Tentando editar ID:", id, `(tipo: ${typeof id})`);
-      if (!appState.orcamentos || appState.orcamentos.length === 0) {
-        console.error("appState.orcamentos está vazio!");
-        return alert('Erro: Nenhuma lista de orçamentos carregada.');
-      }
-      const orc = appState.orcamentos.find(o => String(o.id).trim() === String(id).trim());
-      if (!orc) {
-        console.error("ID não encontrado no appState.orcamentos.");
-        console.log("IDs disponíveis:", appState.orcamentos.map(o => o.id));
-        return alert('Orçamento não encontrado. Tente recarregar a página.');
-      }
-      console.log("Orçamento encontrado:", orc);
-      openOrcamentoModal(orc);
-    };
-
-    window.openOrcamentoModal = (orcamentoParaEditar = null) => {
-      try {
-        const modal = document.getElementById('orcamento-modal');
-        const clienteSelect = document.getElementById('orc-cliente-select');
-        modal.classList.add('active');
-        populateClienteSelect();
-        populateMateriaisOrcamento();
-        populateTiposDeServicoOrcamento();
-
-        if (orcamentoParaEditar) {
-          document.getElementById('modal-title').textContent = 'Editar Orçamento';
-          const clone = JSON.parse(JSON.stringify(orcamentoParaEditar || {}));
-          clone.tipoObra = (clone.tipoObra === 'industrial' || clone.tipoObra === 'residencial') ? clone.tipoObra : 'residencial';
-          clone.maoDeObra = clone.maoDeObra || { tipo: '', valor: 0, label: '', raw_value: '' };
-          clone.items = Array.isArray(clone.items) ? clone.items : [];
-          clone.tiposDeServico = Array.isArray(clone.tiposDeServico) ? clone.tiposDeServico : [];
-          appState.currentOrcamento = clone;
-
-          if (clone.cliente?.id && Array.from(clienteSelect.options).some(o => o.value === clone.cliente.id)) {
-            clienteSelect.value = clone.cliente.id;
-          } else { clienteSelect.value = ''; }
-
-          const obraRadio = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
-          if (obraRadio) obraRadio.checked = true;
-
-          const mao = clone.maoDeObra;
-          if (mao && mao.tipo) {
-            const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${mao.tipo}"]`);
-            if (tipoServicoRadio) {
-              tipoServicoRadio.checked = true;
-              const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
-              set('empreitada-valor', mao.tipo === 'empreitada' ? mao.raw_value : '');
-              set('diaria-qtd',       mao.tipo === 'diaria'    ? mao.raw_value : '');
-              set('ponto-qtd',        mao.tipo === 'ponto'     ? mao.raw_value : '');
-              set('hora-qtd',         mao.tipo === 'hora'      ? mao.raw_value : '');
-            }
-          }
-          clienteSelect.dispatchEvent(new Event('change'));
-
-          setTimeout(() => {
-            (clone.items || []).forEach(item => {
-              const cb  = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
-              const qty = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
-              if (cb) cb.checked = true;
-              if (qty) { qty.disabled = false; qty.value = item.quantidade ?? 1; }
-            });
-            (clone.tiposDeServico || []).forEach(service => {
-              const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
-              if(checkbox) checkbox.checked = true;
-            });
-            const tipoObraWrap = document.getElementById('orc-tipo-obra');
-            if (tipoObraWrap) tipoObraWrap.dispatchEvent(new Event('change', { bubbles: true }));
-            calculateMaoDeObra();
-            updateOrcamentoPreview();
-          }, 300);
-        } else {
-          document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
-          resetCurrentOrcamento();
-          const obraRadio = document.querySelector(`input[name="tipo-obra"][value="residencial"]`);
-          if (obraRadio) obraRadio.checked = true;
-          clienteSelect.value = '';
-          clienteSelect.dispatchEvent(new Event('change'));
-          updateOrcamentoPreview();
-        }
+        if (!servico) return alert('Serviço não encontrado.');
+        document.getElementById('edit-tiposervico-id').value = servico.id || '';
+        document.getElementById('edit-tiposervico-categoria').value = servico.categoria || '';
+        document.getElementById('edit-tiposervico-descricao').value = servico.descricao || '';
+        document.getElementById('edit-tiposervico-valor').value = servico.valor || '';
+        document.getElementById('edit-tiposervico-modal').classList.add('active');
       } catch (err) {
-        console.error("[openOrcamentoModal] Erro:", err);
-        alert("Ocorreu um erro ao abrir o modal. Veja o console para detalhes.");
+        console.error('[openEditTipoServicoModal] Erro:', err);
+        alert('Erro ao abrir modal de edição de serviço.');
       }
     };
 
-    window.closeOrcamentoModal = () => {
-      document.getElementById('orcamento-modal').classList.remove('active');
-      resetCurrentOrcamento();
-      document.getElementById('orc-cliente-select').value = '';
-      const materiaisList = document.querySelector('#orc-materiais-list');
-      if (materiaisList) {
-        materiaisList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-        materiaisList.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
-      }
-      const tiposServicoList = document.querySelector('#orc-tiposdeservico-list');
-      if (tiposServicoList) { tiposServicoList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); }
-      document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
-      document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
-      document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
-    };
-
-    function populateClienteSelect() {
-      const selectEl = document.getElementById('orc-cliente-select');
-      selectEl.innerHTML = '<option value="">Selecione um cliente</option>';
-      appState.clientes.forEach(c => {
-        const option = document.createElement('option');
-        option.value = c.id; option.textContent = c.nome; selectEl.appendChild(option);
-      });
+    function closeEditTipoServicoModal() {
+      document.getElementById('edit-tiposervico-modal').classList.remove('active');
     }
 
-    function populateMateriaisOrcamento() {
-      const listEl = document.getElementById('orc-materiais-list');
-      if (!appState.materiais.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum material cadastrado.</p>'; return; }
-      listEl.innerHTML = appState.materiais.map(m => `
-        <div class="flex items-center justify-between p-2 rounded-md hover:bg-gray-100">
-          <label class="flex items-center flex-grow cursor-pointer">
-            <input type="checkbox" data-id="${m.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-            <span class="ml-3 text-xs">${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</span>
-          </label>
-          <input type="number" min="1" value="1" data-id="${m.id}" class="w-20 p-1 border rounded-md text-sm ml-2" disabled>
-        </div>`).join('');
-    }
-
-    function populateTiposDeServicoOrcamento() {
-      const listEl = document.getElementById('orc-tiposdeservico-list');
-      if (!appState.tiposDeServico.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum tipo de serviço cadastrado em Serviços.</p>'; return; }
-
-      const grouped = groupBy(appState.tiposDeServico, 'categoria');
-      const cats = Object.keys(grouped).sort();
-      listEl.innerHTML = cats.map(cat => {
-        const servicos = grouped[cat].sort((a,b) => (a.descricao || '').localeCompare(b.descricao || ''));
-        return `
-          <details class="group border rounded">
-            <summary class="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-200 rounded-md">
-              <span class="font-medium text-sm text-gray-700">${cat}</span>
-              <svg class="w-4 h-4 arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-            </summary>
-            <div class="pl-3 pb-2">
-              ${
-                servicos.map(s => `
-                  <label class="flex items-center p-1 rounded-md hover:bg-gray-100 cursor-pointer">
-                    <input type="checkbox" data-id="${s.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    <span class="ml-2 servico-slim">${s.descricao} - R$ ${s.valor.toFixed(2)}</span>
-                  </label>
-                `).join('')
-              }
-            </div>
-          </details>`;
-      }).join('');
-    }
-
-    document.getElementById('filter-tipos').addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      const boxes = document.querySelectorAll('#orc-tiposdeservico-list label span');
-      boxes.forEach(span => {
-        const row = span.closest('label');
-        row.style.display = span.textContent.toLowerCase().includes(q) ? '' : 'none';
-      });
-    });
-
-    document.getElementById('orc-materiais-list').addEventListener('input', (e) => {
-      const target = e.target;
-      const materialId = target.dataset.id;
-      const material = appState.materiais.find(m => m.id === materialId);
-      if (!material) return;
-      const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${materialId}"]`);
-      if (target.type === 'checkbox') {
-        if (target.checked) {
-          qtyInput.disabled = false;
-          const newItem = { ...material, quantidade: parseInt(qtyInput.value) || 1 };
-          appState.currentOrcamento.items.push(newItem);
-        } else {
-          qtyInput.disabled = true;
-          appState.currentOrcamento.items = appState.currentOrcamento.items.filter(item => item.id !== materialId);
-        }
-      } else if (target.type === 'number') {
-        const itemInOrcamento = appState.currentOrcamento.items.find(item => item.id === materialId);
-        if (itemInOrcamento) itemInOrcamento.quantidade = parseInt(target.value) || 1;
-      }
-      updateOrcamentoPreview();
-    });
-
-    document.getElementById('orc-tiposdeservico-list').addEventListener('change', (e) => {
-      if (e.target.type === 'checkbox') {
-        const serviceId = e.target.dataset.id;
-        const service = appState.tiposDeServico.find(s => s.id === serviceId);
-        if (!service) return;
-        if (e.target.checked) {
-          if (!appState.currentOrcamento.tiposDeServico.some(s => s.id === serviceId)) {
-            appState.currentOrcamento.tiposDeServico.push(service);
-          }
-        } else {
-          appState.currentOrcamento.tiposDeServico = appState.currentOrcamento.tiposDeServico.filter(s => s.id !== serviceId);
-        }
-        updateOrcamentoPreview();
+    document.getElementById('form-edit-tiposervico').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit-tiposervico-id').value;
+      const categoria = document.getElementById('edit-tiposervico-categoria').value;
+      const descricao = document.getElementById('edit-tiposervico-descricao').value;
+      const valor = parseFloat(document.getElementById('edit-tiposervico-valor').value) || 0;
+      if (!id) return alert('Serviço inválido.');
+      if (!userId) return alert('Faça login novamente.');
+      try {
+        await updateDoc(doc(db, `users/${userId}/tiposdeservico/${id}`), { categoria, descricao, valor });
+        closeEditTipoServicoModal();
+      } catch (err) {
+        console.error('[form-edit-tiposervico submit] Erro:', err);
+        alert('Erro ao salvar alterações do serviço.');
       }
     });
 
-    document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
-      if (!e.target || e.target.name !== 'tipo-obra') return;
-      const novoValor = e.target.value === 'industrial' ? 'industrial' : 'residencial';
-      if (appState.currentOrcamento) appState.currentOrcamento.tipoObra = novoValor;
-      const pontoLabel = document.getElementById('ponto-label-span');
-      const pontoQtdInput = document.getElementById('ponto-qtd');
-      if (pontoLabel) pontoLabel.textContent = novoValor === 'industrial' ? 'Por Equipamento' : 'Por Ponto';
-      if (pontoQtdInput) pontoQtdInput.placeholder = novoValor === 'industrial' ? 'Qtd. equip.' : 'Qtd. pontos';
-      calculateMaoDeObra();
-      updateOrcamentoPreview();
-    });
-
-    document.getElementById('orc-mao-de-obra').addEventListener('input', () => {
-      calculateMaoDeObra();
-      updateOrcamentoPreview();
-    });
-
-    function calculateMaoDeObra() {
-      const tipoSelecionado = document.querySelector('input[name="tipo-servico"]:checked');
-      if (!appState.currentOrcamento || !tipoSelecionado) {
-        if(appState.currentOrcamento) appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
+    // Importar Serviços XLSX
+    document.getElementById('btn-import-xlsx').addEventListener('click', async () => {
+      if (!userId) return alert('Faça login novamente.');
+      const fileInput = document.getElementById('xlsx-input');
+      const statusEl = document.getElementById('xlsx-status');
+      if (!fileInput.files[0]) {
+        statusEl.textContent = 'Nenhum arquivo selecionado.';
         return;
       }
-      const tipo = tipoSelecionado.value;
-      let valor = 0, label = '', raw_value = 0;
+      statusEl.textContent = 'Lendo arquivo...';
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const data = evt.target.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+          const rows = json.slice(1);
+          let count = 0;
+          for (const row of rows) {
+            const [categoriaBruta, descricao, valorStr] = row;
+            if (!descricao) continue;
+            let categoria = (categoriaBruta || 'OUTROS').toString().toUpperCase().trim();
+            const valor = parseFloat(valorStr) || 0;
+            await addDoc(collection(db, `users/${userId}/tiposdeservico`), {
+              categoria,
+              descricao,
+              valor
+            });
+            count++;
+          }
+          statusEl.textContent = `${count} serviços importados com sucesso.`;
+        } catch(e) {
+          console.error(e);
+          statusEl.textContent = 'Erro ao importar.';
+        }
+      };
+      reader.readAsBinaryString(file);
+    });
+
+    document.getElementById('btn-clear-tiposervico').addEventListener('click', async () => {
+      if (!confirm('Tem certeza que deseja apagar TODOS os serviços?')) return;
+      if (!userId) return alert('Faça login novamente.');
+      try {
+        const snap = await getDocs(collection(db, `users/${userId}/tiposdeservico`));
+        for (const docRef of snap.docs) {
+          await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${docRef.id}`));
+        }
+        alert('Todos os serviços foram apagados.');
+      } catch(e) {
+        console.error(e);
+        alert('Erro ao limpar serviços.');
+      }
+    });
+
+    // ===== ORÇAMENTOS =====
+
+    function openOrcamentoModal(id = null) {
+      resetCurrentOrcamento();
+      if (id) {
+        const orc = appState.orcamentos.find(o => o.id === id);
+        if (orc) {
+          appState.currentOrcamento = JSON.parse(JSON.stringify(orc));
+        }
+      }
+      populateClientesDropdown();
+      populateOrcamentoItemsLists();
+      fillOrcamentoModalFields();
+      updateMaoDeObraOptions();
+      updateOrcamentoPreview();
+      document.getElementById('orcamento-modal').classList.remove('hidden');
+      document.getElementById('orcamento-modal').classList.add('flex');
+    }
+
+    function closeOrcamentoModal() {
+      document.getElementById('orcamento-modal').classList.add('hidden');
+      document.getElementById('orcamento-modal').classList.remove('flex');
+    }
+
+    function populateOrcamentoItemsLists() {
+      const orcItensUl = document.getElementById('orc-itens-list');
+      const orcServUl = document.getElementById('orc-servico-list');
+      orcItensUl.innerHTML = '';
+      orcServUl.innerHTML = '';
+
+      if (appState.currentOrcamento.items.length === 0) {
+        orcItensUl.innerHTML = '<li class="text-gray-400">Nenhum material adicionado.</li>';
+      } else {
+        appState.currentOrcamento.items.forEach((it, idx) => {
+          orcItensUl.innerHTML += `
+            <li class="flex justify-between text-xs bg-white border rounded p-2 leading-tight">
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-gray-800 break-words">${it.nome}</div>
+                <div class="text-gray-600 text-[10px]">
+                  ${it.quantidade || 1} ${it.unidade || 'UNID'} x R$ ${it.valor.toFixed(2)} = R$ ${(it.valor * (it.quantidade || 1)).toFixed(2)}
+                </div>
+              </div>
+              <button class="text-red-600 hover:text-red-800 text-lg leading-none pl-3" onclick="removerItemOrcamento(${idx})">&times;</button>
+            </li>`;
+        });
+      }
+
+      if (appState.currentOrcamento.tiposDeServico.length === 0) {
+        orcServUl.innerHTML = '<li class="text-gray-400">Nenhum serviço adicionado.</li>';
+      } else {
+        appState.currentOrcamento.tiposDeServico.forEach((sv, idx) => {
+          orcServUl.innerHTML += `
+            <li class="flex justify-between text-xs bg-white border rounded p-2 leading-tight">
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-gray-800 break-words">${sv.categoria} - ${sv.descricao}</div>
+                <div class="text-gray-600 text-[10px]">R$ ${sv.valor.toFixed(2)}</div>
+              </div>
+              <button class="text-red-600 hover:text-red-800 text-lg leading-none pl-3" onclick="removerServicoOrcamento(${idx})">&times;</button>
+            </li>`;
+        });
+      }
+    }
+
+    function fillOrcamentoModalFields() {
+      const o = appState.currentOrcamento;
+      if (!o) return;
+      const clienteSelect = document.getElementById('orc-cliente');
+      if (o.cliente?.id) clienteSelect.value = o.cliente.id;
+      else clienteSelect.value='';
+      document.getElementById('orc-observacoes').value = o.observacoes || '';
+      document.getElementById('orc-whats-msg').value = o.whatsMsg || '';
+      document.getElementById('orc-tipo-obra').value = o.tipoObra || 'residencial';
+      const maoSelect = document.getElementById('mao-obra-tipo');
+      const maoValorInput = document.getElementById('mao-obra-valor');
+      maoSelect.value = o.maoDeObra.tipo || '';
+      maoValorInput.value = o.maoDeObra.raw_value || o.maoDeObra.valor || '';
+      document.getElementById('orcamento-numero-label').textContent = o.numeroOrcamento ? `Orçamento #${o.numeroOrcamento}` : '(Novo)';
+      document.getElementById('orcamento-versao-label').textContent = o.versao ? `Versão ${o.versao}` : '';
+      if (o.createdAt) {
+        const createdDate = o.createdAt.toDate ? o.createdAt.toDate() : o.createdAt;
+        document.getElementById('orcamento-createdAt-label').textContent = 'Criado em: ' + (createdDate ? new Date(createdDate).toLocaleString() : '');
+      } else {
+        document.getElementById('orcamento-createdAt-label').textContent = '';
+      }
+      document.getElementById('orcamento-debug-label').textContent = `ID interno: ${o.id || '(ainda não salvo)'}`;
+    }
+
+    document.getElementById('orc-cliente').addEventListener('change', () => {
+      const id = document.getElementById('orc-cliente').value;
+      const cliente = appState.clientes.find(c => c.id === id);
+      if (cliente) {
+        appState.currentOrcamento.cliente = { ...cliente };
+      } else {
+        appState.currentOrcamento.cliente = null;
+      }
+      updateOrcamentoPreview();
+    });
+
+    // ADD SERVIÇO
+    window.adicionarTipoDeServicoAoOrcamento = () => {
+      const sel = document.getElementById('orc-servico').value;
+      const entry = appState.tiposDeServico.find(s => s.id === sel);
+      if (!entry) return;
+      appState.currentOrcamento.tiposDeServico.push({ ...entry });
+      populateOrcamentoItemsLists();
+      updateOrcamentoPreview();
+    };
+
+    // REMOVE SERVIÇO
+    window.removerServicoOrcamento = (idx) => {
+      appState.currentOrcamento.tiposDeServico.splice(idx,1);
+      populateOrcamentoItemsLists();
+      updateOrcamentoPreview();
+    };
+
+    // ADD ITEM
+    window.adicionarItemAoOrcamento = () => {
+      const sel = document.getElementById('orc-item').value;
+      if (!sel) return;
+      const entry = appState.materiais.find(m => m.id === sel);
+      if (!entry) return;
+      const qtd = parseFloat(document.getElementById('orc-item-qtd').value) || 1;
+      appState.currentOrcamento.items.push({
+        nome: entry.nome,
+        unidade: entry.unidade,
+        valor: entry.valor,
+        quantidade: qtd
+      });
+      populateOrcamentoItemsLists();
+      updateOrcamentoPreview();
+    };
+
+    // REMOVE ITEM
+    window.removerItemOrcamento = (idx) => {
+      appState.currentOrcamento.items.splice(idx,1);
+      populateOrcamentoItemsLists();
+      updateOrcamentoPreview();
+    };
+
+    // MÃO DE OBRA
+    function updateMaoDeObraOptions() {
+      const tipoObra = document.getElementById('orc-tipo-obra').value;
+      const maoSelect = document.getElementById('mao-obra-tipo');
+      const maoValorInput = document.getElementById('mao-obra-valor');
+
+      const optionsMap = {
+        residencial: {
+          empreitada: appState.config.residencial_empreitada || 0,
+          diaria: appState.config.residencial_diaria || 0,
+          ponto: appState.config.residencial_ponto || 0,
+          hora: appState.config.residencial_hora || 0
+        },
+        industrial: {
+          empreitada: 0,
+          diaria: appState.config.industrial_diaria || 0,
+          ponto: appState.config.industrial_ponto || 0,
+          hora: appState.config.industrial_hora || 0
+        }
+      };
+
+      const tipoAtual = maoSelect.value;
+      if (tipoAtual && optionsMap[tipoObra][tipoAtual] !== undefined) {
+        maoValorInput.value = optionsMap[tipoObra][tipoAtual] || '';
+      }
+      appState.currentOrcamento.tipoObra = tipoObra;
+      updateMaoDeObraValor();
+      updateOrcamentoPreview();
+    }
+
+    document.getElementById('orc-tipo-obra').addEventListener('change', () => {
+      updateMaoDeObraOptions();
+    });
+
+    document.getElementById('mao-obra-tipo').addEventListener('change', () => {
+      updateMaoDeObraValor();
+      updateOrcamentoPreview();
+    });
+
+    document.getElementById('mao-obra-valor').addEventListener('input', () => {
+      setMaoDeObraManual();
+      updateOrcamentoPreview();
+    });
+
+    function updateMaoDeObraValor() {
+      const maoSelect = document.getElementById('mao-obra-tipo');
+      const maoValorInput = document.getElementById('mao-obra-valor');
+      const tipo = maoSelect.value;
       const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
+      let valor = 0;
+      let label = '';
+      let raw_value = '';
+
       const rates = {
         empreitada: appState.config.residencial_empreitada || 0,
         diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
@@ -1505,16 +1303,76 @@
           }
           break;
         case 'diaria':
-          raw_value = parseInt(document.getElementById('diaria-qtd').value) || 0;
-          valor = raw_value * rates.diaria; label = `${raw_value} diária(s)`; break;
+          if (rates.diaria > 0) {
+              valor = rates.diaria;
+              label = 'Diária (Valor Fixo da Configuração)';
+              raw_value = rates.diaria;
+          } else {
+              raw_value = parseFloat(maoValorInput.value) || 0;
+              valor = raw_value;
+              label = 'Diária (Valor Manual)';
+          }
+          break;
         case 'ponto':
-          raw_value = parseInt(document.getElementById('ponto-qtd').value) || 0;
-          valor = raw_value * rates.ponto; label = tipoObra === 'industrial' ? `${raw_value} equipamento(s)` : `${raw_value} ponto(s)`; break;
+          if (rates.ponto > 0) {
+              valor = rates.ponto;
+              label = (tipoObra === 'industrial') ? 'Por Equipamento (Valor Configurado)' : 'Por Ponto (Valor Configurado)';
+              raw_value = rates.ponto;
+          } else {
+              raw_value = parseFloat(maoValorInput.value) || 0;
+              valor = raw_value;
+              label = (tipoObra === 'industrial') ? 'Por Equipamento (Valor Manual)' : 'Por Ponto (Valor Manual)';
+          }
+          break;
         case 'hora':
-          raw_value = parseFloat(document.getElementById('hora-qtd').value) || 0;
-          valor = raw_value * rates.hora; label = `${raw_value} hora(s)`; break;
+          if (rates.hora > 0) {
+              valor = rates.hora;
+              label = 'Por Hora (Valor Configurado)';
+              raw_value = rates.hora;
+          } else {
+              raw_value = parseFloat(maoValorInput.value) || 0;
+              valor = raw_value;
+              label = 'Por Hora (Valor Manual)';
+          }
+          break;
+        default:
+          raw_value = parseFloat(maoValorInput.value) || 0;
+          valor = raw_value;
+          label = '';
       }
-      appState.currentOrcamento.maoDeObra = { tipo, valor, label, raw_value };
+
+      maoValorInput.value = raw_value || '';
+
+      if (!appState.currentOrcamento.maoDeObra) {
+        appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
+      }
+
+      appState.currentOrcamento.maoDeObra.tipo = tipo;
+      appState.currentOrcamento.maoDeObra.valor = valor;
+      appState.currentOrcamento.maoDeObra.label = label;
+      appState.currentOrcamento.maoDeObra.raw_value = raw_value;
+    }
+
+    function setMaoDeObraManual() {
+      const maoSelect = document.getElementById('mao-obra-tipo');
+      const maoValorInput = document.getElementById('mao-obra-valor');
+      const tipo = maoSelect.value;
+      if (!tipo) return;
+      const entered = parseFloat(maoValorInput.value) || 0;
+      let labelTxt = '';
+      switch(tipo) {
+        case 'empreitada': labelTxt='Empreitada (Valor Manual)'; break;
+        case 'diaria': labelTxt='Diária (Valor Manual)'; break;
+        case 'ponto': labelTxt='Por Ponto / Equipamento (Valor Manual)'; break;
+        case 'hora': labelTxt='Por Hora (Valor Manual)'; break;
+        default: labelTxt='';
+      }
+      appState.currentOrcamento.maoDeObra = {
+        tipo,
+        valor: entered,
+        label: labelTxt,
+        raw_value: entered
+      };
     }
 
     function updateOrcamentoPreview() {
@@ -1528,46 +1386,37 @@
 
       let tiposDeServicoHtml = '';
       if (currentOrcamento.tiposDeServico && currentOrcamento.tiposDeServico.length > 0) {
-        const servicosContent = currentOrcamento.tiposDeServico.map(s => `<tr><td style="padding: 4px 2px;">${s.descricao}</td><td style="text-align: right;">R$ ${s.valor.toFixed(2)}</td></tr>`).join('');
+        const servicosContent = currentOrcamento.tiposDeServico.map(s => `<tr><td style="padding: 4px 2px; text-align: left;">${s.categoria} - ${s.descricao}</td><td style="padding: 4px 2px; text-align: right;">R$ ${s.valor.toFixed(2)}</td></tr>`).join('');
         tiposDeServicoHtml = `
         <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">TIPOS DE SERVIÇO:</h4>
         <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 10px;">
           <thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">Valor</th></tr></thead>
           <tbody>${servicosContent}</tbody>
-        </table>
-        <hr style="margin: 15px 0;">`;
+        </table>`;
       }
 
-      const subtotalServicos = currentOrcamento.tiposDeServico.reduce((sum, service) => sum + service.valor, 0);
-      const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
-      
-      // NOVO: Lógica de Pagamento
-      let pagamentoHtml = '';
-      if (config.config_pix_chave || config.config_cartao_vezes || config.config_pagamento_dinheiro || config.config_deposito_banco) {
-        pagamentoHtml += '<h4 style="font-size: 1.1em; font-weight: bold; margin-top: 20px; margin-bottom: 5px; border-top: 1px solid #ccc; padding-top: 10px;">Formas de Pagamento:</h4><div style="font-size: 0.9em; line-height: 1.4;">';
-        let hasPayment = false;
-        if (config.config_pix_chave) {
-          pagamentoHtml += `<strong>PIX:</strong> ${config.config_pix_chave}<br>`;
-          hasPayment = true;
-        }
-        if (config.config_cartao_vezes) {
-          let jurosText = config.config_cartao_juros ? ` (juros de ${config.config_cartao_juros}%)` : '';
-          pagamentoHtml += `<strong>Cartão:</strong> Em até ${config.config_cartao_vezes}x${jurosText}<br>`;
-          hasPayment = true;
-        }
-        if (config.config_pagamento_dinheiro) {
-          pagamentoHtml += `<strong>Dinheiro</strong><br>`;
-          hasPayment = true;
-        }
-        if (config.config_deposito_banco && config.config_deposito_ag && config.config_deposito_conta) {
-          pagamentoHtml += `<strong>Depósito:</strong> Banco ${config.config_deposito_banco} | Ag: ${config.config_deposito_ag} | Conta: ${config.config_deposito_conta}<br>`;
-          hasPayment = true;
-        }
-        if (!hasPayment) {
-          pagamentoHtml += 'Consulte as formas de pagamento.';
-        }
-        pagamentoHtml += '</div>';
+      let subtotalServicos = 0;
+      if (currentOrcamento.tiposDeServico && currentOrcamento.tiposDeServico.length > 0) {
+        subtotalServicos = currentOrcamento.tiposDeServico.reduce((sum, s) => sum + (s.valor || 0), 0);
       }
+      let subtotalMateriais = 0;
+      if (currentOrcamento.items && currentOrcamento.items.length > 0) {
+        subtotalMateriais = currentOrcamento.items.reduce((sum, it) => {
+          const qtd = it.quantidade || 1;
+          return sum + (it.valor * qtd);
+        }, 0);
+      }
+
+      // PAGAMENTOS
+      let pagamentoHtml = `
+        <div style="font-size: 0.9em; margin-top: 20px;">
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">FORMAS DE PAGAMENTO</h4>
+          <div style="margin-bottom: 5px;"><strong>PIX:</strong> ${config.config_pix_chave || ''}</div>
+          <div style="margin-bottom: 5px;"><strong>Cartão:</strong> até ${config.config_cartao_vezes || ''}x (${config.config_cartao_juros || ''}% a.m.)</div>
+          <div style="margin-bottom: 5px;"><strong>Dinheiro:</strong> ${config.config_pagamento_dinheiro ? 'Aceito' : 'Não informado'}</div>
+          <div style="margin-bottom: 5px;"><strong>Depósito:</strong> ${config.config_deposito_banco || ''} / Ag: ${config.config_deposito_ag || ''} / Cc: ${config.config_deposito_conta || ''}</div>
+        </div>
+      `;
 
       const itemsHtml = currentOrcamento.items.map(item => {
         const itemTotal = item.valor * (item.quantidade || 1);
@@ -1589,7 +1438,7 @@
               <span style="display: block; font-size: 0.9em;">${config.endereco || ''}</span>
               <span style="display: block; font-size: 0.9em;">Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
             </div>
-            ${config.logo ? `<div style="text-align: right; flex-shrink: 0; margin-left: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px;"></div>` : ''}
+            ${config.logo ? `<div style="text-align: right; flex-shrink: 0;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px;"></div>` : ''}
           </div>
           <hr style="margin: 15px 0;">
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Orçamento para:</h4>
@@ -1600,15 +1449,19 @@
           ${tiposDeServicoHtml}
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">DESCRIÇÃO DOS MATERIAIS:</h4>
           <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
-            ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
+            ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Item</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">Unitário</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="text-align: center; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
           </table>
-          ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}
+          ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-size: 0.9em; margin-top: 5px;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}
           <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">MÃO DE OBRA:</h4>
           <div style="text-align: right;"><span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>
-          <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #333;"><span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span></div>
+          <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 10px;">
+            <span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span>
+          </div>
           
           ${pagamentoHtml}
-          <div style="font-size: 0.8em; margin-top: 20px; text-align: center; color: #888;">Orçamento válido por 15 dias.</div>
+          <div style="font-size: 0.8em; margin-top: 20px; color: #555;">
+            <div style="text-align: center; color: #888;">Orçamento válido por 15 dias.</div>
+          </div>
         </div>`;
     }
 
@@ -1640,6 +1493,8 @@
 
     window.shareOrViewPDF = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+      // Atualiza a visualização antes de capturar o PDF (garante logo e dados mais recentes)
+      updateOrcamentoPreview();
       const hidden = document.createElement('div');
       hidden.style.position = 'absolute'; hidden.style.left = '-9999px'; hidden.style.top = '-9999px';
       hidden.style.width = '210mm';
@@ -1678,20 +1533,230 @@
       const fullClient = appState.currentOrcamento.cliente;
       if (!fullClient) return alert('Cliente não encontrado.');
       const telefone = fullClient.telefone.replace(/\D/g, '');
-      const nomeProfissional = appState.config.nome || 'nós';
-      const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
-      const whatsappUrl = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
-      window.open(whatsappUrl, '_blank');
+      const obs = document.getElementById('orc-whats-msg').value || '';
+      const textoBase = `
+Olá ${fullClient.nome}, segue o orçamento:
+
+Total: R$ ${appState.currentOrcamento.total?.toFixed(2) || '0,00'}
+
+Formas de pagamento:
+- PIX: ${appState.config.config_pix_chave || ''}
+- Cartão: até ${appState.config.config_cartao_vezes || ''}x (${appState.config.config_cartao_juros || ''}% a.m.)
+- Depósito: ${appState.config.config_deposito_banco || ''}, Ag ${appState.config.config_deposito_ag || ''}, Cc ${appState.config.config_deposito_conta || ''}
+
+${obs}
+`.trim();
+      const encoded = encodeURIComponent(textoBase);
+      window.open(`https://wa.me/55${telefone}?text=${encoded}`, '_blank');
     };
 
-    window.changeTab = (event, tabName) => {
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(tabName).classList.add('active');
-      document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
-    };
+    // ===== LISTAGEM DE ORÇAMENTOS (TELA INICIAL E TELA "TODOS") =====
+    function renderOrcamentosList(onlyRecent=false) {
+      const containerRecent = document.getElementById('orcamentos-list-recent');
+      const tabelaList = document.getElementById('tabela-orcamentos-list');
+      if (!appState.orcamentos.length) {
+        if (onlyRecent && tabelaList) tabelaList.innerHTML = '';
+        if (!onlyRecent && containerRecent) {
+          containerRecent.innerHTML = '<p class="text-gray-500 text-sm">Nenhum orçamento salvo ainda.</p>';
+        }
+        return;
+      }
 
-    window.onload = initializeFirebase;
+      const sorted = [...appState.orcamentos].sort((a,b) => (b.numeroOrcamento||0)-(a.numeroOrcamento||0));
+      const recent3 = sorted.slice(0,3);
+
+      if (!onlyRecent && containerRecent) {
+        containerRecent.innerHTML = recent3.map(o => {
+          const dataCriacao = o.createdAt
+            ? (o.createdAt.toDate ? o.createdAt.toDate() : o.createdAt)
+            : null;
+          const dataTexto = dataCriacao ? new Date(dataCriacao).toLocaleString() : '';
+          return `
+            <div class="bg-white border rounded-lg p-4 flex flex-col sm:flex-row sm:justify-between sm:items-start text-sm">
+              <div class="flex-1 min-w-0">
+                <div class="font-semibold text-gray-800 mb-1">#${o.numeroOrcamento || '?'} - ${o.cliente?.nome || 'Cliente'}</div>
+                <div class="text-gray-600 text-xs leading-tight">${o.cliente?.endereco || ''}</div>
+                <div class="text-gray-500 text-[10px] leading-tight">${o.cliente?.telefone || ''}</div>
+                <div class="text-gray-400 text-[10px] leading-tight">Criado: ${dataTexto}</div>
+              </div>
+              <div class="flex gap-2 mt-3 sm:mt-0">
+                <button class="bg-blue-600 text-white px-2 py-1 rounded text-[10px] hover:bg-blue-700 transition" onclick="openOrcamentoModal('${o.id || ''}')">Abrir</button>
+              </div>
+            </div>`;
+        }).join('');
+      }
+
+      if (onlyRecent && tabelaList) {
+        tabelaList.innerHTML = sorted.map(o => {
+          const checked = appState.orcamentosParaExcluir.has(o.id) ? 'checked' : '';
+          const dataCriacao = o.createdAt
+            ? (o.createdAt.toDate ? o.createdAt.toDate() : o.createdAt)
+            : null;
+          const dataTexto = dataCriacao ? new Date(dataCriacao).toLocaleString() : '';
+          return `
+            <tr class="border-b text-xs">
+              <td class="py-2 px-2 font-semibold text-gray-800 whitespace-nowrap">#${o.numeroOrcamento || '?'}</td>
+              <td class="py-2 px-2">${o.cliente?.nome || ''}</td>
+              <td class="py-2 px-2 hidden sm:table-cell text-gray-500">${o.cliente?.endereco || ''}</td>
+              <td class="py-2 px-2 font-semibold text-right text-gray-800">R$ ${o.total?.toFixed(2) || '0,00'}</td>
+              <td class="py-2 px-2 hidden sm:table-cell text-gray-500">${dataTexto}</td>
+              <td class="py-2 px-2 text-center">
+                <input type="checkbox" class="h-4 w-4 text-red-600 border-gray-300 rounded" data-id="${o.id || ''}" onchange="toggleSelectOrcamentoParaExcluir('${o.id || ''}', this.checked)" ${checked}>
+              </td>
+            </tr>`;
+        }).join('');
+      }
+
+      atualizarBotaoExcluirSelecionados();
+    }
+
+    function showAllOrcamentosPage() {
+      mainView.classList.add('hidden');
+      allOrcamentosView.classList.remove('hidden');
+      renderOrcamentosList(true);
+    }
+
+    function closeAllOrcamentosPage() {
+      allOrcamentosView.classList.add('hidden');
+      mainView.classList.remove('hidden');
+      renderOrcamentosList();
+    }
+
+    function toggleSelectOrcamentoParaExcluir(id, marcado) {
+      if (marcado) {
+        appState.orcamentosParaExcluir.add(id);
+      } else {
+        appState.orcamentosParaExcluir.delete(id);
+      }
+      atualizarBotaoExcluirSelecionados();
+    }
+
+    function atualizarBotaoExcluirSelecionados() {
+      const btn = document.getElementById('btn-excluir-selecionados');
+      const txt = document.getElementById('btn-excluir-selecionados-texto');
+      const count = appState.orcamentosParaExcluir.size;
+      btn.disabled = count === 0;
+      txt.textContent = count === 0
+        ? 'Excluir Selecionados'
+        : (count === 1
+          ? 'Excluir 1 Orçamento Selecionado'
+          : `Excluir ${count} Orçamentos Selecionados`);
+    }
+
+    document.getElementById('btn-excluir-selecionados').addEventListener('click', async () => {
+      const count = appState.orcamentosParaExcluir.size;
+      if (count === 0) return;
+      const confirmMsg = count === 1
+        ? 'Tem certeza que deseja excluir este orçamento?'
+        : `Tem certeza que deseja excluir estes ${count} orçamentos?`;
+      if (!confirm(confirmMsg)) return;
+      if (!userId) return alert('Faça login novamente.');
+      const btn = document.getElementById('btn-excluir-selecionados');
+      const spin = document.getElementById('btn-excluir-spinner');
+      const txt = document.getElementById('btn-excluir-selecionados-texto');
+      btn.disabled = true;
+      spin.classList.remove('hidden');
+      txt.classList.add('opacity-50');
+      try {
+        for (const id of appState.orcamentosParaExcluir) {
+          await deleteDoc(doc(db, `users/${userId}/orcamentos/${id}`));
+        }
+        appState.orcamentosParaExcluir.clear();
+        renderOrcamentosList(true);
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao excluir orçamentos.');
+      } finally {
+        spin.classList.add('hidden');
+        txt.classList.remove('opacity-50');
+        atualizarBotaoExcluirSelecionados();
+      }
+    });
+
+    // ===== CARREGAR DADOS =====
+    function loadAllData() {
+      if (!userId) return;
+      const prefix = `users/${userId}`;
+
+      onSnapshot(doc(db, `${prefix}/config/main`), (snap) => {
+        if (snap.exists()) appState.config = snap.data();
+        updateConfigForm();
+      });
+
+      onSnapshot(query(collection(db, `${prefix}/clientes`)), (snapshot) => {
+        appState.clientes = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+        renderClientesList();
+        renderOrcamentosList();
+        renderOrcamentosList(true);
+      });
+
+      onSnapshot(query(collection(db, `${prefix}/materiais`)), (snapshot) => {
+        appState.materiais = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+        renderMateriaisList();
+      });
+
+      onSnapshot(query(collection(db, `${prefix}/tiposdeservico`)), (snapshot) => {
+        appState.tiposDeServico = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+        renderTiposDeServicoList();
+      });
+
+      onSnapshot(query(collection(db, `${prefix}/orcamentos`)), (snapshot) => {
+        console.log(`[DEBUG] Recebeu ${snapshot.docs.length} orçamentos do Firebase.`);
+        appState.orcamentos = snapshot.docs.map(d => {
+          const data = d.data();
+          if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
+          console.log(`[DEBUG] Mapeando doc. ID do Firebase (d.id):`, d.id);
+          return { ...data, id: d.id };
+        });
+        appState.orcamentos.sort((a,b) => (b.numeroOrcamento||0) - (a.numeroOrcamento||0));
+        
+        renderOrcamentosList();
+        renderOrcamentosList(true); 
+      });
+    }
+
+    // ===== BOTÕES LOGIN / LOGOUT =====
+    loginButton.addEventListener('click', async () => {
+      try {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+      } catch(e) {
+        console.error(e);
+        alert('Erro ao fazer login.');
+      }
+    });
+
+    logoutButton.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+      } catch(e) {
+        console.error(e);
+        alert('Erro ao sair.');
+      }
+    });
+
+    // ===== TROCAR ABAS =====
+    function changeTab(evt, tabId) {
+      document.querySelectorAll('.tab, .mobile-tab').forEach(btn => {
+        if (btn.getAttribute('data-tab') === tabId) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      document.querySelectorAll('.tab-content').forEach(tc => {
+        if (tc.id === tabId) {
+          tc.classList.add('active');
+        } else {
+          tc.classList.remove('active');
+        }
+      });
+    }
+
+    // start
+    initializeFirebase();
+
   </script>
 </body>
 </html>
