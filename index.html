@@ -1589,7 +1589,7 @@
               <span style="display: block; font-size: 0.9em;">${config.endereco || ''}</span>
               <span style="display: block; font-size: 0.9em;">Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
             </div>
-            ${config.logo ? `<div style="text-align: right; flex-shrink: 0; margin-left: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px;"></div>` : ''}
+            ${config.logo ? `<div style="text-align: right; flex-shrink: 0; margin-left: 20px;"><img src="${config.logo}" alt="Logomarca" crossorigin="anonymous" referrerpolicy="no-referrer" style="max-width: 150px; max-height: 80px;"></div>` : ''}
           </div>
           <hr style="margin: 15px 0;">
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Orçamento para:</h4>
@@ -1645,11 +1645,19 @@
       hidden.style.width = '210mm';
       hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
       document.body.appendChild(hidden);
-      const { jsPDF } = window.jspdf;
+            // Aguarda todas as imagens carregarem antes de renderizar o canvas
+      const imgs = Array.from(hidden.querySelectorAll('img'));
+      if (imgs.length) {
+        await Promise.all(imgs.map(img => (img.decode ? img.decode().catch(()=>{}) : null) || new Promise(res => {
+          if (img.complete) return res();
+          img.onload = img.onerror = () => res();
+        })));
+      }
+const { jsPDF } = window.jspdf;
       const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
       const fileName = `orcamento-${clienteNome}.pdf`;
       try {
-        const canvas = await html2canvas(hidden, { scale: 2 });
+        const canvas = await html2canvas(hidden, { scale: 2, useCORS: true, logging: false });
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
