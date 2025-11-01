@@ -1639,39 +1639,94 @@
     };
 
     window.shareOrViewPDF = async () => {
-      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
-      const hidden = document.createElement('div');
-      hidden.style.position = 'absolute'; hidden.style.left = '-9999px'; hidden.style.top = '-9999px';
-      hidden.style.width = '210mm';
-      hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
-      document.body.appendChild(hidden);
-      const { jsPDF } = window.jspdf;
-      const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
-      const fileName = `orcamento-${clienteNome}.pdf`;
-      try {
-        const canvas = await html2canvas(hidden, { scale: 2 });
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        if (navigator.share && navigator.canShare) {
-          const blob = pdf.output('blob');
-          const file = new File([blob], fileName, { type: 'application/pdf' });
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({ title: `Orçamento - ${clienteNome}`, text: 'Segue o orçamento em anexo.', files: [file] });
-            document.body.removeChild(hidden);
-            return;
-          }
-        }
-        pdf.save(fileName);
-      } catch(e) {
-        console.error(e);
-        if (e.name !== 'AbortError') alert('Erro ao gerar o PDF.');
-      } finally {
-        document.body.removeChild(hidden);
+  if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+
+  // 1. Criação do elemento oculto
+  const hidden = document.createElement('div');
+  hidden.style.position = 'absolute'; 
+  hidden.style.left = '-9999px'; 
+  hidden.style.top = '0px'; // Manter no topo para evitar problemas de renderização
+  hidden.style.width = '210mm'; // Define a largura A4
+
+  hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
+  document.body.appendChild(hidden);
+
+  const { jsPDF } = window.jspdf;
+  const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
+  const fileName = `orcamento-${clienteNome}.pdf`;
+
+  // ----- INÍCIO DA CORREÇÃO -----
+
+  // 2. Helper para aguardar a imagem carregar
+  const waitForImage = (imgElement) => {
+    return new Promise((resolve) => {
+      if (!imgElement) {
+        // Se não há imagem (logo não cadastrada), resolve imediatamente
+        resolve();
+        return;
       }
-    };
+      if (imgElement.complete) {
+         // Se a imagem já estiver em cache e carregada
+        resolve();
+        return;
+      }
+      // Adiciona os listeners
+      imgElement.onload = () => resolve();
+      imgElement.onerror = () => {
+        console.error("html2canvas: Imagem da logo falhou ao carregar (possível erro na URL ou CORS).");
+        // Resolve mesmo com erro, para não travar o PDF.
+        // O PDF será gerado, mas sem a logo.
+        resolve(); 
+      };
+    });
+  };
+
+  try {
+    // 3. Encontrar a imagem DENTRO do div oculto
+    const logoImg = hidden.querySelector('img');
+
+    // 4. Aguardar a imagem carregar antes de continuar
+    if (logoImg) {
+      console.log("Aguardando imagem da logo carregar...", logoImg.src);
+      await waitForImage(logoImg);
+      console.log("Imagem carregada, gerando o canvas.");
+    }
+
+    // 5. Chamar html2canvas com a opção useCORS: true
+    const canvas = await html2canvas(hidden, { 
+      scale: 2,
+      useCORS: true // Essencial para imagens de outros domínios
+    });
+
+    // ----- FIM DA CORREÇÃO -----
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+    // Lógica de compartilhamento (mantida)
+    if (navigator.share && navigator.canShare) {
+      const blob = pdf.output('blob');
+      const file = new File([blob], fileName, { type: 'application/pdf' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ title: `Orçamento - ${clienteNome}`, text: 'Segue o orçamento em anexo.', files: [file] });
+        document.body.removeChild(hidden);
+        return;
+      }
+    }
+
+    pdf.save(fileName);
+
+  } catch(e) {
+    console.error(e);
+    if (e.name !== 'AbortError') alert('Erro ao gerar o PDF.');
+  } finally {
+    // 6. Remover o elemento oculto
+    document.body.removeChild(hidden);
+  }
+};
 
     window.sendWhatsAppText = () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
