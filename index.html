@@ -328,10 +328,7 @@
                     <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
                     <input type="text" id="config-endereco" placeholder="Seu Endereço" class="w-full p-2 border rounded-md">
                     <input type="text" id="config-logo" placeholder="URL da sua Logomarca (opcional)" class="w-full p-2 border rounded-md">
-                  
-                    <input type="file" id="config-logo-file" accept="image/png,image/jpeg,image/webp" class="w-full p-2 border rounded-md">
-                    <p class="text-xs text-gray-500">Envie sua logo para evitar bloqueios de CORS no PDF.</p>
-</div>
+                  </div>
                 </div>
                 <div>
                   <div>
@@ -505,17 +502,6 @@
     import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // ===== Estado e elementos =====
-
-    // === Helpers para LOGO ===
-    function fileToDataURL(file) {
-      return new Promise((resolve, reject) => {
-        const fr = new FileReader();
-        fr.onload = () => resolve(fr.result);
-        fr.onerror = reject;
-        fr.readAsDataURL(file);
-      });
-    }
-
     let app, db, auth, userId;
     setLogLevel('error'); // 'debug' | 'error'
 
@@ -676,57 +662,45 @@
       document.getElementById('config-deposito-conta').value = c.config_deposito_conta || '';
     }
 
-    
-document.getElementById('form-config').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if (!userId) return alert('Faça login novamente.');
-
-  const btn = document.getElementById('save-config-btn');
-  const textSpan = document.getElementById('save-config-text');
-  const spinSpan = document.getElementById('save-config-spinner');
-  btn.disabled = true; textSpan.classList.add('hidden'); spinSpan.classList.remove('hidden');
-  try {
-    const data = {
-      nome: document.getElementById('config-nome').value,
-      telefone: document.getElementById('config-telefone').value,
-      doc: document.getElementById('config-doc').value,
-      endereco: document.getElementById('config-endereco').value,
-      logo: document.getElementById('config-logo').value,
-      
-      residencial_empreitada: parseFloat(document.getElementById('config-residencial-empreitada').value) || 0,
-      residencial_diaria: parseFloat(document.getElementById('config-residencial-diaria').value) || 0,
-      residencial_ponto: parseFloat(document.getElementById('config-residencial-ponto').value) || 0,
-      residencial_hora: parseFloat(document.getElementById('config-residencial-hora').value) || 0,
-      industrial_diaria: parseFloat(document.getElementById('config-industrial-diaria').value) || 0,
-      industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
-      industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
-
-      config_pix_chave: document.getElementById('config-pix-chave').value,
-      config_cartao_vezes: document.getElementById('config-cartao-vezes').value,
-      config_cartao_juros: document.getElementById('config-cartao-juros').value,
-      config_pagamento_dinheiro: document.getElementById('config-pagamento-dinheiro').checked,
-      config_deposito_banco: document.getElementById('config-deposito-banco').value,
-      config_deposito_ag: document.getElementById('config-deposito-ag').value,
-      config_deposito_conta: document.getElementById('config-deposito-conta').value,
-    };
-
-    const fileInput = document.getElementById('config-logo-file');
-    const file = fileInput && fileInput.files && fileInput.files[0];
-    if (file) {
+    document.getElementById('form-config').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      const textSpan = document.getElementById('save-config-text');
+      const spinSpan = document.getElementById('save-config-spinner');
+      btn.disabled = true; textSpan.classList.add('hidden'); spinSpan.classList.remove('hidden');
       try {
-        const dataUrl = await fileToDataURL(file);
-        data.logo_dataurl = dataUrl;
-      } catch(err) {
-        console.warn('Falha ao converter logo local para DataURL:', err);
-      }
-    }
+        const data = {
+          nome: document.getElementById('config-nome').value,
+          telefone: document.getElementById('config-telefone').value,
+          doc: document.getElementById('config-doc').value,
+          endereco: document.getElementById('config-endereco').value,
+          logo: document.getElementById('config-logo').value,
+          
+          residencial_empreitada: parseFloat(document.getElementById('config-residencial-empreitada').value) || 0,
+          residencial_diaria: parseFloat(document.getElementById('config-residencial-diaria').value) || 0,
+          residencial_ponto: parseFloat(document.getElementById('config-residencial-ponto').value) || 0,
+          residencial_hora: parseFloat(document.getElementById('config-residencial-hora').value) || 0,
+          industrial_diaria: parseFloat(document.getElementById('config-industrial-diaria').value) || 0,
+          industrial_ponto: parseFloat(document.getElementById('config-industrial-ponto').value) || 0,
+          industrial_hora: parseFloat(document.getElementById('config-industrial-hora').value) || 0,
 
-    await setDoc(doc(db, `users/${userId}/config/main`), data, { merge: true });
-    alert('Configurações salvas!');
-  } catch(e) { console.error(e); alert('Erro ao salvar.'); }
-  finally { btn.disabled=false; textSpan.classList.remove('hidden'); spinSpan.classList.add('hidden'); }
-});
-// ===== Clientes =====
+          // NOVOS CAMPOS
+          config_pix_chave: document.getElementById('config-pix-chave').value,
+          config_cartao_vezes: parseInt(document.getElementById('config-cartao-vezes').value) || 0,
+          config_cartao_juros: parseFloat(document.getElementById('config-cartao-juros').value) || 0,
+          config_pagamento_dinheiro: document.getElementById('config-pagamento-dinheiro').checked,
+          config_deposito_banco: document.getElementById('config-deposito-banco').value,
+          config_deposito_ag: document.getElementById('config-deposito-ag').value,
+          config_deposito_conta: document.getElementById('config-deposito-conta').value,
+        };
+        await setDoc(doc(db, `users/${userId}/config/main`), data);
+        alert('Configurações salvas!');
+      } catch(e) { console.error(e); alert('Erro ao salvar.'); }
+      finally { btn.disabled=false; textSpan.classList.remove('hidden'); spinSpan.classList.add('hidden'); }
+    });
+
+    // ===== Clientes =====
     document.getElementById('form-cliente').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
@@ -1615,7 +1589,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
               <span style="display: block; font-size: 0.9em;">${config.endereco || ''}</span>
               <span style="display: block; font-size: 0.9em;">Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
             </div>
-            ${config.logo ? `<div style="text-align: right; flex-shrink: 0; margin-left: 20px;"><img src="${config.logo_dataurl || config.logo}" alt="Logomarca" crossorigin="anonymous" referrerpolicy="no-referrer" style="max-width: 150px; max-height: 80px;"></div>` : ''}
+            ${config.logo ? `<div style="text-align: right; flex-shrink: 0; margin-left: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px;"></div>` : ''}
           </div>
           <hr style="margin: 15px 0;">
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Orçamento para:</h4>
@@ -1671,27 +1645,11 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
       hidden.style.width = '210mm';
       hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
       document.body.appendChild(hidden);
-      
-      try {
-        const logoData = (appState?.config && (appState.config.logo_dataurl || null));
-        if (logoData) {
-          const logoImg = hidden.querySelector('img[alt="Logomarca"]');
-          if (logoImg) { logoImg.setAttribute('src', logoData); }
-        }
-      } catch(err) { console.warn('Não foi possível trocar logo por dataURL:', err); }
-
-      const imgs = Array.from(hidden.querySelectorAll('img'));
-      if (imgs.length) {
-        await Promise.all(imgs.map(img => (img.decode ? img.decode().catch(()=>{}) : null) || new Promise(res => {
-          if (img.complete) return res();
-          img.onload = img.onerror = () => res();
-        })));
-      }
-    const { jsPDF } = window.jspdf;
+      const { jsPDF } = window.jspdf;
       const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
       const fileName = `orcamento-${clienteNome}.pdf`;
       try {
-        const canvas = await html2canvas(hidden, { scale: 2, useCORS: true, logging: false });
+        const canvas = await html2canvas(hidden, { scale: 2 });
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
