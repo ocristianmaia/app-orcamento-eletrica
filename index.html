@@ -327,7 +327,44 @@
                     <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md" required>
                     <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
                     <input type="text" id="config-endereco" placeholder="Seu Endereço" class="w-full p-2 border rounded-md">
-                    <input type="text" id="config-logo" placeholder="URL da sua Logomarca (opcional)" class="w-full p-2 border rounded-md">
+
+                    <!-- Campo oculto que guarda a logomarca em Data URL (base64) -->
+                    <input type="hidden" id="config-logo">
+
+                    <!-- Upload da logomarca direto do dispositivo -->
+                    <div>
+                      <label for="config-logo-file" class="block text-sm font-medium text-gray-700">
+                        Logomarca (opcional)
+                      </label>
+                      <input
+                        type="file"
+                        id="config-logo-file"
+                        accept="image/*"
+                        class="mt-1 block w-full text-sm text-gray-700 border rounded-md p-2 bg-white"
+                      >
+                      <p class="text-xs text-gray-500 mt-1">
+                        Selecione uma imagem do seu celular ou computador. Ela será exibida no cabeçalho do PDF.
+                      </p>
+
+                      <div id="config-logo-preview-wrapper" class="mt-2 hidden">
+                        <p class="text-xs text-gray-600 mb-1">Pré-visualização:</p>
+                        <div class="flex items-center gap-3">
+                          <img
+                            id="config-logo-preview"
+                            src=""
+                            alt="Pré-visualização da logomarca"
+                            class="max-h-16 object-contain border rounded-md bg-white p-1"
+                          >
+                          <button
+                            type="button"
+                            id="config-logo-clear"
+                            class="text-xs text-red-600 hover:underline"
+                          >
+                            Remover logomarca
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -638,12 +675,31 @@
     // ===== Config =====
     function updateConfigForm() {
       const c = appState.config || {};
+
       document.getElementById('config-nome').value = c.nome || '';
       document.getElementById('config-telefone').value = c.telefone || '';
       document.getElementById('config-doc').value = c.doc || '';
       document.getElementById('config-endereco').value = c.endereco || '';
-      document.getElementById('config-logo').value = c.logo || '';
-      
+
+      // Atualiza campo oculto + preview da logomarca
+      const logoHiddenInput = document.getElementById('config-logo');
+      const logoPreviewWrapper = document.getElementById('config-logo-preview-wrapper');
+      const logoPreview = document.getElementById('config-logo-preview');
+
+      if (logoHiddenInput) {
+        logoHiddenInput.value = c.logo || '';
+      }
+
+      if (logoPreviewWrapper && logoPreview) {
+        if (c.logo) {
+          logoPreview.src = c.logo;
+          logoPreviewWrapper.classList.remove('hidden');
+        } else {
+          logoPreview.src = '';
+          logoPreviewWrapper.classList.add('hidden');
+        }
+      }
+
       document.getElementById('config-residencial-empreitada').value = c.residencial_empreitada || '';
       document.getElementById('config-residencial-diaria').value = c.residencial_diaria || '';
       document.getElementById('config-residencial-ponto').value = c.residencial_ponto || '';
@@ -662,7 +718,60 @@
       document.getElementById('config-deposito-conta').value = c.config_deposito_conta || '';
     }
 
-    document.getElementById('form-config').addEventListener('submit', async (e) => {
+    // ===== Upload da Logomarca (arquivo -> Data URL) =====
+    const logoHiddenInput = document.getElementById('config-logo');
+    const logoFileInput = document.getElementById('config-logo-file');
+    const logoPreviewWrapper = document.getElementById('config-logo-preview-wrapper');
+    const logoPreview = document.getElementById('config-logo-preview');
+    const logoClearBtn = document.getElementById('config-logo-clear');
+
+    function applyLogoToPreview(src) {
+      if (!logoHiddenInput || !logoPreviewWrapper || !logoPreview) return;
+
+      if (src) {
+        logoHiddenInput.value = src;
+        logoPreview.src = src;
+        logoPreviewWrapper.classList.remove('hidden');
+      } else {
+        logoHiddenInput.value = '';
+        logoPreview.src = '';
+        logoPreviewWrapper.classList.add('hidden');
+      }
+    }
+
+    if (logoFileInput) {
+      logoFileInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+          alert('Por favor, selecione um arquivo de imagem (PNG, JPG, etc.).');
+          logoFileInput.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result;
+          applyLogoToPreview(dataUrl);
+        };
+        reader.onerror = () => {
+          alert('Não foi possível ler a imagem. Tente novamente.');
+          logoFileInput.value = '';
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (logoClearBtn) {
+      logoClearBtn.addEventListener('click', () => {
+        applyLogoToPreview('');
+        if (logoFileInput) logoFileInput.value = '';
+      });
+    }
+
+
+document.getElementById('form-config').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
       const btn = e.target.querySelector('button[type="submit"]');
