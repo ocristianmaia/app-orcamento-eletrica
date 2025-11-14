@@ -331,12 +331,11 @@
                     <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md" required>
                     <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md" required>
                     <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
-                    <input type="text" id="config-endereco" placeholder="Seu Endereço" class="w-full p-2 border rounded-md">
+                    <input type="text" id="config-endereco" placeholder="Seu Endereço (Linha 1)" class="w-full p-2 border rounded-md">
+                    <input type="text" id="config-endereco-l2" placeholder="Seu Endereço (Linha 2)" class="w-full p-2 border rounded-md">
 
-                    <!-- Campo oculto que guarda a logomarca em Data URL (base64) -->
                     <input type="hidden" id="config-logo">
 
-                    <!-- Upload da logomarca direto do dispositivo -->
                     <div>
                       <label for="config-logo-file" class="block text-sm font-medium text-gray-700">
                         Logomarca (opcional)
@@ -373,6 +372,19 @@
                   </div>
                 </div>
                 <div>
+                  <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Personalização do PDF</h3>
+                    <div class="flex gap-4">
+                        <label class="block flex-1">
+                            <span class="text-gray-700">Cor Primária (Títulos)</span>
+                            <input type="color" id="config-color-primary" class="w-full h-10 p-1 border rounded-md mt-1" value="#000000">
+                        </label>
+                        <label class="block flex-1">
+                            <span class="text-gray-700">Cor Secundária (Total)</span>
+                            <input type="color" id="config-color-secondary" class="w-full h-10 p-1 border rounded-md mt-1" value="#333333">
+                        </label>
+                    </div>
+                  </div>
                   <div>
                     <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Residencial/Predial</h3>
                     <div class="space-y-4">
@@ -502,6 +514,17 @@
               </div>
             </div>
 
+            <div>
+              <h4 class="text-md font-medium text-gray-800 mb-2">6. Desconto (Opcional)</h4>
+              <div class="flex gap-3">
+                <select id="orc-desconto-tipo" class="p-2 border rounded-md bg-gray-50">
+                  <option value="nenhum">Sem Desconto</option>
+                  <option value="percent">% (Porcentagem)</option>
+                  <option value="valor">R$ (Valor Fixo)</option>
+                </select>
+                <input type="number" step="0.01" id="orc-desconto-valor" class="w-full p-2 border rounded-md" placeholder="0.00" disabled>
+              </div>
+            </div>
             <div class="mt-4">
               <label for="orc-descricao-servico" class="block text-sm font-medium text-gray-700">
                 Descrição do serviço realizado (empreitada, por hora, etc.)
@@ -539,7 +562,7 @@
 
   </div> <script type="module">
 
-    console.log("VERSÃO 4.1 (Pagamentos e Ajustes de Layout) CARREGADA"); 
+    console.log("VERSÃO 4.2 (Descontos, Cores e Layout) CARREGADA"); 
     // ===== Firebase config (preservado do seu arquivo) =====
     const firebaseConfig = {
       apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
@@ -578,6 +601,8 @@
       appState.currentOrcamento = {
         id: null, cliente: null, tiposDeServico: [], items: [],
         maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
+        // #4: Adicionado desconto ao reset
+        desconto: { tipo: 'nenhum', valor: 0 },
         total: 0, tipoObra: 'residencial', createdAt: null,
         numeroOrcamento: null, versao: 1
       };
@@ -697,6 +722,8 @@
       document.getElementById('config-telefone').value = c.telefone || '';
       document.getElementById('config-doc').value = c.doc || '';
       document.getElementById('config-endereco').value = c.endereco || '';
+      // #1: Atualiza Endereço Linha 2
+      document.getElementById('config-endereco-l2').value = c.endereco_l2 || '';
 
       // Atualiza campo oculto + preview da logomarca
       const logoHiddenInput = document.getElementById('config-logo');
@@ -716,6 +743,10 @@
           logoPreviewWrapper.classList.add('hidden');
         }
       }
+
+      // #3: Atualiza Cores
+      document.getElementById('config-color-primary').value = c.config_color_primary || '#000000';
+      document.getElementById('config-color-secondary').value = c.config_color_secondary || '#333333';
 
       document.getElementById('config-residencial-empreitada').value = c.residencial_empreitada || '';
       document.getElementById('config-residencial-diaria').value = c.residencial_diaria || '';
@@ -801,8 +832,14 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
           telefone: document.getElementById('config-telefone').value,
           doc: document.getElementById('config-doc').value,
           endereco: document.getElementById('config-endereco').value,
+          // #1: Salva Endereço Linha 2
+          endereco_l2: document.getElementById('config-endereco-l2').value,
           logo: document.getElementById('config-logo').value,
           
+          // #3: Salva Cores
+          config_color_primary: document.getElementById('config-color-primary').value,
+          config_color_secondary: document.getElementById('config-color-secondary').value,
+
           residencial_empreitada: parseFloat(document.getElementById('config-residencial-empreitada').value) || 0,
           residencial_diaria: parseFloat(document.getElementById('config-residencial-diaria').value) || 0,
           residencial_ponto: parseFloat(document.getElementById('config-residencial-ponto').value) || 0,
@@ -1416,6 +1453,8 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
           const clone = JSON.parse(JSON.stringify(orcamentoParaEditar || {}));
           clone.tipoObra = (clone.tipoObra === 'industrial' || clone.tipoObra === 'residencial') ? clone.tipoObra : 'residencial';
           clone.maoDeObra = clone.maoDeObra || { tipo: '', valor: 0, label: '', raw_value: '' };
+          // #4: Popula Desconto
+          clone.desconto = clone.desconto || { tipo: 'nenhum', valor: 0 };
           clone.items = Array.isArray(clone.items) ? clone.items : [];
           clone.tiposDeServico = Array.isArray(clone.tiposDeServico) ? clone.tiposDeServico : [];
           appState.currentOrcamento = clone;
@@ -1444,6 +1483,22 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
               set('hora-qtd',         mao.tipo === 'hora'      ? mao.raw_value : '');
             }
           }
+
+          // #4: Popula campos de desconto na edição
+          if (clone.desconto && clone.desconto.tipo !== 'nenhum') {
+            if (descontoTipoEl) descontoTipoEl.value = clone.desconto.tipo;
+            if (descontoValorEl) {
+              descontoValorEl.value = clone.desconto.valor || 0;
+              descontoValorEl.disabled = false;
+            }
+          } else {
+            if (descontoTipoEl) descontoTipoEl.value = 'nenhum';
+            if (descontoValorEl) {
+              descontoValorEl.value = '';
+              descontoValorEl.disabled = true;
+            }
+          }
+
           clienteSelect.dispatchEvent(new Event('change'));
 
           setTimeout(() => {
@@ -1469,6 +1524,11 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
           if (descTextarea) descTextarea.value = '';
           const obraRadio = document.querySelector(`input[name="tipo-obra"][value="residencial"]`);
           if (obraRadio) obraRadio.checked = true;
+          
+          // #4: Reseta campos de desconto ao criar novo
+          if (descontoTipoEl) descontoTipoEl.value = 'nenhum';
+          if (descontoValorEl) { descontoValorEl.value = ''; descontoValorEl.disabled = true; }
+
           clienteSelect.value = '';
           clienteSelect.dispatchEvent(new Event('change'));
           updateOrcamentoPreview();
@@ -1478,6 +1538,10 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
         alert("Ocorreu um erro ao abrir o modal. Veja o console para detalhes.");
       }
     };
+
+    // #4: Adiciona reset dos campos de desconto
+    const descontoTipoEl = document.getElementById('orc-desconto-tipo');
+    const descontoValorEl = document.getElementById('orc-desconto-valor');
 
     window.closeOrcamentoModal = () => {
       document.getElementById('orcamento-modal').classList.remove('active');
@@ -1501,6 +1565,10 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
       document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
       document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
       document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
+
+      // #4: Reseta desconto no fechamento
+      if (descontoTipoEl) descontoTipoEl.value = 'nenhum';
+      if (descontoValorEl) { descontoValorEl.value = ''; descontoValorEl.disabled = true; }
     };
 
     function populateClienteSelect() {
@@ -1731,6 +1799,10 @@ document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
 
 function updateOrcamentoPreview() {
       const { config, currentOrcamento } = appState;
+      // #3: Define as cores
+      const corPrimaria = config.config_color_primary || '#000000';
+      const corTotal = config.config_color_secondary || '#333333';
+
       const previewEl = document.getElementById('pdf-preview');
       if (!currentOrcamento || !currentOrcamento.cliente) {
         previewEl.innerHTML = '<p class="text-gray-500 text-center mt-8">Selecione um cliente para começar.</p>';
@@ -1769,7 +1841,7 @@ function updateOrcamentoPreview() {
         }).join('');
 
         tiposDeServicoHtml = `
-          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: ${corPrimaria};">
             DESCRIÇÃO DOS SERVIÇOS:
           </h4>
           <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 10px;">
@@ -1789,10 +1861,15 @@ function updateOrcamentoPreview() {
       }
       const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
       
-      // NOVO: Lógica de Pagamento
+      // #2: Lógica de Pagamento com Borda Pontilhada
       let pagamentoHtml = '';
       if (config.config_pix_chave || config.config_cartao_vezes || config.config_pagamento_dinheiro || config.config_deposito_banco) {
-        pagamentoHtml += '<h4 style="font-size: 1.1em; font-weight: bold; margin-top: 20px; margin-bottom: 5px; border-top: 1px solid #ccc; padding-top: 10px;">Formas de Pagamento:</h4><div style="font-size: 0.9em; line-height: 1.4;">';
+        // Wrapper com borda pontilhada
+        pagamentoHtml += '<div style="border: 1px dotted #888; padding: 10px; margin-top: 20px;">';
+        
+        // H4 interno sem margem ou borda superior
+        pagamentoHtml += `<h4 style="font-size: 1.1em; font-weight: bold; margin-top: 0; margin-bottom: 5px; color: ${corPrimaria};">Formas de Pagamento:</h4><div style="font-size: 0.9em; line-height: 1.4;">`;
+        
         let hasPayment = false;
         if (config.config_pix_chave) {
           pagamentoHtml += `<strong>PIX:</strong> ${config.config_pix_chave}<br>`;
@@ -1814,7 +1891,8 @@ function updateOrcamentoPreview() {
         if (!hasPayment) {
           pagamentoHtml += 'Consulte as formas de pagamento.';
         }
-        pagamentoHtml += '</div>';
+        pagamentoHtml += '</div>'; // Fecha div interno
+        pagamentoHtml += '</div>'; // Fecha wrapper da borda
       }
 
       const itemsHtml = currentOrcamento.items.map(item => {
@@ -1826,22 +1904,50 @@ function updateOrcamentoPreview() {
           <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
         </tr>`;
       }).join('');
+      
       const totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
-      currentOrcamento.total = subtotalServicos + subtotalMateriais + totalMaoDeObra;
+      
+      // #4: Lógica de Desconto e Novo Cálculo de Total
+      const subtotal = subtotalServicos + subtotalMateriais + totalMaoDeObra;
+      let valorDesconto = 0;
+      let descontoHtml = '';
+      const desconto = currentOrcamento.desconto;
+
+      if (desconto && desconto.tipo !== 'nenhum' && desconto.valor > 0) {
+        if (desconto.tipo === 'percent') {
+          valorDesconto = (subtotal * desconto.valor) / 100;
+          descontoHtml = `
+            <div style="text-align: right; background: #f5f5f5; padding: 2px 0;">
+              <span>Desconto (${desconto.valor.toFixed(2)}%): R$ -${valorDesconto.toFixed(2)}</span>
+            </div>`;
+        } else { // tipo === 'valor'
+          valorDesconto = desconto.valor;
+          descontoHtml = `
+            <div style="text-align: right; background: #f5f5f5; padding: 2px 0;">
+              <span>Desconto (R$): R$ -${valorDesconto.toFixed(2)}</span>
+            </div>`;
+        }
+      }
+      
+      currentOrcamento.total = subtotal - valorDesconto;
+      // FIM: Lógica de Desconto
+
       const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
+      
       previewEl.innerHTML = `
         <div style="padding: 20px 25px;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding: 0 10px;">
             <div style="text-align: left; max-width: 70%;">
               <strong style="font-size: 1.2em; display: block;">${config.nome || 'Nome do Profissional'}</strong>
               <span style="display: block; font-size: 0.9em;">${config.endereco || ''}</span>
+              <span style="display: block; font-size: 0.9em;">${config.endereco_l2 || ''}</span>
               <span style="display: block; font-size: 0.9em;">Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
             </div>
             ${config.logo ? `<div style="text-align: right; flex-shrink: 0; margin-left: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px;"></div>` : ''}
           </div>
           <hr style="margin: 15px 0;">
-          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 6px;">Orçamento Nº: ${codigoOrcamento}</h4>
-          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Orçamento para:</h4>
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 6px; color: ${corPrimaria};">Orçamento Nº: ${codigoOrcamento}</h4>
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px; color: ${corPrimaria};">Orçamento para:</h4>
           <strong style="display: block;">${fullClient.nome}</strong>
           <span style="display: block;">${fullClient.endereco}</span>
           ${fullClient.documento ? `<span style="display: block;">Documento: ${fullClient.documento}</span>` : ''}
@@ -1849,21 +1955,26 @@ function updateOrcamentoPreview() {
           <hr style="margin: 15px 0;">
           ${
             currentOrcamento.descricaoServico
-              ? `<h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">DESCRIÇÃO DO SERVIÇO:</h4>
+              ? `<h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: ${corPrimaria};">DESCRIÇÃO DO SERVIÇO:</h4>
                  <p style="font-size: 0.9em; margin-bottom: 10px; white-space: pre-line;">
                    ${currentOrcamento.descricaoServico}
                  </p>`
               : ''
           }
           ${tiposDeServicoHtml}
-          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">DESCRIÇÃO DOS MATERIAIS:</h4>
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: ${corPrimaria};">DESCRIÇÃO DOS MATERIAIS:</h4>
           <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
             ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
           </table>
           ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}
-          <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">MÃO DE OBRA:</h4>
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px; color: ${corPrimaria};">MÃO DE OBRA:</h4>
           <div style="text-align: right;"><span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>
-          <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #333;"><span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span></div>
+          
+          ${descontoHtml}
+
+          <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid ${corTotal}; color: ${corTotal};">
+            <span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span>
+          </div>
           
           ${pagamentoHtml}
           <div style="font-size: 0.8em; margin-top: 20px; text-align: center; color: #888;">Orçamento válido por 15 dias.</div>
@@ -1949,6 +2060,27 @@ function updateOrcamentoPreview() {
       document.getElementById(tabName).classList.add('active');
       document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
     };
+
+    // #4: Lógica do Desconto (NOVO)
+    function handleDescontoChange() {
+        if (!appState.currentOrcamento) return; // Proteção
+        const tipo = descontoTipoEl.value;
+        const valor = parseFloat(descontoValorEl.value) || 0;
+
+        if (tipo === 'nenhum') {
+            descontoValorEl.disabled = true;
+            descontoValorEl.value = '';
+            appState.currentOrcamento.desconto = { tipo: 'nenhum', valor: 0 };
+        } else {
+            descontoValorEl.disabled = false;
+            appState.currentOrcamento.desconto = { tipo, valor };
+        }
+        updateOrcamentoPreview();
+    }
+
+    descontoTipoEl?.addEventListener('change', handleDescontoChange);
+    descontoValorEl?.addEventListener('input', handleDescontoChange);
+
 
     window.onload = initializeFirebase;
   </script>
