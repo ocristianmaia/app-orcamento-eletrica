@@ -1738,8 +1738,15 @@ function updateOrcamentoPreview() {
       }
       const fullClient = currentOrcamento.cliente;
 
-      
+      // Código formatado do orçamento: CL0001-001/2025
+      const numeroSeq = String(currentOrcamento.numeroOrcamento || '').padStart(3, '0');
+      const dateRef = currentOrcamento.createdAt ? new Date(currentOrcamento.createdAt) : new Date();
+      const anoFull = dateRef.getFullYear();
+      const codigoCliente = fullClient.numeroCadastro || 'SEM-COD';
+      const codigoOrcamento = `${codigoCliente}-${numeroSeq}/${anoFull}`;
+
       let tiposDeServicoHtml = '';
+
       let subtotalServicos = 0;
 
       if (Array.isArray(currentOrcamento.tiposDeServico) &&
