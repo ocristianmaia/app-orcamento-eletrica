@@ -1352,7 +1352,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
       if (isFullList) updateDeleteButtonState();
     }
 
-    window.toggleOrcamentoExclusao    window.toggleOrcamentoExclusao = (checkbox) => {
+    window.toggleOrcamentoExclusao = (checkbox) => {
         const id = checkbox.dataset.id;
         console.log(`[DEBUG-CLICK] Checkbox clicado! ID lido do HTML (data-id):`, id);
         if (checkbox.checked) {
