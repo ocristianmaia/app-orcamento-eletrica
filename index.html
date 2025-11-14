@@ -562,7 +562,7 @@
 
   </div> <script type="module">
 
-    console.log("VERSÃO 4.2 (Descontos, Cores e Layout) CARREGADA"); 
+    console.log("VERSÃO 4.3 (Ajustes Visuais PDF) CARREGADA"); 
     // ===== Firebase config (preservado do seu arquivo) =====
     const firebaseConfig = {
       apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
@@ -1861,11 +1861,11 @@ function updateOrcamentoPreview() {
       }
       const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
       
-      // #2: Lógica de Pagamento com Borda Pontilhada
+      // #2: Lógica de Pagamento com Borda Pontilhada (AJUSTE: 2px)
       let pagamentoHtml = '';
       if (config.config_pix_chave || config.config_cartao_vezes || config.config_pagamento_dinheiro || config.config_deposito_banco) {
         // Wrapper com borda pontilhada
-        pagamentoHtml += '<div style="border: 1px dotted #888; padding: 10px; margin-top: 20px;">';
+        pagamentoHtml += '<div style="border: 2px dotted #888; padding: 10px; margin-top: 20px;">';
         
         // H4 interno sem margem ou borda superior
         pagamentoHtml += `<h4 style="font-size: 1.1em; font-weight: bold; margin-top: 0; margin-bottom: 5px; color: ${corPrimaria};">Formas de Pagamento:</h4><div style="font-size: 0.9em; line-height: 1.4;">`;
@@ -1972,12 +1972,15 @@ function updateOrcamentoPreview() {
           
           ${descontoHtml}
 
-          <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid ${corTotal}; color: ${corTotal};">
+          <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; padding: 10px 5px; border-top: 2px solid ${corTotal}; color: ${corTotal}; background-color: #EEEEEE;">
             <span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span>
           </div>
           
           ${pagamentoHtml}
-          <div style="font-size: 0.8em; margin-top: 20px; text-align: center; color: #888;">Orçamento válido por 15 dias.</div>
+
+          <div style="font-size: 0.9em; margin-top: 20px; text-align: center; color: #000; font-weight: bold; background-color: #FFFFCC; padding: 5px 0;">
+            Orçamento válido por 15 dias.
+          </div>
         </div>`;
     }
 
