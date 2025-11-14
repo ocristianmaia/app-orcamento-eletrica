@@ -916,7 +916,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
               <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">${c.numeroCadastro || ''}</span>
             </p>
             <p class="text-sm text-gray-600">${c.telefone} | ${c.endereco}</p>
-            ${c.documento ? `<p class="text-xs text-gray-500">Doc: ${c.documento}</p>` : ''}
+            ${c.documento ? '<p class="text-xs text-gray-500">Doc: ' + c.documento + '</p>' : ''}
           </div>
           <button onclick="deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700 text-2xl ml-3 flex-shrink-0">&times;</button>
         </div>`).join('');
@@ -1880,7 +1880,7 @@ function updateOrcamentoPreview() {
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Orçamento para:</h4>
           <strong style="display: block;">${fullClient.nome}</strong>
           <span style="display: block;">${fullClient.endereco}</span>
-          ${fullClient.documento ? `<span style="display: block;">Documento: ${fullClient.documento}</span>` : ''}
+          ${fullClient.documento ? '<span style="display: block;">Documento: ' + fullClient.documento + '</span>' : ''}
           <span style="display: block;">Telefone: ${fullClient.telefone}</span>
           <hr style="margin: 15px 0;">
           ${
