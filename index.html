@@ -496,18 +496,6 @@
                 </label>
               </div>
             </div>
-
-            <div class="mt-4">
-              <label for="orc-descricao-servico" class="block text-sm font-medium text-gray-700">
-                Descrição do serviço realizado (empreitada, por hora, etc.)
-              </label>
-              <textarea
-                id="orc-descricao-servico"
-                class="mt-1 w-full p-2 border rounded-md text-sm"
-                rows="3"
-                placeholder="Ex.: Instalação de pontos de iluminação, troca de disjuntores, revisão geral do quadro, etc."
-              ></textarea>
-            </div>
           </div>
 
           <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
@@ -1415,11 +1403,6 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
           clone.tiposDeServico = Array.isArray(clone.tiposDeServico) ? clone.tiposDeServico : [];
           appState.currentOrcamento = clone;
 
-          const descTextarea = document.getElementById('orc-descricao-servico');
-          if (descTextarea) {
-            descTextarea.value = clone.descricaoServico || '';
-          }
-
           if (clone.cliente?.id && Array.from(clienteSelect.options).some(o => o.value === clone.cliente.id)) {
             clienteSelect.value = clone.cliente.id;
           } else { clienteSelect.value = ''; }
@@ -1460,8 +1443,6 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
         } else {
           document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
           resetCurrentOrcamento();
-          const descTextarea = document.getElementById('orc-descricao-servico');
-          if (descTextarea) descTextarea.value = '';
           const obraRadio = document.querySelector(`input[name="tipo-obra"][value="residencial"]`);
           if (obraRadio) obraRadio.checked = true;
           clienteSelect.value = '';
@@ -1484,15 +1465,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
         materiaisList.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
       }
       const tiposServicoList = document.querySelector('#orc-tiposdeservico-list');
-      if (tiposServicoList) {
-        tiposServicoList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-        tiposServicoList.querySelectorAll('input[type="number"]').forEach(inp => {
-          inp.value = '1';
-          inp.disabled = true;
-        });
-      }
-      const descTextarea = document.getElementById('orc-descricao-servico');
-      if (descTextarea) descTextarea.value = '';
+      if (tiposServicoList) { tiposServicoList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); }
       document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
       document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
       document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
@@ -1520,57 +1493,9 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
         </div>`).join('');
     }
 
-        function populateTiposDeServicoOrcamento() {
+    function populateTiposDeServicoOrcamento() {
       const listEl = document.getElementById('orc-tiposdeservico-list');
-      if (!appState.tiposDeServico.length) {
-        listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum tipo de serviço cadastrado em Serviços.</p>';
-        return;
-      }
-
-      const grouped = groupBy(appState.tiposDeServico, 'categoria');
-      const cats = Object.keys(grouped).sort();
-
-      listEl.innerHTML = cats.map(cat => {
-        const servicos = grouped[cat].sort((a, b) => (a.descricao || '').localeCompare(b.descricao || ''));
-        return `
-          <details class="group border rounded">
-            <summary class="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-200 rounded-md">
-              <span class="font-medium text-sm text-gray-700">${cat}</span>
-              <svg class="w-4 h-4 arrow" xmlns="http://www.w3.org/2000/svg" fill="none"
-                   viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M19 9l-7 7-7-7" />
-              </svg>
-            </summary>
-            <div class="pl-3 pb-2">
-              ${
-                servicos.map(s => `
-                  <div class="flex items-center justify-between p-1 rounded-md hover:bg-gray-100">
-                    <label class="flex items-center flex-grow cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        data-id="${s.id}" 
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      >
-                      <span class="ml-2 servico-slim">
-                        ${s.descricao} - R$ ${s.valor.toFixed(2)}
-                      </span>
-                    </label>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      value="1" 
-                      data-id="${s.id}" 
-                      class="w-16 p-1 border rounded-md text-xs ml-2" 
-                      disabled
-                    >
-                  </div>
-                `).join('')
-              }
-            </div>
-          </details>`;
-      }).join('');
-    }
+      if (!appState.tiposDeServico.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum tipo de serviço cadastrado em Serviços.</p>'; return; }
 
       const grouped = groupBy(appState.tiposDeServico, 'categoria');
       const cats = Object.keys(grouped).sort();
@@ -1627,59 +1552,23 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
       updateOrcamentoPreview();
     });
 
-        document.getElementById('orc-tiposdeservico-list').addEventListener('input', (e) => {
-      const target = e.target;
-      if (!target) return;
-
-      const serviceId = target.dataset.id;
-      if (!serviceId) return;
-
-      const serviceBase = appState.tiposDeServico.find(s => s.id === serviceId);
-      if (!serviceBase) return;
-
-      const qtyInput = document.querySelector(
-        `#orc-tiposdeservico-list input[type="number"][data-id="${serviceId}"]`
-      );
-
-      // Checkbox marcado / desmarcado
-      if (target.type === 'checkbox') {
-        if (target.checked) {
-          if (qtyInput) qtyInput.disabled = false;
-          const quantidade = parseInt(qtyInput?.value || '1', 10) || 1;
-
-          const existente = appState.currentOrcamento.tiposDeServico
-            .find(s => s.id === serviceId);
-
-          if (existente) {
-            existente.quantidade = quantidade;
-          } else {
-            appState.currentOrcamento.tiposDeServico.push({
-              ...serviceBase,
-              quantidade
-            });
+    document.getElementById('orc-tiposdeservico-list').addEventListener('change', (e) => {
+      if (e.target.type === 'checkbox') {
+        const serviceId = e.target.dataset.id;
+        const service = appState.tiposDeServico.find(s => s.id === serviceId);
+        if (!service) return;
+        if (e.target.checked) {
+          if (!appState.currentOrcamento.tiposDeServico.some(s => s.id === serviceId)) {
+            appState.currentOrcamento.tiposDeServico.push(service);
           }
         } else {
-          if (qtyInput) {
-            qtyInput.disabled = true;
-            qtyInput.value = '1';
-          }
-          appState.currentOrcamento.tiposDeServico =
-            appState.currentOrcamento.tiposDeServico.filter(s => s.id !== serviceId);
+          appState.currentOrcamento.tiposDeServico = appState.currentOrcamento.tiposDeServico.filter(s => s.id !== serviceId);
         }
+        updateOrcamentoPreview();
       }
-
-      // Alteração de quantidade
-      if (target.type === 'number') {
-        const quantidade = parseInt(target.value || '1', 10) || 1;
-        const existente = appState.currentOrcamento.tiposDeServico
-          .find(s => s.id === serviceId);
-        if (existente) existente.quantidade = quantidade;
-      }
-
-      updateOrcamentoPreview();
     });
 
-document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
+    document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
       if (!e.target || e.target.name !== 'tipo-obra') return;
       const novoValor = e.target.value === 'industrial' ? 'industrial' : 'residencial';
       if (appState.currentOrcamento) appState.currentOrcamento.tipoObra = novoValor;
@@ -1737,18 +1626,7 @@ document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
       appState.currentOrcamento.maoDeObra = { tipo, valor, label, raw_value };
     }
 
-    
-    // Campo de descrição livre do serviço realizado
-    const orcDescricaoServicoEl = document.getElementById('orc-descricao-servico');
-    if (orcDescricaoServicoEl) {
-      orcDescricaoServicoEl.addEventListener('input', (e) => {
-        if (!appState.currentOrcamento) return;
-        appState.currentOrcamento.descricaoServico = e.target.value || '';
-        updateOrcamentoPreview();
-      });
-    }
-
-function updateOrcamentoPreview() {
+    function updateOrcamentoPreview() {
       const { config, currentOrcamento } = appState;
       const previewEl = document.getElementById('pdf-preview');
       if (!currentOrcamento || !currentOrcamento.cliente) {
@@ -1757,48 +1635,20 @@ function updateOrcamentoPreview() {
       }
       const fullClient = currentOrcamento.cliente;
 
-      
       let tiposDeServicoHtml = '';
-      let subtotalServicos = 0;
+      if (currentOrcamento.tiposDeServico && currentOrcamento.tiposDeServico.length > 0) {
+        const servicosContent = currentOrcamento.tiposDeServico.map(s => `<tr><td style="padding: 4px 2px;">${s.descricao}</td><td style="text-align: right;">R$ ${s.valor.toFixed(2)}</td></tr>`).join('');
+        tiposDeServicoHtml = `
+        <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">TIPOS DE SERVIÇO:</h4>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 10px;">
+          <thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">Valor</th></tr></thead>
+          <tbody>${servicosContent}</tbody>
+        </table>
+        <hr style="margin: 15px 0;">`;
+      }
 
-      if (Array.isArray(currentOrcamento.tiposDeServico) &&
-          currentOrcamento.tiposDeServico.length > 0) {
-
-        const linhasServicos = currentOrcamento.tiposDeServico.map(s => {
-          const qtd = s.quantidade && s.quantidade > 0 ? s.quantidade : 1;
-          const valorUnit = s.valor || 0;
-          const totalLinha = valorUnit * qtd;
-          subtotalServicos += totalLinha;
-
-          return \`
-            <tr>
-              <td style="padding: 4px 2px;">\${s.descricao || ''}</td>
-              <td style="padding: 4px 2px; text-align: center;">\${qtd}</td>
-              <td style="padding: 4px 2px; text-align: right;">R$ \${valorUnit.toFixed(2)}</td>
-              <td style="padding: 4px 2px; text-align: right;">R$ \${totalLinha.toFixed(2)}</td>
-            </tr>
-          \`;
-        }).join('');
-
-        tiposDeServicoHtml = \`
-          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">
-            DESCRIÇÃO DOS SERVIÇOS:
-          </h4>
-          <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 10px;">
-            <thead>
-              <tr>
-                <th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th>
-                <th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th>
-                <th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th>
-                <th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              \${linhasServicos}
-            </tbody>
-          </table>
-        `;
-      }const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
+      const subtotalServicos = currentOrcamento.tiposDeServico.reduce((sum, service) => sum + service.valor, 0);
+      const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
       
       // NOVO: Lógica de Pagamento
       let pagamentoHtml = '';
@@ -1856,14 +1706,6 @@ function updateOrcamentoPreview() {
           <span style="display: block;">${fullClient.endereco}</span>
           <span style="display: block;">Telefone: ${fullClient.telefone}</span>
           <hr style="margin: 15px 0;">
-          ${
-            currentOrcamento.descricaoServico
-              ? `<h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">DESCRIÇÃO DO SERVIÇO:</h4>
-                 <p style="font-size: 0.9em; margin-bottom: 10px; white-space: pre-line;">
-                   ${currentOrcamento.descricaoServico}
-                 </p>`
-              : ''
-          }
           ${tiposDeServicoHtml}
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">DESCRIÇÃO DOS MATERIAIS:</h4>
           <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
