@@ -562,7 +562,7 @@
 
   </div> <script type="module">
 
-    console.log("VERSÃO 4.3 (Ajustes Visuais PDF) CARREGADA"); 
+    console.log("VERSÃO 4.4 (Correção Quebra de Linha Endereço) CARREGADA"); 
     // ===== Firebase config (preservado do seu arquivo) =====
     const firebaseConfig = {
       apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
@@ -1939,9 +1939,9 @@ function updateOrcamentoPreview() {
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding: 0 10px;">
             <div style="text-align: left; max-width: 70%;">
               <strong style="font-size: 1.2em; display: block;">${config.nome || 'Nome do Profissional'}</strong>
-              <span style="display: block; font-size: 0.9em;">${config.endereco || ''}</span>
-              <span style="display: block; font-size: 0.9em;">${config.endereco_l2 || ''}</span>
-              <span style="display: block; font-size: 0.9em;">Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
+              <span style="display: block; font-size: 0.9em; overflow-wrap: break-word;">${config.endereco || ''}</span>
+              <span style="display: block; font-size: 0.9em; overflow-wrap: break-word;">${config.endereco_l2 || ''}</span>
+              <span style="display: block; font-size: 0.9em; overflow-wrap: break-word;">Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
             </div>
             ${config.logo ? `<div style="text-align: right; flex-shrink: 0; margin-left: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px;"></div>` : ''}
           </div>
