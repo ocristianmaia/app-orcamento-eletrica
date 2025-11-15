@@ -628,6 +628,10 @@
         document.getElementById('config-doc')?.addEventListener('input', handleDocMask);
         document.getElementById('cliente-documento')?.addEventListener('input', handleDocMask);
         document.getElementById('edit-cliente-documento')?.addEventListener('input', handleDocMask);
+            // ===== NOVO: Aplicar Máscaras de Telefone =====
+        document.getElementById('config-telefone')?.addEventListener('input', handleTelefoneMask);
+        document.getElementById('cliente-telefone')?.addEventListener('input', handleTelefoneMask);
+        document.getElementById('edit-cliente-telefone')?.addEventListener('input', handleTelefoneMask);
         // ===================================
           } else {
             userId = null;
@@ -724,7 +728,7 @@
       const c = appState.config || {};
 
       document.getElementById('config-nome').value = c.nome || '';
-      document.getElementById('config-telefone').value = c.telefone || '';
+      document.getElementById('config-telefone').value = formatarTelefone(c.telefone || '');
       document.getElementById('config-doc').value = c.doc || '';
       document.getElementById('config-endereco').value = c.endereco || '';
       // #1: Atualiza Endereço Linha 2
@@ -967,7 +971,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
 
         idInput.value = cliente.id;
         nomeInput.value = cliente.nome || '';
-        telInput.value = cliente.telefone || '';
+        telInput.value = formatarTelefone(cliente.telefone || '');
         endInput.value = cliente.endereco || '';
         
         console.log("[DEBUG-CLIENTE] 4. Dados preenchidos. Abrindo modal...");
@@ -2171,7 +2175,54 @@ function getLabelEValorDoc(docValue) {
 // ==========================================================
 // FIM DO NOVO BLOCO
 // ==========================================================
+// ==========================================================
+// NOVO BLOCO: FUNÇÕES DE MÁSCARA DE TELEFONE
+// ==========================================================
 
+/**
+ * Formata um valor de string para Telefone (XX) XXXXX-XXXX
+ * @param {string} value - O valor a ser formatado
+ * @returns {string} - O valor com a máscara aplicada
+ */
+function formatarTelefone(value) {
+    if (!value) return "";
+    
+    // Remove tudo que não é dígito
+    const cleanValue = value.replace(/\D/g, '');
+
+    // Limita a 11 dígitos (DDD + 9 dígitos)
+    return cleanValue
+        .slice(0, 11)
+        .replace(/(\d{2})(\d)/, '($1) $2')       // (XX) X
+        .replace(/(\d{5})(\d{1,4})$/, '$1-$2');  // (XX) XXXXX-XXXX
+}
+
+/**
+ * Função para ser usada no evento 'input' dos campos de telefone
+ * @param {Event} event - O evento de input
+ */
+function handleTelefoneMask(event) {
+    const input = event.target;
+    const originalPos = input.selectionStart;
+    const originalLength = input.value.length;
+    
+    input.value = formatarTelefone(input.value);
+    
+    const newLength = input.value.length;
+    const diff = newLength - originalLength;
+
+    // Tenta manter o cursor na posição correta
+    // Ajuste simples para máscaras que adicionam caracteres
+    if (diff > 0) {
+        input.setSelectionRange(originalPos + diff, originalPos + diff);
+    } else {
+        // Se estiver apagando, mantém a posição que estava
+        input.setSelectionRange(originalPos, originalPos);
+    }
+}
+// ==========================================================
+// FIM DO NOVO BLOCO
+// ==========================================================
     window.onload = initializeFirebase;
   </script>
 </body>
