@@ -624,6 +624,11 @@
             loginView.classList.add('hidden');
             appView.classList.remove('hidden');
             loadingOverlay.style.display = 'none';
+            // ===== COLE AS 3 LINHAS AQUI =====
+        document.getElementById('config-doc')?.addEventListener('input', handleDocMask);
+        document.getElementById('cliente-documento')?.addEventListener('input', handleDocMask);
+        document.getElementById('edit-cliente-documento')?.addEventListener('input', handleDocMask);
+        // ===================================
           } else {
             userId = null;
             loginView.classList.remove('hidden');
@@ -1797,6 +1802,7 @@ document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
       });
     }
 
+// (Substitua a função inteira - Linha ~1780)
 function updateOrcamentoPreview() {
       const { config, currentOrcamento } = appState;
       // #3: Define as cores
@@ -1933,6 +1939,13 @@ function updateOrcamentoPreview() {
       // FIM: Lógica de Desconto
 
       const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
+
+      // ===== MUDANÇA AQUI (CPF/CNPJ) =====
+      // Pega os dados formatados do Profissional (header)
+      const { label: profDocLabel, valor: profDocValor } = getLabelEValorDoc(config.doc);
+      // Pega os dados formatados do Cliente (corpo)
+      const { label: clientDocLabel, valor: clientDocValor } = getLabelEValorDoc(fullClient.documento);
+      // ===== FIM DA MUDANÇA =====
       
       previewEl.innerHTML = `
         <div style="padding: 20px 25px;">
@@ -1941,7 +1954,7 @@ function updateOrcamentoPreview() {
               <strong style="font-size: 1.2em; display: block;">${config.nome || 'Nome do Profissional'}</strong>
               <span style="display: block; font-size: 0.9em; overflow-wrap: break-word;">${config.endereco || ''}</span>
               <span style="display: block; font-size: 0.9em; overflow-wrap: break-word;">${config.endereco_l2 || ''}</span>
-              <span style="display: block; font-size: 0.9em; overflow-wrap: break-word;">Telefone: ${config.telefone || ''} | Doc: ${config.doc || ''}</span>
+              <span style="display: block; font-size: 0.9em; overflow-wrap: break-word;">Telefone: ${config.telefone || ''} | ${profDocLabel} ${profDocValor}</span>
             </div>
             ${config.logo ? `<div style="text-align: right; flex-shrink: 0; margin-left: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px;"></div>` : ''}
           </div>
@@ -1950,7 +1963,7 @@ function updateOrcamentoPreview() {
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px; color: ${corPrimaria};">Orçamento para:</h4>
           <strong style="display: block;">${fullClient.nome}</strong>
           <span style="display: block;">${fullClient.endereco}</span>
-          ${fullClient.documento ? `<span style="display: block;">Documento: ${fullClient.documento}</span>` : ''}
+          ${fullClient.documento ? `<span style="display: block;">${clientDocLabel} ${clientDocValor}</span>` : ''}
           <span style="display: block;">Telefone: ${fullClient.telefone}</span>
           <hr style="margin: 15px 0;">
           ${
@@ -2084,6 +2097,80 @@ function updateOrcamentoPreview() {
     descontoTipoEl?.addEventListener('change', handleDescontoChange);
     descontoValorEl?.addEventListener('input', handleDescontoChange);
 
+    // ==========================================================
+// NOVO BLOCO: FUNÇÕES DE MÁSCARA E FORMATAÇÃO DE DOCUMENTO
+// ==========================================================
+
+/**
+ * Formata um valor de string para CPF ou CNPJ
+ * @param {string} value - O valor a ser formatado (pode conter ou não máscara)
+ * @returns {string} - O valor com a máscara aplicada
+ */
+function formatarCPFCNPJ(value) {
+    if (!value) return "";
+    
+    // Remove tudo que não é dígito
+    const cleanValue = value.replace(/\D/g, '');
+
+    if (cleanValue.length <= 11) {
+        // Formato CPF
+        return cleanValue
+            .slice(0, 11)
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    } else {
+        // Formato CNPJ
+        return cleanValue
+            .slice(0, 14) // Limita a 14 dígitos
+            .replace(/(\d{2})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1/$2')
+            .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+    }
+}
+
+/**
+ * Função para ser usada no evento 'input' dos campos de documento
+ * @param {Event} event - O evento de input
+ */
+function handleDocMask(event) {
+    const input = event.target;
+    const originalPos = input.selectionStart;
+    const originalLength = input.value.length;
+    
+    input.value = formatarCPFCNPJ(input.value);
+    
+    const newLength = input.value.length;
+    const diff = newLength - originalLength;
+    
+    // Tenta manter o cursor na posição correta após a formatação
+    input.setSelectionRange(originalPos + diff, originalPos + diff);
+}
+
+/**
+ * Pega um valor de documento e retorna a etiqueta (CPF/CNPJ) e o valor formatado
+ * @param {string} docValue - O valor do documento
+ * @returns {{label: string, valor: string}}
+ */
+function getLabelEValorDoc(docValue) {
+    if (!docValue) return { label: 'Doc:', valor: '' };
+    
+    const cleanValue = String(docValue).replace(/\D/g, '');
+    
+    if (cleanValue.length === 11) {
+        return { label: 'CPF:', valor: formatarCPFCNPJ(cleanValue) };
+    }
+    if (cleanValue.length === 14) {
+        return { label: 'CNPJ:', valor: formatarCPFCNPJ(cleanValue) };
+    }
+    
+    // Fallback para documentos antigos ou com formatação/tamanho incorreto
+    return { label: 'Doc:', valor: docValue };
+}
+// ==========================================================
+// FIM DO NOVO BLOCO
+// ==========================================================
 
     window.onload = initializeFirebase;
   </script>
