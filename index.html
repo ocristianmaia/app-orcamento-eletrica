@@ -543,66 +543,101 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="space-y-6">
+            
             <div>
-              <h4 class="text-md font-medium text-gray-800 mb-2">1. Selecione o Cliente</h4>
+              <h4 class="text-md font-medium text-gray-800 mb-2">Selecione o Cliente</h4>
               <select id="orc-cliente-select" class="w-full p-2 border rounded-md">
                 <option value="">Selecione um cliente</option>
               </select>
             </div>
 
             <div>
-              <h4 class="text-md font-medium text-gray-800 mb-2">2. Tipo de Serviço</h4>
-              <input id="filter-tipos" placeholder="Pesquisar serviço..." class="w-full p-2 border rounded-md mb-2 text-sm" />
-              <div id="orc-tiposdeservico-list" class="h-48 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50"></div>
-            </div>
-
-            <div>
-              <h4 class="text-md font-medium text-gray-800 mb-2">3. Materiais</h4>
-              <div id="orc-materiais-list" class="h-48 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50"></div>
-            </div>
-
-            <div>
-              <h4 class="text-md font-medium text-gray-800 mb-2">4. ESPECIALIDADE</h4>
-              <div id="orc-tipo-obra" class="flex gap-3">
+              <h4 class="text-md font-medium text-gray-800 mb-2">Modo de Cobrança</h4>
+              <div id="orc-modo-cobranca" class="flex gap-3">
                 <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                  <input type="radio" name="tipo-obra" value="residencial" class="h-4 w-4 text-blue-600 border-gray-300" checked>
-                  <span class="ml-3 text-sm font-medium text-gray-900">Residencial/Predial</span>
+                  <input type="radio" name="modo-cobranca" value="mao_de_obra" class="h-4 w-4 text-blue-600 border-gray-300" checked>
+                  <span class="ml-3 text-sm font-medium text-gray-900">Mão de Obra</span>
                 </label>
                 <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                  <input type="radio" name="tipo-obra" value="industrial" class="h-4 w-4 text-blue-600 border-gray-300">
-                  <span class="ml-3 text-sm font-medium text-gray-900">Industrial</span>
+                  <input type="radio" name="modo-cobranca" value="por_servico" class="h-4 w-4 text-blue-600 border-gray-300">
+                  <span class="ml-3 text-sm font-medium text-gray-900">Por Serviço</span>
                 </label>
               </div>
             </div>
 
+            <div id="orc-cobranca-mo-wrapper" class="space-y-6">
+              <div>
+                <h4 class="text-md font-medium text-gray-800 mb-2">ESPECIALIDADE</h4>
+                <div id="orc-tipo-obra" class="flex gap-3">
+                  <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                    <input type="radio" name="tipo-obra" value="residencial" class="h-4 w-4 text-blue-600 border-gray-300" checked>
+                    <span class="ml-3 text-sm font-medium text-gray-900">Residencial/Predial</span>
+                  </label>
+                  <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                    <input type="radio" name="tipo-obra" value="industrial" class="h-4 w-4 text-blue-600 border-gray-300">
+                    <span class="ml-3 text-sm font-medium text-gray-900">Industrial</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="text-md font-medium text-gray-800 mb-2">Mão de Obra</h4>
+                <div id="orc-mao-de-obra" class="space-y-2">
+                  <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
+                    <input type="radio" name="tipo-servico" value="empreitada" class="h-4 w-4 text-blue-600 border-gray-300">
+                    <span class="ml-3 text-sm font-medium text-gray-900">Empreitada</span>
+                    <input type="number" step="0.01" id="empreitada-valor" placeholder="Valor total R$" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                  </label>
+                  <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
+                    <input type="radio" name="tipo-servico" value="diaria" class="h-4 w-4 text-blue-600 border-gray-300">
+                    <span class="ml-3 text-sm font-medium text-gray-900">Diária</span>
+                    <input type="number" step="1" id="diaria-qtd" placeholder="Qtd. dias" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                  </label>
+                  <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
+                    <input type="radio" name="tipo-servico" value="ponto" class="h-4 w-4 text-blue-600 border-gray-300">
+                    <span id="ponto-label-span" class="ml-3 text-sm font-medium text-gray-900">Por Ponto</span>
+                    <input type="number" step="1" id="ponto-qtd" placeholder="Qtd. pontos" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                  </label>
+                  <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
+                    <input type="radio" name="tipo-servico" value="hora" class="h-4 w-4 text-blue-600 border-gray-300">
+                    <span class="ml-3 text-sm font-medium text-gray-900">Por Hora</span>
+                    <input type="number" step="0.5" id="hora-qtd" placeholder="Qtd. horas" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <div id="orc-cobranca-servico-wrapper" class="space-y-6 hidden">
+               <div>
+                <h4 class="text-md font-medium text-gray-800 mb-2">Tipos de Serviço</h4>
+                <input id="filter-tipos" placeholder="Pesquisar serviço..." class="w-full p-2 border rounded-md mb-2 text-sm" />
+                <div id="orc-tiposdeservico-list" class="h-48 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50"></div>
+              </div>
+            </div>
+            
             <div>
-              <h4 class="text-md font-medium text-gray-800 mb-2">5. Mão de Obra</h4>
-              <div id="orc-mao-de-obra" class="space-y-2">
-                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                  <input type="radio" name="tipo-servico" value="empreitada" class="h-4 w-4 text-blue-600 border-gray-300">
-                  <span class="ml-3 text-sm font-medium text-gray-900">Empreitada</span>
-                  <input type="number" step="0.01" id="empreitada-valor" placeholder="Valor total R$" class="ml-auto w-32 p-1 border rounded-md text-sm">
+              <h4 class="text-md font-medium text-gray-800 mb-2">Materiais</h4>
+              <div id="orc-usar-material" class="flex gap-3">
+                <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                  <input type="radio" name="usar-material" value="sim" class="h-4 w-4 text-blue-600 border-gray-300" checked>
+                  <span class="ml-3 text-sm font-medium text-gray-900">Usar Materiais</span>
                 </label>
-                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                  <input type="radio" name="tipo-servico" value="diaria" class="h-4 w-4 text-blue-600 border-gray-300">
-                  <span class="ml-3 text-sm font-medium text-gray-900">Diária</span>
-                  <input type="number" step="1" id="diaria-qtd" placeholder="Qtd. dias" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                </label>
-                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                  <input type="radio" name="tipo-servico" value="ponto" class="h-4 w-4 text-blue-600 border-gray-300">
-                  <span id="ponto-label-span" class="ml-3 text-sm font-medium text-gray-900">Por Ponto</span>
-                  <input type="number" step="1" id="ponto-qtd" placeholder="Qtd. pontos" class="ml-auto w-32 p-1 border rounded-md text-sm">
-                </label>
-                <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
-                  <input type="radio" name="tipo-servico" value="hora" class="h-4 w-4 text-blue-600 border-gray-300">
-                  <span class="ml-3 text-sm font-medium text-gray-900">Por Hora</span>
-                  <input type="number" step="0.5" id="hora-qtd" placeholder="Qtd. horas" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                <label class="flex-1 flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                  <input type="radio" name="usar-material" value="nao" class="h-4 w-4 text-blue-600 border-gray-300">
+                  <span class="ml-3 text-sm font-medium text-gray-900">Não Incluir</span>
                 </label>
               </div>
             </div>
-
+            
+            <div id="orc-cobranca-material-wrapper" class="space-y-6">
+              <div>
+                <h4 class="text-md font-medium text-gray-800 mb-2">Lista de Materiais</h4>
+                <div id="orc-materiais-list" class="h-48 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50"></div>
+              </div>
+            </div>
+            
             <div>
-              <h4 class="text-md font-medium text-gray-800 mb-2">6. Desconto (Opcional)</h4>
+              <h4 class="text-md font-medium text-gray-800 mb-2">Desconto (Opcional)</h4>
               <div class="flex gap-3">
                 <select id="orc-desconto-tipo" class="p-2 border rounded-md bg-gray-50">
                   <option value="nenhum">Sem Desconto</option>
@@ -612,6 +647,7 @@
                 <input type="number" step="0.01" id="orc-desconto-valor" class="w-full p-2 border rounded-md" placeholder="0.00" disabled>
               </div>
             </div>
+
             <div class="mt-4">
               <label for="orc-descricao-servico" class="block text-sm font-medium text-gray-700">
                 Descrição do serviço realizado (empreitada, por hora, etc.)
@@ -624,7 +660,6 @@
               ></textarea>
             </div>
           </div>
-
           <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
             <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
             <div id="pdf-preview" class="flex-grow text-sm">
@@ -649,7 +684,7 @@
 
   </div> <script type="module">
 
-    console.log("VERSÃO 5.0 (Busca de CEP) CARREGADA"); 
+    console.log("VERSÃO 6.0 (Modo de Cobrança) CARREGADA"); 
     // ===== Firebase config (preservado do seu arquivo) =====
     const firebaseConfig = {
       apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
@@ -686,7 +721,11 @@
 
     function resetCurrentOrcamento() {
       appState.currentOrcamento = {
-        id: null, cliente: null, tiposDeServico: [], items: [],
+        id: null, cliente: null, 
+        modoCobranca: 'mao_de_obra', // NOVO
+        usarMaterial: 'sim', // NOVO
+        tiposDeServico: [], 
+        items: [],
         maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
         desconto: { tipo: 'nenhum', valor: 0 },
         total: 0, tipoObra: 'residencial', createdAt: null,
@@ -721,7 +760,7 @@
             document.getElementById('cliente-telefone')?.addEventListener('input', handleTelefoneMask);
             document.getElementById('edit-cliente-telefone')?.addEventListener('input', handleTelefoneMask);
             
-            // ===== NOVO: Aplicar Máscaras de CEP =====
+            // ===== Aplicar Máscaras de CEP =====
             document.getElementById('config-cep')?.addEventListener('input', handleCEPMask);
             document.getElementById('cliente-cep')?.addEventListener('input', handleCEPMask);
             document.getElementById('edit-cliente-cep')?.addEventListener('input', handleCEPMask);
@@ -1611,6 +1650,48 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
       openOrcamentoModal(orc);
     };
 
+    // ==========================================================
+    // INÍCIO: LÓGICA DO MODAL DE ORÇAMENTO (ATUALIZADO)
+    // ==========================================================
+
+    // NOVO: Funções de toggle para o modal
+    const toggleModoDeCobranca = (modo) => {
+        const moWrapper = document.getElementById('orc-cobranca-mo-wrapper');
+        const servicoWrapper = document.getElementById('orc-cobranca-servico-wrapper');
+        
+        if (modo === 'por_servico') {
+            moWrapper.classList.add('hidden');
+            servicoWrapper.classList.remove('hidden');
+            // Limpa a seleção de Mão de Obra
+            appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
+            document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
+            document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
+        } else { // 'mao_de_obra'
+            moWrapper.classList.remove('hidden');
+            servicoWrapper.classList.add('hidden');
+            // Limpa a seleção de Serviços
+            appState.currentOrcamento.tiposDeServico = [];
+            document.querySelectorAll('#orc-tiposdeservico-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#orc-tiposdeservico-list input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
+        }
+        updateOrcamentoPreview();
+    };
+
+    const toggleUsarMaterial = (modo) => {
+        const materialWrapper = document.getElementById('orc-cobranca-material-wrapper');
+        
+        if (modo === 'nao') {
+            materialWrapper.classList.add('hidden');
+            // Limpa a seleção de Materiais
+            appState.currentOrcamento.items = [];
+            document.querySelectorAll('#orc-materiais-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#orc-materiais-list input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
+        } else { // 'sim'
+            materialWrapper.classList.remove('hidden');
+        }
+        updateOrcamentoPreview();
+    };
+
     window.openOrcamentoModal = (orcamentoParaEditar = null) => {
       try {
         const modal = document.getElementById('orcamento-modal');
@@ -1623,38 +1704,51 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
         if (orcamentoParaEditar) {
           document.getElementById('modal-title').textContent = 'Editar Orçamento';
           const clone = JSON.parse(JSON.stringify(orcamentoParaEditar || {}));
+          
+          // Define padrões para upgrades antigos
+          clone.modoCobranca = clone.modoCobranca || 'mao_de_obra';
+          clone.usarMaterial = clone.usarMaterial || 'sim';
           clone.tipoObra = (clone.tipoObra === 'industrial' || clone.tipoObra === 'residencial') ? clone.tipoObra : 'residencial';
           clone.maoDeObra = clone.maoDeObra || { tipo: '', valor: 0, label: '', raw_value: '' };
           clone.desconto = clone.desconto || { tipo: 'nenhum', valor: 0 };
           clone.items = Array.isArray(clone.items) ? clone.items : [];
           clone.tiposDeServico = Array.isArray(clone.tiposDeServico) ? clone.tiposDeServico : [];
+          
           appState.currentOrcamento = clone;
 
+          // Preenche descrição
           const descTextarea = document.getElementById('orc-descricao-servico');
-          if (descTextarea) {
-            descTextarea.value = clone.descricaoServico || '';
-          }
+          if (descTextarea) descTextarea.value = clone.descricaoServico || '';
 
+          // Preenche cliente
           if (clone.cliente?.id && Array.from(clienteSelect.options).some(o => o.value === clone.cliente.id)) {
             clienteSelect.value = clone.cliente.id;
           } else { clienteSelect.value = ''; }
 
-          const obraRadio = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
-          if (obraRadio) obraRadio.checked = true;
+          // NOVO: Preenche os seletores de modo
+          document.querySelector(`input[name="modo-cobranca"][value="${clone.modoCobranca}"]`).checked = true;
+          document.querySelector(`input[name="usar-material"][value="${clone.usarMaterial}"]`).checked = true;
+          
+          // Preenche Mão de Obra (se aplicável)
+          if (clone.modoCobranca === 'mao_de_obra') {
+              const obraRadio = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
+              if (obraRadio) obraRadio.checked = true;
 
-          const mao = clone.maoDeObra;
-          if (mao && mao.tipo) {
-            const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${mao.tipo}"]`);
-            if (tipoServicoRadio) {
-              tipoServicoRadio.checked = true;
-              const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
-              set('empreitada-valor', mao.tipo === 'empreitada' ? mao.raw_value : '');
-              set('diaria-qtd',       mao.tipo === 'diaria'    ? mao.raw_value : '');
-              set('ponto-qtd',        mao.tipo === 'ponto'     ? mao.raw_value : '');
-              set('hora-qtd',         mao.tipo === 'hora'      ? mao.raw_value : '');
-            }
+              const mao = clone.maoDeObra;
+              if (mao && mao.tipo) {
+                const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${mao.tipo}"]`);
+                if (tipoServicoRadio) {
+                  tipoServicoRadio.checked = true;
+                  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+                  set('empreitada-valor', mao.tipo === 'empreitada' ? mao.raw_value : '');
+                  set('diaria-qtd',       mao.tipo === 'diaria'    ? mao.raw_value : '');
+                  set('ponto-qtd',        mao.tipo === 'ponto'     ? mao.raw_value : '');
+                  set('hora-qtd',         mao.tipo === 'hora'      ? mao.raw_value : '');
+                }
+              }
           }
-
+          
+          // Preenche Desconto
           if (clone.desconto && clone.desconto.tipo !== 'nenhum') {
             if (descontoTipoEl) descontoTipoEl.value = clone.desconto.tipo;
             if (descontoValorEl) {
@@ -1668,35 +1762,55 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
               descontoValorEl.disabled = true;
             }
           }
-
+          
+          // Dispara os toggles para mostrar/esconder seções corretas
+          toggleModoDeCobranca(clone.modoCobranca);
+          toggleUsarMaterial(clone.usarMaterial);
+          
           clienteSelect.dispatchEvent(new Event('change'));
 
+          // Preenche os checkboxes de itens (após um pequeno delay para os toggles)
           setTimeout(() => {
-            (clone.items || []).forEach(item => {
-              const cb  = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
-              const qty = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
-              if (cb) cb.checked = true;
-              if (qty) { qty.disabled = false; qty.value = item.quantidade ?? 1; }
-            });
-            (clone.tiposDeServico || []).forEach(service => {
-              const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
-              if(checkbox) checkbox.checked = true;
-            });
+            if (clone.usarMaterial === 'sim') {
+                (clone.items || []).forEach(item => {
+                  const cb  = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
+                  const qty = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
+                  if (cb) cb.checked = true;
+                  if (qty) { qty.disabled = false; qty.value = item.quantidade ?? 1; }
+                });
+            }
+            
+            if (clone.modoCobranca === 'por_servico') {
+                (clone.tiposDeServico || []).forEach(service => {
+                  const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
+                  if(checkbox) checkbox.checked = true;
+                });
+            }
+            
             const tipoObraWrap = document.getElementById('orc-tipo-obra');
             if (tipoObraWrap) tipoObraWrap.dispatchEvent(new Event('change', { bubbles: true }));
             calculateMaoDeObra();
             updateOrcamentoPreview();
           }, 300);
-        } else {
+
+        } else { // Criando novo orçamento
           document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
           resetCurrentOrcamento();
+          
           const descTextarea = document.getElementById('orc-descricao-servico');
           if (descTextarea) descTextarea.value = '';
-          const obraRadio = document.querySelector(`input[name="tipo-obra"][value="residencial"]`);
-          if (obraRadio) obraRadio.checked = true;
+          
+          // Reseta para os padrões
+          document.querySelector(`input[name="modo-cobranca"][value="mao_de_obra"]`).checked = true;
+          document.querySelector(`input[name="usar-material"][value="sim"]`).checked = true;
+          document.querySelector(`input[name="tipo-obra"][value="residencial"]`).checked = true;
           
           if (descontoTipoEl) descontoTipoEl.value = 'nenhum';
           if (descontoValorEl) { descontoValorEl.value = ''; descontoValorEl.disabled = true; }
+
+          // Dispara os toggles para o estado padrão
+          toggleModoDeCobranca('mao_de_obra');
+          toggleUsarMaterial('sim');
 
           clienteSelect.value = '';
           clienteSelect.dispatchEvent(new Event('change'));
@@ -1708,19 +1822,22 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
       }
     };
 
-    // Adiciona reset dos campos de desconto
     const descontoTipoEl = document.getElementById('orc-desconto-tipo');
     const descontoValorEl = document.getElementById('orc-desconto-valor');
 
     window.closeOrcamentoModal = () => {
       document.getElementById('orcamento-modal').classList.remove('active');
       resetCurrentOrcamento();
+      
+      // Reseta todos os campos do modal para o estado inicial
       document.getElementById('orc-cliente-select').value = '';
+      
       const materiaisList = document.querySelector('#orc-materiais-list');
       if (materiaisList) {
         materiaisList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
         materiaisList.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
       }
+      
       const tiposServicoList = document.querySelector('#orc-tiposdeservico-list');
       if (tiposServicoList) {
         tiposServicoList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
@@ -1729,11 +1846,19 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
           inp.disabled = true;
         });
       }
+      
       const descTextarea = document.getElementById('orc-descricao-servico');
       if (descTextarea) descTextarea.value = '';
+      
       document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
       document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
+      
+      // Reseta os toggles para o padrão
+      document.querySelector('input[name="modo-cobranca"][value="mao_de_obra"]').checked = true;
+      document.querySelector('input[name="usar-material"][value="sim"]').checked = true;
       document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
+      toggleModoDeCobranca('mao_de_obra');
+      toggleUsarMaterial('sim');
 
       if (descontoTipoEl) descontoTipoEl.value = 'nenhum';
       if (descontoValorEl) { descontoValorEl.value = ''; descontoValorEl.disabled = true; }
@@ -1913,6 +2038,22 @@ document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
       updateOrcamentoPreview();
     });
 
+    // NOVO: Adiciona listeners para os toggles
+    document.getElementById('orc-modo-cobranca').addEventListener('change', (e) => {
+        if (!appState.currentOrcamento) return;
+        const modo = e.target.value;
+        appState.currentOrcamento.modoCobranca = modo;
+        toggleModoDeCobranca(modo);
+    });
+
+    document.getElementById('orc-usar-material').addEventListener('change', (e) => {
+        if (!appState.currentOrcamento) return;
+        const modo = e.target.value;
+        appState.currentOrcamento.usarMaterial = modo;
+        toggleUsarMaterial(modo);
+    });
+    // FIM dos novos listeners
+
     function calculateMaoDeObra() {
       const tipoSelecionado = document.querySelector('input[name="tipo-servico"]:checked');
       if (!appState.currentOrcamento || !tipoSelecionado) {
@@ -1985,47 +2126,71 @@ function updateOrcamentoPreview() {
 
       let tiposDeServicoHtml = '';
       let subtotalServicos = 0;
+      let maoDeObraHtml = '';
+      let totalMaoDeObra = 0;
+      let materiaisHtml = '';
+      let subtotalMateriais = 0;
 
-      if (Array.isArray(currentOrcamento.tiposDeServico) &&
-          currentOrcamento.tiposDeServico.length > 0) {
+      // NOVO: Lógica condicional
+      const modoCobranca = appState.currentOrcamento.modoCobranca || 'mao_de_obra';
+      const usarMaterial = appState.currentOrcamento.usarMaterial || 'sim';
 
+      // 1. Processa Serviços (se 'por_servico')
+      if (modoCobranca === 'por_servico' && Array.isArray(currentOrcamento.tiposDeServico) && currentOrcamento.tiposDeServico.length > 0) {
         const linhasServicos = currentOrcamento.tiposDeServico.map(s => {
           const qtd = s.quantidade && s.quantidade > 0 ? s.quantidade : 1;
           const valorUnit = s.valor || 0;
           const totalLinha = valorUnit * qtd;
           subtotalServicos += totalLinha;
-
           return `
             <tr>
               <td style="padding: 4px 2px;">${s.descricao || ''}</td>
               <td style="padding: 4px 2px; text-align: center;">${qtd}</td>
               <td style="padding: 4px 2px; text-align: right;">R$ ${valorUnit.toFixed(2)}</td>
               <td style="padding: 4px 2px; text-align: right;">R$ ${totalLinha.toFixed(2)}</td>
-            </tr>
-          `;
+            </tr>`;
         }).join('');
-
         tiposDeServicoHtml = `
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: ${corPrimaria};">
             DESCRIÇÃO DOS SERVIÇOS:
           </h4>
           <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 10px;">
-            <thead>
-              <tr>
-                <th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th>
-                <th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th>
-                <th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th>
-                <th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${linhasServicos}
-            </tbody>
-          </table>
-        `;
+            <thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead>
+            <tbody>${linhasServicos}</tbody>
+          </table>`;
       }
-      const subtotalMateriais = currentOrcamento.items.reduce((sum, item) => sum + (item.valor * (item.quantidade || 1)), 0);
+
+      // 2. Processa Mão de Obra (se 'mao_de_obra')
+      if (modoCobranca === 'mao_de_obra') {
+        totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
+        const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
+        maoDeObraHtml = `
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px; color: ${corPrimaria};">MÃO DE OBRA:</h4>
+          <div style="text-align: right;"><span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>`;
+      }
       
+      // 3. Processa Materiais (se 'sim')
+      if (usarMaterial === 'sim') {
+          const itemsHtml = currentOrcamento.items.map(item => {
+            const itemTotal = item.valor * (item.quantidade || 1);
+            subtotalMateriais += itemTotal; // Soma ao subtotal
+            return `<tr>
+              <td style="padding: 4px 2px; text-align: left;">${item.nome}</td>
+              <td style="padding: 4px 2px; text-align: center;">${item.quantidade || 1} ${item.unidade || 'UNID'}</td>
+              <td style="padding: 4px 2px; text-align: right;">R$ ${item.valor.toFixed(2)}</td>
+              <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
+            </tr>`;
+          }).join('');
+
+          materiaisHtml = `
+            <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: ${corPrimaria};">DESCRIÇÃO DOS MATERIAIS:</h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+              ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
+            </table>
+            ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}`;
+      }
+      
+      // 4. Lógica de Pagamento (sempre visível)
       let pagamentoHtml = '';
       if (config.config_pix_chave || config.config_cartao_vezes || config.config_pagamento_dinheiro || config.config_deposito_banco) {
         pagamentoHtml += '<div style="border: 2px dotted #888; padding: 10px; margin-top: 20px;">';
@@ -2053,19 +2218,8 @@ function updateOrcamentoPreview() {
         }
         pagamentoHtml += '</div></div>';
       }
-
-      const itemsHtml = currentOrcamento.items.map(item => {
-        const itemTotal = item.valor * (item.quantidade || 1);
-        return `<tr>
-          <td style="padding: 4px 2px; text-align: left;">${item.nome}</td>
-          <td style="padding: 4px 2px; text-align: center;">${item.quantidade || 1} ${item.unidade || 'UNID'}</td>
-          <td style="padding: 4px 2px; text-align: right;">R$ ${item.valor.toFixed(2)}</td>
-          <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
-        </tr>`;
-      }).join('');
       
-      const totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
-      
+      // 5. Cálculo de Total e Desconto
       const subtotal = subtotalServicos + subtotalMateriais + totalMaoDeObra;
       let valorDesconto = 0;
       let descontoHtml = '';
@@ -2088,18 +2242,16 @@ function updateOrcamentoPreview() {
       }
       
       currentOrcamento.total = subtotal - valorDesconto;
-      const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
-
-      // ===== MUDANÇA AQUI (CPF/CNPJ e Endereço) =====
+      
+      // 6. Formatação de Cabeçalho e Rodapé
       const { label: profDocLabel, valor: profDocValor } = getLabelEValorDoc(config.doc);
       const { label: clientDocLabel, valor: clientDocValor } = getLabelEValorDoc(fullClient.documento);
       
-      // NOVO: Formata os endereços para o PDF
       const profEnderecoLinha1 = `${config.logradouro || ''}, ${config.numero || 's/n'}`;
       const profEnderecoLinha2 = `${config.bairro || ''} - ${config.cidade || ''}/${config.uf || ''}`;
       const clientEndereco = formatarEnderecoCompleto(fullClient);
-      // ===== FIM DA MUDANÇA =====
       
+      // 7. Renderização Final
       previewEl.innerHTML = `
         <div style="padding: 20px 25px;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding: 0 10px;">
@@ -2112,6 +2264,7 @@ function updateOrcamentoPreview() {
             ${config.logo ? `<div style="text-align: right; flex-shrink: 0; margin-left: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px;"></div>` : ''}
           </div>
           <hr style="margin: 15px 0;">
+          
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 6px; color: ${corPrimaria};">Orçamento Nº: ${codigoOrcamento}</h4>
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px; color: ${corPrimaria};">Orçamento para:</h4>
           <strong style="display: block;">${fullClient.nome}</strong>
@@ -2119,6 +2272,7 @@ function updateOrcamentoPreview() {
           ${fullClient.documento ? `<span style="display: block;">${clientDocLabel} ${clientDocValor}</span>` : ''}
           <span style="display: block;">Telefone: ${formatarTelefone(fullClient.telefone)}</span>
           <hr style="margin: 15px 0;">
+          
           ${
             currentOrcamento.descricaoServico
               ? `<h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: ${corPrimaria};">DESCRIÇÃO DO SERVIÇO:</h4>
@@ -2127,14 +2281,10 @@ function updateOrcamentoPreview() {
                  </p>`
               : ''
           }
+          
           ${tiposDeServicoHtml}
-          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: ${corPrimaria};">DESCRIÇÃO DOS MATERIAIS:</h4>
-          <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
-            ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
-          </table>
-          ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}
-          <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px; color: ${corPrimaria};">MÃO DE OBRA:</h4>
-          <div style="text-align: right;"><span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>
+          ${materiaisHtml}
+          ${maoDeObraHtml}
           
           ${descontoHtml}
 
@@ -2143,7 +2293,6 @@ function updateOrcamentoPreview() {
           </div>
           
           ${pagamentoHtml}
-
           <div style="font-size: 0.9em; margin-top: 20px; text-align: center; color: #000; font-weight: bold; background-color: #FFFFCC; padding: 5px 0;">
             Orçamento válido por 15 dias.
           </div>
@@ -2152,15 +2301,29 @@ function updateOrcamentoPreview() {
 
     window.saveOrcamento = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
+      
+      // Copia o estado atual
       const data = { ...appState.currentOrcamento };
+      
+      // NOVO: Limpa os dados com base nos seletores
+      if (data.modoCobranca === 'mao_de_obra') {
+          data.tiposDeServico = []; // Zera serviços
+      } else { // por_servico
+          data.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' }; // Zera mão de obra
+      }
+      
+      if (data.usarMaterial === 'nao') {
+          data.items = []; // Zera materiais
+      }
+      
       try {
-        if (data.id) {
+        if (data.id) { // Editando
           data.versao = (data.versao || 1) + 1;
           const ref = doc(db, `users/${userId}/orcamentos/${data.id}`);
           delete data.createdAt;
           await setDoc(ref, data, { merge: true });
           alert('Orçamento atualizado!');
-        } else {
+        } else { // Criando
           const maxNumero = appState.orcamentos.reduce((max, o) => Math.max(max, o.numeroOrcamento || 0), 0);
           data.numeroOrcamento = maxNumero + 1;
           data.versao = 1;
@@ -2316,7 +2479,7 @@ function updateOrcamentoPreview() {
     }
     
     // ==========================================================
-    // NOVO BLOCO: FUNÇÕES DE BUSCA DE CEP E MÁSCARA
+    // BLOCO: FUNÇÕES DE BUSCA DE CEP E MÁSCARA
     // ==========================================================
     
     /**
