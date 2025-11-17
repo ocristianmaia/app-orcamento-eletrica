@@ -1030,14 +1030,11 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
       btn.disabled = true; btn.textContent='Salvando...';
       
       try {
-        const count = appState.clientes.length + 1;
-        const seq = String(count).padStart(4,'0');
-        
         const data = {
             nome: getVal('cliente-nome'),
             telefone: getVal('cliente-telefone').replace(/\D/g, ''),
             documento: getVal('cliente-documento').replace(/\D/g, ''),
-            numeroCadastro: `CL${seq}`,
+            numeroCadastro: gerarNovoNumeroCliente(),
             
             // NOVO: Campos de endereço
             cep: getVal('cliente-cep').replace(/\D/g, ''),
@@ -2566,6 +2563,63 @@ function updateOrcamentoPreview() {
             bairroEl.value = originalValues.bairro;
         }
     }
+
+    // ==========================================================
+    // NOVO BLOCO: FUNÇÃO PARA GERAR NOVO ID DE CLIENTE
+    // ==========================================================
+
+/**
+ * Gera um novo ID de cliente no formato CL[NNN][MM][YY]
+ * @returns {string} - O novo ID do cliente
+ */
+function gerarNovoNumeroCliente() {
+    // 1. Pega o próximo número sequencial (NNN)
+    // Filtra IDs que começam com CL e têm o formato novo ou antigo
+    const clientesComID = appState.clientes
+        .map(c => c.numeroCadastro)
+        .filter(id => id && id.startsWith('CL'));
+
+    let maxSeq = 0;
+    
+    clientesComID.forEach(id => {
+        let seqNum = 0;
+        // Remove o 'CL'
+        const numPart = id.substring(2); 
+        
+        // Tenta identificar o formato novo (ex: 0011125)
+        if (numPart.length === 7) { // CL[NNN][MM][YY]
+            seqNum = parseInt(numPart.substring(0, 3), 10);
+        } 
+        // Tenta identificar o formato antigo (ex: 0001)
+        else if (numPart.length === 4) { // CL[NNNN]
+            seqNum = parseInt(numPart, 10);
+        }
+        // Tenta identificar IDs manuais antigos (ex: CL011125)
+        else if (numPart.length === 6) { // CL[NN][MM][YY]
+             seqNum = parseInt(numPart.substring(0, 2), 10);
+        }
+
+        if (!isNaN(seqNum) && seqNum > maxSeq) {
+            maxSeq = seqNum;
+        }
+    });
+
+    const proximoSeq = (maxSeq + 1).toString().padStart(3, '0'); // Garante 3 dígitos (NNN)
+
+    // 2. Pega a data atual (MMYY)
+    const agora = new Date();
+    const mes = (agora.getMonth() + 1).toString().padStart(2, '0'); // MM
+    const ano = agora.getFullYear().toString().slice(-2); // YY
+
+    // 3. Monta o ID
+    const novoID = `CL${proximoSeq}${mes}${ano}`;
+    
+    console.log(`Gerado novo ID de Cliente: ${novoID} (Sequência: ${proximoSeq})`);
+    return novoID;
+}
+// ==========================================================
+// FIM DO NOVO BLOCO
+// ==========================================================
 
     window.onload = initializeFirebase;
   </script>
