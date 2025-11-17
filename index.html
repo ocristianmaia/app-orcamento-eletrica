@@ -1077,6 +1077,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
       try {
         const data = {
           nome: getVal('edit-cliente-nome'),
+          numeroCadastro: getVal('edit-cliente-numerocadastro'),
           telefone: getVal('edit-cliente-telefone').replace(/\D/g, ''),
           documento: getVal('edit-cliente-documento').replace(/\D/g, ''),
           
@@ -1090,7 +1091,6 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
         };
 
         const originalCliente = appState.clientes.find(c => c.id === clienteId);
-        data.numeroCadastro = originalCliente.numeroCadastro || ''; 
         
         // Remove 'endereco' antigo
         delete data.endereco;
