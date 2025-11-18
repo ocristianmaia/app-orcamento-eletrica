@@ -236,50 +236,74 @@
             <div id="orcamentos-list-recent" class="space-y-3"></div>
           </div>
 
-          <div id="clientes" class="tab-content space-y-4">
+         <div id="clientes" class="tab-content space-y-4">
+            
             <div class="bg-white p-6 rounded-lg shadow-sm">
-              <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Cliente</h2>
-              <form id="form-cliente" class="space-y-4">
-                <input type="text" id="cliente-nome" placeholder="Nome do Cliente" class="w-full p-2 border rounded-md" required>
-                <input type="tel" id="cliente-telefone" placeholder="Telefone (com DDD)" class="w-full p-2 border rounded-md" required>
+              
+              <h2 class="text-xl font-semibold mb-4">Importar / Cadastrar</h2>
+              <div class="mb-6 p-4 border rounded-lg bg-gray-50">
+                <p class="text-sm text-gray-600 mb-2">Importar planilha (.xlsx) com as colunas: <br><strong>Nome, Telefone, Documento, CEP, Numero, Logradouro, Bairro, Cidade, UF</strong>.</p>
+                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                  <input type="file" id="clientes-xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm text-gray-700 flex-1">
+                  <button id="btn-import-clientes-xlsx" class="whitespace-nowrap bg-emerald-600 text-white px-4 py-2 rounded-lg shadow hover:bg-emerald-700 transition">Importar Clientes</button>
+                  <button id="btn-clear-clientes" class="whitespace-nowrap bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">Limpar Clientes</button>
+                </div>
+                <p id="clientes-xlsx-status" class="text-xs text-gray-500 mt-2"></p>
+              </div>
+              
+              <details class="border rounded-lg">
+                <summary class="cursor-pointer bg-gray-100 hover:bg-gray-200 p-4 font-medium text-lg rounded-t-lg">
+                  Cadastrar Novo Cliente Manualmente
+                </summary>
+                <div class="p-6">
+                  <form id="form-cliente" class="space-y-4">
+                    <input type="text" id="cliente-nome" placeholder="Nome do Cliente" class="w-full p-2 border rounded-md" required>
+                    <input type="tel" id="cliente-telefone" placeholder="Telefone (com DDD)" class="w-full p-2 border rounded-md" required>
 
-                <div class="grid grid-cols-3 gap-4">
-                  <div class="col-span-2">
-                    <label for="cliente-cep" class="block text-sm font-medium text-gray-700">CEP</label>
-                    <input type="text" id="cliente-cep" 
-                           onchange="buscarCEP(this.value, { logradouro: 'cliente-logradouro', bairro: 'cliente-bairro', cidade: 'cliente-cidade', uf: 'cliente-uf', numero: 'cliente-numero' })" 
-                           placeholder="00000-000" class="w-full p-2 border rounded-md mt-1">
-                  </div>
-                  <div>
-                    <label for="cliente-numero" class="block text-sm font-medium text-gray-700">Número</label>
-                    <input type="text" id="cliente-numero" placeholder="Ex: 106" class="w-full p-2 border rounded-md mt-1" required>
-                  </div>
+                    <div class="grid grid-cols-3 gap-4">
+                      <div class="col-span-2">
+                        <label for="cliente-cep" class="block text-sm font-medium text-gray-700">CEP</label>
+                        <input type="text" id="cliente-cep" 
+                               onchange="buscarCEP(this.value, { logradouro: 'cliente-logradouro', bairro: 'cliente-bairro', cidade: 'cliente-cidade', uf: 'cliente-uf', numero: 'cliente-numero' })" 
+                               placeholder="00000-000" class="w-full p-2 border rounded-md mt-1">
+                      </div>
+                      <div>
+                        <label for="cliente-numero" class="block text-sm font-medium text-gray-700">Número</label>
+                        <input type="text" id="cliente-numero" placeholder="Ex: 106" class="w-full p-2 border rounded-md mt-1" required>
+                      </div>
+                    </div>
+                    <div>
+                      <label for="cliente-logradouro" class="block text-sm font-medium text-gray-700">Rua / Logradouro</label>
+                      <input type="text" id="cliente-logradouro" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
+                    </div>
+                    <div>
+                      <label for="cliente-bairro" class="block text-sm font-medium text-gray-700">Bairro</label>
+                      <input type="text" id="cliente-bairro" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                      <div class="col-span-2">
+                        <label for="cliente-cidade" class="block text-sm font-medium text-gray-700">Cidade</label>
+                        <input type="text" id="cliente-cidade" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
+                      </div>
+                      <div>
+                        <label for="cliente-uf" class="block text-sm font-medium text-gray-700">UF</label>
+                        <input type="text" id="cliente-uf" placeholder="UF" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
+                      </div>
+                    </div>
+                    <input type="text" id="cliente-documento" placeholder="CPF ou CNPJ do Cliente" class="w-full p-2 border rounded-md">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar Cliente</button>
+                  </form>
                 </div>
-                <div>
-                  <label for="cliente-logradouro" class="block text-sm font-medium text-gray-700">Rua / Logradouro</label>
-                  <input type="text" id="cliente-logradouro" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
-                </div>
-                <div>
-                  <label for="cliente-bairro" class="block text-sm font-medium text-gray-700">Bairro</label>
-                  <input type="text" id="cliente-bairro" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
-                </div>
-                <div class="grid grid-cols-3 gap-4">
-                  <div class="col-span-2">
-                    <label for="cliente-cidade" class="block text-sm font-medium text-gray-700">Cidade</label>
-                    <input type="text" id="cliente-cidade" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
-                  </div>
-                  <div>
-                    <label for="cliente-uf" class="block text-sm font-medium text-gray-700">UF</label>
-                    <input type="text" id="cliente-uf" placeholder="UF" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
-                  </div>
-                </div>
-                               
-                <input type="text" id="cliente-documento" placeholder="CPF ou CNPJ do Cliente" class="w-full p-2 border rounded-md">
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar Cliente</button>
-              </form>
+              </details>
             </div>
+            
             <div class="bg-white p-6 rounded-lg shadow-sm">
-              <h2 class="text-xl font-semibold mb-4">Clientes Cadastrados</h2>
+              
+              <div class="flex justify-between items-center mb-4">
+                 <h2 class="text-xl font-semibold">Clientes Cadastrados</h2>
+                 <input type="text" id="search-cliente" placeholder="🔎 Pesquisar por nome..." class="w-full max-w-xs p-2 border rounded-md text-sm">
+              </div>
+
               <div class="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-md mb-4" role="alert">
                 <p class="text-sm font-medium">Para editar um cliente, clique sobre o nome dele. Para excluir, clique no &times;.</p>
               </div>
@@ -764,6 +788,7 @@
             document.getElementById('config-cep')?.addEventListener('input', handleCEPMask);
             document.getElementById('cliente-cep')?.addEventListener('input', handleCEPMask);
             document.getElementById('edit-cliente-cep')?.addEventListener('input', handleCEPMask);
+            document.getElementById('search-cliente')?.addEventListener('input', handleSearchCliente);
             // ===============================================
 
           } else {
@@ -1498,6 +1523,150 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
         } catch(e) { console.error(e); status.textContent = 'Erro ao apagar os materiais.'; alert('Erro ao apagar materiais.'); }
     }
     document.getElementById('btn-clear-materiais').addEventListener('click', clearAllMateriais);
+
+    // ==========================================================
+    // NOVO BLOCO: IMPORTAR / LIMPAR CLIENTES
+    // ==========================================================
+    
+    document.getElementById('btn-import-clientes-xlsx')?.addEventListener('click', async () => {
+        const inp = document.getElementById('clientes-xlsx-input');
+        const status = document.getElementById('clientes-xlsx-status');
+        if (!inp.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx para clientes.'); return; }
+        const f = inp.files[0];
+        
+        try {
+            status.textContent = 'Lendo planilha de clientes...';
+            const buf = await f.arrayBuffer();
+            const wb = XLSX.read(buf, { type:'array' });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+            
+            // Mapeamento flexível de colunas
+            const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
+            const headerMapCandidates = {
+                nome: ['nome', 'cliente', 'razao social'],
+                telefone: ['telefone', 'fone', 'celular'],
+                documento: ['documento', 'cpf', 'cnpj'],
+                cep: ['cep'],
+                numero: ['numero', 'num'],
+                logradouro: ['logradouro', 'rua', 'endereco'],
+                bairro: ['bairro'],
+                cidade: ['cidade'],
+                uf: ['uf', 'estado']
+            };
+            
+            const keys = rows.length ? Object.keys(rows[0]) : [];
+            const colMap = {};
+            Object.keys(headerMapCandidates).forEach(field => colMap[field] = null);
+
+            keys.forEach(k => {
+                const nk = norm(k);
+                for (const field of Object.keys(headerMapCandidates)) {
+                    if (headerMapCandidates[field].some(alias => nk.includes(alias))) {
+                        colMap[field] = k;
+                    }
+                }
+            });
+
+            if (!colMap.nome || !colMap.telefone) {
+                throw new Error('Planilha inválida. Colunas mínimas necessárias: Nome, Telefone.');
+            }
+
+            const prefix = `users/${userId}`;
+            const batch = writeBatch(db);
+            let count = 0;
+
+            // Lógica para gerar IDs sequenciais únicos dentro deste lote
+            const agora = new Date();
+            const mes = (agora.getMonth() + 1).toString().padStart(2, '0'); // MM
+            const ano = agora.getFullYear().toString().slice(-2); // YY
+            
+            // Pega o ID sequencial máximo ATUAL
+            let maxSeq = 0;
+            appState.clientes.map(c => c.numeroCadastro).filter(id => id && id.startsWith('CL')).forEach(id => {
+                let seqNum = 0;
+                const numPart = id.substring(2); 
+                if (numPart.length === 7) seqNum = parseInt(numPart.substring(0, 3), 10);
+                else if (numPart.length === 4) seqNum = parseInt(numPart, 10);
+                else if (numPart.length === 6) seqNum = parseInt(numPart.substring(0, 2), 10);
+                if (!isNaN(seqNum) && seqNum > maxSeq) maxSeq = seqNum;
+            });
+
+            rows.forEach(r => {
+                const nome = String(r[colMap.nome] || '').trim();
+                if (!nome) return; // Pula linha se não tiver nome
+
+                // Incrementa o ID para este novo cliente
+                maxSeq++;
+                const proximoSeq = maxSeq.toString().padStart(3, '0');
+                const novoID = `CL${proximoSeq}${mes}${ano}`;
+
+                const data = {
+                    nome: nome,
+                    telefone: String(r[colMap.telefone] || '').replace(/\D/g, ''),
+                    documento: String(r[colMap.documento] || '').replace(/\D/g, ''),
+                    cep: String(r[colMap.cep] || '').replace(/\D/g, ''),
+                    numero: String(r[colMap.numero] || ''),
+                    logradouro: String(r[colMap.logradouro] || ''),
+                    bairro: String(r[colMap.bairro] || ''),
+                    cidade: String(r[colMap.cidade] || ''),
+                    uf: String(r[colMap.uf] || ''),
+                    numeroCadastro: novoID
+                };
+                
+                const ref = doc(collection(db, `${prefix}/clientes`));
+                batch.set(ref, data);
+                count++;
+            });
+
+            if (!count) {
+                alert('Nenhuma linha válida (com "Nome") foi encontrada na planilha.');
+                return;
+            }
+            
+            status.textContent = `Enviando ${count} clientes para o banco...`;
+            await batch.commit();
+            status.textContent = `Importação de clientes concluída: ${count} clientes adicionados.`;
+            inp.value = '';
+        } catch(e) {
+            console.error(e);
+            alert('Erro ao importar planilha de clientes: ' + e.message);
+            status.textContent = 'Falha na importação de clientes.';
+        }
+    });
+    
+    async function clearAllClientes() {
+        if (!userId) return alert('Faça login.');
+        if (!confirm('ATENÇÃO MÁXIMA!\n\nIsso apagará TODOS os Clientes cadastrados. Esta ação é irreversível. Deseja continuar?')) return;
+        
+        const status = document.getElementById('clientes-xlsx-status');
+        status.textContent = 'Apagando todos os clientes...';
+        try {
+            const prefix = `users/${userId}`;
+            const ref = collection(db, `${prefix}/clientes`);
+            const snapshot = await getDocs(ref);
+            
+            if (snapshot.empty) {
+                status.textContent = 'Nenhum cliente para apagar.';
+                return;
+            }
+            
+            const batch = writeBatch(db);
+            snapshot.docs.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            
+            status.textContent = `Todos os ${snapshot.size} clientes foram apagados.`;
+        } catch(e) {
+            console.error(e);
+            status.textContent = 'Erro ao apagar os clientes.';
+            alert('Erro ao apagar clientes.');
+        }
+    }
+    document.getElementById('btn-clear-clientes')?.addEventListener('click', clearAllClientes);
+
+    // ==========================================================
+    // FIM DO NOVO BLOCO
+    // ==========================================================
 
 
     // ===== Orçamentos (lista / modal etc.) =====
@@ -2500,7 +2669,28 @@ function updateOrcamentoPreview() {
     function handleCEPMask(event) {
         event.target.value = formatarCEP(event.target.value);
     }
-    
+    /**
+     * NOVO: Filtra a lista de clientes com base na busca
+     * @param {Event} event - O evento de input
+     */
+    function handleSearchCliente(event) {
+        const query = event.target.value.toLowerCase().trim();
+        const clientes = document.querySelectorAll('#clientes-list > div');
+        
+        if (!clientes.length) return;
+
+        clientes.forEach(clienteDiv => {
+            const nomeEl = clienteDiv.querySelector('p.font-medium');
+            if (nomeEl) {
+                const nome = nomeEl.textContent.toLowerCase();
+                if (nome.includes(query)) {
+                    clienteDiv.style.display = 'flex';
+                } else {
+                    clienteDiv.style.display = 'none';
+                }
+            }
+        });
+    }
     /**
      * Busca o CEP na API e preenche os campos do formulário
      * @param {string} cep - O CEP para buscar
