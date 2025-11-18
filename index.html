@@ -2510,29 +2510,32 @@ function updateOrcamentoPreview() {
       
       // 1. Cria o elemento temporário para o PDF
       const element = document.createElement('div');
-      // Copia o conteúdo do preview e remove bordas extras para impressão limpa
+      // Copia o conteúdo do preview
       element.innerHTML = document.getElementById('pdf-preview').innerHTML;
       
       // Aplica estilos específicos para garantir que a quebra de página não corte textos ao meio
       element.style.width = '100%';
       element.style.padding = '20px';
-      element.style.fontSize = '12px'; // Garante tamanho legível
+      element.style.fontSize = '12px'; 
       element.style.fontFamily = 'Inter, sans-serif';
+      // Importante: Força fundo branco para não ficar transparente
+      element.style.backgroundColor = '#ffffff';
       
       // Configurações da biblioteca html2pdf
       const opt = {
-        margin:       [10, 10, 10, 10], // Margens: topo, esquerda, baixo, direita (mm)
-        filename:     `orcamento-${appState.currentOrcamento.cliente.nome.replace(/\s+/g, '-')}.pdf`,
+        margin:       [10, 10, 10, 10], // Margens (mm)
+        filename:     `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, // Scale 2 melhora qualidade
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // Evita cortar elementos ao meio
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // Evita cortes bruscos
       };
 
       // 2. Gera e Salva/Compartilha
       try {
-        // Se for mobile e tiver compartilhamento nativo (Android/iOS)
+        // Tenta usar o compartilhamento nativo do celular se disponível
         if (navigator.share && navigator.canShare) {
+            // Gera o BLOB (arquivo na memória)
             const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
             const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
             
@@ -2542,16 +2545,16 @@ function updateOrcamentoPreview() {
                     text: 'Segue o orçamento em anexo.',
                     files: [file]
                 });
-                return;
+                return; // Se compartilhou, para por aqui
             }
         }
         
-        // Se for Desktop ou não suportar share, baixa direto
+        // Se for Desktop ou o celular não aceitar share de arquivos, baixa direto
         html2pdf().set(opt).from(element).save();
         
       } catch (e) {
-        console.error(e);
-        alert('Erro ao gerar o PDF. Tente novamente.');
+        console.error("Erro ao gerar PDF:", e);
+        alert('Erro ao gerar o PDF. Verifique se o bloqueador de popups está ativo.');
       }
     };
 
