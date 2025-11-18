@@ -7,8 +7,7 @@
   <link rel="icon" href="icons/icon-32x32.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
@@ -2506,39 +2505,53 @@ function updateOrcamentoPreview() {
       }
     };
 
-    window.shareOrViewPDF = async () => {
+   window.shareOrViewPDF = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
-      const hidden = document.createElement('div');
-      hidden.style.position = 'absolute'; hidden.style.left = '-9999px'; hidden.style.top = '-9999px';
-      hidden.style.width = '210mm';
-      hidden.innerHTML = document.getElementById('pdf-preview').innerHTML;
-      document.body.appendChild(hidden);
-      const { jsPDF } = window.jspdf;
-      const clienteNome = appState.currentOrcamento?.cliente?.nome?.replace(/\s+/g, '-') || 'cliente';
-      const fileName = `orcamento-${clienteNome}.pdf`;
+      
+      // 1. Cria o elemento temporário para o PDF
+      const element = document.createElement('div');
+      // Copia o conteúdo do preview e remove bordas extras para impressão limpa
+      element.innerHTML = document.getElementById('pdf-preview').innerHTML;
+      
+      // Aplica estilos específicos para garantir que a quebra de página não corte textos ao meio
+      element.style.width = '100%';
+      element.style.padding = '20px';
+      element.style.fontSize = '12px'; // Garante tamanho legível
+      element.style.fontFamily = 'Inter, sans-serif';
+      
+      // Configurações da biblioteca html2pdf
+      const opt = {
+        margin:       [10, 10, 10, 10], // Margens: topo, esquerda, baixo, direita (mm)
+        filename:     `orcamento-${appState.currentOrcamento.cliente.nome.replace(/\s+/g, '-')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, // Scale 2 melhora qualidade
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // Evita cortar elementos ao meio
+      };
+
+      // 2. Gera e Salva/Compartilha
       try {
-        const canvas = await html2canvas(hidden, { scale: 3, useCORS: true });
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const margin = 5;
-        const pdfWidth = pdf.internal.pageSize.getWidth() - margin * 2;
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', margin, margin, pdfWidth, pdfHeight);
+        // Se for mobile e tiver compartilhamento nativo (Android/iOS)
         if (navigator.share && navigator.canShare) {
-          const blob = pdf.output('blob');
-          const file = new File([blob], fileName, { type: 'application/pdf' });
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({ title: `Orçamento - ${clienteNome}`, text: 'Segue o orçamento em anexo.', files: [file] });
-            document.body.removeChild(hidden);
-            return;
-          }
+            const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+            const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+            
+            if (navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: `Orçamento - ${appState.currentOrcamento.cliente.nome}`,
+                    text: 'Segue o orçamento em anexo.',
+                    files: [file]
+                });
+                return;
+            }
         }
-        pdf.save(fileName);
-      } catch(e) {
+        
+        // Se for Desktop ou não suportar share, baixa direto
+        html2pdf().set(opt).from(element).save();
+        
+      } catch (e) {
         console.error(e);
-        if (e.name !== 'AbortError') alert('Erro ao gerar o PDF.');
-      } finally {
-        document.body.removeChild(hidden);
+        alert('Erro ao gerar o PDF. Tente novamente.');
       }
     };
 
