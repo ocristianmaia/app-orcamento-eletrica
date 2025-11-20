@@ -1946,12 +1946,19 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
                 });
             }
             
-            if (clone.modoCobranca === 'por_servico') {
-                (clone.tiposDeServico || []).forEach(service => {
-                  const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
-                  if(checkbox) checkbox.checked = true;
-                });
-            }
+           if (clone.modoCobranca === 'por_servico') {
+        (clone.tiposDeServico || []).forEach(service => {
+          const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
+          const qtyInput = document.querySelector(`#orc-tiposdeservico-list input[type="number"][data-id="${service.id}"]`);
+          
+          if(checkbox) checkbox.checked = true;
+          
+          if (qtyInput) {
+              qtyInput.disabled = false;
+              qtyInput.value = service.quantidade ?? 1; // Puxa a quantidade salva
+          }
+        });
+    }
             
             const tipoObraWrap = document.getElementById('orc-tipo-obra');
             if (tipoObraWrap) tipoObraWrap.dispatchEvent(new Event('change', { bubbles: true }));
