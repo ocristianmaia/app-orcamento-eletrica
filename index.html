@@ -2297,6 +2297,12 @@ function updateOrcamentoPreview() {
       const codigoCliente = fullClient.numeroCadastro || 'SEM-COD';
       const codigoOrcamento = `${codigoCliente}-${numeroSeq}/${anoFull}`;
 
+      const hoje = new Date();
+    const dia = hoje.getDate().toString().padStart(2, '0');
+    const mes = (hoje.getMonth() + 1).toString().padStart(2, '0');
+    const ano = hoje.getFullYear();
+    const dataFormatada = `${dia}/${mes}/${ano}`;
+
       let tiposDeServicoHtml = '';
       let subtotalServicos = 0;
       let maoDeObraHtml = '';
@@ -2439,7 +2445,7 @@ function updateOrcamentoPreview() {
           <hr style="margin: 15px 0;">
           
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 6px; color: ${corPrimaria};">Pedido Nº: ${codigoOrcamento}</h4>
-          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px; color: ${corPrimaria};">Orçamento para:</h4>
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px; color: ${corPrimaria};">Data do Pedido: ${dataFormatada}</h4>
           <strong style="display: block;">${fullClient.nome}</strong>
           <span style="display: block;">${clientEndereco}</span>
           ${fullClient.documento ? `<span style="display: block;">${clientDocLabel} ${clientDocValor}</span>` : ''}
