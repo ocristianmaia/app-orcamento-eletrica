@@ -682,6 +682,14 @@
                 placeholder="Ex.: Instalação de pontos de iluminação, troca de disjuntores, revisão geral do quadro, etc."
               ></textarea>
             </div>
+            <div class="mt-2">
+              <label class="inline-flex items-center">
+                <input id="orc-status-aprovado" type="checkbox" class="h-4 w-4 text-green-600 border-gray-300 rounded">
+                <span class="ml-2 text-sm text-gray-800">
+                  Marcar este orçamento como <span class="font-semibold text-green-700">APROVADO</span>
+                </span>
+              </label>
+            </div>
           </div>
           <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
             <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
@@ -752,6 +760,7 @@
         maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
         desconto: { tipo: 'nenhum', valor: 0 },
         total: 0, tipoObra: 'residencial', createdAt: null,
+        status: 'pendente',
         numeroOrcamento: null, versao: 1
       };
     }
@@ -871,7 +880,12 @@
           const data = d.data();
           if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
           console.log(`[DEBUG] Mapeando doc. ID do Firebase (d.id):`, d.id);
-          return { ...data, id: d.id };
+          return {
+            ...data,
+            id: d.id,
+            status: data.status || (data.aprovado ? 'aprovado' : 'pendente'),
+            aprovado: data.aprovado ?? (data.status === 'aprovado')
+          };
         });
         appState.orcamentos.sort((a,b) => (b.numeroOrcamento||0) - (a.numeroOrcamento||0));
         
@@ -1680,8 +1694,12 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
       const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
       if (!el) return;
       const list = isFullList ? appState.orcamentos : appState.orcamentos.slice(0,3);
-      if (!list.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; return; }
-      
+      if (!list.length) {
+        el.innerHTML = `<div class="bg-white p-4 rounded-lg shadow-sm"><p class="text-sm text-gray-500">Nenhum orçamento salvo ainda.</p></div>`;
+        if (isFullList) updateDeleteButtonState();
+        return;
+      }
+
       el.innerHTML = list.map(orc => {
         const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
         const numeroSeq = String(orc.numeroOrcamento || '').padStart(3, '0');
@@ -1692,24 +1710,38 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
         const nome = cliente ? cliente.nome : 'Cliente Excluído';
         const nomes = nome.split(' ');
         const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
-        const nomeParaExibir = isFullList ? nome : nomeAbreviado; 
-        
+        const nomeParaExibir = isFullList ? nome : nomeAbreviado;
+
+        const statusRaw = (orc.status === 'aprovado' || orc.aprovado === true) ? 'APROVADO' : 'PENDENTE';
+        const statusClass = statusRaw === 'APROVADO'
+          ? 'bg-green-100 text-green-800 border border-green-300'
+          : 'bg-yellow-100 text-yellow-800 border border-yellow-300';
+
         if (isFullList) {
-            const isChecked = appState.orcamentosParaExcluir.has(orc.id);
-            return `
+          const isChecked = appState.orcamentosParaExcluir.has(orc.id);
+          return `
               <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
-                <div class="flex justify-between items-start w-full">
-                    <label class="flex items-center cursor-pointer flex-grow">
-                        <input type="checkbox" data-id="${orc.id}" onchange="toggleOrcamentoExclusao(this)" ${isChecked ? 'checked' : ''} class="h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
-                        <div class="ml-3">
-                            <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
-                            <p class="text-sm text-gray-500">${codigoOrcamento}</p>
-                        </div>
-                    </label>
+                <div class="flex justify-between items-start w-full gap-3">
+                  <label class="flex items-center cursor-pointer flex-grow">
+                    <input type="checkbox"
+                           data-id="${orc.id}"
+                           ${isChecked ? 'checked' : ''}
+                           onchange="toggleOrcamentoExclusao(this)"
+                           class="h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                    <div class="ml-3">
+                      <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
+                      <p class="text-sm text-gray-500">${codigoOrcamento}</p>
+                    </div>
+                  </label>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusClass}">
+                    ${statusRaw}
+                  </span>
                 </div>
                 <div class="flex gap-2 self-end">
-                    <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
-                    </div>
+                  <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">
+                    Editar
+                  </button>
+                </div>
               </div>`;
         }
         
@@ -1719,8 +1751,11 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
           <span class="font-medium text-base text-gray-800">${nome}</span>
           <span class="text-sm text-gray-500 ml-2">${codigoOrcamento}</span>
         </div>
-        <div class="flex-shrink-0">
-          <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusClass}">${statusRaw}</span>
+          <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600">
+            Editar
+          </button>
         </div>
       </div>`;
       }).join('');
@@ -1862,6 +1897,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
       try {
         const modal = document.getElementById('orcamento-modal');
         const clienteSelect = document.getElementById('orc-cliente-select');
+        const statusCheckbox = orcStatusAprovadoEl;
         modal.classList.add('active');
         populateClienteSelect();
         populateMateriaisOrcamento();
@@ -1879,6 +1915,8 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
           clone.desconto = clone.desconto || { tipo: 'nenhum', valor: 0 };
           clone.items = Array.isArray(clone.items) ? clone.items : [];
           clone.tiposDeServico = Array.isArray(clone.tiposDeServico) ? clone.tiposDeServico : [];
+          clone.status = clone.status || (clone.aprovado ? 'aprovado' : 'pendente');
+          if (statusCheckbox) statusCheckbox.checked = clone.status === 'aprovado';
           
           appState.currentOrcamento = clone;
 
@@ -1969,6 +2007,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
         } else { // Criando novo orçamento
           document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
           resetCurrentOrcamento();
+          if (statusCheckbox) statusCheckbox.checked = false;
           
           const descTextarea = document.getElementById('orc-descricao-servico');
           if (descTextarea) descTextarea.value = '';
@@ -1997,10 +2036,20 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
 
     const descontoTipoEl = document.getElementById('orc-desconto-tipo');
     const descontoValorEl = document.getElementById('orc-desconto-valor');
+    const orcStatusAprovadoEl = document.getElementById('orc-status-aprovado');
+
+    if (orcStatusAprovadoEl) {
+      orcStatusAprovadoEl.addEventListener('change', (e) => {
+        if (!appState.currentOrcamento) return;
+        appState.currentOrcamento.status = e.target.checked ? 'aprovado' : 'pendente';
+      });
+    }
+
 
     window.closeOrcamentoModal = () => {
       document.getElementById('orcamento-modal').classList.remove('active');
       resetCurrentOrcamento();
+      if (orcStatusAprovadoEl) orcStatusAprovadoEl.checked = false;
       
       // Reseta todos os campos do modal para o estado inicial
       document.getElementById('orc-cliente-select').value = '';
@@ -2485,6 +2534,11 @@ function updateOrcamentoPreview() {
       // Copia o estado atual
       const data = { ...appState.currentOrcamento };
       
+      const statusCheckbox = orcStatusAprovadoEl;
+      const aprovadoMarcado = statusCheckbox ? !!statusCheckbox.checked : (data.status === 'aprovado' || data.aprovado === true);
+      data.status = aprovadoMarcado ? 'aprovado' : 'pendente';
+      data.aprovado = aprovadoMarcado;
+
       // NOVO: Limpa os dados com base nos seletores
       if (data.modoCobranca === 'mao_de_obra') {
           data.tiposDeServico = []; // Zera serviços
