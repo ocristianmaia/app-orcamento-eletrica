@@ -912,23 +912,23 @@
     
     // DEFINIÇÃO CORRIGIDA DE UPDATE STATUS BUTTONS (Função Global)
     window.updateStatusButtons = (currentStatus) => {
-        const btnAprovado = document.getElementById('btn-status-aprovado');
-        const btnPendente = document.getElementById('btn-status-pendente');
-        
-        if (!appState.currentOrcamento || !appState.currentOrcamento.id) {
-            if (btnAprovado) btnAprovado.classList.add('hidden');
-            if (btnPendente) btnPendente.classList.add('hidden');
-            return;
-        }
-        
-        if (currentStatus === 'pendente') {
-            btnAprovado.classList.remove('hidden');
-            btnPendente.classList.add('hidden');
-        } else { // 'aprovado'
-            btnAprovado.classList.add('hidden');
-            btnPendente.classList.remove('hidden');
-        }
-    };
+    const btnAprovado = document.getElementById('btn-status-aprovado');
+    const btnPendente = document.getElementById('btn-status-pendente');
+    
+    if (!appState.currentOrcamento || !appState.currentOrcamento.id) {
+        if (btnAprovado) btnAprovado.classList.add('hidden');
+        if (btnPendente) btnPendente.classList.add('hidden');
+        return;
+    }
+    
+    if (currentStatus === 'pendente') {
+        btnAprovado.classList.remove('hidden');
+        btnPendente.classList.add('hidden');
+    } else { // 'aprovado'
+        btnAprovado.classList.add('hidden');
+        btnPendente.classList.remove('hidden');
+    }
+};
     
     // ==========================================================
     // FIM: DECLARAÇÕES GLOBAIS / UTILS
@@ -2569,7 +2569,7 @@ function updateOrcamentoPreview() {
           hasPayment = true;
         }
         if (config.config_deposito_banco && config.config_deposito_ag && config.config_deposito_conta) {
-          pagamentoHtml += `<strong>Depósito:</strong> Banco ${config.config_deposito_banco} | Ag: ${config.config_deposito-ag} | Conta: ${config.config_deposito-conta}<br>`;
+          pagamentoHtml += `<strong>Depósito:</strong> Banco ${config.config_deposito_banco} | Ag: ${config.config_deposito_ag} | Conta: ${config.config_deposito_conta}<br>`;
           hasPayment = true;
         }
         if (!hasPayment) {
@@ -2700,69 +2700,69 @@ function updateOrcamentoPreview() {
     };
 
     window.shareOrViewPDF = async () => {
-        if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
-        
-        const clienteNome = (appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-');
-        const footerText = "Orçamento válido por 15 dias.";
-        const footerHeight = 10; // Altura reservada do rodapé (em mm)
+    if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+    
+    const clienteNome = (appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-');
+    const footerText = "Orçamento válido por 15 dias.";
+    const footerHeight = 10; // Altura reservada do rodapé (em mm)
 
-        // 1. Encontra e REMOVE o rodapé HTML da tela (Dom) para evitar duplicação e corte
-        const previewContainer = document.querySelector('#pdf-preview > div');
-        const footerEl = previewContainer.querySelector('div:last-child');
-        let originalFooter = null;
+    // 1. Encontra e REMOVE o rodapé HTML da tela (Dom) para evitar duplicação e corte
+    const previewContainer = document.querySelector('#pdf-preview > div');
+    const footerEl = previewContainer.querySelector('div:last-child');
+    let originalFooter = null;
 
-        if (footerEl && footerEl.textContent.includes('válido por 15 dias')) {
-            originalFooter = footerEl.cloneNode(true);
-            footerEl.remove(); // Remove o elemento do DOM antes de tirar a foto
-        }
+    if (footerEl && footerEl.textContent.includes('válido por 15 dias')) {
+        originalFooter = footerEl.cloneNode(true);
+        footerEl.remove(); // Remove o elemento do DOM antes de tirar a foto
+    }
 
-        // 2. Configurações base (Aumenta a margem inferior para o rodapé fixo)
-        const opt = {
-            margin:       [10, 10, 30, 10], // Margem inferior reservada (30mm)
-            filename:     `pedido-${clienteNome}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        try {
-            const element = document.getElementById('pdf-preview');
-            const generator = html2pdf().set(opt).from(element);
-            
-            // 3. Gera o PDF e injeta o rodapé em CADA página
-            const pdf = await generator.output('jsPDF');
-            
-            const pageCount = pdf.internal.getNumberOfPages();
-            const docWidth = pdf.internal.pageSize.getWidth();
-            const docHeight = pdf.internal.pageSize.getHeight();
-            
-            for (let i = 1; i <= pageCount; i++) {
-                pdf.setPage(i);
-                
-                // Desenha a tarja amarela (Fundo: #FFFFCC)
-                pdf.setFillColor(255, 255, 204); 
-                pdf.rect(0, docHeight - footerHeight, docWidth, footerHeight, 'F'); 
-                
-                // Desenha o texto (Preto, Negrito, Centralizado)
-                pdf.setFont('Helvetica', 'Bold');
-                pdf.setFontSize(10);
-                pdf.setTextColor(0, 0, 0); 
-                pdf.text(footerText, docWidth / 2, docHeight - (footerHeight / 2) + 1.5, { align: 'center' });
-            }
-            
-            // 4. Salva o PDF final (Download)
-            pdf.save(opt.filename);
-            
-        } catch (e) {
-            console.error("Erro ao gerar PDF:", e);
-            alert('Erro crítico ao gerar o PDF. O rodapé não foi injetado.');
-        } finally {
-            // 5. DEVOLVE o elemento HTML ao DOM para a pré-visualização na tela
-            if (originalFooter) {
-                previewContainer.appendChild(originalFooter);
-            }
-        }
+    // 2. Configurações base (Aumenta a margem inferior para o rodapé fixo)
+    const opt = {
+        margin:       [10, 10, 30, 10], // Margem inferior reservada (30mm)
+        filename:     `pedido-${clienteNome}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
+
+    try {
+        const element = document.getElementById('pdf-preview');
+        const generator = html2pdf().set(opt).from(element);
+        
+        // 3. Gera o PDF e injeta o rodapé em CADA página
+        const pdf = await generator.output('jsPDF');
+        
+        const pageCount = pdf.internal.getNumberOfPages();
+        const docWidth = pdf.internal.pageSize.getWidth();
+        const docHeight = pdf.internal.pageSize.getHeight();
+        
+        for (let i = 1; i <= pageCount; i++) {
+            pdf.setPage(i);
+            
+            // Desenha a tarja amarela (Fundo: #FFFFCC)
+            pdf.setFillColor(255, 255, 204); 
+            pdf.rect(0, docHeight - footerHeight, docWidth, footerHeight, 'F'); 
+            
+            // Desenha o texto (Preto, Negrito, Centralizado)
+            pdf.setFont('Helvetica', 'Bold');
+            pdf.setFontSize(10);
+            pdf.setTextColor(0, 0, 0); 
+            pdf.text(footerText, docWidth / 2, docHeight - (footerHeight / 2) + 1.5, { align: 'center' });
+        }
+        
+        // 4. Salva o PDF final (Download)
+        pdf.save(opt.filename);
+        
+    } catch (e) {
+        console.error("Erro ao gerar PDF:", e);
+        alert('Erro crítico ao gerar o PDF. O rodapé não foi injetado.');
+    } finally {
+        // 5. DEVOLVE o elemento HTML ao DOM para a pré-visualização na tela
+        if (originalFooter) {
+            previewContainer.appendChild(originalFooter);
+        }
+    }
+};
 
     window.sendWhatsAppText = () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
