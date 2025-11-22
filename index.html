@@ -233,7 +233,7 @@
               <button onclick="showAllOrcamentosPage()" class="bg-gray-800 text-white p-4 rounded-lg flex justify-center items-center shadow hover:bg-gray-900 transition-colors">
                 <h2 class="text-xl font-semibold text-center">Orçamentos</h2>
               </button>
-              <button onclick="openOrcamentoModal()" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium flex justify-center items-center">
+              <button id="btn-novo-orcamento" type="button" onclick="openOrcamentoModal()" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium flex justify-center items-center">
                 <span class="text-xl font-semibold">+ Novo Orçamento</span>
               </button>
             </div>
@@ -491,7 +491,7 @@
               </div>
             </div>
           </div>
-<div id="configuracoes" class="tab-content space-y-4">
+id="configuracoes" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
               <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
               <form id="form-config" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -630,7 +630,6 @@
               <button id="logout-button" class="bg-red-500 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700 transition-colors">Sair da Conta</button>
             </div>
           </div>
-        </div>
         </main>
       </div>
     </div>
@@ -843,8 +842,8 @@
     
     <footer class="bg-gray-900 text-white text-center py-6 mt-12">
       <div class="max-w-4xl mx-auto px-4 md:px-6">
-        <p class="mb-4">Para ajustes ou sugestões de melhorias, mande uma mensagem.</p>
-        <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">Enviar mensagem ao desenvolvedor</a>
+        <p class="mb-4">Dúvidas e sugestões? Mande uma mensagem ao desenvolvedor.</p>
+        <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">Enviar Mensagem</a>
       </div>
     </footer>
 
@@ -3210,6 +3209,18 @@ function gerarNovoNumeroCliente() {
       const nomeArquivo = `faturamento_orcamentos_${hoje.toISOString().slice(0,10)}.xlsx`;
       XLSX.writeFile(wb, nomeArquivo);
     }
+
+
+    // Garante funcionamento do botão "+ Novo Orçamento"
+    (function() {
+      const btnNovoOrc = document.getElementById('btn-novo-orcamento');
+      if (btnNovoOrc) {
+        btnNovoOrc.addEventListener('click', (e) => {
+          e.preventDefault();
+          openOrcamentoModal();
+        });
+      }
+    })();
 
 // Filtros de orçamentos (status / mês / ano)
     document.getElementById('filtro-status-orcamento')?.addEventListener('change', () => renderOrcamentosList(true));
