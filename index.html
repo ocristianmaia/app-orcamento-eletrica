@@ -227,7 +227,7 @@
               <button onclick="showAllOrcamentosPage()" class="bg-gray-800 text-white p-4 rounded-lg flex justify-center items-center shadow hover:bg-gray-900 transition-colors">
                 <h2 class="text-xl font-semibold text-center">Orçamentos</h2>
               </button>
-              <button onclick="openOrcamentoModal()" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium flex justify-center items-center">
+              <button id="btn-novo-orcamento" type="button" onclick="changeTab(event, 'orcamentos'); openOrcamentoModal()" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium flex justify-center items-center">
                 <span class="text-xl font-semibold">+ Novo Orçamento</span>
               </button>
             </div>
