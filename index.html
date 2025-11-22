@@ -2891,7 +2891,7 @@ window.toggleOrcamentoStatus = async (status) => {
  * Controla a visibilidade dos botões APROVADO/PENDENTE no modal.
  * @param {string} currentStatus - O status atual do orçamento.
  */
-function updateStatusButtons(currentStatus) {
+window.updateStatusButtons = (currentStatus) => {
     const btnAprovado = document.getElementById('btn-status-aprovado');
     const btnPendente = document.getElementById('btn-status-pendente');
     
@@ -2910,7 +2910,7 @@ function updateStatusButtons(currentStatus) {
         btnAprovado.classList.add('hidden');    // Esconde 'Aprovar'
         btnPendente.classList.remove('hidden'); // Mostra 'Pendente' (para desfazer)
     }
-}
+}; // <--- DEVE TERMINAR AQUI!
 // ==========================================================
 // FIM DO NOVO BLOCO
 // ==========================================================
