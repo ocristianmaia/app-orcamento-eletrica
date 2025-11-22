@@ -710,7 +710,7 @@
 
   </div> <script type="module">
 
-    console.log("VERSÃO 6.0 (Modo de Cobrança) CARREGADA"); 
+    console.log("VERSÃO FINAL CORRIGIDA (STATUS, ESCOPO & RODAPÉ REPETIDO) CARREGADA"); 
     // ===== Firebase config (preservado do seu arquivo) =====
     const firebaseConfig = {
       apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
@@ -726,7 +726,10 @@
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // ===== Estado e elementos =====
+    // ==========================================================
+    // INÍCIO: DECLARAÇÕES GLOBAIS / UTILS (HOISTED)
+    // ==========================================================
+
     let app, db, auth, userId;
     setLogLevel('error'); // 'debug' | 'error'
 
@@ -738,6 +741,199 @@
     const loginButton = document.getElementById('login-button');
     const logoutButton = document.getElementById('logout-button');
     const userInfo = document.getElementById('user-info');
+    
+    // Elementos do modal para uso global
+    const descontoTipoEl = document.getElementById('orc-desconto-tipo');
+    const descontoValorEl = document.getElementById('orc-desconto-valor');
+
+
+    // ==========================================================
+    // BLOCO: FUNÇÕES DE MÁSCARA E FORMATAÇÃO DE DOCUMENTO
+    // ==========================================================
+    function formatarCPFCNPJ(value) {
+        if (!value) return "";
+        const cleanValue = value.replace(/\D/g, '');
+        if (cleanValue.length <= 11) {
+            return cleanValue
+                .slice(0, 11)
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        } else {
+            return cleanValue
+                .slice(0, 14) 
+                .replace(/(\d{2})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1/$2')
+                .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+        }
+    }
+    function handleDocMask(event) {
+        const input = event.target;
+        const originalPos = input.selectionStart;
+        const originalLength = input.value.length;
+        input.value = formatarCPFCNPJ(input.value);
+        const newLength = input.value.length;
+        const diff = newLength - originalLength;
+        input.setSelectionRange(originalPos + diff, originalPos + diff);
+    }
+    function getLabelEValorDoc(docValue) {
+        if (!docValue) return { label: 'Doc:', valor: '' };
+        const cleanValue = String(docValue).replace(/\D/g, '');
+        if (cleanValue.length === 11) {
+            return { label: 'CPF:', valor: formatarCPFCNPJ(cleanValue) };
+        }
+        if (cleanValue.length === 14) {
+            return { label: 'CNPJ:', valor: formatarCPFCNPJ(cleanValue) };
+        }
+        return { label: 'Doc:', valor: docValue };
+    }
+    
+    // BLOCO: FUNÇÕES DE MÁSCARA DE TELEFONE
+    function formatarTelefone(value) {
+        if (!value) return "";
+        const cleanValue = value.replace(/\D/g, '');
+        return cleanValue
+            .slice(0, 11)
+            .replace(/(\d{2})(\d)/, '($1) $2')       // (XX) X
+            .replace(/(\d{5})(\d{1,4})$/, '$1-$2');  // (XX) XXXXX-XXXX
+    }
+    function handleTelefoneMask(event) {
+        const input = event.target;
+        const originalPos = input.selectionStart;
+        const originalLength = input.value.length;
+        input.value = formatarTelefone(input.value);
+        const newLength = input.value.length;
+        const diff = newLength - originalLength;
+        if (diff > 0) {
+            input.setSelectionRange(originalPos + diff, originalPos + diff);
+        } else {
+            input.setSelectionRange(originalPos, originalPos);
+        }
+    }
+
+    // BLOCO: FUNÇÕES DE BUSCA DE CEP E MÁSCARA
+    function formatarCEP(value) {
+        if (!value) return "";
+        return value
+            .replace(/\D/g, '')
+            .slice(0, 8)
+            .replace(/(\d{5})(\d{1,3})$/, '$1-$2');
+    }
+    function handleCEPMask(event) {
+        event.target.value = formatarCEP(event.target.value);
+    }
+    function handleSearchCliente(event) {
+        const query = event.target.value.toLowerCase().trim();
+        const clientes = document.querySelectorAll('#clientes-list > div');
+        
+        if (!clientes.length) return;
+
+        clientes.forEach(clienteDiv => {
+            const nomeEl = clienteDiv.querySelector('p.font-medium');
+            if (nomeEl) {
+                const nome = nomeEl.textContent.toLowerCase();
+                if (nome.includes(query)) {
+                    clienteDiv.style.display = 'flex';
+                } else {
+                    clienteDiv.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    function formatarEnderecoCompleto(cliente) {
+        if (!cliente) return 'Endereço não informado';
+        if (cliente.endereco) return cliente.endereco;
+        
+        if (!cliente.logradouro && !cliente.cidade) return 'Endereço não informado';
+        
+        const rua = cliente.logradouro || '';
+        const num = cliente.numero || 's/n';
+        const bairro = cliente.bairro || '';
+        const cidade = cliente.cidade || '';
+        const uf = cliente.uf || '';
+        
+        return `${rua}, ${num} - ${bairro} - ${cidade}/${uf}`;
+    }
+
+    // BLOCO: FUNÇÃO PARA GERAR NOVO ID DE CLIENTE
+    function gerarNovoNumeroCliente() {
+        const clientesComID = appState.clientes
+            .map(c => c.numeroCadastro)
+            .filter(id => id && id.startsWith('CL'));
+
+        let maxSeq = 0;
+        
+        clientesComID.forEach(id => {
+            let seqNum = 0;
+            const numPart = id.substring(2); 
+            
+            if (numPart.length === 7) seqNum = parseInt(numPart.substring(0, 3), 10);
+            else if (numPart.length === 4) seqNum = parseInt(numPart, 10);
+            else if (numPart.length === 6) seqNum = parseInt(numPart.substring(0, 2), 10);
+            if (!isNaN(seqNum) && seqNum > maxSeq) maxSeq = seqNum;
+        });
+
+        const proximoSeq = (maxSeq + 1).toString().padStart(3, '0');
+        const agora = new Date();
+        const mes = (agora.getMonth() + 1).toString().padStart(2, '0');
+        const ano = agora.getFullYear().toString().slice(-2);
+
+        const novoID = `CL${proximoSeq}${mes}${ano}`;
+        
+        console.log(`Gerado novo ID de Cliente: ${novoID} (Sequência: ${proximoSeq})`);
+        return novoID;
+    }
+
+    // BLOCO: FUNÇÕES DE STATUS DO ORÇAMENTO (CORRIGIDO PARA GLOBAL)
+    window.toggleOrcamentoStatus = async (status) => {
+        if (!appState.currentOrcamento || !appState.currentOrcamento.id || !userId) {
+            return alert('Erro: Não é possível alterar o status de um orçamento não salvo.');
+        }
+
+        const newStatus = status;
+        
+        try {
+            const docRef = doc(db, `users/${userId}/orcamentos/${appState.currentOrcamento.id}`);
+            await setDoc(docRef, { status: newStatus }, { merge: true }); 
+            
+            appState.currentOrcamento.status = newStatus;
+            
+            window.updateStatusButtons(newStatus); // CHAMADA CORRIGIDA
+            
+            alert(`Status alterado para: ${newStatus.toUpperCase()}`);
+            
+        } catch (e) {
+            console.error('Erro ao atualizar status do orçamento:', e);
+            alert('Falha ao salvar o status. Tente novamente.');
+        }
+    };
+    
+    // DEFINIÇÃO CORRIGIDA DE UPDATE STATUS BUTTONS (Função Global)
+    window.updateStatusButtons = (currentStatus) => {
+        const btnAprovado = document.getElementById('btn-status-aprovado');
+        const btnPendente = document.getElementById('btn-status-pendente');
+        
+        if (!appState.currentOrcamento || !appState.currentOrcamento.id) {
+            if (btnAprovado) btnAprovado.classList.add('hidden');
+            if (btnPendente) btnPendente.classList.add('hidden');
+            return;
+        }
+        
+        if (currentStatus === 'pendente') {
+            btnAprovado.classList.remove('hidden');
+            btnPendente.classList.add('hidden');
+        } else { // 'aprovado'
+            btnAprovado.classList.add('hidden');
+            btnPendente.classList.remove('hidden');
+        }
+    };
+    
+    // ==========================================================
+    // FIM: DECLARAÇÕES GLOBAIS / UTILS
+    // ==========================================================
+
 
     const appState = {
       config: {}, clientes: [], materiais: [], orcamentos: [],
@@ -748,15 +944,15 @@
     function resetCurrentOrcamento() {
       appState.currentOrcamento = {
         id: null, cliente: null, 
-        modoCobranca: 'mao_de_obra', // NOVO
-        usarMaterial: 'sim', // NOVO
+        modoCobranca: 'mao_de_obra',
+        usarMaterial: 'sim', 
         tiposDeServico: [], 
         items: [],
         maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
         desconto: { tipo: 'nenhum', valor: 0 },
         total: 0, tipoObra: 'residencial', createdAt: null,
         numeroOrcamento: null, versao: 1,
-        status: 'pendente' // NOVO: Define o status padrão
+        status: 'pendente'
       };
     }
 
@@ -777,22 +973,19 @@
             appView.classList.remove('hidden');
             loadingOverlay.style.display = 'none';
 
-            // ===== Aplicar Máscaras CPF/CNPJ =====
+            // ATIVAÇÃO DAS MÁSCARAS
             document.getElementById('config-doc')?.addEventListener('input', handleDocMask);
             document.getElementById('cliente-documento')?.addEventListener('input', handleDocMask);
             document.getElementById('edit-cliente-documento')?.addEventListener('input', handleDocMask);
             
-            // ===== Aplicar Máscaras de Telefone =====
             document.getElementById('config-telefone')?.addEventListener('input', handleTelefoneMask);
             document.getElementById('cliente-telefone')?.addEventListener('input', handleTelefoneMask);
             document.getElementById('edit-cliente-telefone')?.addEventListener('input', handleTelefoneMask);
             
-            // ===== Aplicar Máscaras de CEP =====
             document.getElementById('config-cep')?.addEventListener('input', handleCEPMask);
             document.getElementById('cliente-cep')?.addEventListener('input', handleCEPMask);
             document.getElementById('edit-cliente-cep')?.addEventListener('input', handleCEPMask);
             document.getElementById('search-cliente')?.addEventListener('input', handleSearchCliente);
-            // ===============================================
 
           } else {
             userId = null;
@@ -930,8 +1123,8 @@
       el('config-industrial-hora').value = c.industrial_hora || '';
 
       el('config-pix-chave').value = c.config_pix_chave || '';
-      el('config-cartao-vezes').value = c.config_cartao_vezes || '';
-      el('config-cartao-juros').value = c.config_cartao_juros || '';
+      el('config-cartao_vezes').value = c.config_cartao_vezes || '';
+      el('config-cartao_juros').value = c.config_cartao_juros || '';
       el('config-pagamento-dinheiro').checked = c.config_pagamento_dinheiro || false;
       el('config-deposito-banco').value = c.config_deposito_banco || '';
       el('config-deposito-ag').value = c.config_deposito_ag || '';
@@ -990,7 +1183,7 @@
       });
     }
 
-// ===== NOVO: Função helper para ler valores do form =====
+// ===== Função helper para ler valores do form =====
 function getVal(id) {
     const el = document.getElementById(id);
     return el ? el.value : '';
@@ -1133,23 +1326,6 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
       }
     });
     
-    // NOVO: Helper para formatar endereço completo
-    function formatarEnderecoCompleto(cliente) {
-        if (!cliente) return 'Endereço não informado';
-        // Se ainda tiver o 'endereco' antigo (legado)
-        if (cliente.endereco) return cliente.endereco;
-        
-        // Novo formato
-        if (!cliente.logradouro && !cliente.cidade) return 'Endereço não informado';
-        
-        const rua = cliente.logradouro || '';
-        const num = cliente.numero || 's/n';
-        const bairro = cliente.bairro || '';
-        const cidade = cliente.cidade || '';
-        const uf = cliente.uf || '';
-        
-        return `${rua}, ${num} - ${bairro} - ${cidade}/${uf}`;
-    }
     
     function renderClientesList() {
       const el = document.getElementById('clientes-list');
@@ -1936,7 +2112,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
           // Dispara os toggles para mostrar/esconder seções corretas
           toggleModoDeCobranca(clone.modoCobranca);
           toggleUsarMaterial(clone.usarMaterial);
-          updateStatusButtons(clone.status);
+          window.updateStatusButtons(clone.status); // CHAMADA CORRIGIDA
           clienteSelect.dispatchEvent(new Event('change'));
 
           // Preenche os checkboxes de itens (após um pequeno delay para os toggles)
@@ -2053,7 +2229,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
     function populateMateriaisOrcamento() {
       const listEl = document.getElementById('orc-materiais-list');
       if (!appState.materiais.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum material cadastrado.</p>'; return; }
-      listEl.innerHTML = appState.materiais.map(m => `
+      el.innerHTML = appState.materiais.map(m => `
         <div class="flex items-center justify-between p-2 rounded-md hover:bg-gray-100">
           <label class="flex items-center flex-grow cursor-pointer">
             <input type="checkbox" data-id="${m.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
@@ -2243,7 +2419,7 @@ document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
       const rates = {
         empreitada: appState.config.residencial_empreitada || 0,
         diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
-        ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial_ponto) || 0,
+        ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial-ponto) || 0,
         hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0,
       };
       
@@ -2393,7 +2569,7 @@ function updateOrcamentoPreview() {
           hasPayment = true;
         }
         if (config.config_deposito_banco && config.config_deposito_ag && config.config_deposito_conta) {
-          pagamentoHtml += `<strong>Depósito:</strong> Banco ${config.config_deposito_banco} | Ag: ${config.config_deposito_ag} | Conta: ${config.config_deposito_conta}<br>`;
+          pagamentoHtml += `<strong>Depósito:</strong> Banco ${config.config_deposito_banco} | Ag: ${config.config_deposito-ag} | Conta: ${config.config_deposito-conta}<br>`;
           hasPayment = true;
         }
         if (!hasPayment) {
@@ -2486,14 +2662,8 @@ function updateOrcamentoPreview() {
     window.saveOrcamento = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
       
-      // Copia o estado atual
-      window.saveOrcamento = async () => {
-      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
-      
       // Copia o estado atual e garante que o status esteja presente para novos e editados
       const data = { ...appState.currentOrcamento, status: appState.currentOrcamento.status || 'pendente' };
-      
-      // ... (o resto da função continua)
       
       // NOVO: Limpa os dados com base nos seletores
       if (data.modoCobranca === 'mao_de_obra') {
@@ -2529,70 +2699,70 @@ function updateOrcamentoPreview() {
       }
     };
 
-   window.shareOrViewPDF = async () => {
-    if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
-    
-    const clienteNome = (appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-');
-    const footerText = "Orçamento válido por 15 dias.";
-    const footerHeight = 10; // Altura reservada do rodapé (em mm)
+    window.shareOrViewPDF = async () => {
+        if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+        
+        const clienteNome = (appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-');
+        const footerText = "Orçamento válido por 15 dias.";
+        const footerHeight = 10; // Altura reservada do rodapé (em mm)
 
-    // 1. Encontra e REMOVE o rodapé HTML da tela (Dom) para evitar duplicação e corte
-    const previewContainer = document.querySelector('#pdf-preview > div');
-    const footerEl = previewContainer.querySelector('div:last-child');
-    let originalFooter = null;
+        // 1. Encontra e REMOVE o rodapé HTML da tela (Dom) para evitar duplicação e corte
+        const previewContainer = document.querySelector('#pdf-preview > div');
+        const footerEl = previewContainer.querySelector('div:last-child');
+        let originalFooter = null;
 
-    if (footerEl && footerEl.textContent.includes('válido por 15 dias')) {
-        originalFooter = footerEl.cloneNode(true);
-        footerEl.remove(); // Remove o elemento do DOM antes de tirar a foto
-    }
+        if (footerEl && footerEl.textContent.includes('válido por 15 dias')) {
+            originalFooter = footerEl.cloneNode(true);
+            footerEl.remove(); // Remove o elemento do DOM antes de tirar a foto
+        }
 
-    // 2. Configurações base (Aumenta a margem inferior para o rodapé fixo)
-    const opt = {
-        margin:       [10, 10, 30, 10], // Margem inferior aumentada (30mm)
-        filename:     `pedido-${clienteNome}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        // 2. Configurações base (Aumenta a margem inferior para o rodapé fixo)
+        const opt = {
+            margin:       [10, 10, 30, 10], // Margem inferior reservada (30mm)
+            filename:     `pedido-${clienteNome}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        try {
+            const element = document.getElementById('pdf-preview');
+            const generator = html2pdf().set(opt).from(element);
+            
+            // 3. Gera o PDF e injeta o rodapé em CADA página
+            const pdf = await generator.output('jsPDF');
+            
+            const pageCount = pdf.internal.getNumberOfPages();
+            const docWidth = pdf.internal.pageSize.getWidth();
+            const docHeight = pdf.internal.pageSize.getHeight();
+            
+            for (let i = 1; i <= pageCount; i++) {
+                pdf.setPage(i);
+                
+                // Desenha a tarja amarela (Fundo: #FFFFCC)
+                pdf.setFillColor(255, 255, 204); 
+                pdf.rect(0, docHeight - footerHeight, docWidth, footerHeight, 'F'); 
+                
+                // Desenha o texto (Preto, Negrito, Centralizado)
+                pdf.setFont('Helvetica', 'Bold');
+                pdf.setFontSize(10);
+                pdf.setTextColor(0, 0, 0); 
+                pdf.text(footerText, docWidth / 2, docHeight - (footerHeight / 2) + 1.5, { align: 'center' });
+            }
+            
+            // 4. Salva o PDF final (Download)
+            pdf.save(opt.filename);
+            
+        } catch (e) {
+            console.error("Erro ao gerar PDF:", e);
+            alert('Erro crítico ao gerar o PDF. O rodapé não foi injetado.');
+        } finally {
+            // 5. DEVOLVE o elemento HTML ao DOM para a pré-visualização na tela
+            if (originalFooter) {
+                previewContainer.appendChild(originalFooter);
+            }
+        }
     };
-
-    try {
-        const element = document.getElementById('pdf-preview');
-        const generator = html2pdf().set(opt).from(element);
-        
-        // 3. Gera o PDF e injeta o rodapé em CADA página
-        const pdf = await generator.output('jsPDF');
-        
-        const pageCount = pdf.internal.getNumberOfPages();
-        const docWidth = pdf.internal.pageSize.getWidth();
-        const docHeight = pdf.internal.pageSize.getHeight();
-        
-        for (let i = 1; i <= pageCount; i++) {
-            pdf.setPage(i);
-            
-            // Desenha a tarja amarela (Fundo: #FFFFCC)
-            pdf.setFillColor(255, 255, 204); 
-            pdf.rect(0, docHeight - footerHeight, docWidth, footerHeight, 'F'); 
-            
-            // Desenha o texto (Preto, Negrito, Centralizado)
-            pdf.setFont('Helvetica', 'Bold');
-            pdf.setFontSize(10);
-            pdf.setTextColor(0, 0, 0); 
-            pdf.text(footerText, docWidth / 2, docHeight - (footerHeight / 2) + 1.5, { align: 'center' });
-        }
-        
-        // 4. Salva o PDF final (Download)
-        pdf.save(opt.filename);
-        
-    } catch (e) {
-        console.error("Erro ao gerar PDF:", e);
-        alert('Erro crítico ao gerar o PDF. O rodapé não foi injetado.');
-    } finally {
-        // 5. DEVOLVE o elemento HTML ao DOM para a pré-visualização na tela
-        if (originalFooter) {
-            previewContainer.appendChild(originalFooter);
-        }
-    }
-};
 
     window.sendWhatsAppText = () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
@@ -2631,287 +2801,6 @@ function updateOrcamentoPreview() {
     descontoTipoEl?.addEventListener('change', handleDescontoChange);
     descontoValorEl?.addEventListener('input', handleDescontoChange);
 
-    // ==========================================================
-    // BLOCO: FUNÇÕES DE MÁSCARA E FORMATAÇÃO DE DOCUMENTO
-    // ==========================================================
-    function formatarCPFCNPJ(value) {
-        if (!value) return "";
-        const cleanValue = value.replace(/\D/g, '');
-        if (cleanValue.length <= 11) {
-            return cleanValue
-                .slice(0, 11)
-                .replace(/(\d{3})(\d)/, '$1.$2')
-                .replace(/(\d{3})(\d)/, '$1.$2')
-                .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-        } else {
-            return cleanValue
-                .slice(0, 14) 
-                .replace(/(\d{2})(\d)/, '$1.$2')
-                .replace(/(\d{3})(\d)/, '$1.$2')
-                .replace(/(\d{3})(\d)/, '$1/$2')
-                .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
-        }
-    }
-    function handleDocMask(event) {
-        const input = event.target;
-        const originalPos = input.selectionStart;
-        const originalLength = input.value.length;
-        input.value = formatarCPFCNPJ(input.value);
-        const newLength = input.value.length;
-        const diff = newLength - originalLength;
-        input.setSelectionRange(originalPos + diff, originalPos + diff);
-    }
-    function getLabelEValorDoc(docValue) {
-        if (!docValue) return { label: 'Doc:', valor: '' };
-        const cleanValue = String(docValue).replace(/\D/g, '');
-        if (cleanValue.length === 11) {
-            return { label: 'CPF:', valor: formatarCPFCNPJ(cleanValue) };
-        }
-        if (cleanValue.length === 14) {
-            return { label: 'CNPJ:', valor: formatarCPFCNPJ(cleanValue) };
-        }
-        return { label: 'Doc:', valor: docValue };
-    }
-    // ==========================================================
-    // BLOCO: FUNÇÕES DE MÁSCARA DE TELEFONE
-    // ==========================================================
-    function formatarTelefone(value) {
-        if (!value) return "";
-        const cleanValue = value.replace(/\D/g, '');
-        return cleanValue
-            .slice(0, 11)
-            .replace(/(\d{2})(\d)/, '($1) $2')       // (XX) X
-            .replace(/(\d{5})(\d{1,4})$/, '$1-$2');  // (XX) XXXXX-XXXX
-    }
-    function handleTelefoneMask(event) {
-        const input = event.target;
-        const originalPos = input.selectionStart;
-        const originalLength = input.value.length;
-        input.value = formatarTelefone(input.value);
-        const newLength = input.value.length;
-        const diff = newLength - originalLength;
-        if (diff > 0) {
-            input.setSelectionRange(originalPos + diff, originalPos + diff);
-        } else {
-            input.setSelectionRange(originalPos, originalPos);
-        }
-    }
-    
-    // ==========================================================
-    // BLOCO: FUNÇÕES DE BUSCA DE CEP E MÁSCARA
-    // ==========================================================
-    
-    /**
-     * Formata um valor de string para CEP (XXXXX-XXX)
-     * @param {string} value - O valor a ser formatado
-     * @returns {string} - O valor com a máscara
-     */
-    function formatarCEP(value) {
-        if (!value) return "";
-        return value
-            .replace(/\D/g, '')       // Remove tudo que não é dígito
-            .slice(0, 8)              // Limita a 8 dígitos
-            .replace(/(\d{5})(\d{1,3})$/, '$1-$2'); // Aplica a máscara
-    }
-    
-    /**
-     * Função para ser usada no evento 'input' dos campos de CEP
-     * @param {Event} event - O evento de input
-     */
-    function handleCEPMask(event) {
-        event.target.value = formatarCEP(event.target.value);
-    }
-    /**
-     * NOVO: Filtra a lista de clientes com base na busca
-     * @param {Event} event - O evento de input
-     */
-    function handleSearchCliente(event) {
-        const query = event.target.value.toLowerCase().trim();
-        const clientes = document.querySelectorAll('#clientes-list > div');
-        
-        if (!clientes.length) return;
-
-        clientes.forEach(clienteDiv => {
-            const nomeEl = clienteDiv.querySelector('p.font-medium');
-            if (nomeEl) {
-                const nome = nomeEl.textContent.toLowerCase();
-                if (nome.includes(query)) {
-                    clienteDiv.style.display = 'flex';
-                } else {
-                    clienteDiv.style.display = 'none';
-                }
-            }
-        });
-    }
-    /**
-     * Busca o CEP na API e preenche os campos do formulário
-     * @param {string} cep - O CEP para buscar
-     * @param {object} fieldMap - Um objeto mapeando os IDs dos campos (logradouro, bairro, cidade, uf)
-     */
-    window.buscarCEP = async (cep, fieldMap) => {
-        const cleanCEP = cep.replace(/\D/g, '');
-        if (cleanCEP.length !== 8) {
-            console.log('CEP inválido ou incompleto.');
-            return;
-        }
-    
-        const logradouroEl = document.getElementById(fieldMap.logradouro);
-        const bairroEl = document.getElementById(fieldMap.bairro);
-        const cidadeEl = document.getElementById(fieldMap.cidade);
-        const ufEl = document.getElementById(fieldMap.uf);
-        const numeroEl = document.getElementById(fieldMap.numero);
-    
-        if (!logradouroEl || !bairroEl || !cidadeEl || !ufEl || !numeroEl) {
-            console.error('Campos do formulário não encontrados para o CEP.');
-            return;
-        }
-    
-        // Mostra "carregando" nos campos
-        const originalValues = {
-            logradouro: logradouroEl.value,
-            bairro: bairroEl.value,
-            cidade: cidadeEl.value,
-            uf: ufEl.value,
-        };
-        logradouroEl.value = "Buscando...";
-        bairroEl.value = "Buscando...";
-        
-        try {
-            const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
-            if (!response.ok) throw new Error('Falha na busca do CEP.');
-            
-            const data = await response.json();
-            
-            if (data.erro) {
-                alert('CEP não encontrado. Verifique o número.');
-                logradouroEl.value = originalValues.logradouro;
-                bairroEl.value = originalValues.bairro;
-                return;
-            }
-    
-            // Preenche os campos
-            logradouroEl.value = data.logradouro;
-            bairroEl.value = data.bairro;
-            cidadeEl.value = data.localidade;
-            ufEl.value = data.uf;
-            
-            // Foca no campo de número para o usuário
-            numeroEl.focus();
-    
-        } catch (error) {
-            console.error('Erro ao buscar CEP:', error);
-            alert('Ocorreu um erro ao buscar o CEP. Tente novamente.');
-            logradouroEl.value = originalValues.logradouro;
-            bairroEl.value = originalValues.bairro;
-        }
-    }
-
-    // ==========================================================
-    // NOVO BLOCO: FUNÇÃO PARA GERAR NOVO ID DE CLIENTE
-    // ==========================================================
-
-/**
- * Gera um novo ID de cliente no formato CL[NNN][MM][YY]
- * @returns {string} - O novo ID do cliente
- */
-function gerarNovoNumeroCliente() {
-    // 1. Pega o próximo número sequencial (NNN)
-    // Filtra IDs que começam com CL e têm o formato novo ou antigo
-    const clientesComID = appState.clientes
-        .map(c => c.numeroCadastro)
-        .filter(id => id && id.startsWith('CL'));
-
-    let maxSeq = 0;
-    
-    clientesComID.forEach(id => {
-        let seqNum = 0;
-        // Remove o 'CL'
-        const numPart = id.substring(2); 
-        
-        // Tenta identificar o formato novo (ex: 0011125)
-        if (numPart.length === 7) { // CL[NNN][MM][YY]
-            seqNum = parseInt(numPart.substring(0, 3), 10);
-        } 
-        // Tenta identificar o formato antigo (ex: 0001)
-        else if (numPart.length === 4) { // CL[NNNN]
-            seqNum = parseInt(numPart, 10);
-        }
-        // Tenta identificar IDs manuais antigos (ex: CL011125)
-        else if (numPart.length === 6) { // CL[NN][MM][YY]
-             seqNum = parseInt(numPart.substring(0, 2), 10);
-        }
-
-        if (!isNaN(seqNum) && seqNum > maxSeq) {
-            maxSeq = seqNum;
-        }
-    });
-
-    const proximoSeq = (maxSeq + 1).toString().padStart(3, '0'); // Garante 3 dígitos (NNN)
-
-    // 2. Pega a data atual (MMYY)
-    const agora = new Date();
-    const mes = (agora.getMonth() + 1).toString().padStart(2, '0'); // MM
-    const ano = agora.getFullYear().toString().slice(-2); // YY
-
-    // 3. Monta o ID
-    const novoID = `CL${proximoSeq}${mes}${ano}`;
-    
-    console.log(`Gerado novo ID de Cliente: ${novoID} (Sequência: ${proximoSeq})`);
-    return novoID;
-}
-
-window.toggleOrcamentoStatus = async (status) => {
-    if (!appState.currentOrcamento || !appState.currentOrcamento.id || !userId) {
-        return alert('Erro: Não é possível alterar o status de um orçamento não salvo.');
-    }
-
-    const newStatus = status;
-    
-    // Atualiza no Firebase
-    try {
-        const docRef = doc(db, `users/${userId}/orcamentos/${appState.currentOrcamento.id}`);
-        // Salva só o campo status
-        await setDoc(docRef, { status: newStatus }, { merge: true }); 
-        
-        // Atualiza no estado local
-        appState.currentOrcamento.status = newStatus;
-        
-        // Atualiza os botões visíveis
-        updateStatusButtons(newStatus);
-        
-        alert(`Status alterado para: ${newStatus.toUpperCase()}`);
-        
-    } catch (e) {
-        console.error('Erro ao atualizar status do orçamento:', e);
-        alert('Falha ao salvar o status. Tente novamente.');
-    }
-};
-
-/**
- * Controla a visibilidade dos botões APROVADO/PENDENTE no modal.
- * @param {string} currentStatus - O status atual do orçamento.
- */
-window.updateStatusButtons = (currentStatus) => {
-    const btnAprovado = document.getElementById('btn-status-aprovado');
-    const btnPendente = document.getElementById('btn-status-pendente');
-    
-    if (!appState.currentOrcamento || !appState.currentOrcamento.id) {
-        if (btnAprovado) btnAprovado.classList.add('hidden');
-        if (btnPendente) btnPendente.classList.add('hidden');
-        return;
-    }
-    
-    if (currentStatus === 'pendente') {
-        btnAprovado.classList.remove('hidden');
-        btnPendente.classList.add('hidden');
-    } else { // 'aprovado'
-        btnAprovado.classList.add('hidden');
-        btnPendente.classList.remove('hidden');
-    }
-}; // <--- FIM DA FUNÇÃO
-// ==========================================================
-// FIM DO NOVO BLOCO
-// ==========================================================
     window.onload = initializeFirebase;
   </script>
 </body>
