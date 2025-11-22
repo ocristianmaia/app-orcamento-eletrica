@@ -233,7 +233,7 @@
               <button onclick="showAllOrcamentosPage()" class="bg-gray-800 text-white p-4 rounded-lg flex justify-center items-center shadow hover:bg-gray-900 transition-colors">
                 <h2 class="text-xl font-semibold text-center">Orçamentos</h2>
               </button>
-              <button id="btn-novo-orcamento" type="button" onclick="changeTab(event, 'orcamentos'); window.openOrcamentoModal()" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium flex justify-center items-center">
+              <button id="btn-novo-orcamento" type="button" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium flex justify-center items-center">
                 <span class="text-xl font-semibold">+ Novo Orçamento</span>
               </button>
             </div>
@@ -634,7 +634,7 @@
       </div>
     </div>
 
-    <div id="all-orcamentos-view" class="hidden">
+    <div id="all-orcamentos-view" class="hidden flex-1">
       <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
           <h2 class="text-2xl font-semibold">Todos os Orçamentos</h2>
@@ -3217,8 +3217,19 @@ function gerarNovoNumeroCliente() {
       if (btnNovoOrc) {
         btnNovoOrc.addEventListener('click', (e) => {
           e.preventDefault();
-          window.openOrcamentoModal();
+          // Garante que a aba de orçamentos fique ativa
+          if (typeof changeTab === 'function') {
+            changeTab(null, 'orcamentos');
+          }
+          // Abre o modal de criação/edição
+          if (window.openOrcamentoModal) {
+            window.openOrcamentoModal();
+          } else {
+            console.error('openOrcamentoModal não está definido em window.');
+          }
         });
+      } else {
+        console.warn('Botão "+ Novo Orçamento" não encontrado na DOM.');
       }
     })();
 
