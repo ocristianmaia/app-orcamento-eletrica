@@ -1199,39 +1199,40 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
       
       try {
         const data = {
-          nome: getVal('config-nome'),
-          telefone: getVal('config-telefone').replace(/\D/g, ''), // Salva só números
-          doc: getVal('config-doc').replace(/\D/g, ''), // Salva só números
-          
-          // NOVO: Campos de endereço
-          cep: getVal('config-cep').replace(/\D/g, ''),
-          numero: getVal('config-numero'),
-          logradouro: getVal('config-logradouro'),
-          bairro: getVal('config-bairro'),
-          cidade: getVal('config-cidade'),
-          uf: getVal('config-uf'),
-          
-          logo: getVal('config-logo'),
-          
-          config_color_primary: getVal('config-color-primary'),
-          config_color_secondary: getVal('config-color-secondary'),
+    nome: getVal('config-nome'),
+    telefone: getVal('config-telefone').replace(/\D/g, ''),
+    doc: getVal('config-doc').replace(/\D/g, ''),
+    
+    // CAMPOS DE ENDEREÇO
+    cep: getVal('config-cep').replace(/\D/g, ''),
+    numero: getVal('config-numero'),
+    logradouro: getVal('config-logradouro'),
+    bairro: getVal('config-bairro'),
+    cidade: getVal('config-cidade'),
+    uf: getVal('config-uf'),
+    
+    logo: getVal('config-logo'),
+    
+    config_color_primary: getVal('config-color-primary'),
+    config_color_secondary: getVal('config-color-secondary'),
 
-          residencial_empreitada: parseFloat(getVal('config-residencial-empreitada')) || 0,
-          residencial_diaria: parseFloat(getVal('config-residencial-diaria')) || 0,
-          residencial_ponto: parseFloat(getVal('config-residencial-ponto')) || 0,
-          residencial_hora: parseFloat(getVal('config-residencial-hora')) || 0,
-          industrial_diaria: parseFloat(getVal('config-industrial-diaria')) || 0,
-          industrial_ponto: parseFloat(getVal('config-industrial-ponto')) || 0,
-          industrial_hora: parseFloat(getVal('config-industrial-hora')) || 0,
+    residencial_empreitada: parseFloat(getVal('config-residencial-empreitada')) || 0,
+    residencial_diaria: parseFloat(getVal('config-residencial-diaria')) || 0,
+    residencial_ponto: parseFloat(getVal('config-residencial-ponto')) || 0,
+    residencial_hora: parseFloat(getVal('config-residencial-hora')) || 0,
+    industrial_diaria: parseFloat(getVal('config-industrial-diaria')) || 0,
+    industrial_ponto: parseFloat(getVal('config-industrial-ponto')) || 0,
+    industrial_hora: parseFloat(getVal('config-industrial-hora')) || 0,
 
-          config_pix_chave: getVal('config-pix-chave'),
-          config_cartao_vezes: parseInt(getVal('config-cartao-vezes')) || 0,
-          config_cartao_juros: parseFloat(getVal('config-cartao-juros')) || 0,
-          config_pagamento_dinheiro: document.getElementById('config-pagamento-dinheiro').checked,
-          config_deposito_banco: getVal('config-deposito-banco'),
-          config_deposito_ag: getVal('config-deposito-ag'),
-          config_deposito_conta: getVal('config-deposito-conta'),
-        };
+    // CHAVES CORRIGIDAS (SEM TRAÇOS NO NOME DA CHAVE)
+    config_pix_chave: getVal('config-pix-chave'),
+    config_cartao_vezes: parseInt(getVal('config-cartao-vezes')) || 0,
+    config_cartao_juros: parseFloat(getVal('config-cartao-juros')) || 0,
+    config_pagamento_dinheiro: document.getElementById('config-pagamento-dinheiro').checked,
+    config_deposito_banco: getVal('config-deposito-banco'),
+    config_deposito_ag: getVal('config-deposito-ag'),
+    config_deposito_conta: getVal('config-deposito-conta'),
+};
         
         // Remove 'endereco' e 'endereco_l2' antigos se existirem
         delete data.endereco;
