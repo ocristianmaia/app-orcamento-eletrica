@@ -174,7 +174,7 @@
     </button>
   </div>
 
-  <div id="app-view" class="hidden min-h-screen flex flex-col">
+  <div id="app-view" class="hidden min-h-screen flex flex-col bg-gray-100">
     <header class="bg-gray-900 text-white shadow-md">
       <div class="max-w-4xl mx-auto py-3 px-4 md:px-6 flex justify-between items-center">
         <h1 class="font-bold text-left leading-tight">
@@ -843,7 +843,12 @@
     <footer class="bg-gray-900 text-white text-center py-6 mt-auto border-t border-lime-400">
       <div class="max-w-4xl mx-auto px-4 md:px-6">
         <p class="mb-4">Para ajustes ou sugestões de melhorias, mande uma mensagem.</p>
-        <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">Enviar Mensagem</a>
+        <a href="https://wa.me/5551999600889"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow-md inline-block">
+          Enviar Mensagem
+        </a>
       </div>
     </footer>
 
@@ -2008,7 +2013,7 @@ window.toggleOrcamentoExclusao = (checkbox) => {
         return alert('Orçamento não encontrado. Tente recarregar a página.');
       }
       console.log("Orçamento encontrado:", orc);
-      window.openOrcamentoModal(orc);
+      openOrcamentoModal(orc);
     };
 
     // ==========================================================
@@ -3212,26 +3217,29 @@ function gerarNovoNumeroCliente() {
 
 
     // Garante funcionamento do botão "+ Novo Orçamento"
-    (function() {
+    document.addEventListener('DOMContentLoaded', () => {
       const btnNovoOrc = document.getElementById('btn-novo-orcamento');
       if (btnNovoOrc) {
         btnNovoOrc.addEventListener('click', (e) => {
           e.preventDefault();
-          // Garante que a aba de orçamentos fique ativa
-          if (typeof changeTab === 'function') {
-            changeTab(null, 'orcamentos');
-          }
-          // Abre o modal de criação/edição
-          if (window.openOrcamentoModal) {
-            window.openOrcamentoModal();
-          } else {
-            console.error('openOrcamentoModal não está definido em window.');
+          try {
+            if (window.changeTab) {
+              window.changeTab(null, 'orcamentos');
+            }
+            if (window.openOrcamentoModal) {
+              window.openOrcamentoModal();
+            } else {
+              console.error('window.openOrcamentoModal não está definido.');
+            }
+          } catch (err) {
+            console.error('Erro ao abrir novo orçamento via botão principal:', err);
+            alert('Ocorreu um erro ao abrir o novo orçamento. Veja o console para detalhes.');
           }
         });
       } else {
         console.warn('Botão "+ Novo Orçamento" não encontrado na DOM.');
       }
-    })();
+    });;
 
 // Filtros de orçamentos (status / mês / ano)
     document.getElementById('filtro-status-orcamento')?.addEventListener('change', () => renderOrcamentosList(true));
