@@ -687,11 +687,14 @@
             <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
             <div id="pdf-preview" class="flex-grow text-sm">
               <p class="text-gray-500 text-center mt-8">Selecione um cliente e adicione itens para ver o orçamento.</p>
-            </div>
+           </div>
             <div class="mt-6 flex flex-col sm:flex-row gap-2 justify-end">
               <button onclick="saveOrcamento()" class="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar Orçamento</button>
               <button onclick="shareOrViewPDF()" class="bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition-colors">Enviar PDF</button>
               <button onclick="sendWhatsAppText()" class="bg-teal-500 text-white px-5 py-2 rounded-lg shadow hover:bg-teal-600 transition-colors">Enviar (só texto)</button>
+              
+              <button id="btn-status-aprovado" onclick="toggleOrcamentoStatus('aprovado')" class="hidden bg-green-700 text-white px-5 py-2 rounded-lg shadow hover:bg-green-800 transition-colors">✔ APROVADO</button>
+              <button id="btn-status-pendente" onclick="toggleOrcamentoStatus('pendente')" class="hidden bg-yellow-600 text-white px-5 py-2 rounded-lg shadow hover:bg-yellow-700 transition-colors">⏳ PENDENTE</button>
             </div>
           </div>
         </div>
@@ -752,7 +755,8 @@
         maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
         desconto: { tipo: 'nenhum', valor: 0 },
         total: 0, tipoObra: 'residencial', createdAt: null,
-        numeroOrcamento: null, versao: 1
+        numeroOrcamento: null, versao: 1,
+        status: 'pendente' // NOVO: Define o status padrão
       };
     }
 
@@ -1932,7 +1936,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
           // Dispara os toggles para mostrar/esconder seções corretas
           toggleModoDeCobranca(clone.modoCobranca);
           toggleUsarMaterial(clone.usarMaterial);
-          
+          updateStatusButtons(clone.status);
           clienteSelect.dispatchEvent(new Event('change'));
 
           // Preenche os checkboxes de itens (após um pequeno delay para os toggles)
@@ -2483,7 +2487,13 @@ function updateOrcamentoPreview() {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
       
       // Copia o estado atual
-      const data = { ...appState.currentOrcamento };
+      window.saveOrcamento = async () => {
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
+      
+      // Copia o estado atual e garante que o status esteja presente para novos e editados
+      const data = { ...appState.currentOrcamento, status: appState.currentOrcamento.status || 'pendente' };
+      
+      // ... (o resto da função continua)
       
       // NOVO: Limpa os dados com base nos seletores
       if (data.modoCobranca === 'mao_de_obra') {
@@ -2837,10 +2847,61 @@ function gerarNovoNumeroCliente() {
     console.log(`Gerado novo ID de Cliente: ${novoID} (Sequência: ${proximoSeq})`);
     return novoID;
 }
+
+window.toggleOrcamentoStatus = async (status) => {
+    if (!appState.currentOrcamento || !appState.currentOrcamento.id || !userId) {
+        return alert('Erro: Não é possível alterar o status de um orçamento não salvo.');
+    }
+
+    const newStatus = status;
+    
+    // Atualiza no Firebase
+    try {
+        const docRef = doc(db, `users/${userId}/orcamentos/${appState.currentOrcamento.id}`);
+        // Salva só o campo status
+        await setDoc(docRef, { status: newStatus }, { merge: true }); 
+        
+        // Atualiza no estado local
+        appState.currentOrcamento.status = newStatus;
+        
+        // Atualiza os botões visíveis
+        updateStatusButtons(newStatus);
+        
+        alert(`Status alterado para: ${newStatus.toUpperCase()}`);
+        
+    } catch (e) {
+        console.error('Erro ao atualizar status do orçamento:', e);
+        alert('Falha ao salvar o status. Tente novamente.');
+    }
+};
+
+/**
+ * Controla a visibilidade dos botões APROVADO/PENDENTE no modal.
+ * @param {string} currentStatus - O status atual do orçamento.
+ */
+function updateStatusButtons(currentStatus) {
+    const btnAprovado = document.getElementById('btn-status-aprovado');
+    const btnPendente = document.getElementById('btn-status-pendente');
+    
+    // Se não está editando (sem ID), esconde os botões de status.
+    if (!appState.currentOrcamento || !appState.currentOrcamento.id) {
+        if (btnAprovado) btnAprovado.classList.add('hidden');
+        if (btnPendente) btnPendente.classList.add('hidden');
+        return;
+    }
+    
+    // Mostra o botão que corresponde ao status OPOSTO
+    if (currentStatus === 'pendente') {
+        btnAprovado.classList.remove('hidden'); // Mostra 'Aprovar'
+        btnPendente.classList.add('hidden');    // Esconde 'Pendente'
+    } else { // 'aprovado'
+        btnAprovado.classList.add('hidden');    // Esconde 'Aprovar'
+        btnPendente.classList.remove('hidden'); // Mostra 'Pendente' (para desfazer)
+    }
+}
 // ==========================================================
 // FIM DO NOVO BLOCO
 // ==========================================================
-
     window.onload = initializeFirebase;
   </script>
 </body>
