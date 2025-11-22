@@ -1002,6 +1002,148 @@
         populateCategorySelect();
       });
 
+
+    // ===== Financeiro / Faturamento =====
+    function filtrarOrcamentosPorMesAno(anoSel, mesSel) {
+      let list = [...appState.orcamentos];
+      if (!list.length) return [];
+      return list.filter(orc => {
+        if (!orc.createdAt) return false;
+        const d = new Date(orc.createdAt);
+        const ano = d.getFullYear().toString();
+        const mes = d.getMonth().toString();
+        if (anoSel && anoSel !== 'todos' && ano !== anoSel) return false;
+        if (mesSel && mesSel !== 'all' && mes !== mesSel) return false;
+        return true;
+      });
+    }
+
+    function calcularFinanceiro(anoSel, mesSel) {
+      const orcs = filtrarOrcamentosPorMesAno(anoSel, mesSel);
+      let bruto = 0;
+      let liquido = 0;
+      let aprovados = 0;
+      let pendentes = 0;
+
+      orcs.forEach(orc => {
+        const total = Number(orc.total || 0);
+        bruto += total;
+        const aprovado = (orc.status === 'aprovado' || orc.aprovado === true);
+        if (aprovado) {
+          liquido += total;
+          aprovados += 1;
+        } else {
+          pendentes += 1;
+        }
+      });
+
+      return {
+        bruto, liquido, aprovados, pendentes, totalOrcamentos: orcs.length,
+      };
+    }
+
+    function formatBRL(valor) {
+      return (Number(valor || 0)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function updateFinanceiroView() {
+      const anoSel = document.getElementById('fat-ano')?.value || 'todos';
+      const mesSel = document.getElementById('fat-mes')?.value || 'all';
+
+      const { bruto, liquido, aprovados, pendentes } = calcularFinanceiro(anoSel, mesSel);
+
+      const brutoEl = document.getElementById('fat-bruto');
+      const liquidoEl = document.getElementById('fat-liquido');
+      const contagemEl = document.getElementById('fat-contagem');
+
+      if (brutoEl) brutoEl.textContent = formatBRL(bruto);
+      if (liquidoEl) liquidoEl.textContent = formatBRL(liquido);
+      if (contagemEl) contagemEl.textContent = `${aprovados} aprovados / ${pendentes} pendentes`;
+
+      const canvas = document.getElementById('finance-chart');
+      if (!canvas || typeof Chart === 'undefined') return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      if (financeChart) {
+        try { financeChart.destroy(); } catch(e) { console.warn('Erro ao destruir gráfico antigo', e); }
+      }
+
+      financeChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Faturamento'],
+          datasets: [
+            {
+              label: 'Valor Bruto',
+              data: [bruto],
+              backgroundColor: '#FACC15',
+            },
+            {
+              label: 'Valor Líquido (aprovado)',
+              data: [liquido],
+              backgroundColor: '#22C55E',
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: { enabled: true },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    }
+
+    function exportarFinanceiro() {
+      const inicioStr = document.getElementById('fat-data-inicio')?.value || '';
+      const fimStr = document.getElementById('fat-data-fim')?.value || '';
+
+      let orcs = [...appState.orcamentos];
+      if (inicioStr || fimStr) {
+        const inicio = inicioStr ? new Date(`${inicioStr}T00:00:00`) : null;
+        const fim = fimStr ? new Date(`${fimStr}T23:59:59`) : null;
+        orcs = orcs.filter(orc => {
+          if (!orc.createdAt) return false;
+          const d = new Date(orc.createdAt);
+          if (inicio && d < inicio) return false;
+          if (fim && d > fim) return false;
+          return true;
+        });
+      }
+
+      if (!orcs.length) {
+        alert('Nenhum orçamento encontrado para o período selecionado.');
+        return;
+      }
+
+      const rows = orcs.map(orc => {
+        const d = orc.createdAt ? new Date(orc.createdAt) : null;
+        const status = (orc.status === 'aprovado' || orc.aprovado === true) ? 'APROVADO' : 'PENDENTE';
+        const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
+        return {
+          'Data': d ? d.toLocaleDateString('pt-BR') : '',
+          'Número Orçamento': orc.numeroOrcamento || '',
+          'Cliente': cliente ? cliente.nome : '',
+          'Status': status,
+          'Valor Total': Number(orc.total || 0),
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Faturamento');
+      const hoje = new Date();
+      const nomeArquivo = `faturamento_orcamentos_${hoje.toISOString().slice(0,10)}.xlsx`;
+      XLSX.writeFile(wb, nomeArquivo);
+    }
+
       onSnapshot(query(collection(db, `${prefix}/orcamentos`)), (snapshot) => {
         console.log(`[DEBUG] Recebeu ${snapshot.docs.length} orçamentos do Firebase.`);
         appState.orcamentos = snapshot.docs.map(d => {
