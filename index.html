@@ -2530,57 +2530,69 @@ function updateOrcamentoPreview() {
     };
 
    window.shareOrViewPDF = async () => {
-      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
-      
-      // 1. Cria o elemento temporário para o PDF
-      const element = document.createElement('div');
-      // Copia o conteúdo do preview
-      element.innerHTML = document.getElementById('pdf-preview').innerHTML;
-      
-      // Aplica estilos específicos para garantir que a quebra de página não corte textos ao meio
-      element.style.width = '100%';
-      element.style.padding = '20px';
-      element.style.fontSize = '12px'; 
-      element.style.fontFamily = 'Inter, sans-serif';
-      // Importante: Força fundo branco para não ficar transparente
-      element.style.backgroundColor = '#ffffff';
-      
-      // Configurações da biblioteca html2pdf
-      const opt = {
-        margin:       [10, 10, 10, 10], // Margens (mm)
-        filename:     `pedido-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`,
+    if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+    
+    const clienteNome = (appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-');
+    const footerText = "Orçamento válido por 15 dias.";
+    const footerHeight = 10; // Altura reservada do rodapé (em mm)
+
+    // 1. Encontra e REMOVE o rodapé HTML da tela (Dom) para evitar duplicação e corte
+    const previewContainer = document.querySelector('#pdf-preview > div');
+    const footerEl = previewContainer.querySelector('div:last-child');
+    let originalFooter = null;
+
+    if (footerEl && footerEl.textContent.includes('válido por 15 dias')) {
+        originalFooter = footerEl.cloneNode(true);
+        footerEl.remove(); // Remove o elemento do DOM antes de tirar a foto
+    }
+
+    // 2. Configurações base (Aumenta a margem inferior para o rodapé fixo)
+    const opt = {
+        margin:       [10, 10, 30, 10], // Margem inferior aumentada (30mm)
+        filename:     `pedido-${clienteNome}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // Evita cortes bruscos
-      };
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
 
-      // 2. Gera e Salva/Compartilha
-      try {
-        // Tenta usar o compartilhamento nativo do celular se disponível
-        if (navigator.share && navigator.canShare) {
-            // Gera o BLOB (arquivo na memória)
-            const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
-            const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+    try {
+        const element = document.getElementById('pdf-preview');
+        const generator = html2pdf().set(opt).from(element);
+        
+        // 3. Gera o PDF e injeta o rodapé em CADA página
+        const pdf = await generator.output('jsPDF');
+        
+        const pageCount = pdf.internal.getNumberOfPages();
+        const docWidth = pdf.internal.pageSize.getWidth();
+        const docHeight = pdf.internal.pageSize.getHeight();
+        
+        for (let i = 1; i <= pageCount; i++) {
+            pdf.setPage(i);
             
-            if (navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    title: `Orçamento - ${appState.currentOrcamento.cliente.nome}`,
-                    text: 'Segue o orçamento em anexo.',
-                    files: [file]
-                });
-                return; // Se compartilhou, para por aqui
-            }
+            // Desenha a tarja amarela (Fundo: #FFFFCC)
+            pdf.setFillColor(255, 255, 204); 
+            pdf.rect(0, docHeight - footerHeight, docWidth, footerHeight, 'F'); 
+            
+            // Desenha o texto (Preto, Negrito, Centralizado)
+            pdf.setFont('Helvetica', 'Bold');
+            pdf.setFontSize(10);
+            pdf.setTextColor(0, 0, 0); 
+            pdf.text(footerText, docWidth / 2, docHeight - (footerHeight / 2) + 1.5, { align: 'center' });
         }
         
-        // Se for Desktop ou o celular não aceitar share de arquivos, baixa direto
-        html2pdf().set(opt).from(element).save();
+        // 4. Salva o PDF final (Download)
+        pdf.save(opt.filename);
         
-      } catch (e) {
+    } catch (e) {
         console.error("Erro ao gerar PDF:", e);
-        alert('Erro ao gerar o PDF. Verifique se o bloqueador de popups está ativo.');
-      }
-    };
+        alert('Erro crítico ao gerar o PDF. O rodapé não foi injetado.');
+    } finally {
+        // 5. DEVOLVE o elemento HTML ao DOM para a pré-visualização na tela
+        if (originalFooter) {
+            previewContainer.appendChild(originalFooter);
+        }
+    }
+};
 
     window.sendWhatsAppText = () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
