@@ -2895,22 +2895,20 @@ window.updateStatusButtons = (currentStatus) => {
     const btnAprovado = document.getElementById('btn-status-aprovado');
     const btnPendente = document.getElementById('btn-status-pendente');
     
-    // Se não está editando (sem ID), esconde os botões de status.
     if (!appState.currentOrcamento || !appState.currentOrcamento.id) {
         if (btnAprovado) btnAprovado.classList.add('hidden');
         if (btnPendente) btnPendente.classList.add('hidden');
         return;
     }
     
-    // Mostra o botão que corresponde ao status OPOSTO
     if (currentStatus === 'pendente') {
-        btnAprovado.classList.remove('hidden'); // Mostra 'Aprovar'
-        btnPendente.classList.add('hidden');    // Esconde 'Pendente'
+        btnAprovado.classList.remove('hidden');
+        btnPendente.classList.add('hidden');
     } else { // 'aprovado'
-        btnAprovado.classList.add('hidden');    // Esconde 'Aprovar'
-        btnPendente.classList.remove('hidden'); // Mostra 'Pendente' (para desfazer)
+        btnAprovado.classList.add('hidden');
+        btnPendente.classList.remove('hidden');
     }
-}; // <--- DEVE TERMINAR AQUI!
+}; // <--- FIM DA FUNÇÃO
 // ==========================================================
 // FIM DO NOVO BLOCO
 // ==========================================================
