@@ -9,7 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
     .tab-content { display: none; }
@@ -195,10 +194,7 @@
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="clientes" onclick="changeTab(event, 'clientes')">Clientes</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="materiais" onclick="changeTab(event, 'materiais')">Materiais</button>
             <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="servicos" onclick="changeTab(event, 'servicos')">Serviços</button>
-                        <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600" data-tab="financeiro" onclick="changeTab(event, 'financeiro')">
-              Financeiro
-            </button>
-<button class="tab py-4 px-1 text-gray-500 hover:text-blue-600 flex items-center" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">
+            <button class="tab py-4 px-1 text-gray-500 hover:text-blue-600 flex items-center" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.525.322 1.017.575 1.558.75.244.081.503.14.767.17.844.088 1.517.766 1.517 1.61z" />
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -222,9 +218,7 @@
                     </svg>
                     Conf.
                 </button>
-                <button class="mobile-tab text-white p-3 rounded-lg bg-green-500/80" data-tab="financeiro" onclick="changeTab(event, 'financeiro')">
-                    Financeiro
-                </button> </div>
+                <div class="h-full"></div> </div>
         </div>
 
         <main>
@@ -233,7 +227,7 @@
               <button onclick="showAllOrcamentosPage()" class="bg-gray-800 text-white p-4 rounded-lg flex justify-center items-center shadow hover:bg-gray-900 transition-colors">
                 <h2 class="text-xl font-semibold text-center">Orçamentos</h2>
               </button>
-              <button type="button" onclick="openOrcamentoModal()" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium flex justify-center items-center">
+              <button onclick="openOrcamentoModal()" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors font-medium flex justify-center items-center">
                 <span class="text-xl font-semibold">+ Novo Orçamento</span>
               </button>
             </div>
@@ -408,113 +402,6 @@
             </div>
           </div>
 
-          <div id="financeiro" class="tab-content space-y-4">
-            <div class="bg-white p-6 rounded-lg shadow-sm space-y-4">
-              <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-                <div>
-                  <h2 class="text-xl font-semibold mb-1">Financeiro / Faturamento</h2>
-                  <p class="text-sm text-gray-500">Acompanhe o valor bruto gerado em orçamentos e o valor líquido apenas dos aprovados.</p>
-                </div>
-                <div class="flex flex-col sm:flex-row gap-2">
-                  <div class="flex items-center gap-2">
-                    <label for="fat-ano" class="text-sm text-gray-600">Ano:</label>
-                    <select id="fat-ano" class="border rounded px-2 py-1 text-sm">
-                      <option value="todos">Todos</option>
-                      <option value="2023">2023</option>
-                      <option value="2024">2024</option>
-                      <option value="2025">2025</option>
-                      <option value="2026">2026</option>
-                      <option value="2027">2027</option>
-                    </select>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <label for="fat-mes" class="text-sm text-gray-600">Mês:</label>
-                    <select id="fat-mes" class="border rounded px-2 py-1 text-sm">
-                      <option value="all">Todos</option>
-                      <option value="0">Janeiro</option>
-                      <option value="1">Fevereiro</option>
-                      <option value="2">Março</option>
-                      <option value="3">Abril</option>
-                      <option value="4">Maio</option>
-                      <option value="5">Junho</option>
-                      <option value="6">Julho</option>
-                      <option value="7">Agosto</option>
-                      <option value="8">Setembro</option>
-                      <option value="9">Outubro</option>
-                      <option value="10">Novembro</option>
-                      <option value="11">Dezembro</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mt-4 grid gap-4 md:grid-cols-3">
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                  <p class="text-xs font-medium text-yellow-700 uppercase tracking-wide">Valor Bruto (gerado)</p>
-                  <p id="fat-bruto" class="mt-1 text-lg font-semibold text-yellow-800">R$ 0,00</p>
-                </div>
-                <div class="bg-green-50 border border-green-200 rounded-lg p-3">
-                  <p class="text-xs font-medium text-green-700 uppercase tracking-wide">Valor Líquido (aprovado)</p>
-                  <p id="fat-liquido" class="mt-1 text-lg font-extrabold text-green-800">R$ 0,00</p>
-                </div>
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p class="text-xs font-medium text-blue-700 uppercase tracking-wide">Orçamentos (aprovados x pendentes)</p>
-                  <p id="fat-contagem" class="mt-1 text-sm text-blue-800">0 aprovados / 0 pendentes</p>
-                </div>
-              </div>
-
-              <div class="mt-6 bg-gray-50 p-3 rounded-lg border flex flex-col sm:flex-row justify-between items-center gap-3">
-                <div class="flex items-center gap-2">
-                  <span class="text-sm font-medium text-gray-700">Visualização:</span>
-                  <select id="chart-periodo" class="border rounded px-2 py-1 text-sm bg-white" onchange="updateFinanceiroView()">
-                    <option value="mensal">Mensal (Detalhado)</option>
-                    <option value="anual">Anual (Mês a Mês)</option>
-                  </select>
-                </div>
-                
-                <div class="flex items-center gap-2">
-                  <span class="text-sm font-medium text-gray-700">Tipo:</span>
-                  <div class="flex bg-white rounded border overflow-hidden">
-                    <button type="button" class="px-3 py-1 text-sm hover:bg-gray-100 border-r text-xl" onclick="mudarTipoGrafico('bar')" title="Colunas">
-                      📊
-                    </button>
-                    <button type="button" class="px-3 py-1 text-sm hover:bg-gray-100 text-xl" onclick="mudarTipoGrafico('pie')" title="Pizza">
-                      🍕
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mt-2 bg-white p-4 rounded-lg border shadow-sm">
-                <div class="relative h-[300px] w-full">
-                    <canvas id="finance-chart"></canvas>
-                </div>
-              </div>
-
-              <div class="mt-6 border-t pt-4">
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">Exportar faturamento</h3>
-                <div class="grid gap-3 md:grid-cols-[repeat(3,minmax(0,1fr))] md:items-end">
-                  <div>
-                    <label for="fat-data-inicio" class="block text-xs font-medium text-gray-600">Data inicial</label>
-                    <input type="date" id="fat-data-inicio" class="mt-1 block w-full border rounded px-2 py-1 text-sm" />
-                  </div>
-                  <div>
-                    <label for="fat-data-fim" class="block text-xs font-medium text-gray-600">Data final</label>
-                    <input type="date" id="fat-data-fim" class="mt-1 block w-full border rounded px-2 py-1 text-sm" />
-                  </div>
-                  <div class="flex gap-2">
-                    <button id="btn-atualizar-financeiro" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-indigo-500 text-indigo-600 text-sm font-medium rounded-md hover:bg-indigo-50">
-                      Atualizar dados
-                    </button>
-                    <button id="btn-exportar-financeiro" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">
-                      Exportar (.xlsx)
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div id="configuracoes" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
               <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
@@ -659,8 +546,6 @@
     </div>
 
     <div id="all-orcamentos-view" class="hidden">
-
-      
       <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
           <h2 class="text-2xl font-semibold">Todos os Orçamentos</h2>
@@ -669,52 +554,7 @@
              <button id="btn-delete-selected-orcamentos" onclick="confirmDeleteSelectedOrcamentos()" class="bg-red-600 text-white px-5 py-2 rounded-lg shadow hover:bg-red-700 transition-colors font-medium disabled:opacity-50" disabled>Excluir Selecionados</button>
           </div>
         </div>
-        <div id="all-orcamentos-list-container">
-              <div class="mb-4 grid gap-3 md:grid-cols-4">
-                <div>
-                  <label for="filtro-status-orcamento" class="block text-xs font-medium text-gray-600">Status</label>
-                  <select id="filtro-status-orcamento" class="mt-1 block w-full border rounded px-2 py-1 text-sm">
-                    <option value="todos">Todos</option>
-                    <option value="aprovado">Aprovados</option>
-                    <option value="pendente">Pendentes</option>
-                  </select>
-                </div>
-                <div>
-                  <label for="filtro-mes-orcamento" class="block text-xs font-medium text-gray-600">Mês</label>
-                  <select id="filtro-mes-orcamento" class="mt-1 block w-full border rounded px-2 py-1 text-sm">
-                    <option value="todos">Todos</option>
-                    <option value="0">Janeiro</option>
-                    <option value="1">Fevereiro</option>
-                    <option value="2">Março</option>
-                    <option value="3">Abril</option>
-                    <option value="4">Maio</option>
-                    <option value="5">Junho</option>
-                    <option value="6">Julho</option>
-                    <option value="7">Agosto</option>
-                    <option value="8">Setembro</option>
-                    <option value="9">Outubro</option>
-                    <option value="10">Novembro</option>
-                    <option value="11">Dezembro</option>
-                  </select>
-                </div>
-                <div>
-                  <label for="filtro-ano-orcamento" class="block text-xs font-medium text-gray-600">Ano</label>
-                  <select id="filtro-ano-orcamento" class="mt-1 block w-full border rounded px-2 py-1 text-sm">
-                    <option value="todos">Todos</option>
-                    <option value="2023">2023</option>
-                    <option value="2024">2024</option>
-                    <option value="2025">2025</option>
-                    <option value="2026">2026</option>
-                    <option value="2027">2027</option>
-                  </select>
-                </div>
-                <div class="flex items-end">
-                  <button id="btn-limpar-filtros-orcamento" class="inline-flex justify-center items-center w-full px-3 py-2 border border-gray-300 text-gray-700 text-xs font-medium rounded-md hover:bg-gray-50">
-                    Limpar filtros
-                  </button>
-                </div>
-              </div>
-             </div> <div id="all-orcamentos-list" class="space-y-3"></div>
+        <div id="all-orcamentos-list" class="space-y-3"></div>
       </div>
     </div>
     <div id="orcamento-modal" class="modal">
@@ -842,14 +682,6 @@
                 placeholder="Ex.: Instalação de pontos de iluminação, troca de disjuntores, revisão geral do quadro, etc."
               ></textarea>
             </div>
-            <div class="mt-2">
-              <label class="inline-flex items-center">
-                <input id="orc-status-aprovado" type="checkbox" class="h-4 w-4 text-green-600 border-gray-300 rounded">
-                <span class="ml-2 text-sm text-gray-800">
-                  Marcar este orçamento como <span class="font-semibold text-green-700">APROVADO</span>
-                </span>
-              </label>
-            </div>
           </div>
           <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
             <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
@@ -865,20 +697,18 @@
         </div>
       </div>
     </div>
-      
-<footer class="bg-gray-900 text-white text-center py-6 mt-12">
+    
+    <footer class="bg-gray-900 text-white text-center py-6 mt-12">
       <div class="max-w-4xl mx-auto px-4 md:px-6">
-        <p class="mb-4">Dúvidas e sugestões? Mande uma mensagem ao desenvolvedor.</p>
-        <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">Enviar Mensagem</a>
+        <p class="mb-4">Para ajustes ou sugestões de melhorias, mande uma mensagem.</p>
+        <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">Enviar mensagem ao desenvolvedor</a>
       </div>
     </footer>
 
-<script type="module">
-    // VERSÃO 11.0 - CORREÇÃO DEFINITIVA DE FUNÇÕES AUSENTES
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDocs, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  </div> <script type="module">
 
+    console.log("VERSÃO 6.0 (Modo de Cobrança) CARREGADA"); 
+    // ===== Firebase config (preservado do seu arquivo) =====
     const firebaseConfig = {
       apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
       authDomain: "app-orcamentos-eletrica.firebaseapp.com",
@@ -888,9 +718,23 @@
       appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
     };
 
+    // Imports Firebase
+    import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // ===== Estado e elementos =====
     let app, db, auth, userId;
-    let financeChart = null;
-    let chartType = 'bar';
+    setLogLevel('error'); // 'debug' | 'error'
+
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loginView = document.getElementById('login-view');
+    const appView = document.getElementById('app-view');
+    const mainView = document.getElementById('main-view');
+    const allOrcamentosView = document.getElementById('all-orcamentos-view');
+    const loginButton = document.getElementById('login-button');
+    const logoutButton = document.getElementById('logout-button');
+    const userInfo = document.getElementById('user-info');
 
     const appState = {
       config: {}, clientes: [], materiais: [], orcamentos: [],
@@ -898,823 +742,1554 @@
       orcamentosParaExcluir: new Set()
     };
 
-    // ===== 1. INICIALIZAÇÃO =====
-    window.onload = async () => {
-      app = initializeApp(firebaseConfig);
-      db = getFirestore(app);
-      auth = getAuth(app);
+    function resetCurrentOrcamento() {
+      appState.currentOrcamento = {
+        id: null, cliente: null, 
+        modoCobranca: 'mao_de_obra', // NOVO
+        usarMaterial: 'sim', // NOVO
+        tiposDeServico: [], 
+        items: [],
+        maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
+        desconto: { tipo: 'nenhum', valor: 0 },
+        total: 0, tipoObra: 'residencial', createdAt: null,
+        numeroOrcamento: null, versao: 1
+      };
+    }
 
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          userId = user.uid;
-          document.getElementById('user-info').textContent = `Logado: ${user.email}`;
-          document.getElementById('loading-overlay').style.display = 'none';
-          document.getElementById('login-view').classList.add('hidden');
-          document.getElementById('app-view').classList.remove('hidden');
-          
-          // Datas Financeiro
-          const hoje = new Date();
-          const elAno = document.getElementById('fat-ano');
-          const elMes = document.getElementById('fat-mes');
-          if(elAno) elAno.value = hoje.getFullYear().toString();
-          if(elMes) elMes.value = hoje.getMonth().toString();
+    // ===== Inicialização Firebase e Auth =====
+    async function initializeFirebase() {
+      try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
 
-          loadAllData();
-          setupListeners();
-        } else {
-          userId = null;
-          document.getElementById('loading-overlay').style.display = 'none';
-          document.getElementById('login-view').classList.remove('hidden');
-          document.getElementById('app-view').classList.add('hidden');
-        }
-      });
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            userId = user.uid;
+            userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
+            loadingOverlay.querySelector('p').textContent = 'Carregando seus dados...';
+            loadAllData();
+            loginView.classList.add('hidden');
+            appView.classList.remove('hidden');
+            loadingOverlay.style.display = 'none';
+
+            // ===== Aplicar Máscaras CPF/CNPJ =====
+            document.getElementById('config-doc')?.addEventListener('input', handleDocMask);
+            document.getElementById('cliente-documento')?.addEventListener('input', handleDocMask);
+            document.getElementById('edit-cliente-documento')?.addEventListener('input', handleDocMask);
+            
+            // ===== Aplicar Máscaras de Telefone =====
+            document.getElementById('config-telefone')?.addEventListener('input', handleTelefoneMask);
+            document.getElementById('cliente-telefone')?.addEventListener('input', handleTelefoneMask);
+            document.getElementById('edit-cliente-telefone')?.addEventListener('input', handleTelefoneMask);
+            
+            // ===== Aplicar Máscaras de CEP =====
+            document.getElementById('config-cep')?.addEventListener('input', handleCEPMask);
+            document.getElementById('cliente-cep')?.addEventListener('input', handleCEPMask);
+            document.getElementById('edit-cliente-cep')?.addEventListener('input', handleCEPMask);
+            document.getElementById('search-cliente')?.addEventListener('input', handleSearchCliente);
+            // ===============================================
+
+          } else {
+            userId = null;
+            loginView.classList.remove('hidden');
+            appView.classList.add('hidden');
+            loadingOverlay.style.display = 'none';
+          }
+        });
+      } catch (e) {
+        console.error('Erro ao inicializar Firebase:', e);
+        loadingOverlay.innerHTML = '<p class="text-red-600">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
+      }
+    }
+
+    const loginWithGoogle = async () => {
+      const provider = new GoogleAuthProvider();
+      try { loadingOverlay.style.display = 'flex'; await signInWithPopup(auth, provider); }
+      catch (e) { console.error(e); alert('Falha no login Google.'); loadingOverlay.style.display = 'none'; }
     };
 
-    // ===== 2. CARREGAMENTO DE DADOS =====
+    const logout = async () => {
+      if (confirm('Tem certeza que deseja sair da sua conta?')) {
+        try { await signOut(auth); } catch(e) { alert('Erro ao sair.'); }
+      }
+    };
+
+    loginButton?.addEventListener('click', loginWithGoogle);
+    logoutButton?.addEventListener('click', logout);
+
+    document.getElementById('orc-cliente-select').addEventListener('change', (e) => {
+      if (!appState.currentOrcamento) resetCurrentOrcamento();
+      
+      const clienteId = e.target.value;
+      if (clienteId) {
+        const cliente = appState.clientes.find(c => c.id === clienteId);
+        if (cliente) {
+          appState.currentOrcamento.cliente = cliente;
+        } else {
+          appState.currentOrcamento.cliente = null;
+        }
+      } else {
+        appState.currentOrcamento.cliente = null;
+      }
+      updateOrcamentoPreview();
+    });
+
+    // ===== Carregamento reativo de dados =====
     function loadAllData() {
       if (!userId) return;
       const prefix = `users/${userId}`;
 
       onSnapshot(doc(db, `${prefix}/config/main`), (snap) => {
-        if (snap.exists()) { appState.config = snap.data(); updateConfigForm(); }
+        if (snap.exists()) appState.config = snap.data();
+        updateConfigForm();
       });
 
-      onSnapshot(query(collection(db, `${prefix}/clientes`)), (snap) => {
-        appState.clientes = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+      onSnapshot(query(collection(db, `${prefix}/clientes`)), (snapshot) => {
+        appState.clientes = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
         renderClientesList();
-        renderOrcamentosList(); // Atualiza nomes
+        renderOrcamentosList();
         renderOrcamentosList(true);
       });
 
-      onSnapshot(query(collection(db, `${prefix}/materiais`)), (snap) => {
-        appState.materiais = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      onSnapshot(query(collection(db, `${prefix}/materiais`)), (snapshot) => {
+        appState.materiais = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderMateriaisList();
       });
 
-      onSnapshot(query(collection(db, `${prefix}/tiposdeservico`)), (snap) => {        
-        appState.tiposDeServico = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      onSnapshot(query(collection(db, `${prefix}/tiposdeservico`)), (snapshot) => {        
+        appState.tiposDeServico = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+                                              .filter(s => s.descricao && s.valor > 0);
+        
         renderTiposDeServicoList();
         populateCategorySelect();
       });
 
-      onSnapshot(query(collection(db, `${prefix}/orcamentos`)), (snap) => {
-        appState.orcamentos = snap.docs.map(d => {
+      onSnapshot(query(collection(db, `${prefix}/orcamentos`)), (snapshot) => {
+        console.log(`[DEBUG] Recebeu ${snapshot.docs.length} orçamentos do Firebase.`);
+        appState.orcamentos = snapshot.docs.map(d => {
           const data = d.data();
           if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
-          else if (typeof data.createdAt==='string') data.createdAt = new Date(data.createdAt);
-          return { ...data, id: d.id, status: data.status || (data.aprovado ? 'aprovado' : 'pendente'), aprovado: data.aprovado ?? (data.status === 'aprovado') };
+          console.log(`[DEBUG] Mapeando doc. ID do Firebase (d.id):`, d.id);
+          return { ...data, id: d.id };
         });
         appState.orcamentos.sort((a,b) => (b.numeroOrcamento||0) - (a.numeroOrcamento||0));
+        
         renderOrcamentosList();
-        renderOrcamentosList(true);
-        window.updateFinanceiroView();
+        renderOrcamentosList(true); 
       });
     }
 
-    // ===== 3. FUNÇÕES GLOBAIS (BOTÕES HTML) =====
-    
-    // --- NAVEGAÇÃO ---
-    window.changeTab = (event, tabName) => {
-      document.querySelectorAll('.tab-content, .tab, .mobile-tab').forEach(x=>x.classList.remove('active'));
-      const target = document.getElementById(tabName);
-      if(target) target.classList.add('active');
-      document.querySelectorAll(`[data-tab="${tabName}"]`).forEach(t => t.classList.add('active'));
-      if (tabName === 'financeiro') setTimeout(() => window.updateFinanceiroView(), 100);
-    };
+    // ===== Config =====
+    function updateConfigForm() {
+      const c = appState.config || {};
+      const el = (id) => document.getElementById(id);
 
-    window.showAllOrcamentosPage = () => {
-      document.getElementById('main-view').classList.add('hidden');
-      document.getElementById('all-orcamentos-view').classList.remove('hidden');
-      renderOrcamentosList(true);
-    };
-    
-    window.showMainPage = () => {
-      document.getElementById('all-orcamentos-view').classList.add('hidden');
-      document.getElementById('main-view').classList.remove('hidden');
-    };
+      el('config-nome').value = c.nome || '';
+      el('config-telefone').value = formatarTelefone(c.telefone || '');
+      el('config-doc').value = formatarCPFCNPJ(c.doc || '');
 
-    // --- CLIENTES ---
-    window.openEditClienteModal = (id) => {
-        const c = appState.clientes.find(x => x.id === id);
-        if(!c) return;
-        const set=(i,v)=>document.getElementById(i).value=v||'';
-        set('edit-cliente-id', c.id);
-        set('edit-cliente-nome', c.nome);
-        set('edit-cliente-numerocadastro', c.numeroCadastro);
-        set('edit-cliente-telefone', formatarTelefone(c.telefone));
-        set('edit-cliente-documento', formatarCPFCNPJ(c.documento));
-        set('edit-cliente-cep', formatarCEP(c.cep));
-        set('edit-cliente-numero', c.numero);
-        set('edit-cliente-logradouro', c.logradouro);
-        set('edit-cliente-bairro', c.bairro);
-        set('edit-cliente-cidade', c.cidade);
-        set('edit-cliente-uf', c.uf);
-        document.getElementById('edit-cliente-modal').classList.add('active');
-    };
-    window.closeEditClienteModal = () => document.getElementById('edit-cliente-modal').classList.remove('active');
-    window.deleteCliente = async (id) => { if(confirm('Excluir?')) await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); };
+      // NOVO: Popula campos de endereço
+      el('config-cep').value = formatarCEP(c.cep || '');
+      el('config-numero').value = c.numero || '';
+      el('config-logradouro').value = c.logradouro || '';
+      el('config-bairro').value = c.bairro || '';
+      el('config-cidade').value = c.cidade || '';
+      el('config-uf').value = c.uf || '';
 
-    // --- MATERIAIS E SERVIÇOS ---
-    window.openEditMaterialModal = (id) => {
-        const m = appState.materiais.find(x=>x.id===id); if(!m)return;
-        document.getElementById('edit-material-id').value=m.id;
-        document.getElementById('edit-material-nome').value=m.nome;
-        document.getElementById('edit-material-unidade').value=m.unidade;
-        document.getElementById('edit-material-valor').value=m.valor;
-        document.getElementById('edit-material-modal').classList.add('active');
-    };
-    window.closeEditMaterialModal = () => document.getElementById('edit-material-modal').classList.remove('active');
-    window.deleteMaterial = async (id) => { if(confirm('Excluir?')) await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); };
+      // Atualiza campo oculto + preview da logomarca
+      const logoHiddenInput = el('config-logo');
+      const logoPreviewWrapper = el('config-logo-preview-wrapper');
+      const logoPreview = el('config-logo-preview');
 
-    window.openEditTipoServicoModal = (id) => {
-        const s = appState.tiposDeServico.find(x=>x.id===id); if(!s)return;
-        document.getElementById('edit-tiposervico-id').value=s.id;
-        document.getElementById('edit-tiposervico-categoria').value=s.categoria;
-        document.getElementById('edit-tiposervico-descricao').value=s.descricao;
-        document.getElementById('edit-tiposervico-valor').value=s.valor;
-        document.getElementById('edit-tiposervico-modal').classList.add('active');
-    };
-    window.closeEditTipoServicoModal = () => document.getElementById('edit-tiposervico-modal').classList.remove('active');
-    window.deleteTipoDeServico = async (id) => { if(confirm('Excluir?')) await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`)); };
+      if (logoHiddenInput) logoHiddenInput.value = c.logo || '';
 
-    // --- ORÇAMENTO ---
-    window.openOrcamentoModal = (editObj = null) => {
-        const modal = document.getElementById('orcamento-modal');
-        const sel = document.getElementById('orc-cliente-select');
-        
-        // Popula Selects
-        sel.innerHTML = '<option value="">Selecione</option>' + appState.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
-        populateMateriaisOrcamento();
-        populateTiposDeServicoOrcamento();
-
-        if (editObj) {
-            document.getElementById('modal-title').textContent = 'Editar Orçamento';
-            const clone = JSON.parse(JSON.stringify(editObj));
-            // Defaults
-            clone.modoCobranca = clone.modoCobranca || 'mao_de_obra';
-            clone.usarMaterial = clone.usarMaterial || 'sim';
-            clone.maoDeObra = clone.maoDeObra || {tipo:'',valor:0,raw_value:''};
-            clone.desconto = clone.desconto || {tipo:'nenhum',valor:0};
-            if (clone.cliente && clone.cliente.id && (!clone.cliente.nome || !clone.cliente.telefone || !clone.cliente.logradouro)) {
-                const cliFull = appState.clientes.find(c => c.id === clone.cliente.id);
-                if (cliFull) clone.cliente = { ...cliFull };
-            }
-            appState.currentOrcamento = clone;
-
-            document.getElementById('orc-descricao-servico').value = clone.descricaoServico || '';
-            if(clone.cliente?.id) sel.value = clone.cliente.id;
-            
-            checkRadio('modo-cobranca', clone.modoCobranca);
-            checkRadio('usar-material', clone.usarMaterial);
-            checkRadio('tipo-obra', clone.tipoObra || 'residencial');
-
-            if(clone.maoDeObra.tipo) {
-                checkRadio('tipo-servico', clone.maoDeObra.tipo);
-                const map={'empreitada':'empreitada-valor', 'diaria':'diaria-qtd', 'ponto':'ponto-qtd', 'hora':'hora-qtd'};
-                const inp = document.getElementById(map[clone.maoDeObra.tipo]);
-                if(inp) inp.value = clone.maoDeObra.raw_value;
-            }
-
-            const dv = document.getElementById('orc-desconto-valor');
-            document.getElementById('orc-desconto-tipo').value = clone.desconto.tipo;
-            if(clone.desconto.tipo!=='nenhum') { dv.value=clone.desconto.valor; dv.disabled=false; }
-            else { dv.value=''; dv.disabled=true; }
-            
-            document.getElementById('orc-status-aprovado').checked = (clone.status === 'aprovado');
-
-            applyVisualToggles(clone.modoCobranca, clone.usarMaterial);
-            
-            setTimeout(() => {
-                if(clone.items) restoreCheckboxes('orc-materiais-list', clone.items);
-                if(clone.tiposDeServico) restoreCheckboxes('orc-tiposdeservico-list', clone.tiposDeServico);
-                window.calculateMaoDeObra();
-                window.updateOrcamentoPreview();
-            }, 200);
+      if (logoPreviewWrapper && logoPreview) {
+        if (c.logo) {
+          logoPreview.src = c.logo;
+          logoPreviewWrapper.classList.remove('hidden');
         } else {
-            document.getElementById('modal-title').textContent = 'Criar Orçamento';
-            appState.currentOrcamento = { id:null, cliente:null, modoCobranca:'mao_de_obra', usarMaterial:'sim', tiposDeServico:[], items:[], maoDeObra:{tipo:'',valor:0}, desconto:{tipo:'nenhum',valor:0}, total:0 };
-            
-            document.getElementById('orc-descricao-servico').value='';
-            document.getElementById('orc-status-aprovado').checked=false;
-            sel.value='';
-            document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(i=>i.value='');
-            document.querySelectorAll('input[name="tipo-servico"]').forEach(r=>r.checked=false);
-            
-            checkRadio('modo-cobranca', 'mao_de_obra');
-            checkRadio('usar-material', 'sim');
-            checkRadio('tipo-obra', 'residencial');
-            applyVisualToggles('mao_de_obra', 'sim');
-            window.updateOrcamentoPreview();
+          logoPreview.src = '';
+          logoPreviewWrapper.classList.add('hidden');
         }
-        modal.classList.add('active');
-    };
-    
-    window.closeOrcamentoModal = () => document.getElementById('orcamento-modal').classList.remove('active');
-    window.editOrcamento = (id) => { const o = appState.orcamentos.find(x=>String(x.id)===String(id)); if(o) window.openOrcamentoModal(o); };
-    
-    // --- TOGGLES ---
-    function applyVisualToggles(modo, mat) {
-        const mo=document.getElementById('orc-cobranca-mo-wrapper');
-        const serv=document.getElementById('orc-cobranca-servico-wrapper');
-        const mlist=document.getElementById('orc-cobranca-material-wrapper');
-        
-        if(modo==='por_servico') { mo.classList.add('hidden'); serv.classList.remove('hidden'); }
-        else { mo.classList.remove('hidden'); serv.classList.add('hidden'); }
-        
-        if(mat==='nao') mlist.classList.add('hidden'); else mlist.classList.remove('hidden');
+      }
+
+      el('config-color-primary').value = c.config_color_primary || '#000000';
+      el('config-color-secondary').value = c.config_color_secondary || '#333333';
+
+      el('config-residencial-empreitada').value = c.residencial_empreitada || '';
+      el('config-residencial-diaria').value = c.residencial_diaria || '';
+      el('config-residencial-ponto').value = c.residencial_ponto || '';
+      el('config-residencial-hora').value = c.residencial_hora || '';
+      el('config-industrial-diaria').value = c.industrial_diaria || '';
+      el('config-industrial-ponto').value = c.industrial_ponto || '';
+      el('config-industrial-hora').value = c.industrial_hora || '';
+
+      el('config-pix-chave').value = c.config_pix_chave || '';
+      el('config-cartao-vezes').value = c.config_cartao_vezes || '';
+      el('config-cartao-juros').value = c.config_cartao_juros || '';
+      el('config-pagamento-dinheiro').checked = c.config_pagamento_dinheiro || false;
+      el('config-deposito-banco').value = c.config_deposito_banco || '';
+      el('config-deposito-ag').value = c.config_deposito_ag || '';
+      el('config-deposito-conta').value = c.config_deposito_conta || '';
     }
 
-    // ===== 4. LISTAS E RENDERIZAÇÃO =====
-   // --- CORREÇÃO: LISTA DE CLIENTES E EDIÇÃO ---
+    // ===== Upload da Logomarca (arquivo -> Data URL) =====
+    const logoHiddenInput = document.getElementById('config-logo');
+    const logoFileInput = document.getElementById('config-logo-file');
+    const logoPreviewWrapper = document.getElementById('config-logo-preview-wrapper');
+    const logoPreview = document.getElementById('config-logo-preview');
+    const logoClearBtn = document.getElementById('config-logo-clear');
+
+    function applyLogoToPreview(src) {
+      if (!logoHiddenInput || !logoPreviewWrapper || !logoPreview) return;
+
+      if (src) {
+        logoHiddenInput.value = src;
+        logoPreview.src = src;
+        logoPreviewWrapper.classList.remove('hidden');
+      } else {
+        logoHiddenInput.value = '';
+        logoPreview.src = '';
+        logoPreviewWrapper.classList.add('hidden');
+      }
+    }
+
+    if (logoFileInput) {
+      logoFileInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+          alert('Por favor, selecione um arquivo de imagem (PNG, JPG, etc.).');
+          logoFileInput.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result;
+          applyLogoToPreview(dataUrl);
+        };
+        reader.onerror = () => {
+          alert('Não foi possível ler a imagem. Tente novamente.');
+          logoFileInput.value = '';
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (logoClearBtn) {
+      logoClearBtn.addEventListener('click', () => {
+        applyLogoToPreview('');
+        if (logoFileInput) logoFileInput.value = '';
+      });
+    }
+
+// ===== NOVO: Função helper para ler valores do form =====
+function getVal(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : '';
+}
+
+document.getElementById('form-config').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      const textSpan = document.getElementById('save-config-text');
+      const spinSpan = document.getElementById('save-config-spinner');
+      btn.disabled = true; textSpan.classList.add('hidden'); spinSpan.classList.remove('hidden');
+      
+      try {
+        const data = {
+          nome: getVal('config-nome'),
+          telefone: getVal('config-telefone').replace(/\D/g, ''), // Salva só números
+          doc: getVal('config-doc').replace(/\D/g, ''), // Salva só números
+          
+          // NOVO: Campos de endereço
+          cep: getVal('config-cep').replace(/\D/g, ''),
+          numero: getVal('config-numero'),
+          logradouro: getVal('config-logradouro'),
+          bairro: getVal('config-bairro'),
+          cidade: getVal('config-cidade'),
+          uf: getVal('config-uf'),
+          
+          logo: getVal('config-logo'),
+          
+          config_color_primary: getVal('config-color-primary'),
+          config_color_secondary: getVal('config-color-secondary'),
+
+          residencial_empreitada: parseFloat(getVal('config-residencial-empreitada')) || 0,
+          residencial_diaria: parseFloat(getVal('config-residencial-diaria')) || 0,
+          residencial_ponto: parseFloat(getVal('config-residencial-ponto')) || 0,
+          residencial_hora: parseFloat(getVal('config-residencial-hora')) || 0,
+          industrial_diaria: parseFloat(getVal('config-industrial-diaria')) || 0,
+          industrial_ponto: parseFloat(getVal('config-industrial-ponto')) || 0,
+          industrial_hora: parseFloat(getVal('config-industrial-hora')) || 0,
+
+          config_pix_chave: getVal('config-pix-chave'),
+          config_cartao_vezes: parseInt(getVal('config-cartao-vezes')) || 0,
+          config_cartao_juros: parseFloat(getVal('config-cartao-juros')) || 0,
+          config_pagamento_dinheiro: document.getElementById('config-pagamento-dinheiro').checked,
+          config_deposito_banco: getVal('config-deposito-banco'),
+          config_deposito_ag: getVal('config-deposito-ag'),
+          config_deposito_conta: getVal('config-deposito-conta'),
+        };
+        
+        // Remove 'endereco' e 'endereco_l2' antigos se existirem
+        delete data.endereco;
+        delete data.endereco_l2;
+
+        await setDoc(doc(db, `users/${userId}/config/main`), data);
+        alert('Configurações salvas!');
+      } catch(e) { console.error(e); alert('Erro ao salvar.'); }
+      finally { btn.disabled=false; textSpan.classList.remove('hidden'); spinSpan.classList.add('hidden'); }
+    });
+
+    // ===== Clientes =====
+    document.getElementById('form-cliente').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent='Salvando...';
+      
+      try {
+        const data = {
+            nome: getVal('cliente-nome'),
+            telefone: getVal('cliente-telefone').replace(/\D/g, ''),
+            documento: getVal('cliente-documento').replace(/\D/g, ''),
+            numeroCadastro: gerarNovoNumeroCliente(),
+            
+            // NOVO: Campos de endereço
+            cep: getVal('cliente-cep').replace(/\D/g, ''),
+            numero: getVal('cliente-numero'),
+            logradouro: getVal('cliente-logradouro'),
+            bairro: getVal('cliente-bairro'),
+            cidade: getVal('cliente-cidade'),
+            uf: getVal('cliente-uf'),
+        };
+        
+        // Remove 'endereco' antigo se existir
+        delete data.endereco;
+        
+        await addDoc(collection(db, `users/${userId}/clientes`), data);
+        e.target.reset();
+        
+        // Limpa campos readonly
+        document.getElementById('cliente-logradouro').value = '';
+        document.getElementById('cliente-bairro').value = '';
+        document.getElementById('cliente-cidade').value = '';
+        document.getElementById('cliente-uf').value = '';
+
+      } catch(e) { console.error(e); alert('Erro ao salvar cliente.'); }
+      finally { btn.disabled=false; btn.textContent='Salvar Cliente'; }
+    });
     
-    // Função Global para abrir a edição (O HTML agora enxerga isso)
+    document.getElementById('form-edit-cliente').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+
+      const clienteId = getVal('edit-cliente-id');
+      if (!clienteId) return alert('Erro: ID do cliente não encontrado.');
+
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent='Salvando...';
+
+      try {
+        const data = {
+          nome: getVal('edit-cliente-nome'),
+          numeroCadastro: getVal('edit-cliente-numerocadastro'),
+          telefone: getVal('edit-cliente-telefone').replace(/\D/g, ''),
+          documento: getVal('edit-cliente-documento').replace(/\D/g, ''),
+          
+          // NOVO: Campos de endereço
+          cep: getVal('edit-cliente-cep').replace(/\D/g, ''),
+          numero: getVal('edit-cliente-numero'),
+          logradouro: getVal('edit-cliente-logradouro'),
+          bairro: getVal('edit-cliente-bairro'),
+          cidade: getVal('edit-cliente-cidade'),
+          uf: getVal('edit-cliente-uf'),
+        };
+
+        const originalCliente = appState.clientes.find(c => c.id === clienteId);
+        
+        // Remove 'endereco' antigo
+        delete data.endereco;
+
+        await setDoc(doc(db, `users/${userId}/clientes/${clienteId}`), data);
+
+        alert('Cliente atualizado com sucesso!');
+        closeEditClienteModal();
+      } catch(e) {
+        console.error(e); 
+        alert('Erro ao atualizar cliente.'); 
+      } finally { 
+        btn.disabled=false; 
+        btn.textContent='Salvar Alterações'; 
+      }
+    });
+    
+    // NOVO: Helper para formatar endereço completo
+    function formatarEnderecoCompleto(cliente) {
+        if (!cliente) return 'Endereço não informado';
+        // Se ainda tiver o 'endereco' antigo (legado)
+        if (cliente.endereco) return cliente.endereco;
+        
+        // Novo formato
+        if (!cliente.logradouro && !cliente.cidade) return 'Endereço não informado';
+        
+        const rua = cliente.logradouro || '';
+        const num = cliente.numero || 's/n';
+        const bairro = cliente.bairro || '';
+        const cidade = cliente.cidade || '';
+        const uf = cliente.uf || '';
+        
+        return `${rua}, ${num} - ${bairro} - ${cidade}/${uf}`;
+    }
+    
+    function renderClientesList() {
+      const el = document.getElementById('clientes-list');
+      if (!appState.clientes.length) { el.innerHTML = '<p class="text-gray-500">Nenhum cliente cadastrado.</p>'; return; }
+      
+      el.innerHTML = appState.clientes.map(c => {
+        // NOVO: Usa a função helper de endereço
+        const enderecoFormatado = formatarEnderecoCompleto(c);
+        const { label: docLabel, valor: docValor } = getLabelEValorDoc(c.documento);
+
+        return `
+        <div class="flex justify-between items-center p-2 border rounded-md">
+          <div class="flex-grow cursor-pointer" onclick="openEditClienteModal('${c.id}')">
+            <p class="font-medium">${c.nome} <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">${c.numeroCadastro||''}</span></p>
+            <p class="text-sm text-gray-600">${formatarTelefone(c.telefone)} | ${enderecoFormatado}</p>
+            ${c.documento ? `<p class="text-xs text-gray-500">${docLabel} ${docValor}</p>` : ''}
+          </div>
+          <button onclick="deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700 text-2xl ml-3 flex-shrink-0">&times;</button>
+        </div>`
+      }).join('');
+    }
+
+    window.deleteCliente = async (id) => {
+      if (confirm('Excluir este cliente?')) { await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); }
+    };
+
     window.openEditClienteModal = (id) => {
-        const c = appState.clientes.find(x => x.id === id);
-        if(!c) { console.error("Cliente não encontrado:", id); return; }
+      try {
+        const cliente = appState.clientes.find(c => c.id === id);
+        if (!cliente) throw new Error('Cliente não encontrado no appState.');
+
+        const modalEl = document.getElementById('edit-cliente-modal');
+        if (!modalEl) throw new Error("Elemento 'edit-cliente-modal' não foi encontrado!");
+
+        // Helper para preencher
+        const setVal = (elId, valor, formatFunc = null) => {
+            const el = document.getElementById(elId);
+            if (el) el.value = formatFunc ? formatFunc(valor || '') : (valor || '');
+        };
+
+        setVal('edit-cliente-id', cliente.id);
+        setVal('edit-cliente-nome', cliente.nome);
+        setVal('edit-cliente-numerocadastro', cliente.numeroCadastro);
+        setVal('edit-cliente-telefone', cliente.telefone, formatarTelefone);
+        setVal('edit-cliente-documento', cliente.documento, formatarCPFCNPJ);
         
-        // Helper para preencher os campos
-        const set = (i, v) => { const el = document.getElementById(i); if(el) el.value = v || ''; };
+        // NOVO: Preenche campos de endereço
+        setVal('edit-cliente-cep', cliente.cep, formatarCEP);
+        setVal('edit-cliente-numero', cliente.numero);
+        setVal('edit-cliente-logradouro', cliente.logradouro);
+        setVal('edit-cliente-bairro', cliente.bairro);
+        setVal('edit-cliente-cidade', cliente.cidade);
+        setVal('edit-cliente-uf', cliente.uf);
         
-        set('edit-cliente-id', c.id);
-        set('edit-cliente-nome', c.nome);
-        set('edit-cliente-numerocadastro', c.numeroCadastro);
-        set('edit-cliente-telefone', formatarTelefone(c.telefone));
-        set('edit-cliente-documento', formatarCPFCNPJ(c.documento));
-        
-        // Endereço
-        set('edit-cliente-cep', formatarCEP(c.cep));
-        set('edit-cliente-numero', c.numero);
-        set('edit-cliente-logradouro', c.logradouro);
-        set('edit-cliente-bairro', c.bairro);
-        set('edit-cliente-cidade', c.cidade);
-        set('edit-cliente-uf', c.uf);
-        
-        document.getElementById('edit-cliente-modal').classList.add('active');
+        modalEl.classList.add('active');
+
+      } catch (e) {
+        console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição:", e.message);
+        alert("Ocorreu um erro ao tentar abrir a edição. Verifique o console (F12).");
+      }
     };
 
     window.closeEditClienteModal = () => {
-        document.getElementById('edit-cliente-modal').classList.remove('active');
+      document.getElementById('edit-cliente-modal').classList.remove('active');
+      document.getElementById('form-edit-cliente').reset();
     };
 
-    // Função que desenha a lista na tela
-    function renderClientesList() {
-        const el = document.getElementById('clientes-list');
-        if (!el) return;
-        
-        if (!appState.clientes.length) { 
-            el.innerHTML = '<p class="text-gray-500 p-2">Nenhum cliente cadastrado.</p>'; 
-            return; 
-        }
-        
-        el.innerHTML = appState.clientes.map(c => `
-            <div class="flex justify-between items-center p-3 border rounded bg-white mb-2 hover:bg-gray-50 transition">
-                <div class="flex-grow cursor-pointer" onclick="window.openEditClienteModal('${c.id}')">
-                    <p class="font-bold text-gray-800">${c.nome} <span class="text-xs font-normal text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">${c.numeroCadastro||''}</span></p>
-                    <p class="text-sm text-gray-600">${c.telefone ? formatarTelefone(c.telefone) : ''}</p>
-                    <p class="text-xs text-gray-500">${c.logradouro || ''}</p>
-                </div>
-                <button type="button" onclick="window.deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700 p-2 text-xl">&times;</button>
-            </div>`).join('');
-    }
-    
+    // ===== Materiais =====
+    document.getElementById('form-material').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent='Salvando...';
+      try {
+        const nome = document.getElementById('material-nome').value;
+        const valor = parseFloat(document.getElementById('material-valor').value);
+        const unidade = document.getElementById('material-unidade').value;
+        await addDoc(collection(db, `users/${userId}/materiais`), { nome, valor, unidade });
+        e.target.reset();
+      } catch(e) { console.error(e); alert('Erro ao salvar item.'); }
+      finally { btn.disabled=false; btn.textContent='Salvar Item'; }
+    });
+
+    document.getElementById('form-edit-material').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      const materialId = document.getElementById('edit-material-id').value;
+      if (!materialId) return alert('Erro: ID do material não encontrado.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent='Salvando...';
+      try {
+        const data = {
+          nome: document.getElementById('edit-material-nome').value,
+          unidade: document.getElementById('edit-material-unidade').value,
+          valor: parseFloat(document.getElementById('edit-material-valor').value) || 0,
+        };
+        await setDoc(doc(db, `users/${userId}/materiais/${materialId}`), data);
+        alert('Material atualizado com sucesso!');
+        closeEditMaterialModal();
+      } catch(e) { console.error(e); alert('Erro ao atualizar material.'); }
+      finally { btn.disabled=false; btn.textContent='Salvar Alterações'; }
+    });
+
     function renderMateriaisList() {
-        const el = document.getElementById('materiais-list');
-        if(!appState.materiais.length) { el.innerHTML='<p class="text-gray-500 p-2">Vazio.</p>'; return; }
-        el.innerHTML = appState.materiais.map(m => `<div class="flex justify-between p-2 border rounded bg-white mb-1"><div class="flex-grow cursor-pointer" onclick="openEditMaterialModal('${m.id}')"><p class="font-medium">${m.nome}</p><p class="text-xs">R$ ${m.valor}</p></div><button onclick="deleteMaterial('${m.id}')" class="text-red-500 px-2">&times;</button></div>`).join('');
+      const el = document.getElementById('materiais-list');
+      if (!appState.materiais.length) { el.innerHTML = '<p class="text-gray-500">Nenhum material cadastrado.</p>'; return; }
+      el.innerHTML = appState.materiais.map(m => `
+        <div class="flex justify-between items-center p-2 border rounded-md">
+          <div class="flex-grow cursor-pointer" onclick="openEditMaterialModal('${m.id}')">
+            <p class="servico-slim"><strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${m.valor.toFixed(2)}</p>
+          </div>
+          <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 text-2xl ml-3 flex-shrink-0">&times;</button>
+        </div>`).join('');
     }
+
+    window.deleteMaterial = async (id) => {
+      if (confirm('Excluir este item?')) { await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); }
+    };
+
+    window.openEditMaterialModal = (id) => {
+      try {
+        const material = appState.materiais.find(m => m.id === id);
+        if (!material) throw new Error('Material não encontrado no appState.');
+        const modalEl = document.getElementById('edit-material-modal'); if (!modalEl) throw new Error("Elemento 'edit-material-modal' não foi encontrado!");
+        const idInput = document.getElementById('edit-material-id'); if (!idInput) throw new Error("Elemento 'edit-material-id' não foi encontrado!");
+        const nomeInput = document.getElementById('edit-material-nome'); if (!nomeInput) throw new Error("Elemento 'edit-material-nome' não foi encontrado!");
+        const unInput = document.getElementById('edit-material-unidade'); if (!unInput) throw new Error("Elemento 'edit-material-unidade' não foi encontrado!");
+        const valInput = document.getElementById('edit-material-valor'); if (!valInput) throw new Error("Elemento 'edit-material-valor' não foi encontrado!");
+        idInput.value = material.id; nomeInput.value = material.nome || ''; unInput.value = material.unidade || 'UNID'; valInput.value = material.valor || 0;
+        modalEl.classList.add('active');
+      } catch (e) { console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição material:", e.message); alert("Ocorreu um erro ao tentar abrir a edição de material. Verifique o console (F12)."); }
+    };
+    window.closeEditMaterialModal = () => { document.getElementById('edit-material-modal').classList.remove('active'); document.getElementById('form-edit-material').reset(); };
+
+
+    // ===== Tipos de Serviço com Categoria & Submenu (AGORA EM #servicos) =====
+    const catSelect = document.getElementById('tiposervico-categoria-select');
+    const catNew = document.getElementById('tiposervico-categoria-new');
+
+    function populateCategorySelect() {
+      while (catSelect.options.length > 2) catSelect.remove(2);
+      const cats = [...new Set(appState.tiposDeServico.map(s => s.categoria).filter(Boolean))].sort();
+      cats.forEach(cat => { const o=document.createElement('option'); o.value=cat; o.textContent=cat; catSelect.appendChild(o); });
+    }
+
+    catSelect.addEventListener('change', () => {
+      if (catSelect.value === 'new_category') { catNew.classList.remove('hidden'); catNew.focus(); }
+      else { catNew.classList.add('hidden'); }
+    });
+
+    document.getElementById('form-tiposervico').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent='Salvando...';
+      try {
+        let categoria = (catSelect.value === 'new_category') ? (catNew.value||'').trim() : (catSelect.value||'').trim();
+        categoria = categoria ? categoria.toUpperCase() : 'OUTROS';
+        const descricao = document.getElementById('tiposervico-descricao').value;
+        const valor = parseFloat(document.getElementById('tiposervico-valor').value);
+        if (!categoria || !descricao || isNaN(valor)) throw new Error('Preencha categoria, descrição e valor.');
+        if (valor <= 0) throw new Error('O valor deve ser maior que zero.');
+        
+        await addDoc(collection(db, `users/${userId}/tiposdeservico`), { descricao, valor, categoria });
+        e.target.reset();
+        catNew.classList.add('hidden');
+        catSelect.value='';
+      } catch(e) { console.error(e); alert('Erro ao salvar tipo de serviço: ' + e.message); }
+      finally { btn.disabled=false; btn.textContent='Salvar'; }
+    });
+
+    document.getElementById('form-edit-tiposervico').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      const tipoServicoId = document.getElementById('edit-tiposervico-id').value;
+      if (!tipoServicoId) return alert('Erro: ID do tipo de serviço não encontrado.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent='Salvando...';
+      try {
+        const categoria = document.getElementById('edit-tiposervico-categoria').value.toUpperCase().trim() || 'OUTROS';
+        const descricao = document.getElementById('edit-tiposervico-descricao').value;
+        const valor = parseFloat(document.getElementById('edit-tiposervico-valor').value);
+        if (!categoria || !descricao || isNaN(valor) || valor <= 0) throw new Error('Preencha categoria, descrição e um valor válido maior que zero.');
+        const data = { categoria, descricao, valor };
+        await setDoc(doc(db, `users/${userId}/tiposdeservico/${tipoServicoId}`), data);
+        alert('Tipo de serviço atualizado com sucesso!');
+        closeEditTipoServicoModal();
+      } catch(e) { console.error(e); alert('Erro ao atualizar tipo de serviço: ' + e.message); }
+      finally { btn.disabled=false; btn.textContent='Salvar Alterações'; }
+    });
+
+    function groupBy(arr, key) { return arr.reduce((acc,cur)=>{ const k=cur[key]||'OUTROS'; (acc[k]||(acc[k]=[])).push(cur); return acc; },{}); }
 
     function renderTiposDeServicoList() {
-        const el = document.getElementById('tiposdeservico-list');
-        if(!appState.tiposDeServico.length) { el.innerHTML='<p class="text-gray-500 p-2">Vazio.</p>'; return; }
-        const grp = appState.tiposDeServico.reduce((a,c)=>{const k=(c.categoria||'OUTROS').toUpperCase();(a[k]||(a[k]=[])).push(c);return a;},{});
-        el.innerHTML = Object.keys(grp).sort().map(cat => `<details class="border rounded mb-1"><summary class="p-2 bg-gray-50 text-xs font-bold cursor-pointer">${cat}</summary><div class="p-2">${grp[cat].map(s=>`<div class="flex justify-between p-1 hover:bg-gray-50"><div class="flex-grow cursor-pointer" onclick="openEditTipoServicoModal('${s.id}')"><p class="text-sm">${s.descricao}</p><p class="text-xs text-green-600">R$ ${s.valor}</p></div><button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500">&times;</button></div>`).join('')}</div></details>`).join('');
+      const el = document.getElementById('tiposdeservico-list');
+      if (!appState.tiposDeServico.length) { el.innerHTML = '<p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>'; return; }
+      const byCat = groupBy(appState.tiposDeServico, 'categoria');
+      const cats = Object.keys(byCat).sort();
+      el.innerHTML = cats.map(cat => {
+        const servicos = byCat[cat].sort((a,b) => (a.descricao || '').localeCompare(b.descricao || ''));
+        return `
+          <details class="border rounded-md mb-2">
+            <summary class="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-gray-100">
+              <span class="text-sm font-medium text-gray-800">${cat}</span>
+              <svg class="w-4 h-4 arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="p-2 space-y-1">
+              ${
+                servicos.map(s => `
+                  <div class="flex justify-between items-center p-1 border-b border-gray-100">
+                    <div class="flex-grow cursor-pointer" onclick="openEditTipoServicoModal('${s.id}')">
+                       <p class="servico-slim">${s.descricao} — <span class="text-gray-700">R$ ${s.valor.toFixed(2)}</span></p>
+                    </div>
+                    <button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500 hover:text-red-700 text-xl leading-none ml-3 flex-shrink-0">&times;</button>
+                  </div>
+                `).join('')
+              }
+            </div>
+          </details>`;
+      }).join('');
     }
 
-     // --- CORREÇÃO: LISTA DE ORÇAMENTOS COM CHECKBOX E EXCLUSÃO ---
-
-    // 1. Funções de Exclusão (Globais)
-    window.toggleOrcamentoExclusao = (checkbox) => {
-        const id = checkbox.dataset.id;
-        if(checkbox.checked) appState.orcamentosParaExcluir.add(id);
-        else appState.orcamentosParaExcluir.delete(id);
-        updateDeleteButtonState();
+    window.deleteTipoDeServico = async (id) => {
+      if (confirm('Excluir este tipo de serviço?')) { await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`)); }
     };
 
+    window.openEditTipoServicoModal = (id) => {
+      try {
+        const servico = appState.tiposDeServico.find(s => s.id === id);
+        if (!servico) throw new Error('Tipo de serviço não encontrado no appState.');
+        const modalEl = document.getElementById('edit-tiposervico-modal'); if (!modalEl) throw new Error("Elemento 'edit-tiposervico-modal' não foi encontrado!");
+        const idInput = document.getElementById('edit-tiposervico-id'); if (!idInput) throw new Error("Elemento 'edit-tiposervico-id' não foi encontrado!");
+        const catInput = document.getElementById('edit-tiposervico-categoria'); if (!catInput) throw new Error("Elemento 'edit-tiposervico-categoria' não foi encontrado!");
+        const descInput = document.getElementById('edit-tiposervico-descricao'); if (!descInput) throw new Error("Elemento 'edit-tiposervico-descricao' não foi encontrado!");
+        const valInput = document.getElementById('edit-tiposervico-valor'); if (!valInput) throw new Error("Elemento 'edit-tiposervico-valor' não foi encontrado!");
+        idInput.value = servico.id; catInput.value = servico.categoria || 'OUTROS'; descInput.value = servico.descricao || ''; valInput.value = servico.valor || 0;
+        modalEl.classList.add('active');
+      } catch (e) { console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição de serviço:", e.message); alert("Ocorreu um erro ao tentar abrir a edição de serviço. Verifique o console (F12)."); }
+    };
+    window.closeEditTipoServicoModal = () => { document.getElementById('edit-tiposervico-modal').classList.remove('active'); document.getElementById('form-edit-tiposervico').reset(); };
+
+
+    // ===== Importar Excel (Serviços) =====
+    document.getElementById('btn-import-xlsx').addEventListener('click', async () => {
+      const inp = document.getElementById('xlsx-input');
+      const status = document.getElementById('xlsx-status');
+      if (!inp.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx'); return; }
+      const f = inp.files[0];
+      try {
+        status.textContent = 'Lendo planilha...';
+        const buf = await f.arrayBuffer();
+        const wb = XLSX.read(buf, { type:'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+        const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
+        const headerMapCandidates = {
+          categoria: ['categoria','grupo','setor'],
+          descricao: ['descricao','descrição','servico','serviço','atividade','item'],
+          valor: ['valor','preco','preço','price']
+        };
+
+        const keys = rows.length ? Object.keys(rows[0]) : [];
+        const colMap = { categoria: null, descricao: null, valor: null };
+        keys.forEach(k => {
+          const nk = norm(k);
+          for (const fld of Object.keys(headerMapCandidates)) {
+            if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k;
+          }
+        });
+
+        if (!colMap.categoria || !colMap.descricao || !colMap.valor) {
+          alert('Não encontrei colunas suficientes. Garanta que a planilha tenha: Categoria, Descrição e Valor.');
+          return;
+        }
+
+        const prefix = `users/${userId}`;
+        const batch = writeBatch(db);
+        let count = 0;
+
+        rows.forEach(r => {
+          const categoria = String(r[colMap.categoria]||'').toUpperCase().trim() || 'OUTROS';
+          const descricao = String(r[colMap.descricao]||'').trim();
+          const rawValor = (r[colMap.valor] ?? '').toString().replace(',', '.').replace(/\s/g,'');
+          const valor = parseFloat(rawValor) || 0;
+          if (!categoria || !descricao || !valor) return;
+          const ref = doc(collection(db, `${prefix}/tiposdeservico`));
+          batch.set(ref, { categoria, descricao, valor });
+          count++;
+        });
+
+        if (!count) { alert('Nenhuma linha válida encontrada.'); return; }
+        status.textContent = 'Enviando para o banco...';
+        await batch.commit();
+        status.textContent = `Importação concluída: ${count} itens adicionados.`;
+      } catch(e) {
+        console.error(e);
+        alert('Erro ao importar planilha.');
+      }
+    });
+
+    async function clearAllTiposDeServico() {
+      if (!userId) return alert('Faça login.');
+      if (!confirm('ATENÇÃO!\n\nIsso apagará TODOS os Tipos de Serviço cadastrados. Deseja continuar?')) return;
+      
+      const status = document.getElementById('xlsx-status');
+      status.textContent = 'Apagando todos os serviços...';
+      try {
+        const prefix = `users/${userId}`;
+        const ref = collection(db, `${prefix}/tiposdeservico`);
+        const snapshot = await getDocs(ref);
+        
+        if (snapshot.empty) {
+          status.textContent = 'Nenhum serviço para apagar.';
+          return;
+        }
+        
+        const batch = writeBatch(db);
+        snapshot.docs.forEach(doc => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+        
+        status.textContent = `Todos os ${snapshot.size} serviços foram apagados.`;
+      } catch(e) {
+        console.error(e);
+        status.textContent = 'Erro ao apagar os serviços.';
+        alert('Erro ao apagar.');
+      }
+    }
+    document.getElementById('btn-clear-tiposervico').addEventListener('click', clearAllTiposDeServico);
+
+    // ADICIONADO: Seção de Importar/Limpar Materiais
+    document.getElementById('btn-import-materiais-xlsx').addEventListener('click', async () => {
+        const inp = document.getElementById('materiais-xlsx-input');
+        const status = document.getElementById('materiais-xlsx-status');
+        if (!inp.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx para materiais.'); return; }
+        const f = inp.files[0];
+        try {
+            status.textContent = 'Lendo planilha de materiais...';
+            const buf = await f.arrayBuffer(); const wb = XLSX.read(buf, { type:'array' }); const ws = wb.Sheets[wb.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+            const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
+            const headerMapCandidates = { nome: ['descricao','descrição','material','item'], unidade: ['unidade','unid','und'], valor: ['valor','preco','preço','price'] };
+            const keys = rows.length ? Object.keys(rows[0]) : [];
+            const colMap = { nome: null, unidade: null, valor: null };
+            keys.forEach(k => { const nk = norm(k); for (const fld of Object.keys(headerMapCandidates)) { if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k; } });
+            if (!colMap.nome || !colMap.valor) throw new Error('Não encontrei colunas suficientes. Garanta que a planilha tenha pelo menos: Descrição e Valor. A coluna Unidade é opcional (padrão UNID).');
+            const prefix = `users/${userId}`; const batch = writeBatch(db); let count = 0;
+            rows.forEach(r => {
+                const nome = String(r[colMap.nome]||'').trim();
+                const unidade = String(r[colMap.unidade]||'').trim().toUpperCase() || 'UNID';
+                const rawValor = (r[colMap.valor] ?? '').toString().replace(',', '.').replace(/\s/g,'');
+                const valor = parseFloat(rawValor) || 0;
+                if (!nome || isNaN(valor) || valor <= 0) return;
+                const ref = doc(collection(db, `${prefix}/materiais`)); batch.set(ref, { nome, unidade, valor }); count++;
+            });
+            if (!count) { alert('Nenhuma linha válida encontrada na planilha de materiais.'); return; }
+            status.textContent = 'Enviando materiais para o banco...'; await batch.commit();
+            status.textContent = `Importação de materiais concluída: ${count} itens adicionados.`; inp.value = '';
+        } catch(e) { console.error(e); alert('Erro ao importar planilha de materiais: ' + e.message); status.textContent = 'Falha na importação de materiais.'; }
+    });
+    
+    async function clearAllMateriais() {
+        if (!userId) return alert('Faça login.');
+        if (!confirm('ATENÇÃO!\n\nIsso apagará TODOS os Materiais cadastrados. Deseja continuar?')) return;
+        const status = document.getElementById('materiais-xlsx-status');
+        status.textContent = 'Apagando todos os materiais...';
+        try {
+            const prefix = `users/${userId}`; const ref = collection(db, `${prefix}/materiais`); const snapshot = await getDocs(ref);
+            if (snapshot.empty) { status.textContent = 'Nenhum material para apagar.'; return; }
+            const batch = writeBatch(db); snapshot.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit();
+            status.textContent = `Todos os ${snapshot.size} materiais foram apagados.`;
+        } catch(e) { console.error(e); status.textContent = 'Erro ao apagar os materiais.'; alert('Erro ao apagar materiais.'); }
+    }
+    document.getElementById('btn-clear-materiais').addEventListener('click', clearAllMateriais);
+
+    // ==========================================================
+    // NOVO BLOCO: IMPORTAR / LIMPAR CLIENTES
+    // ==========================================================
+    
+    document.getElementById('btn-import-clientes-xlsx')?.addEventListener('click', async () => {
+        const inp = document.getElementById('clientes-xlsx-input');
+        const status = document.getElementById('clientes-xlsx-status');
+        if (!inp.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx para clientes.'); return; }
+        const f = inp.files[0];
+        
+        try {
+            status.textContent = 'Lendo planilha de clientes...';
+            const buf = await f.arrayBuffer();
+            const wb = XLSX.read(buf, { type:'array' });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+            
+            // Mapeamento flexível de colunas
+            const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
+            const headerMapCandidates = {
+                nome: ['nome', 'cliente', 'razao social'],
+                telefone: ['telefone', 'fone', 'celular'],
+                documento: ['documento', 'cpf', 'cnpj'],
+                cep: ['cep'],
+                numero: ['numero', 'num'],
+                logradouro: ['logradouro', 'rua', 'endereco'],
+                bairro: ['bairro'],
+                cidade: ['cidade'],
+                uf: ['uf', 'estado']
+            };
+            
+            const keys = rows.length ? Object.keys(rows[0]) : [];
+            const colMap = {};
+            Object.keys(headerMapCandidates).forEach(field => colMap[field] = null);
+
+            keys.forEach(k => {
+                const nk = norm(k);
+                for (const field of Object.keys(headerMapCandidates)) {
+                    if (headerMapCandidates[field].some(alias => nk.includes(alias))) {
+                        colMap[field] = k;
+                    }
+                }
+            });
+
+            if (!colMap.nome || !colMap.telefone) {
+                throw new Error('Planilha inválida. Colunas mínimas necessárias: Nome, Telefone.');
+            }
+
+            const prefix = `users/${userId}`;
+            const batch = writeBatch(db);
+            let count = 0;
+
+            // Lógica para gerar IDs sequenciais únicos dentro deste lote
+            const agora = new Date();
+            const mes = (agora.getMonth() + 1).toString().padStart(2, '0'); // MM
+            const ano = agora.getFullYear().toString().slice(-2); // YY
+            
+            // Pega o ID sequencial máximo ATUAL
+            let maxSeq = 0;
+            appState.clientes.map(c => c.numeroCadastro).filter(id => id && id.startsWith('CL')).forEach(id => {
+                let seqNum = 0;
+                const numPart = id.substring(2); 
+                if (numPart.length === 7) seqNum = parseInt(numPart.substring(0, 3), 10);
+                else if (numPart.length === 4) seqNum = parseInt(numPart, 10);
+                else if (numPart.length === 6) seqNum = parseInt(numPart.substring(0, 2), 10);
+                if (!isNaN(seqNum) && seqNum > maxSeq) maxSeq = seqNum;
+            });
+
+            rows.forEach(r => {
+                const nome = String(r[colMap.nome] || '').trim();
+                if (!nome) return; // Pula linha se não tiver nome
+
+                // Incrementa o ID para este novo cliente
+                maxSeq++;
+                const proximoSeq = maxSeq.toString().padStart(3, '0');
+                const novoID = `CL${proximoSeq}${mes}${ano}`;
+
+                const data = {
+                    nome: nome,
+                    telefone: String(r[colMap.telefone] || '').replace(/\D/g, ''),
+                    documento: String(r[colMap.documento] || '').replace(/\D/g, ''),
+                    cep: String(r[colMap.cep] || '').replace(/\D/g, ''),
+                    numero: String(r[colMap.numero] || ''),
+                    logradouro: String(r[colMap.logradouro] || ''),
+                    bairro: String(r[colMap.bairro] || ''),
+                    cidade: String(r[colMap.cidade] || ''),
+                    uf: String(r[colMap.uf] || ''),
+                    numeroCadastro: novoID
+                };
+                
+                const ref = doc(collection(db, `${prefix}/clientes`));
+                batch.set(ref, data);
+                count++;
+            });
+
+            if (!count) {
+                alert('Nenhuma linha válida (com "Nome") foi encontrada na planilha.');
+                return;
+            }
+            
+            status.textContent = `Enviando ${count} clientes para o banco...`;
+            await batch.commit();
+            status.textContent = `Importação de clientes concluída: ${count} clientes adicionados.`;
+            inp.value = '';
+        } catch(e) {
+            console.error(e);
+            alert('Erro ao importar planilha de clientes: ' + e.message);
+            status.textContent = 'Falha na importação de clientes.';
+        }
+    });
+    
+    async function clearAllClientes() {
+        if (!userId) return alert('Faça login.');
+        if (!confirm('ATENÇÃO MÁXIMA!\n\nIsso apagará TODOS os Clientes cadastrados. Esta ação é irreversível. Deseja continuar?')) return;
+        
+        const status = document.getElementById('clientes-xlsx-status');
+        status.textContent = 'Apagando todos os clientes...';
+        try {
+            const prefix = `users/${userId}`;
+            const ref = collection(db, `${prefix}/clientes`);
+            const snapshot = await getDocs(ref);
+            
+            if (snapshot.empty) {
+                status.textContent = 'Nenhum cliente para apagar.';
+                return;
+            }
+            
+            const batch = writeBatch(db);
+            snapshot.docs.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            
+            status.textContent = `Todos os ${snapshot.size} clientes foram apagados.`;
+        } catch(e) {
+            console.error(e);
+            status.textContent = 'Erro ao apagar os clientes.';
+            alert('Erro ao apagar clientes.');
+        }
+    }
+    document.getElementById('btn-clear-clientes')?.addEventListener('click', clearAllClientes);
+
+    // ==========================================================
+    // FIM DO NOVO BLOCO
+    // ==========================================================
+
+
+    // ===== Orçamentos (lista / modal etc.) =====
     function updateDeleteButtonState() {
         const btn = document.getElementById('btn-delete-selected-orcamentos');
-        if(btn) btn.disabled = (appState.orcamentosParaExcluir.size === 0);
+        if (btn) {
+            btn.disabled = appState.orcamentosParaExcluir.size === 0;
+        }
     }
+
+    function renderOrcamentosList(isFullList = false) {
+      const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
+      if (!el) return;
+      const list = isFullList ? appState.orcamentos : appState.orcamentos.slice(0,3);
+      if (!list.length) { el.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center"><p class="text-gray-500">Nenhum orçamento salvo ainda.</p></div>`; return; }
+      
+      el.innerHTML = list.map(orc => {
+        const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
+        const numeroSeq = String(orc.numeroOrcamento || '').padStart(3, '0');
+        const date = orc.createdAt || new Date();
+        const anoFull = (new Date(date)).getFullYear();
+        const codigoCliente = cliente?.numeroCadastro || 'SEM-COD';
+        const codigoOrcamento = `${codigoCliente}-${numeroSeq}/${anoFull}`;
+        const nome = cliente ? cliente.nome : 'Cliente Excluído';
+        const nomes = nome.split(' ');
+        const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
+        const nomeParaExibir = isFullList ? nome : nomeAbreviado; 
+        
+        if (isFullList) {
+            const isChecked = appState.orcamentosParaExcluir.has(orc.id);
+            return `
+              <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
+                <div class="flex justify-between items-start w-full">
+                    <label class="flex items-center cursor-pointer flex-grow">
+                        <input type="checkbox" data-id="${orc.id}" onchange="toggleOrcamentoExclusao(this)" ${isChecked ? 'checked' : ''} class="h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                        <div class="ml-3">
+                            <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
+                            <p class="text-sm text-gray-500">${codigoOrcamento}</p>
+                        </div>
+                    </label>
+                </div>
+                <div class="flex gap-2 self-end">
+                    <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+                    </div>
+              </div>`;
+        }
+        
+        return `
+      <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center w-full">
+        <div class="flex-grow truncate mr-2">
+          <span class="font-medium text-base text-gray-800">${nome}</span>
+          <span class="text-sm text-gray-500 ml-2">${codigoOrcamento}</span>
+        </div>
+        <div class="flex-shrink-0">
+          <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600">Editar</button>
+        </div>
+      </div>`;
+      }).join('');
+      
+      if (isFullList) updateDeleteButtonState();
+    }
+
+    window.toggleOrcamentoExclusao = (checkbox) => {
+        const id = checkbox.dataset.id;
+        console.log(`[DEBUG-CLICK] Checkbox clicado! ID lido do HTML (data-id):`, id);
+        if (checkbox.checked) {
+            appState.orcamentosParaExcluir.add(id);
+        } else {
+            appState.orcamentosParaExcluir.delete(id);
+        }
+        updateDeleteButtonState();
+    };
 
     window.confirmDeleteSelectedOrcamentos = () => {
-        if(appState.orcamentosParaExcluir.size === 0) return;
-        document.getElementById('delete-confirm-modal').classList.add('active');
-        document.getElementById('delete-confirm-message').textContent = `Excluir ${appState.orcamentosParaExcluir.size} itens?`;
+        const count = appState.orcamentosParaExcluir.size;
+        if (count === 0) {
+            alert('Nenhum orçamento selecionado para exclusão.');
+            return;
+        }
+        const modal = document.getElementById('delete-confirm-modal');
+        const messageEl = document.getElementById('delete-confirm-message');
+        messageEl.innerHTML = `ATENÇÃO! Você irá excluir **${count}** orçamento(s) selecionado(s). Esta ação é irreversível. Deseja continuar?`;
+        modal.classList.add('active');
     };
 
-    window.closeDeleteConfirmModal = (confirm) => {
-        document.getElementById('delete-confirm-modal').classList.remove('active');
-        if(confirm) deleteOrcamentosEmLote();
+    window.closeDeleteConfirmModal = (confirmAction) => {
+        const modal = document.getElementById('delete-confirm-modal');
+        modal.classList.remove('active');
+        if (confirmAction) {
+             deleteOrcamentosEmLote(Array.from(appState.orcamentosParaExcluir));
+        }
     };
 
-    async function deleteOrcamentosEmLote() {
-        const ids = Array.from(appState.orcamentosParaExcluir);
+    async function deleteOrcamentosEmLote(ids) {
+      if (!userId) {
+        console.error('ERRO DE EXCLUSÃO: userId não está definido.');
+        alert('Falha crítica na autenticação (userId ausente). Por favor, saia e entre novamente.');
+        return;
+      }
+      const btn = document.getElementById('btn-delete-selected-orcamentos');
+      btn.disabled = true;
+      try {
         const batch = writeBatch(db);
-        ids.forEach(id => batch.delete(doc(db, `users/${userId}/orcamentos/${id}`)));
+        console.log(`Iniciando exclusão em lote para ${ids.length} IDs. userId: ${userId}`);
+        ids.forEach(id => {
+            const docPath = `users/${userId}/orcamentos/${id}`;
+            const docRef = doc(db, docPath);
+            batch.delete(docRef);
+            console.log(`Adicionado à exclusão: ${docPath}`);
+        });
         await batch.commit();
         appState.orcamentosParaExcluir.clear();
+        alert(`${ids.length} orçamento(s) excluído(s) com sucesso.`);
+      } catch (e) {
+        console.error('ERRO CRÍTICO ao excluir orçamentos em lote. Erro retornado:', e);
+        alert(`Erro ao excluir ${ids.length} orçamento(s). Possível falha nas Regras de Segurança (Permission Denied). Detalhe: ${e.message}`);
+      } finally {
+        btn.disabled = false;
         updateDeleteButtonState();
-        alert('Orçamentos excluídos.');
-    }
-
-    // 2. Renderização da Lista (Com Checkbox)
-    function renderOrcamentosList(isFull = false) {
-        const el = isFull ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
-        if(!el) return;
-
-        let list = [...appState.orcamentos];
-
-        if (isFull) {
-            // Filtros
-            const s = document.getElementById('filtro-status-orcamento').value;
-            const m = document.getElementById('filtro-mes-orcamento').value;
-            const a = document.getElementById('filtro-ano-orcamento').value;
-
-            list = list.filter(o => {
-                const st = (o.status === 'aprovado' || o.aprovado) ? 'aprovado' : 'pendente';
-                if (s !== 'todos' && st !== s) return false;
-                
-                if (o.createdAt) {
-                    const d = new Date(o.createdAt);
-                    if (m !== 'todos' && d.getMonth().toString() !== m) return false;
-                    if (a !== 'todos' && d.getFullYear().toString() !== a) return false;
-                }
-                return true;
-            });
-        } else {
-            list = list.slice(0, 3); // Apenas 3 na home
-        }
-
-        if(!list.length) { 
-            el.innerHTML = '<div class="p-4 text-center text-gray-500">Nenhum orçamento encontrado.</div>'; 
-            if(isFull) updateDeleteButtonState();
-            return; 
-        }
-
-        el.innerHTML = list.map(o => {
-            const cli = appState.clientes.find(c => c.id === o.cliente?.id);
-            const nome = cli ? cli.nome : 'Cliente Excluído';
-            
-            // Nome curto na home, longo na lista completa
-            const nomeDisplay = (!isFull && nome.split(' ').length > 1) ? `${nome.split(' ')[0]} ${nome.split(' ')[1]}` : nome;
-            
-            const num = String(o.numeroOrcamento||'').padStart(3,'0');
-            const ano = o.createdAt ? o.createdAt.getFullYear() : '';
-            const cod = `${cli?.numeroCadastro||'CD'}-${num}/${ano}`;
-            const dateStr = o.createdAt ? o.createdAt.toLocaleDateString('pt-BR') : '';
-            const val = Number(o.total||0).toFixed(2);
-            
-            const isAp = (o.status === 'aprovado' || o.aprovado);
-            const badge = isAp 
-                ? `<span class="px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-bold border border-green-200">APROVADO</span>`
-                : `<span class="px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs font-bold border border-yellow-200">PENDENTE</span>`;
-
-            if (isFull) {
-                // === LAYOUT COMPLETO (COM CHECKBOX) ===
-                const isChecked = appState.orcamentosParaExcluir.has(o.id);
-                return `
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-2 flex items-start gap-3">
-                   <div class="flex items-center h-full pt-1">
-                       <input type="checkbox" data-id="${o.id}" ${isChecked ? 'checked' : ''} onchange="window.toggleOrcamentoExclusao(this)" class="h-5 w-5 text-red-600 rounded border-gray-300 cursor-pointer">
-                   </div>
-                   <div class="flex-grow">
-                      <div class="flex justify-between items-start">
-                          <h3 class="font-bold text-gray-800 text-base">${nome}</h3>
-                          ${badge}
-                      </div>
-                      <div class="text-xs text-gray-500 mt-1 font-mono">
-                          ${cod} • ${dateStr}
-                      </div>
-                      <div class="font-bold text-gray-800 mt-2">
-                          R$ ${val}
-                      </div>
-                   </div>
-                   <button onclick="window.editOrcamento('${o.id}')" class="bg-yellow-400 hover:bg-yellow-500 text-white p-2 rounded shadow-sm transition self-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                   </button>
-                </div>`;
-            } else {
-                // === LAYOUT HOME (SEM CHECKBOX) ===
-                return `
-                <div class="bg-white p-3 rounded border shadow-sm mb-2 flex justify-between items-center">
-                    <div class="overflow-hidden mr-2">
-                        <p class="font-bold text-gray-800 truncate">${nomeDisplay}</p>
-                        <p class="text-xs text-gray-500">${cod}</p>
-                        <p class="text-sm font-bold text-gray-700 mt-1">R$ ${val}</p>
-                    </div>
-                    <div class="flex items-center gap-2 flex-shrink-0">
-                        ${badge}
-                        <button onclick="window.editOrcamento('${o.id}')" class="bg-yellow-400 hover:bg-yellow-500 text-white p-2 rounded shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                        </button>
-                    </div>
-                </div>`;
-            }
-        }).join('');
-        
-        if(isFull) updateDeleteButtonState();
-    }
-  
-    // ===== 5. FINANCEIRO =====
-    window.updateFinanceiroView = () => {
-        const anoSel = document.getElementById('fat-ano')?.value || 'todos';
-        const mesSel = document.getElementById('fat-mes')?.value || 'all';
-        const vis = document.getElementById('chart-periodo')?.value || 'mensal';
-        const divMes = document.getElementById('fat-mes')?.parentElement;
-        
-        let tB=0, tL=0, ap=0, pe=0, labels=[], data=[];
-        
-        if(vis==='mensal') {
-            if(divMes) divMes.style.display='flex';
-            appState.orcamentos.forEach(o=>{
-                if(!o.createdAt)return;
-                const d=new Date(o.createdAt);
-                if(anoSel!=='todos' && d.getFullYear().toString()!==anoSel)return;
-                if(mesSel!=='all' && d.getMonth().toString()!==mesSel)return;
-                const v=Number(o.total||0); tB+=v;
-                if(o.status==='aprovado'||o.aprovado){tL+=v; ap++;} else pe++;
-            });
-            labels=['Gerado','Aprovado']; data=[tB,tL];
-        } else {
-            if(divMes) divMes.style.display='none';
-            const mb=Array(12).fill(0); const ml=Array(12).fill(0);
-            appState.orcamentos.forEach(o=>{
-                if(!o.createdAt)return;
-                const d=new Date(o.createdAt);
-                if(anoSel!=='todos' && d.getFullYear().toString()!==anoSel)return;
-                const v=Number(o.total||0); const i=d.getMonth();
-                mb[i]+=v; tB+=v;
-                if(o.status==='aprovado'||o.aprovado){ml[i]+=v; tL+=v; ap++;} else pe++;
-            });
-            labels=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-            data = (chartType==='pie') ? [tB,tL] : mb; // Simplificado para caber, pie mostra totais
-        }
-
-        // DOM
-        const fmt=v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
-        if(document.getElementById('fat-bruto')) document.getElementById('fat-bruto').textContent=fmt(tB);
-        if(document.getElementById('fat-liquido')) document.getElementById('fat-liquido').textContent=fmt(tL);
-        if(document.getElementById('fat-contagem')) document.getElementById('fat-contagem').textContent=`${ap} aprov / ${pe} pend`;
-
-        // Chart
-        const ctx = document.getElementById('finance-chart');
-        if(ctx) {
-            if(financeChart) financeChart.destroy();
-            financeChart = new Chart(ctx, {
-                type: chartType,
-                data: { labels: (chartType==='pie'&&vis==='anual')?['Gerado','Aprovado']:labels, datasets: [{ label:'Valor', data:data, backgroundColor:['#FACC15','#22C55E','#3B82F6'] }] },
-                options: { responsive:true, maintainAspectRatio:false }
-            });
-        }
+      }
     };
-    window.mudarTipoGrafico=(t)=>{chartType=t; window.updateFinanceiroView();};
 
-    // ===== LISTENERS E UTILS =====
-   // ===== LISTENERS (CORREÇÃO DOS FILTROS ORÇAMENTO E FINANCEIRO) =====
-    function setupListeners() {
-        // Máscaras (Mantido)
-        document.getElementById('config-doc')?.addEventListener('input', handleDocMask);
-        document.getElementById('config-telefone')?.addEventListener('input', handleTelefoneMask);
-        document.getElementById('config-cep')?.addEventListener('input', handleCEPMask);
+    window.showAllOrcamentosPage = () => {
+      mainView.classList.add('hidden');
+      allOrcamentosView.classList.remove('hidden');
+      renderOrcamentosList(true);
+    };
+    window.showMainPage = () => {
+      allOrcamentosView.classList.add('hidden');
+      mainView.classList.remove('hidden');
+      appState.orcamentosParaExcluir.clear();
+      updateDeleteButtonState();
+    };
+
+    window.editOrcamento = (id) => {
+      console.log("Tentando editar ID:", id, `(tipo: ${typeof id})`);
+      if (!appState.orcamentos || appState.orcamentos.length === 0) {
+        console.error("appState.orcamentos está vazio!");
+        return alert('Erro: Nenhuma lista de orçamentos carregada.');
+      }
+      const orc = appState.orcamentos.find(o => String(o.id).trim() === String(id).trim());
+      if (!orc) {
+        console.error("ID não encontrado no appState.orcamentos.");
+        console.log("IDs disponíveis:", appState.orcamentos.map(o => o.id));
+        return alert('Orçamento não encontrado. Tente recarregar a página.');
+      }
+      console.log("Orçamento encontrado:", orc);
+      openOrcamentoModal(orc);
+    };
+
+    // ==========================================================
+    // INÍCIO: LÓGICA DO MODAL DE ORÇAMENTO (ATUALIZADO)
+    // ==========================================================
+
+    // NOVO: Funções de toggle para o modal
+    const toggleModoDeCobranca = (modo) => {
+        const moWrapper = document.getElementById('orc-cobranca-mo-wrapper');
+        const servicoWrapper = document.getElementById('orc-cobranca-servico-wrapper');
         
-        // Botão Novo (Mantido)
-        document.getElementById('btn-novo-orcamento')?.addEventListener('click', ()=>window.openOrcamentoModal());
+        if (modo === 'por_servico') {
+            moWrapper.classList.add('hidden');
+            servicoWrapper.classList.remove('hidden');
+            // Limpa a seleção de Mão de Obra
+            appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
+            document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
+            document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
+        } else { // 'mao_de_obra'
+            moWrapper.classList.remove('hidden');
+            servicoWrapper.classList.add('hidden');
+            // Limpa a seleção de Serviços
+            appState.currentOrcamento.tiposDeServico = [];
+            document.querySelectorAll('#orc-tiposdeservico-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#orc-tiposdeservico-list input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
+        }
+        updateOrcamentoPreview();
+    };
+
+    const toggleUsarMaterial = (modo) => {
+        const materialWrapper = document.getElementById('orc-cobranca-material-wrapper');
         
-        // Pesquisas (Mantido)
-    // === SELEÇÃO DO CLIENTE NO MODAL DE ORÇAMENTO ===
-    const selectCliente = document.getElementById('orc-cliente-select');
-    if (selectCliente) {
-        selectCliente.addEventListener('change', (e) => {
-            if (!appState.currentOrcamento) return; // segurança
+        if (modo === 'nao') {
+            materialWrapper.classList.add('hidden');
+            // Limpa a seleção de Materiais
+            appState.currentOrcamento.items = [];
+            document.querySelectorAll('#orc-materiais-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#orc-materiais-list input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
+        } else { // 'sim'
+            materialWrapper.classList.remove('hidden');
+        }
+        updateOrcamentoPreview();
+    };
 
-            const id = e.target.value;
+    window.openOrcamentoModal = (orcamentoParaEditar = null) => {
+      try {
+        const modal = document.getElementById('orcamento-modal');
+        const clienteSelect = document.getElementById('orc-cliente-select');
+        modal.classList.add('active');
+        populateClienteSelect();
+        populateMateriaisOrcamento();
+        populateTiposDeServicoOrcamento();
 
-            if (!id) {
-                // nada selecionado
-                appState.currentOrcamento.cliente = null;
-            } else {
-                // procura o cliente completo na lista
-                const cli = appState.clientes.find(c => c.id === id);
-                // guarda o objeto inteiro (nome, telefone, endereço, etc.)
-                appState.currentOrcamento.cliente = cli ? { ...cli } : { id };
-            }
-
-            // atualiza a pré-visualização do PDF
-            window.updateOrcamentoPreview();
-        });
-    }
-
-      
-        document.getElementById('search-cliente')?.addEventListener('input', (e)=>{
-            const q=e.target.value.toLowerCase();
-            document.querySelectorAll('#clientes-list > div').forEach(d=>{ d.style.display=d.textContent.toLowerCase().includes(q)?'flex':'none'; });
-        });
-        document.getElementById('filter-tipos')?.addEventListener('input', (e)=>{
-            const q=e.target.value.toLowerCase();
-            document.querySelectorAll('#orc-tiposdeservico-list label span').forEach(s=>{ s.closest('label').parentElement.style.display=s.textContent.toLowerCase().includes(q)?'':'none'; });
-        });
-
-        // Toggles do Modal (Mantido)
-        document.querySelectorAll('input[name="modo-cobranca"]').forEach(r=>{ r.addEventListener('change',(e)=>{if(appState.currentOrcamento)appState.currentOrcamento.modoCobranca=e.target.value; applyVisualToggles(e.target.value,appState.currentOrcamento?.usarMaterial||'sim'); window.updateOrcamentoPreview();}); });
-        document.querySelectorAll('input[name="usar-material"]').forEach(r=>{ r.addEventListener('change',(e)=>{if(appState.currentOrcamento)appState.currentOrcamento.usarMaterial=e.target.value; applyVisualToggles(appState.currentOrcamento?.modoCobranca||'mao_de_obra',e.target.value); window.updateOrcamentoPreview();}); });
-        
-        // === 1. CORREÇÃO FILTROS ORÇAMENTOS ===
-        const refreshList = () => renderOrcamentosList(true);
-        const fStatus = document.getElementById('filtro-status-orcamento');
-        const fMes = document.getElementById('filtro-mes-orcamento');
-        const fAno = document.getElementById('filtro-ano-orcamento');
-        
-        // Usando onchange direto para garantir funcionamento
-        if(fStatus) fStatus.onchange = refreshList;
-        if(fMes) fMes.onchange = refreshList;
-        if(fAno) fAno.onchange = refreshList;
-        
-        document.getElementById('btn-limpar-filtros-orcamento')?.addEventListener('click', () => {
-             if(fStatus) fStatus.value='todos';
-             if(fMes) fMes.value='todos';
-             if(fAno) fAno.value='todos';
-             refreshList();
-        });
-
-        // === 2. CORREÇÃO FILTROS FINANCEIRO (Estavam faltando) ===
-        const fatAno = document.getElementById('fat-ano');
-        const fatMes = document.getElementById('fat-mes');
-        const chartPer = document.getElementById('chart-periodo');
-        const btnFat = document.getElementById('btn-atualizar-financeiro');
-
-        if(fatAno) fatAno.onchange = () => window.updateFinanceiroView();
-        if(fatMes) fatMes.onchange = () => window.updateFinanceiroView();
-        if(chartPer) chartPer.onchange = () => window.updateFinanceiroView();
-        if(btnFat) btnFat.onclick = (e) => { e.preventDefault(); window.updateFinanceiroView(); };
-    }
-    
-    function updateConfigForm() {
-      const c = appState.config || {};
-      
-      // Helper para preencher campos de texto sem erro se for nulo
-      const set = (id, val) => { 
-          const el = document.getElementById(id); 
-          if (el) el.value = (val !== undefined && val !== null) ? val : ''; 
-      };
-
-      // Dados Pessoais
-      set('config-nome', c.nome);
-      set('config-telefone', formatarTelefone(c.telefone));
-      set('config-doc', formatarCPFCNPJ(c.doc));
-      
-      // Endereço
-      set('config-cep', formatarCEP(c.cep));
-      set('config-numero', c.numero);
-      set('config-logradouro', c.logradouro);
-      set('config-bairro', c.bairro);
-      set('config-cidade', c.cidade);
-      set('config-uf', c.uf);
-
-      // Logomarca
-      if (c.logo) {
-          const logoInput = document.getElementById('config-logo');
-          const logoPreview = document.getElementById('config-logo-preview');
-          const logoWrapper = document.getElementById('config-logo-preview-wrapper');
+        if (orcamentoParaEditar) {
+          document.getElementById('modal-title').textContent = 'Editar Orçamento';
+          const clone = JSON.parse(JSON.stringify(orcamentoParaEditar || {}));
           
-          if(logoInput) logoInput.value = c.logo;
-          if(logoPreview) logoPreview.src = c.logo;
-          if(logoWrapper) logoWrapper.classList.remove('hidden');
-      }
+          // Define padrões para upgrades antigos
+          clone.modoCobranca = clone.modoCobranca || 'mao_de_obra';
+          clone.usarMaterial = clone.usarMaterial || 'sim';
+          clone.tipoObra = (clone.tipoObra === 'industrial' || clone.tipoObra === 'residencial') ? clone.tipoObra : 'residencial';
+          clone.maoDeObra = clone.maoDeObra || { tipo: '', valor: 0, label: '', raw_value: '' };
+          clone.desconto = clone.desconto || { tipo: 'nenhum', valor: 0 };
+          clone.items = Array.isArray(clone.items) ? clone.items : [];
+          clone.tiposDeServico = Array.isArray(clone.tiposDeServico) ? clone.tiposDeServico : [];
+          
+          appState.currentOrcamento = clone;
 
-      // Cores PDF
-      set('config-color-primary', c.config_color_primary);
-      set('config-color-secondary', c.config_color_secondary);
+          // Preenche descrição
+          const descTextarea = document.getElementById('orc-descricao-servico');
+          if (descTextarea) descTextarea.value = clone.descricaoServico || '';
 
-      // Valores Mão de Obra (Residencial)
-      set('config-residencial-empreitada', c.residencial_empreitada);
-      set('config-residencial-diaria', c.residencial_diaria);
-      set('config-residencial-ponto', c.residencial_ponto);
-      set('config-residencial-hora', c.residencial_hora);
+          // Preenche cliente
+          if (clone.cliente?.id && Array.from(clienteSelect.options).some(o => o.value === clone.cliente.id)) {
+            clienteSelect.value = clone.cliente.id;
+          } else { clienteSelect.value = ''; }
 
-      // Valores Mão de Obra (Industrial)
-      set('config-industrial-diaria', c.industrial_diaria);
-      set('config-industrial-ponto', c.industrial_ponto);
-      set('config-industrial-hora', c.industrial_hora);
+          // NOVO: Preenche os seletores de modo
+          document.querySelector(`input[name="modo-cobranca"][value="${clone.modoCobranca}"]`).checked = true;
+          document.querySelector(`input[name="usar-material"][value="${clone.usarMaterial}"]`).checked = true;
+          
+          // Preenche Mão de Obra (se aplicável)
+          if (clone.modoCobranca === 'mao_de_obra') {
+              const obraRadio = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
+              if (obraRadio) obraRadio.checked = true;
 
-      // Pagamento
-      set('config-pix-chave', c.config_pix_chave);
-      set('config-cartao-vezes', c.config_cartao_vezes);
-      set('config-cartao-juros', c.config_cartao_juros);
-      
-      const checkDinheiro = document.getElementById('config-pagamento-dinheiro');
-      if(checkDinheiro) checkDinheiro.checked = !!c.config_pagamento_dinheiro;
+              const mao = clone.maoDeObra;
+              if (mao && mao.tipo) {
+                const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${mao.tipo}"]`);
+                if (tipoServicoRadio) {
+                  tipoServicoRadio.checked = true;
+                  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+                  set('empreitada-valor', mao.tipo === 'empreitada' ? mao.raw_value : '');
+                  set('diaria-qtd',       mao.tipo === 'diaria'    ? mao.raw_value : '');
+                  set('ponto-qtd',        mao.tipo === 'ponto'     ? mao.raw_value : '');
+                  set('hora-qtd',         mao.tipo === 'hora'      ? mao.raw_value : '');
+                }
+              }
+          }
+          
+          // Preenche Desconto
+          if (clone.desconto && clone.desconto.tipo !== 'nenhum') {
+            if (descontoTipoEl) descontoTipoEl.value = clone.desconto.tipo;
+            if (descontoValorEl) {
+              descontoValorEl.value = clone.desconto.valor || 0;
+              descontoValorEl.disabled = false;
+            }
+          } else {
+            if (descontoTipoEl) descontoTipoEl.value = 'nenhum';
+            if (descontoValorEl) {
+              descontoValorEl.value = '';
+              descontoValorEl.disabled = true;
+            }
+          }
+          
+          // Dispara os toggles para mostrar/esconder seções corretas
+          toggleModoDeCobranca(clone.modoCobranca);
+          toggleUsarMaterial(clone.usarMaterial);
+          
+          clienteSelect.dispatchEvent(new Event('change'));
 
-      set('config-deposito-banco', c.config_deposito_banco);
-      set('config-deposito-ag', c.config_deposito_ag);
-      set('config-deposito-conta', c.config_deposito_conta);
+          // Preenche os checkboxes de itens (após um pequeno delay para os toggles)
+          setTimeout(() => {
+            if (clone.usarMaterial === 'sim') {
+                (clone.items || []).forEach(item => {
+                  const cb  = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
+                  const qty = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
+                  if (cb) cb.checked = true;
+                  if (qty) { qty.disabled = false; qty.value = item.quantidade ?? 1; }
+                });
+            }
+            
+           if (clone.modoCobranca === 'por_servico') {
+        (clone.tiposDeServico || []).forEach(service => {
+          const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
+          const qtyInput = document.querySelector(`#orc-tiposdeservico-list input[type="number"][data-id="${service.id}"]`);
+          
+          if(checkbox) checkbox.checked = true;
+          
+          if (qtyInput) {
+              qtyInput.disabled = false;
+              qtyInput.value = service.quantidade ?? 1; // Puxa a quantidade salva
+          }
+        });
     }
+            
+            const tipoObraWrap = document.getElementById('orc-tipo-obra');
+            if (tipoObraWrap) tipoObraWrap.dispatchEvent(new Event('change', { bubbles: true }));
+            calculateMaoDeObra();
+            updateOrcamentoPreview();
+          }, 300);
 
-    // Formatação
-    function formatarTelefone(v){v=String(v).replace(/\D/g,''); return v.replace(/(\d{2})(\d{5})(\d{4})/,"($1) $2-$3");}
-    function formatarCPFCNPJ(v){v=String(v).replace(/\D/g,''); if(v.length<=11)return v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.$2.$3-$4"); return v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,"$1.$2.$3/$4-$5");}
-    function formatarCEP(v){v=String(v).replace(/\D/g,''); return v.replace(/(\d{5})(\d{3})/,"$1-$2");}
-    function handleDocMask(e){e.target.value=formatarCPFCNPJ(e.target.value);}
-    function handleTelefoneMask(e){e.target.value=formatarTelefone(e.target.value);}
-    function handleCEPMask(e){e.target.value=formatarCEP(e.target.value);}
-    function checkRadio(n,v){const el=document.querySelector(`input[name="${n}"][value="${v}"]`); if(el)el.checked=true;}
-    function restoreCheckboxes(lid, items){ if(!items)return; items.forEach(i=>{const cb=document.querySelector(`#${lid} input[data-id="${i.id}"]`); const qt=document.querySelector(`#${lid} input[type="number"][data-id="${i.id}"]`); if(cb)cb.checked=true; if(qt){qt.disabled=false; qt.value=i.quantidade;}});}
-    function populateCategorySelect(){const s=document.getElementById('tiposervico-categoria-select'); const c=[...new Set(appState.tiposDeServico.map(x=>x.categoria).filter(Boolean))].sort(); while(s.options.length>2)s.remove(2); c.forEach(k=>{const o=document.createElement('option'); o.value=k; o.text=k; s.add(o);});}
-    function populateMateriaisOrcamento(){const l=document.getElementById('orc-materiais-list'); if(l) l.innerHTML=appState.materiais.map(m=>`<div class="flex justify-between p-2 hover:bg-gray-50"><label class="flex flex-grow"><input type="checkbox" data-id="${m.id}" class="mr-2"><span class="text-sm">${m.nome} - R$ ${m.valor}</span></label><input type="number" min="1" value="1" data-id="${m.id}" class="w-16 border rounded text-sm" disabled></div>`).join(''); l.addEventListener('input', e=>{const t=e.target; const id=t.dataset.id; const m=appState.materiais.find(x=>x.id===id); if(!m)return; const q=document.querySelector(`#orc-materiais-list input[type="number"][data-id="${id}"]`); if(t.type==='checkbox'){if(t.checked){q.disabled=false; appState.currentOrcamento.items.push({...m,quantidade:1});}else{q.disabled=true; appState.currentOrcamento.items=appState.currentOrcamento.items.filter(x=>x.id!==id);}} else if(t.type==='number'){const i=appState.currentOrcamento.items.find(x=>x.id===id); if(i)i.quantidade=parseInt(t.value)||1;} window.updateOrcamentoPreview();});}
-function populateTiposDeServicoOrcamento() {
-  const l = document.getElementById('orc-tiposdeservico-list');
+        } else { // Criando novo orçamento
+          document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
+          resetCurrentOrcamento();
+          
+          const descTextarea = document.getElementById('orc-descricao-servico');
+          if (descTextarea) descTextarea.value = '';
+          
+          // Reseta para os padrões
+          document.querySelector(`input[name="modo-cobranca"][value="mao_de_obra"]`).checked = true;
+          document.querySelector(`input[name="usar-material"][value="sim"]`).checked = true;
+          document.querySelector(`input[name="tipo-obra"][value="residencial"]`).checked = true;
+          
+          if (descontoTipoEl) descontoTipoEl.value = 'nenhum';
+          if (descontoValorEl) { descontoValorEl.value = ''; descontoValorEl.disabled = true; }
 
-  const g = appState.tiposDeServico.reduce((a, c) => {
-    const k = (c.categoria || 'OUTROS').toUpperCase();
-    (a[k] || (a[k] = [])).push(c);
-    return a;
-  }, {});
+          // Dispara os toggles para o estado padrão
+          toggleModoDeCobranca('mao_de_obra');
+          toggleUsarMaterial('sim');
 
-  l.innerHTML = Object.keys(g)
-    .sort()
-    .map(
-      (k) => `
-      <details class="mb-1 border rounded">
-        <summary class="p-2 bg-gray-50 text-xs font-bold uppercase">${k}</summary>
-        <div class="p-2">
-          ${g[k]
-            .map(
-              (s) => `
-            <div class="flex justify-between p-1 hover:bg-gray-50">
-              <label class="flex flex-grow">
-                <input type="checkbox" data-id="${s.id}" class="mr-2">
-                <span class="text-sm">${s.descricao} - R$ ${s.valor}</span>
-              </label>
-              <input type="number" min="1" value="1" data-id="${s.id}" class="w-16 border rounded text-sm" disabled>
-            </div>`
-            )
-            .join('')}
-        </div>
-      </details>`
-    )
-    .join('');
-
-  // Listener que usa a função updateServiceInCurrentOrcamento (sem duplicar)
-  l.addEventListener('input', (e) => {
-    const t = e.target;
-    const id = t.dataset.id;
-    if (!id) return;
-
-    const s = appState.tiposDeServico.find((x) => x.id === id);
-    if (!s) return;
-
-    const cb = document.querySelector(
-      `#orc-tiposdeservico-list input[type="checkbox"][data-id="${id}"]`
-    );
-    const q = document.querySelector(
-      `#orc-tiposdeservico-list input[type="number"][data-id="${id}"]`
-    );
-    if (!cb || !q) return;
-
-    const service = {
-      ...s,
-      quantidade: parseInt(q.value) || 1,
-      checked: cb.checked,
+          clienteSelect.value = '';
+          clienteSelect.dispatchEvent(new Event('change'));
+          updateOrcamentoPreview();
+        }
+      } catch (err) {
+        console.error("[openOrcamentoModal] Erro:", err);
+        alert("Ocorreu um erro ao abrir o modal. Veja o console para detalhes.");
+      }
     };
 
-    if (t.type === 'checkbox') {
-      q.disabled = !cb.checked;
-      service.checked = cb.checked;
-      if (!service.checked) {
-        service.quantidade = 1;
+    const descontoTipoEl = document.getElementById('orc-desconto-tipo');
+    const descontoValorEl = document.getElementById('orc-desconto-valor');
+
+    window.closeOrcamentoModal = () => {
+      document.getElementById('orcamento-modal').classList.remove('active');
+      resetCurrentOrcamento();
+      
+      // Reseta todos os campos do modal para o estado inicial
+      document.getElementById('orc-cliente-select').value = '';
+      
+      const materiaisList = document.querySelector('#orc-materiais-list');
+      if (materiaisList) {
+        materiaisList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        materiaisList.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
       }
-      updateServiceInCurrentOrcamento(service);
-    } else if (t.type === 'number') {
-      // só atualiza se o checkbox estiver marcado
-      if (!cb.checked) return;
-      service.quantidade = parseInt(t.value) || 1;
-      service.checked = true;
-      updateServiceInCurrentOrcamento(service);
+      
+      const tiposServicoList = document.querySelector('#orc-tiposdeservico-list');
+      if (tiposServicoList) {
+        tiposServicoList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        tiposServicoList.querySelectorAll('input[type="number"]').forEach(inp => {
+          inp.value = '1';
+          inp.disabled = true;
+        });
+      }
+      
+      const descTextarea = document.getElementById('orc-descricao-servico');
+      if (descTextarea) descTextarea.value = '';
+      
+      document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
+      document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
+      
+      // Reseta os toggles para o padrão
+      document.querySelector('input[name="modo-cobranca"][value="mao_de_obra"]').checked = true;
+      document.querySelector('input[name="usar-material"][value="sim"]').checked = true;
+      document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
+      toggleModoDeCobranca('mao_de_obra');
+      toggleUsarMaterial('sim');
+
+      if (descontoTipoEl) descontoTipoEl.value = 'nenhum';
+      if (descontoValorEl) { descontoValorEl.value = ''; descontoValorEl.disabled = true; }
+    };
+
+    function populateClienteSelect() {
+      const selectEl = document.getElementById('orc-cliente-select');
+      selectEl.innerHTML = '<option value="">Selecione um cliente</option>';
+      appState.clientes.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.id; option.textContent = c.nome; selectEl.appendChild(option);
+      });
     }
-  });
-}
 
-  // ================================================
-// CORREÇÃO — Impedir duplicação de serviços
-// ================================================
-function updateServiceInCurrentOrcamento(service) {
-    if (!appState.currentOrcamento) return;
+    function populateMateriaisOrcamento() {
+      const listEl = document.getElementById('orc-materiais-list');
+      if (!appState.materiais.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum material cadastrado.</p>'; return; }
+      listEl.innerHTML = appState.materiais.map(m => `
+        <div class="flex items-center justify-between p-2 rounded-md hover:bg-gray-100">
+          <label class="flex items-center flex-grow cursor-pointer">
+            <input type="checkbox" data-id="${m.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+            <span class="ml-3 text-xs">${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</span>
+          </label>
+          <input type="number" min="1" value="1" data-id="${m.id}" class="w-20 p-1 border rounded-md text-sm ml-2" disabled>
+        </div>`).join('');
+    }
 
-    // Verifica se já existe
-    const exist = appState.currentOrcamento.tiposDeServico.find(s => s.id === service.id);
+        function populateTiposDeServicoOrcamento() {
+      const listEl = document.getElementById('orc-tiposdeservico-list');
+      if (!appState.tiposDeServico.length) {
+        listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum tipo de serviço cadastrado em Serviços.</p>';
+        return;
+      }
 
-    if (service.checked) {
-        if (exist) {
-            // Atualiza somente quantidade (NÃO DUPLICA)
-            exist.quantidade = service.quantidade;
+      const grouped = groupBy(appState.tiposDeServico, 'categoria');
+      const cats = Object.keys(grouped).sort();
+
+      listEl.innerHTML = cats.map(cat => {
+        const servicos = grouped[cat].sort((a, b) => (a.descricao || '').localeCompare(b.descricao || ''));
+        return `
+          <details class="group border rounded">
+            <summary class="flex items-center justify-between p-2 cursor-pointer hover:bg-gray-200 rounded-md">
+              <span class="font-medium text-sm text-gray-700">${cat}</span>
+              <svg class="w-4 h-4 arrow" xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <div class="pl-3 pb-2">
+              ${
+                servicos.map(s => `
+                  <div class="flex items-center justify-between p-1 rounded-md hover:bg-gray-100">
+                    <label class="flex items-center flex-grow cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        data-id="${s.id}" 
+                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      >
+                      <span class="ml-2 servico-slim">
+                        ${s.descricao} - R$ ${s.valor.toFixed(2)}
+                      </span>
+                    </label>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      value="1" 
+                      data-id="${s.id}" 
+                      class="w-16 p-1 border rounded-md text-xs ml-2" 
+                      disabled
+                    >
+                  </div>
+                `).join('')
+              }
+            </div>
+          </details>`;
+      }).join('');
+    }
+
+document.getElementById('filter-tipos').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const boxes = document.querySelectorAll('#orc-tiposdeservico-list label span');
+      boxes.forEach(span => {
+        const row = span.closest('label');
+        row.style.display = span.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+
+    document.getElementById('orc-materiais-list').addEventListener('input', (e) => {
+      const target = e.target;
+      const materialId = target.dataset.id;
+      const material = appState.materiais.find(m => m.id === materialId);
+      if (!material) return;
+      const qtyInput = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${materialId}"]`);
+      if (target.type === 'checkbox') {
+        if (target.checked) {
+          qtyInput.disabled = false;
+          const newItem = { ...material, quantidade: parseInt(qtyInput.value) || 1 };
+          appState.currentOrcamento.items.push(newItem);
         } else {
-            // Adiciona somente uma vez
-            appState.currentOrcamento.tiposDeServico.push(service);
+          qtyInput.disabled = true;
+          appState.currentOrcamento.items = appState.currentOrcamento.items.filter(item => item.id !== materialId);
         }
-    } else {
-        // Remove quando desmarcar o checkbox
-        appState.currentOrcamento.tiposDeServico =
-            appState.currentOrcamento.tiposDeServico.filter(s => s.id !== service.id);
-    }
+      } else if (target.type === 'number') {
+        const itemInOrcamento = appState.currentOrcamento.items.find(item => item.id === materialId);
+        if (itemInOrcamento) itemInOrcamento.quantidade = parseInt(target.value) || 1;
+      }
+      updateOrcamentoPreview();
+    });
 
-    window.updateOrcamentoPreview();
-}
+        document.getElementById('orc-tiposdeservico-list').addEventListener('input', (e) => {
+      const target = e.target;
+      if (!target) return;
 
-    function gerarNovoNumeroCliente(){const ids=appState.clientes.map(c=>c.numeroCadastro).filter(x=>x&&x.startsWith('CL')); let max=0; ids.forEach(i=>{const n=parseInt(i.substring(2,5)); if(!isNaN(n)&&n>max)max=n;}); const seq=(max+1).toString().padStart(3,'0'); const d=new Date(); return `CL${seq}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getFullYear().toString().slice(-2)}`;}
-    
-    // Preview / Calc
-    
-    document.getElementById('orc-tipo-obra')?.addEventListener('change', (e)=>{ if(appState.currentOrcamento) appState.currentOrcamento.tipoObra=e.target.value==='industrial'?'industrial':'residencial'; window.calculateMaoDeObra(); window.updateOrcamentoPreview(); });
-    document.getElementById('orc-mao-de-obra')?.addEventListener('input', ()=>{ window.calculateMaoDeObra(); window.updateOrcamentoPreview(); });
-    document.getElementById('orc-descricao-servico')?.addEventListener('input', (e)=>{ if(appState.currentOrcamento) appState.currentOrcamento.descricaoServico=e.target.value; window.updateOrcamentoPreview(); });
-    document.getElementById('orc-status-aprovado')?.addEventListener('change', (e)=>{ if(appState.currentOrcamento) appState.currentOrcamento.status=e.target.checked?'aprovado':'pendente'; });
-    document.getElementById('orc-desconto-tipo')?.addEventListener('change', (e)=>{ const v=document.getElementById('orc-desconto-valor'); if(e.target.value==='nenhum'){v.disabled=true;v.value='';appState.currentOrcamento.desconto={tipo:'nenhum',valor:0};}else{v.disabled=false;appState.currentOrcamento.desconto.tipo=e.target.value;} window.updateOrcamentoPreview(); });
-    document.getElementById('orc-desconto-valor')?.addEventListener('input', (e)=>{ appState.currentOrcamento.desconto.valor=parseFloat(e.target.value)||0; window.updateOrcamentoPreview(); });
+      const serviceId = target.dataset.id;
+      if (!serviceId) return;
 
-  // ===== CÁLCULOS E VISUALIZAÇÃO DO ORÇAMENTO (CORREÇÃO PDF) =====
+      const serviceBase = appState.tiposDeServico.find(s => s.id === serviceId);
+      if (!serviceBase) return;
 
-    function formatEnderecoLinhaCliente(c) {
-      if (!c) return '';
-      const log = c.logradouro || '';
-      const num = c.numero || '';
-      const bairro = c.bairro || '';
-      let out = '';
-      if (log) out += log;
-      if (num) out += (out ? ', ' : '') + num;
-      if (bairro) out += (out ? ' - ' : '') + bairro;
-      return out;
-    }
+      const qtyInput = document.querySelector(
+        `#orc-tiposdeservico-list input[type="number"][data-id="${serviceId}"]`
+      );
 
+      // Checkbox marcado / desmarcado
+      if (target.type === 'checkbox') {
+        if (target.checked) {
+          if (qtyInput) qtyInput.disabled = false;
+          const quantidade = parseInt(qtyInput?.value || '1', 10) || 1;
 
-    // 1. Calcula Mão de Obra
-    window.calculateMaoDeObra = () => {
-        const sel = document.querySelector('input[name="tipo-servico"]:checked');
-        
-        if (!sel) { 
-            if(appState.currentOrcamento) appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: 0 }; 
-            return; 
+          const existente = appState.currentOrcamento.tiposDeServico
+            .find(s => s.id === serviceId);
+
+          if (existente) {
+            existente.quantidade = quantidade;
+          } else {
+            appState.currentOrcamento.tiposDeServico.push({
+              ...serviceBase,
+              quantidade
+            });
+          }
+        } else {
+          if (qtyInput) {
+            qtyInput.disabled = true;
+            qtyInput.value = '1';
+          }
+          appState.currentOrcamento.tiposDeServico =
+            appState.currentOrcamento.tiposDeServico.filter(s => s.id !== serviceId);
         }
-        
-        const t = sel.value; 
-        const c = appState.config; 
-        const isInd = appState.currentOrcamento.tipoObra === 'industrial';
-        
-        let val = 0, r = 0, l = '';
-        
-        if (t === 'empreitada') { 
-            r = parseFloat(document.getElementById('empreitada-valor').value) || 0; 
-            val = r; 
-            l = 'Empreitada'; 
-        } else if (t === 'diaria') { 
-            r = parseInt(document.getElementById('diaria-qtd').value) || 0; 
-            val = r * (isInd ? c.industrial_diaria : c.residencial_diaria); 
-            l = `${r} diária(s)`; 
-        } else if (t === 'ponto') { 
-            r = parseInt(document.getElementById('ponto-qtd').value) || 0; 
-            val = r * (isInd ? c.industrial_ponto : c.residencial_ponto); 
-            l = `${r} ponto(s)`; 
-        } else if (t === 'hora') { 
-            r = parseFloat(document.getElementById('hora-qtd').value) || 0; 
-            val = r * (isInd ? c.industrial_hora : c.residencial_hora); 
-            l = `${r} hora(s)`; 
-        }
-        
-        appState.currentOrcamento.maoDeObra = { tipo: t, valor: val, label: l, raw_value: r };
-    };
+      }
 
-    // 2. Atualiza a Área Branca (Preview)
-    
-// ===== VISUALIZAÇÃO DO PDF (RESTAURADA DO SEU ARQUIVO ORIGINAL) =====
-    window.updateOrcamentoPreview = () => {
-      const { config, currentOrcamento } = appState;
-      const previewEl = document.getElementById('pdf-preview');
+      // Alteração de quantidade
+      if (target.type === 'number') {
+        const quantidade = parseInt(target.value || '1', 10) || 1;
+        const existente = appState.currentOrcamento.tiposDeServico
+          .find(s => s.id === serviceId);
+        if (existente) existente.quantidade = quantidade;
+      }
+
+      updateOrcamentoPreview();
+    });
+
+document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
+      if (!e.target || e.target.name !== 'tipo-obra') return;
+      const novoValor = e.target.value === 'industrial' ? 'industrial' : 'residencial';
+      if (appState.currentOrcamento) appState.currentOrcamento.tipoObra = novoValor;
+      const pontoLabel = document.getElementById('ponto-label-span');
+      const pontoQtdInput = document.getElementById('ponto-qtd');
+      if (pontoLabel) pontoLabel.textContent = novoValor === 'industrial' ? 'Por Equipamento' : 'Por Ponto';
+      if (pontoQtdInput) pontoQtdInput.placeholder = novoValor === 'industrial' ? 'Qtd. equip.' : 'Qtd. pontos';
+      calculateMaoDeObra();
+      updateOrcamentoPreview();
+    });
+
+    document.getElementById('orc-mao-de-obra').addEventListener('input', () => {
+      calculateMaoDeObra();
+      updateOrcamentoPreview();
+    });
+
+    // NOVO: Adiciona listeners para os toggles
+    document.getElementById('orc-modo-cobranca').addEventListener('change', (e) => {
+        if (!appState.currentOrcamento) return;
+        const modo = e.target.value;
+        appState.currentOrcamento.modoCobranca = modo;
+        toggleModoDeCobranca(modo);
+    });
+
+    document.getElementById('orc-usar-material').addEventListener('change', (e) => {
+        if (!appState.currentOrcamento) return;
+        const modo = e.target.value;
+        appState.currentOrcamento.usarMaterial = modo;
+        toggleUsarMaterial(modo);
+    });
+    // FIM dos novos listeners
+
+    function calculateMaoDeObra() {
+      const tipoSelecionado = document.querySelector('input[name="tipo-servico"]:checked');
+      if (!appState.currentOrcamento || !tipoSelecionado) {
+        if(appState.currentOrcamento) appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
+        return;
+      }
+      const tipo = tipoSelecionado.value;
+      let valor = 0, label = '', raw_value = 0;
+      const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
+      const rates = {
+        empreitada: appState.config.residencial_empreitada || 0,
+        diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
+        ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial_ponto) || 0,
+        hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0,
+      };
       
+      switch(tipo) {
+        case 'empreitada':
+          if (tipoObra === 'residencial' && rates.empreitada > 0) {
+              valor = rates.empreitada;
+              label = 'Empreitada (Valor Fixo da Configuração)';
+              raw_value = rates.empreitada;
+          } else {
+              raw_value = parseFloat(document.getElementById('empreitada-valor').value) || 0;
+              valor = raw_value; 
+              label = 'Empreitada (Valor Manual)';
+          }
+          break;
+        case 'diaria':
+          raw_value = parseInt(document.getElementById('diaria-qtd').value) || 0;
+          valor = raw_value * rates.diaria; label = `${raw_value} diária(s)`; break;
+        case 'ponto':
+          raw_value = parseInt(document.getElementById('ponto-qtd').value) || 0;
+          valor = raw_value * rates.ponto; label = tipoObra === 'industrial' ? `${raw_value} equipamento(s)` : `${raw_value} ponto(s)`; break;
+        case 'hora':
+          raw_value = parseFloat(document.getElementById('hora-qtd').value) || 0;
+          valor = raw_value * rates.hora; label = `${raw_value} hora(s)`; break;
+      }
+      appState.currentOrcamento.maoDeObra = { tipo, valor, label, raw_value };
+    }
+
+    
+    // Campo de descrição livre do serviço realizado
+    const orcDescricaoServicoEl = document.getElementById('orc-descricao-servico');
+    if (orcDescricaoServicoEl) {
+      orcDescricaoServicoEl.addEventListener('input', (e) => {
+        if (!appState.currentOrcamento) return;
+        appState.currentOrcamento.descricaoServico = e.target.value || '';
+        updateOrcamentoPreview();
+      });
+    }
+
+function updateOrcamentoPreview() {
+      const { config, currentOrcamento } = appState;
+      const corPrimaria = config.config_color_primary || '#000000';
+      const corTotal = config.config_color_secondary || '#333333';
+
+      const previewEl = document.getElementById('pdf-preview');
       if (!currentOrcamento || !currentOrcamento.cliente) {
         previewEl.innerHTML = '<p class="text-gray-500 text-center mt-8">Selecione um cliente para começar.</p>';
         return;
       }
-      
-      // Garante cálculo da Mão de Obra se estiver visível
-      if (currentOrcamento.modoCobranca === 'mao_de_obra') {
-           const temInput = document.querySelector('#orc-cobranca-mo-wrapper:not(.hidden)');
-           if(temInput) window.calculateMaoDeObra();
-      }
-
-      let fullClient = currentOrcamento.cliente;
-      if (fullClient && (!fullClient.nome || !fullClient.telefone || !fullClient.logradouro)) {
-        const foundCli = appState?.clientes?.find?.(c => c.id === fullClient.id);
-        if (foundCli) fullClient = { ...foundCli };
-      }
-      const corPrimaria = config.config_color_primary || '#000000';
-      const corTotal = config.config_color_secondary || '#333333';
+      const fullClient = currentOrcamento.cliente;
 
       const numeroSeq = String(currentOrcamento.numeroOrcamento || '').padStart(3, '0');
       const dateRef = currentOrcamento.createdAt ? new Date(currentOrcamento.createdAt) : new Date();
@@ -1723,287 +2298,258 @@ function updateServiceInCurrentOrcamento(service) {
       const codigoOrcamento = `${codigoCliente}-${numeroSeq}/${anoFull}`;
 
       const hoje = new Date();
-      const dataFormatada = hoje.toLocaleDateString('pt-BR');
+    const dia = hoje.getDate().toString().padStart(2, '0');
+    const mes = (hoje.getMonth() + 1).toString().padStart(2, '0');
+    const ano = hoje.getFullYear();
+    const dataFormatada = `${dia}/${mes}/${ano}`;
 
-      // --- 1. Serviços ---
       let tiposDeServicoHtml = '';
       let subtotalServicos = 0;
-      if (currentOrcamento.modoCobranca === 'por_servico' && currentOrcamento.tiposDeServico?.length > 0) {
-        const linhas = currentOrcamento.tiposDeServico.map(s => {
-          const qtd = s.quantidade || 1;
-          const totalLinha = s.valor * qtd;
+      let maoDeObraHtml = '';
+      let totalMaoDeObra = 0;
+      let materiaisHtml = '';
+      let subtotalMateriais = 0;
+
+      // NOVO: Lógica condicional
+      const modoCobranca = appState.currentOrcamento.modoCobranca || 'mao_de_obra';
+      const usarMaterial = appState.currentOrcamento.usarMaterial || 'sim';
+
+      // 1. Processa Serviços (se 'por_servico')
+      if (modoCobranca === 'por_servico' && Array.isArray(currentOrcamento.tiposDeServico) && currentOrcamento.tiposDeServico.length > 0) {
+        const linhasServicos = currentOrcamento.tiposDeServico.map(s => {
+          const qtd = s.quantidade && s.quantidade > 0 ? s.quantidade : 1;
+          const valorUnit = s.valor || 0;
+          const totalLinha = valorUnit * qtd;
           subtotalServicos += totalLinha;
-          return `<tr><td style="padding:4px 2px;">${s.descricao}</td><td style="padding:4px 2px;text-align:center;">${qtd}</td><td style="padding:4px 2px;text-align:right;">R$ ${s.valor.toFixed(2)}</td><td style="padding:4px 2px;text-align:right;">R$ ${totalLinha.toFixed(2)}</td></tr>`;
+          return `
+            <tr>
+              <td style="padding: 4px 2px;">${s.descricao || ''}</td>
+              <td style="padding: 4px 2px; text-align: center;">${qtd}</td>
+              <td style="padding: 4px 2px; text-align: right;">R$ ${valorUnit.toFixed(2)}</td>
+              <td style="padding: 4px 2px; text-align: right;">R$ ${totalLinha.toFixed(2)}</td>
+            </tr>`;
         }).join('');
-        
         tiposDeServicoHtml = `
-          <h4 style="font-size:1.1em;font-weight:bold;margin-bottom:5px;color:${corPrimaria};">DESCRIÇÃO DOS SERVIÇOS:</h4>
-          <table style="width:100%;border-collapse:collapse;font-size:0.9em;margin-bottom:10px;">
-            <thead><tr><th style="text-align:left;border-bottom:1px solid #ccc;">Descrição</th><th style="text-align:center;border-bottom:1px solid #ccc;">Qtd.</th><th style="text-align:right;border-bottom:1px solid #ccc;">V. Unit.</th><th style="text-align:right;border-bottom:1px solid #ccc;">V. Total</th></tr></thead>
-            <tbody>${linhas}</tbody>
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: ${corPrimaria};">
+            DESCRIÇÃO DOS SERVIÇOS:
+          </h4>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 10px;">
+            <thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead>
+            <tbody>${linhasServicos}</tbody>
           </table>`;
       }
 
-      // --- 2. Materiais ---
-      let materiaisHtml = '';
-      let subtotalMateriais = 0;
-      if (currentOrcamento.usarMaterial === 'sim') {
-          const linhas = currentOrcamento.items.map(item => {
-            const total = item.valor * (item.quantidade || 1);
-            subtotalMateriais += total;
-            return `<tr><td style="padding:4px 2px;">${item.nome}</td><td style="padding:4px 2px;text-align:center;">${item.quantidade||1} ${item.unidade||'UNID'}</td><td style="padding:4px 2px;text-align:right;">R$ ${item.valor.toFixed(2)}</td><td style="padding:4px 2px;text-align:right;">R$ ${total.toFixed(2)}</td></tr>`;
+      // 2. Processa Mão de Obra (se 'mao_de_obra')
+      if (modoCobranca === 'mao_de_obra') {
+        totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
+        const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
+        maoDeObraHtml = `
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px; color: ${corPrimaria};">MÃO DE OBRA:</h4>
+          <div style="text-align: right;"><span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>`;
+      }
+      
+      // 3. Processa Materiais (se 'sim')
+      if (usarMaterial === 'sim') {
+          const itemsHtml = currentOrcamento.items.map(item => {
+            const itemTotal = item.valor * (item.quantidade || 1);
+            subtotalMateriais += itemTotal; // Soma ao subtotal
+            return `<tr>
+              <td style="padding: 4px 2px; text-align: left;">${item.nome}</td>
+              <td style="padding: 4px 2px; text-align: center;">${item.quantidade || 1} ${item.unidade || 'UNID'}</td>
+              <td style="padding: 4px 2px; text-align: right;">R$ ${item.valor.toFixed(2)}</td>
+              <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
+            </tr>`;
           }).join('');
 
           materiaisHtml = `
-            <h4 style="font-size:1.1em;font-weight:bold;margin-bottom:5px;color:${corPrimaria};">DESCRIÇÃO DOS MATERIAIS:</h4>
-            <table style="width:100%;border-collapse:collapse;font-size:0.9em;">
-              ${linhas ? `<thead><tr><th style="text-align:left;border-bottom:1px solid #ccc;">Descrição</th><th style="text-align:center;border-bottom:1px solid #ccc;">Qtd.</th><th style="text-align:right;border-bottom:1px solid #ccc;">V. Unit.</th><th style="text-align:right;border-bottom:1px solid #ccc;">V. Total</th></tr></thead><tbody>${linhas}</tbody>` : '<tbody><tr><td colspan="4" style="color:#888;">Nenhum material.</td></tr></tbody>'}
+            <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: ${corPrimaria};">DESCRIÇÃO DOS MATERIAIS:</h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+              ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
             </table>
-            ${linhas ? `<div style="text-align:right;font-weight:bold;margin-top:5px;border-top:1px solid #ccc;">Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</div>` : ''}`;
+            ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}`;
       }
-
-      // --- 3. Mão de Obra ---
-      let maoDeObraHtml = '';
-      let totalMaoDeObra = 0;
-      if (currentOrcamento.modoCobranca === 'mao_de_obra') {
-        totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
-        maoDeObraHtml = `
-          <h4 style="font-size:1.1em;font-weight:bold;margin-top:15px;margin-bottom:5px;color:${corPrimaria};">MÃO DE OBRA:</h4>
-          <div style="text-align:right;"><span>${currentOrcamento.maoDeObra.label||''}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>`;
+      
+      // 4. Lógica de Pagamento (sempre visível)
+      let pagamentoHtml = '';
+      if (config.config_pix_chave || config.config_cartao_vezes || config.config_pagamento_dinheiro || config.config_deposito_banco) {
+        pagamentoHtml += '<div style="border: 2px dotted #888; padding: 10px; margin-top: 20px;">';
+        pagamentoHtml += `<h4 style="font-size: 1.1em; font-weight: bold; margin-top: 0; margin-bottom: 5px; color: ${corPrimaria};">Formas de Pagamento:</h4><div style="font-size: 0.9em; line-height: 1.4;">`;
+        let hasPayment = false;
+        if (config.config_pix_chave) {
+          pagamentoHtml += `<strong>PIX:</strong> ${config.config_pix_chave}<br>`;
+          hasPayment = true;
+        }
+        if (config.config_cartao_vezes) {
+          let jurosText = config.config_cartao_juros ? ` (juros de ${config.config_cartao_juros}%)` : '';
+          pagamentoHtml += `<strong>Cartão:</strong> Em até ${config.config_cartao_vezes}x${jurosText}<br>`;
+          hasPayment = true;
+        }
+        if (config.config_pagamento_dinheiro) {
+          pagamentoHtml += `<strong>Dinheiro</strong><br>`;
+          hasPayment = true;
+        }
+        if (config.config_deposito_banco && config.config_deposito_ag && config.config_deposito_conta) {
+          pagamentoHtml += `<strong>Depósito:</strong> Banco ${config.config_deposito_banco} | Ag: ${config.config_deposito_ag} | Conta: ${config.config_deposito_conta}<br>`;
+          hasPayment = true;
+        }
+        if (!hasPayment) {
+          pagamentoHtml += 'Consulte as formas de pagamento.';
+        }
+        pagamentoHtml += '</div></div>';
       }
-
-      // --- 4. Totais e Desconto ---
+      
+      // 5. Cálculo de Total e Desconto
       const subtotal = subtotalServicos + subtotalMateriais + totalMaoDeObra;
       let valorDesconto = 0;
       let descontoHtml = '';
-      if (currentOrcamento.desconto && currentOrcamento.desconto.tipo !== 'nenhum') {
-        if (currentOrcamento.desconto.tipo === 'percent') {
-          valorDesconto = (subtotal * currentOrcamento.desconto.valor) / 100;
-          descontoHtml = `<div style="text-align:right;background:#f5f5f5;">Desconto (${currentOrcamento.desconto.valor}%): R$ -${valorDesconto.toFixed(2)}</div>`;
-        } else {
-          valorDesconto = currentOrcamento.desconto.valor;
-          descontoHtml = `<div style="text-align:right;background:#f5f5f5;">Desconto (R$): R$ -${valorDesconto.toFixed(2)}</div>`;
+      const desconto = currentOrcamento.desconto;
+
+      if (desconto && desconto.tipo !== 'nenhum' && desconto.valor > 0) {
+        if (desconto.tipo === 'percent') {
+          valorDesconto = (subtotal * desconto.valor) / 100;
+          descontoHtml = `
+            <div style="text-align: right; background: #f5f5f5; padding: 2px 0;">
+              <span>Desconto (${desconto.valor.toFixed(2)}%): R$ -${valorDesconto.toFixed(2)}</span>
+            </div>`;
+        } else { // tipo === 'valor'
+          valorDesconto = desconto.valor;
+          descontoHtml = `
+            <div style="text-align: right; background: #f5f5f5; padding: 2px 0;">
+              <span>Desconto (R$): R$ -${valorDesconto.toFixed(2)}</span>
+            </div>`;
         }
       }
-      currentOrcamento.total = subtotal - valorDesconto;
-
-      // --- 5. Pagamento ---
-      let pagamentoHtml = '';
-      if (config.config_pix_chave || config.config_cartao_vezes || config.config_deposito_banco) {
-        pagamentoHtml = `<div style="border:2px dotted #888;padding:10px;margin-top:20px;"><h4 style="font-size:1.1em;font-weight:bold;margin:0 0 5px 0;color:${corPrimaria};">Formas de Pagamento:</h4><div style="font-size:0.9em;line-height:1.4;">
-          ${config.config_pix_chave ? `<strong>PIX:</strong> ${config.config_pix_chave}<br>` : ''}
-          ${config.config_cartao_vezes ? `<strong>Cartão:</strong> Até ${config.config_cartao_vezes}x${config.config_cartao_juros ? ` (${config.config_cartao_juros}%)` : ''}<br>` : ''}
-          ${config.config_pagamento_dinheiro ? `<strong>Dinheiro</strong><br>` : ''}
-          ${(config.config_deposito_banco && config.config_deposito_conta) ? `<strong>Depósito:</strong> ${config.config_deposito_banco} | Ag: ${config.config_deposito_ag} | Cc: ${config.config_deposito_conta}<br>` : ''}
-        </div></div>`;
-      }
-
-      // --- 6. Renderização Final ---
-      const profEnd = `${config.logradouro||''}, ${config.numero||'s/n'} ${config.bairro ? '- '+config.bairro : ''}`;
-      const profCid = `${config.cidade||''}${config.uf ? '/' + config.uf : ''}`;
-      const cliEnd = formatEnderecoLinhaCliente(fullClient);
-      const cliCidUf = (fullClient.cidade && fullClient.uf)
-        ? `${fullClient.cidade}/${fullClient.uf}`
-        : (fullClient.cidade || fullClient.uf || '');
       
+      currentOrcamento.total = subtotal - valorDesconto;
+      
+      // 6. Formatação de Cabeçalho e Rodapé
+      const { label: profDocLabel, valor: profDocValor } = getLabelEValorDoc(config.doc);
+      const { label: clientDocLabel, valor: clientDocValor } = getLabelEValorDoc(fullClient.documento);
+      
+      const profEnderecoLinha1 = `${config.logradouro || ''}, ${config.numero || 's/n'}`;
+      const profEnderecoLinha2 = `${config.bairro || ''} - ${config.cidade || ''}/${config.uf || ''}`;
+      const clientEndereco = formatarEnderecoCompleto(fullClient);
+      
+      // 7. Renderização Final
       previewEl.innerHTML = `
-        <div style="padding:20px 25px 40px 25px;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
-            <div style="max-width:70%;">
-              <strong style="font-size:1.2em;display:block;">${config.nome||''}</strong>
-              <span style="display:block;font-size:0.9em;">${profEnd}</span>
-              <span style="display:block;font-size:0.9em;">${profCid}</span>
-              <span style="display:block;font-size:0.9em;">Tel: ${formatarTelefone(config.telefone)} | ${config.doc ? formatarCPFCNPJ(config.doc) : ''}</span>
+        <div style="padding: 20px 25px 40px 25px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding: 0 10px;">
+            <div style="text-align: left; max-width: 70%;">
+              <strong style="font-size: 1.2em; display: block;">${config.nome || 'Nome do Profissional'}</strong>
+              <span style="display: block; font-size: 0.9em; overflow-wrap: break-word;">${profEnderecoLinha1}</span>
+              <span style="display: block; font-size: 0.9em; overflow-wrap: break-word;">${profEnderecoLinha2}</span>
+              <span style="display: block; font-size: 0.9em; overflow-wrap: break-word;">Telefone: ${formatarTelefone(config.telefone)} | ${profDocLabel} ${profDocValor}</span>
             </div>
-            ${config.logo ? `<div style="text-align:right;"><img src="${config.logo}" style="max-width:150px;max-height:80px;"></div>` : ''}
+            ${config.logo ? `<div style="text-align: right; flex-shrink: 0; margin-left: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px;"></div>` : ''}
           </div>
-          <hr style="margin:15px 0;">
+          <hr style="margin: 15px 0;">
           
-          <h4 style="font-size:1.1em;font-weight:bold;color:${corPrimaria};">Pedido Nº: ${codigoOrcamento}</h4>
-          <h4 style="font-size:1.1em;font-weight:bold;margin-bottom:10px;color:${corPrimaria};">Data: ${dataFormatada}</h4>
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 6px; color: ${corPrimaria};">Pedido Nº: ${codigoOrcamento}</h4>
+          <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px; color: ${corPrimaria};">Data do Pedido: ${dataFormatada}</h4>
+          <strong style="display: block;">${fullClient.nome}</strong>
+          <span style="display: block;">${clientEndereco}</span>
+          ${fullClient.documento ? `<span style="display: block;">${clientDocLabel} ${clientDocValor}</span>` : ''}
+          <span style="display: block;">Telefone: ${formatarTelefone(fullClient.telefone)}</span>
+          <hr style="margin: 15px 0;">
           
-          <strong style="display:block;">${fullClient.nome}</strong>
-          ${cliEnd ? `<span style="display:block;">${cliEnd}</span>` : ''}
-          ${cliCidUf ? `<span style="display:block;">${cliCidUf}</span>` : ''}
-          <span style="display:block;">Tel: ${formatarTelefone(fullClient.telefone)}</span>
-          <hr style="margin:15px 0;">
-          
-          ${currentOrcamento.descricaoServico ? `<h4 style="font-size:1.1em;font-weight:bold;margin-bottom:5px;color:${corPrimaria};">DESCRIÇÃO DO SERVIÇO:</h4><p style="font-size:0.9em;margin-bottom:10px;white-space:pre-line;">${currentOrcamento.descricaoServico}</p>` : ''}
+          ${
+            currentOrcamento.descricaoServico
+              ? `<h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: ${corPrimaria};">DESCRIÇÃO DO SERVIÇO:</h4>
+                 <p style="font-size: 0.9em; margin-bottom: 10px; white-space: pre-line;">
+                   ${currentOrcamento.descricaoServico}
+                 </p>`
+              : ''
+          }
           
           ${tiposDeServicoHtml}
           ${materiaisHtml}
           ${maoDeObraHtml}
+          
           ${descontoHtml}
 
-          <div style="text-align:right;font-size:1.2em;font-weight:bold;margin-top:10px;padding:10px 5px;border-top:2px solid ${corTotal};color:${corTotal};background-color:#EEEEEE;">
+          <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 10px; padding: 10px 5px; border-top: 2px solid ${corTotal}; color: ${corTotal}; background-color: #EEEEEE;">
             <span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span>
           </div>
           
           ${pagamentoHtml}
 
-          <div style="font-size:0.9em;margin-top:0px;text-align:center;color:#000;font-weight:bold;background-color:#FFFFCC;padding:5px 0;">
+          <div style="font-size: 0.9em; margin-top: 0px; text-align: center; color: #000; font-weight: bold; background-color: #FFFFCC; padding: 5px 0;">
             Orçamento válido por 15 dias.
           </div>
         </div>`;
-    };
+    }
 
-    
-    // ===== SALVAR ORÇAMENTO NO FIRESTORE =====
     window.saveOrcamento = async () => {
-      if (!appState.currentOrcamento) {
-        alert("Nenhum orçamento em edição.");
-        return;
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
+      
+      // Copia o estado atual
+      const data = { ...appState.currentOrcamento };
+      
+      // NOVO: Limpa os dados com base nos seletores
+      if (data.modoCobranca === 'mao_de_obra') {
+          data.tiposDeServico = []; // Zera serviços
+      } else { // por_servico
+          data.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' }; // Zera mão de obra
       }
-
-      const cliId = document.getElementById('orc-cliente-select')?.value;
-      if (!cliId) {
-        alert("Selecione um cliente antes de salvar.");
-        return;
+      
+      if (data.usarMaterial === 'nao') {
+          data.items = []; // Zera materiais
       }
-
-      const cliente = appState.clientes.find(c => c.id === cliId);
-      if (!cliente) {
-        alert("Erro ao localizar dados do cliente.");
-        return;
-      }
-
-      const o = appState.currentOrcamento;
-
-      // Garante que o total esteja atualizado
+      
       try {
-        window.updateOrcamentoPreview();
-      } catch (e) {
-        console.warn('Não foi possível recalcular preview antes de salvar:', e);
-      }
-
-      // Define createdAt e numeroOrcamento se ainda não existirem
-      const agora = new Date();
-      if (!o.createdAt) o.createdAt = agora;
-
-      if (!o.numeroOrcamento) {
-        const maior = appState.orcamentos.reduce((max, orc) => {
-          const n = Number(orc.numeroOrcamento || 0);
-          return n > max ? n : max;
-        }, 0);
-        o.numeroOrcamento = maior + 1;
-      }
-
-      const payload = {
-        cliente: {
-          id: cliente.id
-        },
-        descricaoServico: o.descricaoServico || document.getElementById('orc-descricao-servico')?.value || "",
-        modoCobranca: o.modoCobranca || 'mao_de_obra',
-        usarMaterial: o.usarMaterial || 'sim',
-        tipoObra: o.tipoObra || 'residencial',
-        maoDeObra: o.maoDeObra || { tipo: '', valor: 0, label: '', raw_value: 0 },
-        items: Array.isArray(o.items) ? o.items : [],
-        tiposDeServico: Array.isArray(o.tiposDeServico) ? o.tiposDeServico : [],
-        desconto: o.desconto || { tipo: 'nenhum', valor: 0 },
-        total: Number(o.total || 0),
-        status: document.getElementById('orc-status-aprovado')?.checked ? 'aprovado' : (o.status || 'pendente'),
-        numeroOrcamento: o.numeroOrcamento,
-        createdAt: o.id ? (o.createdAt || agora) : serverTimestamp()
-      };
-
-      try {
-        const pathBase = `users/${userId}/orcamentos`;
-
-        if (o.id) {
-          await setDoc(doc(db, pathBase, o.id), payload, { merge: true });
-        } else {
-          const ref = await addDoc(collection(db, pathBase), payload);
-          o.id = ref.id;
+        if (data.id) { // Editando
+          data.versao = (data.versao || 1) + 1;
+          const ref = doc(db, `users/${userId}/orcamentos/${data.id}`);
+          delete data.createdAt;
+          await setDoc(ref, data, { merge: true });
+          alert('Orçamento atualizado!');
+        } else { // Criando
+          const maxNumero = appState.orcamentos.reduce((max, o) => Math.max(max, o.numeroOrcamento || 0), 0);
+          data.numeroOrcamento = maxNumero + 1;
+          data.versao = 1;
+          data.createdAt = serverTimestamp();
+          const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), data);
+          appState.currentOrcamento.id = ref.id;
+          appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
+          alert('Orçamento salvo! Você já pode gerar o PDF.');
         }
-
-        alert("Orçamento salvo com sucesso!");
-        document.getElementById('orcamento-modal')?.classList.remove('active');
-      } catch (e) {
-        console.error("Erro ao salvar orçamento:", e);
-        alert("Erro ao salvar orçamento. Tente novamente.");
+        closeOrcamentoModal();
+      } catch(e) {
+        console.error(e); alert('Erro ao salvar.');
       }
     };
 
-// ===== 2. ENVIO DO PDF (COMPARTILHAMENTO NATIVO RESTAURADO) =====
-    window.shareOrViewPDF = async () => {
-      if (!appState.currentOrcamento?.cliente) {
-        alert('Selecione um cliente para gerar o PDF.');
-        return;
-      }
-
-      const preview = document.getElementById('pdf-preview');
-      if (!preview || !preview.innerHTML.trim()) {
-        alert('Pré-visualização não encontrada.');
-        return;
-      }
-
-      // Clona o conteúdo do preview em um container limpo
+   window.shareOrViewPDF = async () => {
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+      
+      // 1. Cria o elemento temporário para o PDF
       const element = document.createElement('div');
-      element.innerHTML = preview.innerHTML;
-      element.style.width = '800px';
-      element.style.maxWidth = '800px';
-      element.style.margin = '0 auto';
-      element.style.padding = '20px 25px 30px 25px';
-      element.style.fontSize = '12px';
+      // Copia o conteúdo do preview
+      element.innerHTML = document.getElementById('pdf-preview').innerHTML;
+      
+      // Aplica estilos específicos para garantir que a quebra de página não corte textos ao meio
+      element.style.width = '100%';
+      element.style.padding = '20px';
+      element.style.fontSize = '12px'; 
       element.style.fontFamily = 'Inter, sans-serif';
+      // Importante: Força fundo branco para não ficar transparente
       element.style.backgroundColor = '#ffffff';
-
-      document.body.appendChild(element);
-
-      const nomeArq = `pedido-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`;
-
+      
+      // Configurações da biblioteca html2pdf
       const opt = {
-        margin:       [15, 15, 20, 15], // margens padrão A4
-        filename:     nomeArq,
+        margin:       [10, 10, 10, 10], // Margens (mm)
+        filename:     `pedido-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-          scrollY: 0,
-          windowWidth: 900,
-          windowHeight: element.scrollHeight + 40
-        }, 
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['css', 'legacy'] }
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // Evita cortes bruscos
       };
 
+      // 2. Gera e Salva/Compartilha
       try {
-        // Tenta Compartilhamento Nativo (Celular)
+        // Tenta usar o compartilhamento nativo do celular se disponível
         if (navigator.share && navigator.canShare) {
-            const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
-            const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
-
-            if (navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    title: `Orçamento - ${appState.currentOrcamento.cliente.nome}`,
-                    text: 'Segue o orçamento em anexo.',
-                    files: [file]
-                });
-                document.body.removeChild(element);
-                return; 
-            }
-        }
-        // Fallback (PC): Baixa direto
-        await html2pdf().set(opt).from(element).save();
-      } catch (e) {
-        console.error("Erro PDF:", e);
-        try {
-          await html2pdf().set(opt).from(element).save();
-        } catch (e2) {
-          console.error("Erro PDF fallback:", e2);
-          alert('Erro ao gerar o PDF.');
-        }
-      } finally {
-        if (element.parentNode) {
-          document.body.removeChild(element);
-        }
-      }
-    };
-
-      try {
-        // Tenta Compartilhamento Nativo (Celular)
-        if (navigator.share && navigator.canShare) {
+            // Gera o BLOB (arquivo na memória)
             const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
             const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
             
@@ -2013,33 +2559,289 @@ function updateServiceInCurrentOrcamento(service) {
                     text: 'Segue o orçamento em anexo.',
                     files: [file]
                 });
-                return; 
+                return; // Se compartilhou, para por aqui
             }
         }
-        // Fallback (PC): Baixa direto
+        
+        // Se for Desktop ou o celular não aceitar share de arquivos, baixa direto
         html2pdf().set(opt).from(element).save();
         
       } catch (e) {
-        console.error("Erro PDF:", e);
-        // Se der erro no share, tenta salvar direto
-        html2pdf().set(opt).from(element).save();
+        console.error("Erro ao gerar PDF:", e);
+        alert('Erro ao gerar o PDF. Verifique se o bloqueador de popups está ativo.');
       }
     };
-  
-    window.sendWhatsAppText=()=>{if(!appState.currentOrcamento?.cliente)return; const t=appState.currentOrcamento.cliente.telefone.replace(/\D/g,''); window.open(`https://wa.me/55${t}`, '_blank');};
-    window.loginWithGoogle=async()=>{try{await signInWithPopup(auth, new GoogleAuthProvider());}catch(e){alert('Erro login');}};
-    window.logout=async()=>{if(confirm('Sair?'))await signOut(auth);};
 
-    // Submits (Fixos)
-    document.getElementById('form-config')?.addEventListener('submit', async(e)=>{e.preventDefault(); const id='main'; const d={nome:document.getElementById('config-nome').value, telefone:document.getElementById('config-telefone').value.replace(/\D/g,''), doc:document.getElementById('config-doc').value.replace(/\D/g,''), cep:document.getElementById('config-cep').value.replace(/\D/g,''), numero:document.getElementById('config-numero').value, logradouro:document.getElementById('config-logradouro').value, bairro:document.getElementById('config-bairro').value, cidade:document.getElementById('config-cidade').value, uf:document.getElementById('config-uf').value, logo:document.getElementById('config-logo').value, config_color_primary:document.getElementById('config-color-primary').value, config_color_secondary:document.getElementById('config-color-secondary').value, residencial_empreitada:parseFloat(document.getElementById('config-residencial-empreitada').value)||0, residencial_diaria:parseFloat(document.getElementById('config-residencial-diaria').value)||0, residencial_ponto:parseFloat(document.getElementById('config-residencial-ponto').value)||0, residencial_hora:parseFloat(document.getElementById('config-residencial-hora').value)||0, industrial_diaria:parseFloat(document.getElementById('config-industrial-diaria').value)||0, industrial_ponto:parseFloat(document.getElementById('config-industrial-ponto').value)||0, industrial_hora:parseFloat(document.getElementById('config-industrial-hora').value)||0, config_pix_chave:document.getElementById('config-pix-chave').value, config_cartao_vezes:parseInt(document.getElementById('config-cartao-vezes').value)||0, config_cartao_juros:parseFloat(document.getElementById('config-cartao-juros').value)||0, config_pagamento_dinheiro:document.getElementById('config-pagamento-dinheiro').checked, config_deposito_banco:document.getElementById('config-deposito-banco').value, config_deposito_ag:document.getElementById('config-deposito-ag').value, config_deposito_conta:document.getElementById('config-deposito-conta').value}; await setDoc(doc(db,`users/${userId}/config/${id}`), d, {merge:true}); alert('Salvo'); });
-    document.getElementById('form-cliente')?.addEventListener('submit', async(e)=>{e.preventDefault(); const d={nome:document.getElementById('cliente-nome').value, telefone:document.getElementById('cliente-telefone').value.replace(/\D/g,''), documento:document.getElementById('cliente-documento').value.replace(/\D/g,''), numeroCadastro:gerarNovoNumeroCliente(), cep:document.getElementById('cliente-cep').value.replace(/\D/g,''), numero:document.getElementById('cliente-numero').value, logradouro:document.getElementById('cliente-logradouro').value, bairro:document.getElementById('cliente-bairro').value, cidade:document.getElementById('cliente-cidade').value, uf:document.getElementById('cliente-uf').value}; await addDoc(collection(db,`users/${userId}/clientes`), d); e.target.reset(); alert('Salvo'); });
-    document.getElementById('form-material')?.addEventListener('submit', async(e)=>{e.preventDefault(); await addDoc(collection(db,`users/${userId}/materiais`),{nome:document.getElementById('material-nome').value, valor:parseFloat(document.getElementById('material-valor').value), unidade:document.getElementById('material-unidade').value}); e.target.reset(); alert('Salvo'); });
-    document.getElementById('form-tiposervico')?.addEventListener('submit', async(e)=>{e.preventDefault(); const s=document.getElementById('tiposervico-categoria-select'); const c=s.value==='new_category'?document.getElementById('tiposervico-categoria-new').value:s.value; await addDoc(collection(db,`users/${userId}/tiposdeservico`),{categoria:c.toUpperCase(), descricao:document.getElementById('tiposervico-descricao').value, valor:parseFloat(document.getElementById('tiposervico-valor').value)}); e.target.reset(); alert('Salvo'); });
-    document.getElementById('form-edit-cliente')?.addEventListener('submit', async(e)=>{e.preventDefault(); const id=document.getElementById('edit-cliente-id').value; const d={nome:document.getElementById('edit-cliente-nome').value, numeroCadastro:document.getElementById('edit-cliente-numerocadastro').value, telefone:document.getElementById('edit-cliente-telefone').value.replace(/\D/g,''), documento:document.getElementById('edit-cliente-documento').value.replace(/\D/g,''), cep:document.getElementById('edit-cliente-cep').value.replace(/\D/g,''), numero:document.getElementById('edit-cliente-numero').value, logradouro:document.getElementById('edit-cliente-logradouro').value, bairro:document.getElementById('edit-cliente-bairro').value, cidade:document.getElementById('edit-cliente-cidade').value, uf:document.getElementById('edit-cliente-uf').value}; await setDoc(doc(db,`users/${userId}/clientes/${id}`),d,{merge:true}); window.closeEditClienteModal(); });
-    document.getElementById('form-edit-material')?.addEventListener('submit', async(e)=>{e.preventDefault(); const id=document.getElementById('edit-material-id').value; const d={nome:document.getElementById('edit-material-nome').value, unidade:document.getElementById('edit-material-unidade').value, valor:parseFloat(document.getElementById('edit-material-valor').value)}; await setDoc(doc(db,`users/${userId}/materiais/${id}`),d); window.closeEditMaterialModal(); });
-    document.getElementById('form-edit-tiposervico')?.addEventListener('submit', async(e)=>{e.preventDefault(); const id=document.getElementById('edit-tiposervico-id').value; const d={categoria:document.getElementById('edit-tiposervico-categoria').value.toUpperCase(), descricao:document.getElementById('edit-tiposervico-descricao').value, valor:parseFloat(document.getElementById('edit-tiposervico-valor').value)}; await setDoc(doc(db,`users/${userId}/tiposdeservico/${id}`),d); window.closeEditTipoServicoModal(); });
+    window.sendWhatsAppText = () => {
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
+      const fullClient = appState.currentOrcamento.cliente;
+      if (!fullClient) return alert('Cliente não encontrado.');
+      const telefone = (fullClient.telefone || '').replace(/\D/g, '');
+      const nomeProfissional = appState.config.nome || 'nós';
+      const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
+      const whatsappUrl = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
+      window.open(whatsappUrl, '_blank');
+    };
 
+    window.changeTab = (event, tabName) => {
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
+    };
+
+    // Lógica do Desconto
+    function handleDescontoChange() {
+        if (!appState.currentOrcamento) return; // Proteção
+        const tipo = descontoTipoEl.value;
+        const valor = parseFloat(descontoValorEl.value) || 0;
+
+        if (tipo === 'nenhum') {
+            descontoValorEl.disabled = true;
+            descontoValorEl.value = '';
+            appState.currentOrcamento.desconto = { tipo: 'nenhum', valor: 0 };
+        } else {
+            descontoValorEl.disabled = false;
+            appState.currentOrcamento.desconto = { tipo, valor };
+        }
+        updateOrcamentoPreview();
+    }
+    descontoTipoEl?.addEventListener('change', handleDescontoChange);
+    descontoValorEl?.addEventListener('input', handleDescontoChange);
+
+    // ==========================================================
+    // BLOCO: FUNÇÕES DE MÁSCARA E FORMATAÇÃO DE DOCUMENTO
+    // ==========================================================
+    function formatarCPFCNPJ(value) {
+        if (!value) return "";
+        const cleanValue = value.replace(/\D/g, '');
+        if (cleanValue.length <= 11) {
+            return cleanValue
+                .slice(0, 11)
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        } else {
+            return cleanValue
+                .slice(0, 14) 
+                .replace(/(\d{2})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1/$2')
+                .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+        }
+    }
+    function handleDocMask(event) {
+        const input = event.target;
+        const originalPos = input.selectionStart;
+        const originalLength = input.value.length;
+        input.value = formatarCPFCNPJ(input.value);
+        const newLength = input.value.length;
+        const diff = newLength - originalLength;
+        input.setSelectionRange(originalPos + diff, originalPos + diff);
+    }
+    function getLabelEValorDoc(docValue) {
+        if (!docValue) return { label: 'Doc:', valor: '' };
+        const cleanValue = String(docValue).replace(/\D/g, '');
+        if (cleanValue.length === 11) {
+            return { label: 'CPF:', valor: formatarCPFCNPJ(cleanValue) };
+        }
+        if (cleanValue.length === 14) {
+            return { label: 'CNPJ:', valor: formatarCPFCNPJ(cleanValue) };
+        }
+        return { label: 'Doc:', valor: docValue };
+    }
+    // ==========================================================
+    // BLOCO: FUNÇÕES DE MÁSCARA DE TELEFONE
+    // ==========================================================
+    function formatarTelefone(value) {
+        if (!value) return "";
+        const cleanValue = value.replace(/\D/g, '');
+        return cleanValue
+            .slice(0, 11)
+            .replace(/(\d{2})(\d)/, '($1) $2')       // (XX) X
+            .replace(/(\d{5})(\d{1,4})$/, '$1-$2');  // (XX) XXXXX-XXXX
+    }
+    function handleTelefoneMask(event) {
+        const input = event.target;
+        const originalPos = input.selectionStart;
+        const originalLength = input.value.length;
+        input.value = formatarTelefone(input.value);
+        const newLength = input.value.length;
+        const diff = newLength - originalLength;
+        if (diff > 0) {
+            input.setSelectionRange(originalPos + diff, originalPos + diff);
+        } else {
+            input.setSelectionRange(originalPos, originalPos);
+        }
+    }
+    
+    // ==========================================================
+    // BLOCO: FUNÇÕES DE BUSCA DE CEP E MÁSCARA
+    // ==========================================================
+    
+    /**
+     * Formata um valor de string para CEP (XXXXX-XXX)
+     * @param {string} value - O valor a ser formatado
+     * @returns {string} - O valor com a máscara
+     */
+    function formatarCEP(value) {
+        if (!value) return "";
+        return value
+            .replace(/\D/g, '')       // Remove tudo que não é dígito
+            .slice(0, 8)              // Limita a 8 dígitos
+            .replace(/(\d{5})(\d{1,3})$/, '$1-$2'); // Aplica a máscara
+    }
+    
+    /**
+     * Função para ser usada no evento 'input' dos campos de CEP
+     * @param {Event} event - O evento de input
+     */
+    function handleCEPMask(event) {
+        event.target.value = formatarCEP(event.target.value);
+    }
+    /**
+     * NOVO: Filtra a lista de clientes com base na busca
+     * @param {Event} event - O evento de input
+     */
+    function handleSearchCliente(event) {
+        const query = event.target.value.toLowerCase().trim();
+        const clientes = document.querySelectorAll('#clientes-list > div');
+        
+        if (!clientes.length) return;
+
+        clientes.forEach(clienteDiv => {
+            const nomeEl = clienteDiv.querySelector('p.font-medium');
+            if (nomeEl) {
+                const nome = nomeEl.textContent.toLowerCase();
+                if (nome.includes(query)) {
+                    clienteDiv.style.display = 'flex';
+                } else {
+                    clienteDiv.style.display = 'none';
+                }
+            }
+        });
+    }
+    /**
+     * Busca o CEP na API e preenche os campos do formulário
+     * @param {string} cep - O CEP para buscar
+     * @param {object} fieldMap - Um objeto mapeando os IDs dos campos (logradouro, bairro, cidade, uf)
+     */
+    window.buscarCEP = async (cep, fieldMap) => {
+        const cleanCEP = cep.replace(/\D/g, '');
+        if (cleanCEP.length !== 8) {
+            console.log('CEP inválido ou incompleto.');
+            return;
+        }
+    
+        const logradouroEl = document.getElementById(fieldMap.logradouro);
+        const bairroEl = document.getElementById(fieldMap.bairro);
+        const cidadeEl = document.getElementById(fieldMap.cidade);
+        const ufEl = document.getElementById(fieldMap.uf);
+        const numeroEl = document.getElementById(fieldMap.numero);
+    
+        if (!logradouroEl || !bairroEl || !cidadeEl || !ufEl || !numeroEl) {
+            console.error('Campos do formulário não encontrados para o CEP.');
+            return;
+        }
+    
+        // Mostra "carregando" nos campos
+        const originalValues = {
+            logradouro: logradouroEl.value,
+            bairro: bairroEl.value,
+            cidade: cidadeEl.value,
+            uf: ufEl.value,
+        };
+        logradouroEl.value = "Buscando...";
+        bairroEl.value = "Buscando...";
+        
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
+            if (!response.ok) throw new Error('Falha na busca do CEP.');
+            
+            const data = await response.json();
+            
+            if (data.erro) {
+                alert('CEP não encontrado. Verifique o número.');
+                logradouroEl.value = originalValues.logradouro;
+                bairroEl.value = originalValues.bairro;
+                return;
+            }
+    
+            // Preenche os campos
+            logradouroEl.value = data.logradouro;
+            bairroEl.value = data.bairro;
+            cidadeEl.value = data.localidade;
+            ufEl.value = data.uf;
+            
+            // Foca no campo de número para o usuário
+            numeroEl.focus();
+    
+        } catch (error) {
+            console.error('Erro ao buscar CEP:', error);
+            alert('Ocorreu um erro ao buscar o CEP. Tente novamente.');
+            logradouroEl.value = originalValues.logradouro;
+            bairroEl.value = originalValues.bairro;
+        }
+    }
+
+    // ==========================================================
+    // NOVO BLOCO: FUNÇÃO PARA GERAR NOVO ID DE CLIENTE
+    // ==========================================================
+
+/**
+ * Gera um novo ID de cliente no formato CL[NNN][MM][YY]
+ * @returns {string} - O novo ID do cliente
+ */
+function gerarNovoNumeroCliente() {
+    // 1. Pega o próximo número sequencial (NNN)
+    // Filtra IDs que começam com CL e têm o formato novo ou antigo
+    const clientesComID = appState.clientes
+        .map(c => c.numeroCadastro)
+        .filter(id => id && id.startsWith('CL'));
+
+    let maxSeq = 0;
+    
+    clientesComID.forEach(id => {
+        let seqNum = 0;
+        // Remove o 'CL'
+        const numPart = id.substring(2); 
+        
+        // Tenta identificar o formato novo (ex: 0011125)
+        if (numPart.length === 7) { // CL[NNN][MM][YY]
+            seqNum = parseInt(numPart.substring(0, 3), 10);
+        } 
+        // Tenta identificar o formato antigo (ex: 0001)
+        else if (numPart.length === 4) { // CL[NNNN]
+            seqNum = parseInt(numPart, 10);
+        }
+        // Tenta identificar IDs manuais antigos (ex: CL011125)
+        else if (numPart.length === 6) { // CL[NN][MM][YY]
+             seqNum = parseInt(numPart.substring(0, 2), 10);
+        }
+
+        if (!isNaN(seqNum) && seqNum > maxSeq) {
+            maxSeq = seqNum;
+        }
+    });
+
+    const proximoSeq = (maxSeq + 1).toString().padStart(3, '0'); // Garante 3 dígitos (NNN)
+
+    // 2. Pega a data atual (MMYY)
+    const agora = new Date();
+    const mes = (agora.getMonth() + 1).toString().padStart(2, '0'); // MM
+    const ano = agora.getFullYear().toString().slice(-2); // YY
+
+    // 3. Monta o ID
+    const novoID = `CL${proximoSeq}${mes}${ano}`;
+    
+    console.log(`Gerado novo ID de Cliente: ${novoID} (Sequência: ${proximoSeq})`);
+    return novoID;
+}
+// ==========================================================
+// FIM DO NOVO BLOCO
+// ==========================================================
+
+    window.onload = initializeFirebase;
   </script>
- 
 </body>
 </html>
