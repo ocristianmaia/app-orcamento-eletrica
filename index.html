@@ -1186,42 +1186,140 @@
         el.innerHTML = Object.keys(grp).sort().map(cat => `<details class="border rounded mb-1"><summary class="p-2 bg-gray-50 text-xs font-bold cursor-pointer">${cat}</summary><div class="p-2">${grp[cat].map(s=>`<div class="flex justify-between p-1 hover:bg-gray-50"><div class="flex-grow cursor-pointer" onclick="openEditTipoServicoModal('${s.id}')"><p class="text-sm">${s.descricao}</p><p class="text-xs text-green-600">R$ ${s.valor}</p></div><button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500">&times;</button></div>`).join('')}</div></details>`).join('');
     }
 
-    function renderOrcamentosList(isFull=false) {
-        const el = isFull ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
-        if(!el) return;
-        let list = [...appState.orcamentos];
-        
-        if(isFull) {
-             const s=document.getElementById('filtro-status-orcamento').value;
-             const m=document.getElementById('filtro-mes-orcamento').value;
-             const a=document.getElementById('filtro-ano-orcamento').value;
-             list=list.filter(o=>{
-                 const st=(o.status==='aprovado'||o.aprovado)?'aprovado':'pendente';
-                 if(s!=='todos'&&st!==s) return false;
-                 const d=new Date(o.createdAt);
-                 if(m!=='todos'&&d.getMonth().toString()!==m) return false;
-                 if(a!=='todos'&&d.getFullYear().toString()!==a) return false;
-                 return true;
-             });
-        } else {
-            list = list.slice(0,3);
-        }
-        
-        if(!list.length) { el.innerHTML='<div class="p-4 text-gray-500 text-center">Nenhum orçamento.</div>'; return; }
-        el.innerHTML = list.map(o => {
-            const cli = appState.clientes.find(c=>c.id===o.cliente?.id);
-            const nome = cli ? cli.nome : 'Excluído';
-            const st = (o.status==='aprovado'||o.aprovado);
-            const badge = st ? '<span class="text-green-600 bg-green-100 text-xs font-bold px-2 py-1 rounded">APROVADO</span>' : '<span class="text-yellow-600 bg-yellow-100 text-xs font-bold px-2 py-1 rounded">PENDENTE</span>';
-            return `<div class="bg-white p-3 rounded border shadow-sm mb-2 flex justify-between items-center"><div class="overflow-hidden mr-2"><p class="font-bold truncate">${nome}</p><p class="text-xs text-gray-500">${o.numeroOrcamento||''} • R$ ${Number(o.total||0).toFixed(2)}</p></div><div class="flex items-center gap-2">${badge}<button onclick="editOrcamento('${o.id}')" class="bg-yellow-400 text-white p-2 rounded hover:bg-yellow-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button></div></div>`;
-        }).join('');
-        
-        if(isFull) {
-            const btn = document.getElementById('btn-delete-selected-orcamentos');
-            if(btn) btn.disabled = (appState.orcamentosParaExcluir.size===0);
-        }
+     // --- CORREÇÃO: LISTA DE ORÇAMENTOS COM CHECKBOX E EXCLUSÃO ---
+
+    // 1. Funções de Exclusão (Globais)
+    window.toggleOrcamentoExclusao = (checkbox) => {
+        const id = checkbox.dataset.id;
+        if(checkbox.checked) appState.orcamentosParaExcluir.add(id);
+        else appState.orcamentosParaExcluir.delete(id);
+        updateDeleteButtonState();
+    };
+
+    function updateDeleteButtonState() {
+        const btn = document.getElementById('btn-delete-selected-orcamentos');
+        if(btn) btn.disabled = (appState.orcamentosParaExcluir.size === 0);
     }
 
+    window.confirmDeleteSelectedOrcamentos = () => {
+        if(appState.orcamentosParaExcluir.size === 0) return;
+        document.getElementById('delete-confirm-modal').classList.add('active');
+        document.getElementById('delete-confirm-message').textContent = `Excluir ${appState.orcamentosParaExcluir.size} itens?`;
+    };
+
+    window.closeDeleteConfirmModal = (confirm) => {
+        document.getElementById('delete-confirm-modal').classList.remove('active');
+        if(confirm) deleteOrcamentosEmLote();
+    };
+
+    async function deleteOrcamentosEmLote() {
+        const ids = Array.from(appState.orcamentosParaExcluir);
+        const batch = writeBatch(db);
+        ids.forEach(id => batch.delete(doc(db, `users/${userId}/orcamentos/${id}`)));
+        await batch.commit();
+        appState.orcamentosParaExcluir.clear();
+        updateDeleteButtonState();
+        alert('Orçamentos excluídos.');
+    }
+
+    // 2. Renderização da Lista (Com Checkbox)
+    function renderOrcamentosList(isFull = false) {
+        const el = isFull ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
+        if(!el) return;
+
+        let list = [...appState.orcamentos];
+
+        if (isFull) {
+            // Filtros
+            const s = document.getElementById('filtro-status-orcamento').value;
+            const m = document.getElementById('filtro-mes-orcamento').value;
+            const a = document.getElementById('filtro-ano-orcamento').value;
+
+            list = list.filter(o => {
+                const st = (o.status === 'aprovado' || o.aprovado) ? 'aprovado' : 'pendente';
+                if (s !== 'todos' && st !== s) return false;
+                
+                if (o.createdAt) {
+                    const d = new Date(o.createdAt);
+                    if (m !== 'todos' && d.getMonth().toString() !== m) return false;
+                    if (a !== 'todos' && d.getFullYear().toString() !== a) return false;
+                }
+                return true;
+            });
+        } else {
+            list = list.slice(0, 3); // Apenas 3 na home
+        }
+
+        if(!list.length) { 
+            el.innerHTML = '<div class="p-4 text-center text-gray-500">Nenhum orçamento encontrado.</div>'; 
+            if(isFull) updateDeleteButtonState();
+            return; 
+        }
+
+        el.innerHTML = list.map(o => {
+            const cli = appState.clientes.find(c => c.id === o.cliente?.id);
+            const nome = cli ? cli.nome : 'Cliente Excluído';
+            
+            // Nome curto na home, longo na lista completa
+            const nomeDisplay = (!isFull && nome.split(' ').length > 1) ? `${nome.split(' ')[0]} ${nome.split(' ')[1]}` : nome;
+            
+            const num = String(o.numeroOrcamento||'').padStart(3,'0');
+            const ano = o.createdAt ? o.createdAt.getFullYear() : '';
+            const cod = `${cli?.numeroCadastro||'CD'}-${num}/${ano}`;
+            const dateStr = o.createdAt ? o.createdAt.toLocaleDateString('pt-BR') : '';
+            const val = Number(o.total||0).toFixed(2);
+            
+            const isAp = (o.status === 'aprovado' || o.aprovado);
+            const badge = isAp 
+                ? `<span class="px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-bold border border-green-200">APROVADO</span>`
+                : `<span class="px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs font-bold border border-yellow-200">PENDENTE</span>`;
+
+            if (isFull) {
+                // === LAYOUT COMPLETO (COM CHECKBOX) ===
+                const isChecked = appState.orcamentosParaExcluir.has(o.id);
+                return `
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-2 flex items-start gap-3">
+                   <div class="flex items-center h-full pt-1">
+                       <input type="checkbox" data-id="${o.id}" ${isChecked ? 'checked' : ''} onchange="window.toggleOrcamentoExclusao(this)" class="h-5 w-5 text-red-600 rounded border-gray-300 cursor-pointer">
+                   </div>
+                   <div class="flex-grow">
+                      <div class="flex justify-between items-start">
+                          <h3 class="font-bold text-gray-800 text-base">${nome}</h3>
+                          ${badge}
+                      </div>
+                      <div class="text-xs text-gray-500 mt-1 font-mono">
+                          ${cod} • ${dateStr}
+                      </div>
+                      <div class="font-bold text-gray-800 mt-2">
+                          R$ ${val}
+                      </div>
+                   </div>
+                   <button onclick="window.editOrcamento('${o.id}')" class="bg-yellow-400 hover:bg-yellow-500 text-white p-2 rounded shadow-sm transition self-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                   </button>
+                </div>`;
+            } else {
+                // === LAYOUT HOME (SEM CHECKBOX) ===
+                return `
+                <div class="bg-white p-3 rounded border shadow-sm mb-2 flex justify-between items-center">
+                    <div class="overflow-hidden mr-2">
+                        <p class="font-bold text-gray-800 truncate">${nomeDisplay}</p>
+                        <p class="text-xs text-gray-500">${cod}</p>
+                        <p class="text-sm font-bold text-gray-700 mt-1">R$ ${val}</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        ${badge}
+                        <button onclick="window.editOrcamento('${o.id}')" class="bg-yellow-400 hover:bg-yellow-500 text-white p-2 rounded shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        </button>
+                    </div>
+                </div>`;
+            }
+        }).join('');
+        
+        if(isFull) updateDeleteButtonState();
+    }
+  
     // ===== 5. FINANCEIRO =====
     window.updateFinanceiroView = () => {
         const anoSel = document.getElementById('fat-ano')?.value || 'todos';
