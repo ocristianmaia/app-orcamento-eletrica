@@ -1505,17 +1505,7 @@
     function gerarNovoNumeroCliente(){const ids=appState.clientes.map(c=>c.numeroCadastro).filter(x=>x&&x.startsWith('CL')); let max=0; ids.forEach(i=>{const n=parseInt(i.substring(2,5)); if(!isNaN(n)&&n>max)max=n;}); const seq=(max+1).toString().padStart(3,'0'); const d=new Date(); return `CL${seq}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getFullYear().toString().slice(-2)}`;}
     
     // Preview / Calc
-    window.calculateMaoDeObra = () => {
-        const sel=document.querySelector('input[name="tipo-servico"]:checked');
-        if(!sel){if(appState.currentOrcamento)appState.currentOrcamento.maoDeObra={tipo:'',valor:0,raw_value:0};return;}
-        const t=sel.value; const c=appState.config; const isInd=appState.currentOrcamento.tipoObra==='industrial';
-        let v=0, r=0, l='';
-        if(t==='empreitada'){ r=parseFloat(document.getElementById('empreitada-valor').value)||0; v=r; l='Empreitada'; }
-        else if(t==='diaria'){ r=parseInt(document.getElementById('diaria-qtd').value)||0; v=r*(isInd?c.industrial_diaria:c.residencial_diaria); l=`${r} dias`; }
-        else if(t==='ponto'){ r=parseInt(document.getElementById('ponto-qtd').value)||0; v=r*(isInd?c.industrial_ponto:c.residencial_ponto); l=`${r} pts`; }
-        else if(t==='hora'){ r=parseFloat(document.getElementById('hora-qtd').value)||0; v=r*(isInd?c.industrial_hora:c.residencial_hora); l=`${r} hrs`; }
-        appState.currentOrcamento.maoDeObra={tipo:t, valor:v, label:l, raw_value:r};
-    };
+    
     document.getElementById('orc-tipo-obra')?.addEventListener('change', (e)=>{ if(appState.currentOrcamento) appState.currentOrcamento.tipoObra=e.target.value==='industrial'?'industrial':'residencial'; window.calculateMaoDeObra(); window.updateOrcamentoPreview(); });
     document.getElementById('orc-mao-de-obra')?.addEventListener('input', ()=>{ window.calculateMaoDeObra(); window.updateOrcamentoPreview(); });
     document.getElementById('orc-descricao-servico')?.addEventListener('input', (e)=>{ if(appState.currentOrcamento) appState.currentOrcamento.descricaoServico=e.target.value; window.updateOrcamentoPreview(); });
@@ -1523,20 +1513,184 @@
     document.getElementById('orc-desconto-tipo')?.addEventListener('change', (e)=>{ const v=document.getElementById('orc-desconto-valor'); if(e.target.value==='nenhum'){v.disabled=true;v.value='';appState.currentOrcamento.desconto={tipo:'nenhum',valor:0};}else{v.disabled=false;appState.currentOrcamento.desconto.tipo=e.target.value;} window.updateOrcamentoPreview(); });
     document.getElementById('orc-desconto-valor')?.addEventListener('input', (e)=>{ appState.currentOrcamento.desconto.valor=parseFloat(e.target.value)||0; window.updateOrcamentoPreview(); });
 
+  // ===== CÁLCULOS E VISUALIZAÇÃO DO ORÇAMENTO (CORREÇÃO PDF) =====
+
+    // 1. Calcula Mão de Obra
+    window.calculateMaoDeObra = () => {
+        const sel = document.querySelector('input[name="tipo-servico"]:checked');
+        
+        if (!sel) { 
+            if(appState.currentOrcamento) appState.currentOrcamento.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: 0 }; 
+            return; 
+        }
+        
+        const t = sel.value; 
+        const c = appState.config; 
+        const isInd = appState.currentOrcamento.tipoObra === 'industrial';
+        
+        let val = 0, r = 0, l = '';
+        
+        if (t === 'empreitada') { 
+            r = parseFloat(document.getElementById('empreitada-valor').value) || 0; 
+            val = r; 
+            l = 'Empreitada'; 
+        } else if (t === 'diaria') { 
+            r = parseInt(document.getElementById('diaria-qtd').value) || 0; 
+            val = r * (isInd ? c.industrial_diaria : c.residencial_diaria); 
+            l = `${r} diária(s)`; 
+        } else if (t === 'ponto') { 
+            r = parseInt(document.getElementById('ponto-qtd').value) || 0; 
+            val = r * (isInd ? c.industrial_ponto : c.residencial_ponto); 
+            l = `${r} ponto(s)`; 
+        } else if (t === 'hora') { 
+            r = parseFloat(document.getElementById('hora-qtd').value) || 0; 
+            val = r * (isInd ? c.industrial_hora : c.residencial_hora); 
+            l = `${r} hora(s)`; 
+        }
+        
+        appState.currentOrcamento.maoDeObra = { tipo: t, valor: val, label: l, raw_value: r };
+    };
+
+    // 2. Atualiza a Área Branca (Preview)
     window.updateOrcamentoPreview = () => {
-        const {config, currentOrcamento} = appState;
-        const el=document.getElementById('pdf-preview');
-        if(!currentOrcamento?.cliente){el.innerHTML='<p class="text-center text-gray-400 mt-10">Selecione Cliente</p>';return;}
+        const { config, currentOrcamento } = appState;
+        const el = document.getElementById('pdf-preview');
         
-        let hI='', tI=0; if(currentOrcamento.usarMaterial==='sim'){hI=`<h4 class="font-bold mt-2">MATERIAIS</h4><table class="w-full text-xs">`; currentOrcamento.items.forEach(i=>{const t=i.valor*i.quantidade; tI+=t; hI+=`<tr><td>${i.nome}</td><td class="text-right">${i.quantidade}</td><td class="text-right">R$ ${t.toFixed(2)}</td></tr>`;}); hI+=`</table>`;}
-        let hS='', tS=0; if(currentOrcamento.modoCobranca==='por_servico'){hS=`<h4 class="font-bold mt-2">SERVIÇOS</h4><table class="w-full text-xs">`; currentOrcamento.tiposDeServico.forEach(s=>{const t=s.valor*s.quantidade; tS+=t; hS+=`<tr><td>${s.descricao}</td><td class="text-right">${s.quantidade}</td><td class="text-right">R$ ${t.toFixed(2)}</td></tr>`;}); hS+=`</table>`;}
-        let hM='', tM=0; if(currentOrcamento.modoCobranca==='mao_de_obra'){tM=currentOrcamento.maoDeObra.valor||0; hM=`<div class="mt-2 text-right text-sm"><strong>Mão Obra:</strong> R$ ${tM.toFixed(2)}</div>`;}
+        if (!currentOrcamento?.cliente) { 
+            el.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-gray-400 mt-10"><p>Selecione um cliente para gerar o orçamento.</p></div>'; 
+            return; 
+        }
         
-        let tot=tI+tS+tM; let desc=0;
-        if(currentOrcamento.desconto.tipo==='percent') desc=tot*(currentOrcamento.desconto.valor/100); else if(currentOrcamento.desconto.tipo==='valor') desc=currentOrcamento.desconto.valor;
-        currentOrcamento.total=tot-desc;
+        // Recalcula Mão de Obra se necessário
+        if (currentOrcamento.modoCobranca === 'mao_de_obra') {
+             const temInputVisivel = document.querySelector('#orc-cobranca-mo-wrapper:not(.hidden)');
+             if(temInputVisivel) window.calculateMaoDeObra();
+        }
+
+        // -- Gera HTML dos Materiais --
+        let htmlItems = '', subItems = 0;
+        if (currentOrcamento.usarMaterial === 'sim') {
+            let linhas = '';
+            currentOrcamento.items.forEach(i => {
+                const t = i.valor * (i.quantidade || 1); 
+                subItems += t;
+                linhas += `
+                <tr class="border-b border-gray-100">
+                    <td class="py-1 text-left">${i.nome}</td>
+                    <td class="py-1 text-center">${i.quantidade} ${i.unidade || ''}</td>
+                    <td class="py-1 text-right">R$ ${i.valor.toFixed(2)}</td>
+                    <td class="py-1 text-right font-medium">R$ ${t.toFixed(2)}</td>
+                </tr>`;
+            });
+            if (linhas) {
+                htmlItems = `
+                <div class="mb-4">
+                    <h4 class="font-bold text-gray-700 border-b border-gray-300 mb-2 text-sm uppercase">Materiais</h4>
+                    <table class="w-full text-xs text-gray-600">
+                        <thead><tr class="text-gray-400"><th class="text-left font-normal">Item</th><th class="text-center font-normal">Qtd</th><th class="text-right font-normal">Unit.</th><th class="text-right font-normal">Total</th></tr></thead>
+                        <tbody>${linhas}</tbody>
+                    </table>
+                </div>`;
+            }
+        }
         
-        el.innerHTML=`<div class="p-4 text-sm"><div class="flex justify-between"><div><h2 class="font-bold text-lg">${config.nome||'Empresa'}</h2><p>${config.telefone?formatarTelefone(config.telefone):''}</p></div>${config.logo?`<img src="${config.logo}" class="h-12">`:''}</div><hr class="my-2"><p><strong>Cliente:</strong> ${currentOrcamento.cliente.nome}</p>${currentOrcamento.descricaoServico?`<p class="mt-2"><strong>Desc:</strong> ${currentOrcamento.descricaoServico}</p>`:''}${hI}${hS}${hM}<div class="text-right mt-4 pt-2 border-t font-bold text-lg">${desc>0?`<p class="text-xs font-normal">Desc: R$ ${desc.toFixed(2)}</p>`:''}Total: R$ ${currentOrcamento.total.toFixed(2)}</div></div>`;
+        // -- Gera HTML dos Serviços --
+        let htmlServ = '', subServ = 0;
+        if (currentOrcamento.modoCobranca === 'por_servico') {
+            let linhas = '';
+            currentOrcamento.tiposDeServico.forEach(s => {
+                const t = s.valor * (s.quantidade || 1); 
+                subServ += t;
+                linhas += `
+                <tr class="border-b border-gray-100">
+                    <td class="py-1 text-left">${s.descricao}</td>
+                    <td class="py-1 text-center">${s.quantidade}</td>
+                    <td class="py-1 text-right">R$ ${s.valor.toFixed(2)}</td>
+                    <td class="py-1 text-right font-medium">R$ ${t.toFixed(2)}</td>
+                </tr>`;
+            });
+            if (linhas) {
+                htmlServ = `
+                <div class="mb-4">
+                    <h4 class="font-bold text-gray-700 border-b border-gray-300 mb-2 text-sm uppercase">Serviços</h4>
+                    <table class="w-full text-xs text-gray-600">
+                        <thead><tr class="text-gray-400"><th class="text-left font-normal">Descrição</th><th class="text-center font-normal">Qtd</th><th class="text-right font-normal">Unit.</th><th class="text-right font-normal">Total</th></tr></thead>
+                        <tbody>${linhas}</tbody>
+                    </table>
+                </div>`;
+            }
+        }
+        
+        // -- Gera HTML Mão de Obra --
+        let htmlMO = '', subMO = 0;
+        if (currentOrcamento.modoCobranca === 'mao_de_obra') {
+            subMO = currentOrcamento.maoDeObra.valor || 0;
+            if (subMO > 0 || currentOrcamento.maoDeObra.label) {
+                htmlMO = `
+                <div class="mb-4 flex justify-between items-center border-b border-gray-100 pb-2">
+                    <span class="font-bold text-gray-700 text-sm uppercase">Mão de Obra <span class="text-gray-500 font-normal text-xs normal-case">(${currentOrcamento.maoDeObra.label})</span></span>
+                    <span class="font-bold text-gray-800 text-sm">R$ ${subMO.toFixed(2)}</span>
+                </div>`;
+            }
+        }
+        
+        // -- Totais --
+        let total = subItems + subServ + subMO;
+        let descVal = 0;
+        if (currentOrcamento.desconto.tipo === 'percent') {
+            descVal = total * (currentOrcamento.desconto.valor / 100);
+        } else if (currentOrcamento.desconto.tipo === 'valor') {
+            descVal = currentOrcamento.desconto.valor;
+        }
+        currentOrcamento.total = total - descVal;
+        
+        // -- Renderiza HTML Final --
+        el.innerHTML = `
+            <div class="p-6 bg-white h-full text-gray-800 font-sans">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 leading-tight">${config.nome || 'Profissional'}</h2>
+                        <p class="text-xs text-gray-500 mt-1 w-64">${config.logradouro || ''}, ${config.numero || ''} - ${config.bairro || ''}<br>${config.cidade || ''}/${config.uf || ''}</p>
+                        <p class="text-xs text-gray-500 mt-1 font-bold">Tel: ${config.telefone ? formatarTelefone(config.telefone) : ''}</p>
+                    </div>
+                    ${config.logo ? `<img src="${config.logo}" class="h-16 object-contain max-w-[120px]">` : ''}
+                </div>
+
+                <hr class="border-gray-200 my-4">
+
+                <div class="mb-6 bg-gray-50 p-3 rounded border border-gray-100">
+                    <p class="text-xs text-gray-500 uppercase font-bold mb-1">Cliente</p>
+                    <p class="font-bold text-base">${currentOrcamento.cliente.nome}</p>
+                    <p class="text-xs text-gray-600">${currentOrcamento.cliente.logradouro || ''}, ${currentOrcamento.cliente.numero || ''} - ${currentOrcamento.cliente.bairro || ''}</p>
+                    <p class="text-xs text-gray-600">${currentOrcamento.cliente.cidade || ''}/${currentOrcamento.cliente.uf || ''} • ${currentOrcamento.cliente.telefone ? formatarTelefone(currentOrcamento.cliente.telefone) : ''}</p>
+                </div>
+
+                ${currentOrcamento.descricaoServico ? `
+                <div class="mb-6">
+                    <h4 class="font-bold text-gray-700 border-b border-gray-300 mb-2 text-sm uppercase">Descrição do Serviço</h4>
+                    <p class="text-sm text-gray-600 whitespace-pre-line">${currentOrcamento.descricaoServico}</p>
+                </div>` : ''}
+
+                ${htmlItems}
+                ${htmlServ}
+                ${htmlMO}
+
+                <div class="mt-8 pt-4 border-t-2 border-gray-800">
+                    <div class="flex flex-col items-end">
+                        ${descVal > 0 ? `<p class="text-sm text-red-500 mb-1">Desconto: - R$ ${descVal.toFixed(2)}</p>` : ''}
+                        <div class="text-3xl font-bold text-gray-900">R$ ${currentOrcamento.total.toFixed(2)}</div>
+                        <p class="text-xs text-gray-400 mt-1">Orçamento válido por 15 dias</p>
+                    </div>
+                </div>
+                
+                ${(config.config_pix_chave || config.config_deposito_banco) ? `
+                <div class="mt-10 pt-4 border-t border-gray-200 text-xs text-gray-500">
+                    <p class="font-bold mb-1">Dados para Pagamento:</p>
+                    ${config.config_pix_chave ? `PIX: ${config.config_pix_chave} ` : ''}
+                    ${config.config_deposito_banco ? `| Banco: ${config.config_deposito_banco} Ag: ${config.config_deposito_ag} Cc: ${config.config_deposito_conta}` : ''}
+                </div>` : ''}
+            </div>
+        `;
     };
 
     window.shareOrViewPDF=async()=>{const el=document.getElementById('pdf-preview'); const opt={margin:10,filename:'orcamento.pdf',image:{type:'jpeg',quality:0.98},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}; html2pdf().set(opt).from(el).save();};
