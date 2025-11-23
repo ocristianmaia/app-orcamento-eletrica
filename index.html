@@ -1121,16 +1121,55 @@
     }
 
     // ===== 4. LISTAS E RENDERIZAÇÃO =====
+   // --- CORREÇÃO: LISTA DE CLIENTES E EDIÇÃO ---
+    
+    // Função Global para abrir a edição (O HTML agora enxerga isso)
+    window.openEditClienteModal = (id) => {
+        const c = appState.clientes.find(x => x.id === id);
+        if(!c) { console.error("Cliente não encontrado:", id); return; }
+        
+        // Helper para preencher os campos
+        const set = (i, v) => { const el = document.getElementById(i); if(el) el.value = v || ''; };
+        
+        set('edit-cliente-id', c.id);
+        set('edit-cliente-nome', c.nome);
+        set('edit-cliente-numerocadastro', c.numeroCadastro);
+        set('edit-cliente-telefone', formatarTelefone(c.telefone));
+        set('edit-cliente-documento', formatarCPFCNPJ(c.documento));
+        
+        // Endereço
+        set('edit-cliente-cep', formatarCEP(c.cep));
+        set('edit-cliente-numero', c.numero);
+        set('edit-cliente-logradouro', c.logradouro);
+        set('edit-cliente-bairro', c.bairro);
+        set('edit-cliente-cidade', c.cidade);
+        set('edit-cliente-uf', c.uf);
+        
+        document.getElementById('edit-cliente-modal').classList.add('active');
+    };
+
+    window.closeEditClienteModal = () => {
+        document.getElementById('edit-cliente-modal').classList.remove('active');
+    };
+
+    // Função que desenha a lista na tela
     function renderClientesList() {
         const el = document.getElementById('clientes-list');
-        if(!appState.clientes.length) { el.innerHTML='<p class="text-gray-500 p-2">Vazio.</p>'; return; }
+        if (!el) return;
+        
+        if (!appState.clientes.length) { 
+            el.innerHTML = '<p class="text-gray-500 p-2">Nenhum cliente cadastrado.</p>'; 
+            return; 
+        }
+        
         el.innerHTML = appState.clientes.map(c => `
-            <div class="flex justify-between items-center p-3 border rounded bg-white mb-1">
-                <div class="flex-grow cursor-pointer" onclick="openEditClienteModal('${c.id}')">
-                    <p class="font-bold text-gray-800">${c.nome}</p>
-                    <p class="text-sm text-gray-600">${formatarTelefone(c.telefone)}</p>
+            <div class="flex justify-between items-center p-3 border rounded bg-white mb-2 hover:bg-gray-50 transition">
+                <div class="flex-grow cursor-pointer" onclick="window.openEditClienteModal('${c.id}')">
+                    <p class="font-bold text-gray-800">${c.nome} <span class="text-xs font-normal text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">${c.numeroCadastro||''}</span></p>
+                    <p class="text-sm text-gray-600">${c.telefone ? formatarTelefone(c.telefone) : ''}</p>
+                    <p class="text-xs text-gray-500">${c.logradouro || ''}</p>
                 </div>
-                <button onclick="deleteCliente('${c.id}')" class="text-red-500 p-2">&times;</button>
+                <button type="button" onclick="window.deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700 p-2 text-xl">&times;</button>
             </div>`).join('');
     }
     
