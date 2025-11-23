@@ -1637,6 +1637,19 @@ function updateServiceInCurrentOrcamento(service) {
 
   // ===== CÁLCULOS E VISUALIZAÇÃO DO ORÇAMENTO (CORREÇÃO PDF) =====
 
+    function formatEnderecoLinhaCliente(c) {
+      if (!c) return '';
+      const log = c.logradouro || '';
+      const num = c.numero || '';
+      const bairro = c.bairro || '';
+      let out = '';
+      if (log) out += log;
+      if (num) out += (out ? ', ' : '') + num;
+      if (bairro) out += (out ? ' - ' : '') + bairro;
+      return out;
+    }
+
+
     // 1. Calcula Mão de Obra
     window.calculateMaoDeObra = () => {
         const sel = document.querySelector('input[name="tipo-servico"]:checked');
@@ -1779,8 +1792,11 @@ function updateServiceInCurrentOrcamento(service) {
 
       // --- 6. Renderização Final ---
       const profEnd = `${config.logradouro||''}, ${config.numero||'s/n'} ${config.bairro ? '- '+config.bairro : ''}`;
-      const profCid = `${config.cidade||''}/${config.uf||''}`;
-      const cliEnd = `${fullClient.logradouro||''}, ${fullClient.numero||'s/n'} - ${fullClient.bairro||''}`;
+      const profCid = `${config.cidade||''}${config.uf ? '/' + config.uf : ''}`;
+      const cliEnd = formatEnderecoLinhaCliente(fullClient);
+      const cliCidUf = (fullClient.cidade && fullClient.uf)
+        ? `${fullClient.cidade}/${fullClient.uf}`
+        : (fullClient.cidade || fullClient.uf || '');
       
       previewEl.innerHTML = `
         <div style="padding:20px 25px 40px 25px;">
@@ -1799,8 +1815,8 @@ function updateServiceInCurrentOrcamento(service) {
           <h4 style="font-size:1.1em;font-weight:bold;margin-bottom:10px;color:${corPrimaria};">Data: ${dataFormatada}</h4>
           
           <strong style="display:block;">${fullClient.nome}</strong>
-          <span style="display:block;">${cliEnd}</span>
-          <span style="display:block;">${fullClient.cidade||''}/${fullClient.uf||''}</span>
+          ${cliEnd ? `<span style="display:block;">${cliEnd}</span>` : ''}
+          ${cliCidUf ? `<span style="display:block;">${cliCidUf}</span>` : ''}
           <span style="display:block;">Tel: ${formatarTelefone(fullClient.telefone)}</span>
           <hr style="margin:15px 0;">
           
@@ -1831,7 +1847,7 @@ function updateServiceInCurrentOrcamento(service) {
         return;
       }
 
-      const cliId = document.getElementById('orc-cliente-select').value;
+      const cliId = document.getElementById('orc-cliente-select')?.value;
       if (!cliId) {
         alert("Selecione um cliente antes de salvar.");
         return;
@@ -1845,39 +1861,58 @@ function updateServiceInCurrentOrcamento(service) {
 
       const o = appState.currentOrcamento;
 
+      // Garante que o total esteja atualizado
+      try {
+        window.updateOrcamentoPreview();
+      } catch (e) {
+        console.warn('Não foi possível recalcular preview antes de salvar:', e);
+      }
+
+      // Define createdAt e numeroOrcamento se ainda não existirem
+      const agora = new Date();
+      if (!o.createdAt) o.createdAt = agora;
+
+      if (!o.numeroOrcamento) {
+        const maior = appState.orcamentos.reduce((max, orc) => {
+          const n = Number(orc.numeroOrcamento || 0);
+          return n > max ? n : max;
+        }, 0);
+        o.numeroOrcamento = maior + 1;
+      }
+
       const payload = {
         cliente: {
-          id: cliente.id,
-          nome: cliente.nome,
-          telefone: cliente.telefone,
-          documento: cliente.documento || "",
-          endereco: `${cliente.logradouro || ""}, ${cliente.numero || ""} - ${cliente.bairro || ""}, ${cliente.cidade || ""}/${cliente.uf || ""}`
+          id: cliente.id
         },
-        descricaoServico: o.descricaoServico || "",
-        modoCobranca: o.modoCobranca || "mao_de_obra",
-        usarMaterial: o.usarMaterial || "sim",
-        tipoObra: o.tipoObra || "residencial",
-        maoDeObra: o.maoDeObra || { tipo: "", valor: 0, label: "", raw_value: 0 },
-        items: o.items || [],
-        tiposDeServico: o.tiposDeServico || [],
-        desconto: o.desconto || { tipo: "nenhum", valor: 0 },
-        status: o.status === "aprovado" ? "aprovado" : "pendente",
-        data: serverTimestamp()
+        descricaoServico: o.descricaoServico || document.getElementById('orc-descricao-servico')?.value || "",
+        modoCobranca: o.modoCobranca || 'mao_de_obra',
+        usarMaterial: o.usarMaterial || 'sim',
+        tipoObra: o.tipoObra || 'residencial',
+        maoDeObra: o.maoDeObra || { tipo: '', valor: 0, label: '', raw_value: 0 },
+        items: Array.isArray(o.items) ? o.items : [],
+        tiposDeServico: Array.isArray(o.tiposDeServico) ? o.tiposDeServico : [],
+        desconto: o.desconto || { tipo: 'nenhum', valor: 0 },
+        total: Number(o.total || 0),
+        status: document.getElementById('orc-status-aprovado')?.checked ? 'aprovado' : (o.status || 'pendente'),
+        numeroOrcamento: o.numeroOrcamento,
+        createdAt: o.id ? (o.createdAt || agora) : serverTimestamp()
       };
 
       try {
+        const pathBase = `users/${userId}/orcamentos`;
+
         if (o.id) {
-          await setDoc(doc(db, `users/${userId}/orcamentos/${o.id}`), payload);
+          await setDoc(doc(db, pathBase, o.id), payload, { merge: true });
         } else {
-          const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), payload);
+          const ref = await addDoc(collection(db, pathBase), payload);
           o.id = ref.id;
         }
 
         alert("Orçamento salvo com sucesso!");
-        document.getElementById('orcamento-modal').classList.remove('active');
+        document.getElementById('orcamento-modal')?.classList.remove('active');
       } catch (e) {
         console.error("Erro ao salvar orçamento:", e);
-        alert("Erro ao salvar orçamento.");
+        alert("Erro ao salvar orçamento. Tente novamente.");
       }
     };
 
