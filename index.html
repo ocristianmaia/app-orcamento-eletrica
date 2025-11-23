@@ -1823,13 +1823,82 @@ function updateServiceInCurrentOrcamento(service) {
         </div>`;
     };
 
+window.saveOrcamento = async () => {
+    if (!appState.currentOrcamento) {
+        alert("Nenhum orçamento em edição.");
+        return;
+    }
+
+    const cliId = document.getElementById('orc-cliente-select').value;
+    if (!cliId) {
+        alert("Selecione um cliente antes de salvar.");
+        return;
+    }
+
+    const cliente = appState.clientes.find(c => c.id === cliId);
+    if (!cliente) {
+        alert("Erro ao localizar dados do cliente.");
+        return;
+    }
+
+    const orc = appState.currentOrcamento;
+
+    // Monta estrutura padronizada
+    const payload = {
+        cliente: {
+            id: cliente.id,
+            nome: cliente.nome,
+            telefone: cliente.telefone,
+            documento: cliente.documento,
+            endereco: `${cliente.logradouro}, ${cliente.numero} - ${cliente.bairro}, ${cliente.cidade}/${cliente.uf}`
+        },
+        descricaoServico: orc.descricaoServico || "",
+        modoCobranca: orc.modoCobranca || "mao_de_obra",
+        usarMaterial: orc.usarMaterial || "nao",
+        tipoObra: orc.tipoObra || "residencial",
+        maoDeObra: orc.maoDeObra || {},
+        items: orc.items || [],
+        tiposDeServico: orc.tiposDeServico || [],
+        desconto: orc.desconto || { tipo: "nenhum", valor: 0 },
+        status: orc.status === "aprovado" ? "aprovado" : "pendente",
+        data: serverTimestamp()
+    };
+
+    try {
+        if (orc.id) {
+            // Atualizar orçamento existente
+            await setDoc(doc(db, `users/${userId}/orcamentos/${orc.id}`), payload);
+        } else {
+            // Criar novo orçamento
+            const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), payload);
+            orc.id = ref.id;
+        }
+
+        alert("Orçamento salvo com sucesso!");
+        document.getElementById('orcamento-modal').classList.remove('active');
+
+    } catch (e) {
+        console.error("Erro ao salvar orçamento:", e);
+        alert("Erro ao salvar orçamento.");
+    }
+};
+
+  
     // ===== 2. ENVIO DO PDF (COMPARTILHAMENTO NATIVO RESTAURADO) =====
     window.shareOrViewPDF = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
       
       // Cria elemento temporário
       const element = document.createElement('div');
-      element.innerHTML = document.getElementById('pdf-preview').innerHTML;
+     element.innerHTML = document.querySelector('#pdf-preview').innerHTML;
+element.style.height = "auto";  
+element.style.minHeight = "100%";
+      opt.html2canvas = {
+    scale: 2,
+    useCORS: true,
+    letterRendering: true,
+    windowHeight: element.scrollHeight  // <--- garante capturar tudo
+};
       
       // Estilos fixos para garantir a quebra de página correta
       element.style.width = '100%';
