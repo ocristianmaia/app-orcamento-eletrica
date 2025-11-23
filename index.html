@@ -1883,80 +1883,56 @@ function updateServiceInCurrentOrcamento(service) {
 
 // ===== 2. ENVIO DO PDF (COMPARTILHAMENTO NATIVO RESTAURADO) =====
     window.shareOrViewPDF = async () => {
-      if (!appState.currentOrcamento?.cliente) {
-        alert('Selecione um cliente para gerar o PDF.');
-        return;
-      }
-
-      const preview = document.getElementById('pdf-preview');
-      if (!preview) {
-        alert('Pré-visualização não encontrada.');
-        return;
-      }
-
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+      
+      // Cria elemento temporário
       const element = document.createElement('div');
-      element.innerHTML = preview.innerHTML;
-
+      element.innerHTML = document.getElementById('pdf-preview').innerHTML;
+      
       // Estilos fixos para garantir a quebra de página correta
-      element.style.width = '800px';
+      element.style.width = '100%';
       element.style.padding = '20px';
-      element.style.fontSize = '12px';
+      element.style.fontSize = '12px'; 
       element.style.fontFamily = 'Inter, sans-serif';
       element.style.backgroundColor = '#ffffff';
-      element.style.position = 'absolute';
-      element.style.left = '-9999px';
-      element.style.top = '0';
-
-      document.body.appendChild(element);
-      const fullHeight = element.scrollHeight || element.offsetHeight || document.body.scrollHeight;
-
+      
       const nomeArq = `pedido-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`;
 
       const opt = {
-        margin: [10, 10, 10, 10],
-        filename: nomeArq,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-          scrollY: 0,
-          windowHeight: fullHeight
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
+        margin:       [10, 10, 10, 10],
+        filename:     nomeArq,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       try {
-        const worker = html2pdf().set(opt).from(element);
-        const pdfBlob = await worker.output('blob');
-        const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
-
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: `Orçamento - ${appState.currentOrcamento.cliente.nome}`,
-            text: 'Segue o orçamento em anexo.',
-            files: [file]
-          });
-        } else {
-          const url = URL.createObjectURL(pdfBlob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = opt.filename;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
+        // Tenta Compartilhamento Nativo (Celular)
+        if (navigator.share && navigator.canShare) {
+            const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+            const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+            
+            if (navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: `Orçamento - ${appState.currentOrcamento.cliente.nome}`,
+                    text: 'Segue o orçamento em anexo.',
+                    files: [file]
+                });
+                return; 
+            }
         }
+        // Fallback (PC): Baixa direto
+        html2pdf().set(opt).from(element).save();
+        
       } catch (e) {
-        console.error('Erro PDF:', e);
-        alert('Erro ao gerar o PDF.');
-      } finally {
-        document.body.removeChild(element);
+        console.error("Erro PDF:", e);
+        // Se der erro no share, tenta salvar direto
+        html2pdf().set(opt).from(element).save();
       }
     };
-
-window.sendWhatsAppText=()=>{if(!appState.currentOrcamento?.cliente)return; const t=appState.currentOrcamento.cliente.telefone.replace(/\D/g,''); window.open(`https://wa.me/55${t}`, '_blank');};
+  
+    window.sendWhatsAppText=()=>{if(!appState.currentOrcamento?.cliente)return; const t=appState.currentOrcamento.cliente.telefone.replace(/\D/g,''); window.open(`https://wa.me/55${t}`, '_blank');};
     window.loginWithGoogle=async()=>{try{await signInWithPopup(auth, new GoogleAuthProvider());}catch(e){alert('Erro login');}};
     window.logout=async()=>{if(confirm('Sair?'))await signOut(auth);};
 
