@@ -1552,148 +1552,206 @@
     };
 
     // 2. Atualiza a Área Branca (Preview)
+    
+// ===== VISUALIZAÇÃO DO PDF (RESTAURADA DO SEU ARQUIVO ORIGINAL) =====
     window.updateOrcamentoPreview = () => {
-        const { config, currentOrcamento } = appState;
-        const el = document.getElementById('pdf-preview');
-        
-        if (!currentOrcamento?.cliente) { 
-            el.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-gray-400 mt-10"><p>Selecione um cliente para gerar o orçamento.</p></div>'; 
-            return; 
-        }
-        
-        // Recalcula Mão de Obra se necessário
-        if (currentOrcamento.modoCobranca === 'mao_de_obra') {
-             const temInputVisivel = document.querySelector('#orc-cobranca-mo-wrapper:not(.hidden)');
-             if(temInputVisivel) window.calculateMaoDeObra();
-        }
+      const { config, currentOrcamento } = appState;
+      const previewEl = document.getElementById('pdf-preview');
+      
+      if (!currentOrcamento || !currentOrcamento.cliente) {
+        previewEl.innerHTML = '<p class="text-gray-500 text-center mt-8">Selecione um cliente para começar.</p>';
+        return;
+      }
+      
+      // Garante cálculo da Mão de Obra se estiver visível
+      if (currentOrcamento.modoCobranca === 'mao_de_obra') {
+           const temInput = document.querySelector('#orc-cobranca-mo-wrapper:not(.hidden)');
+           if(temInput) window.calculateMaoDeObra();
+      }
 
-        // -- Gera HTML dos Materiais --
-        let htmlItems = '', subItems = 0;
-        if (currentOrcamento.usarMaterial === 'sim') {
-            let linhas = '';
-            currentOrcamento.items.forEach(i => {
-                const t = i.valor * (i.quantidade || 1); 
-                subItems += t;
-                linhas += `
-                <tr class="border-b border-gray-100">
-                    <td class="py-1 text-left">${i.nome}</td>
-                    <td class="py-1 text-center">${i.quantidade} ${i.unidade || ''}</td>
-                    <td class="py-1 text-right">R$ ${i.valor.toFixed(2)}</td>
-                    <td class="py-1 text-right font-medium">R$ ${t.toFixed(2)}</td>
-                </tr>`;
-            });
-            if (linhas) {
-                htmlItems = `
-                <div class="mb-4">
-                    <h4 class="font-bold text-gray-700 border-b border-gray-300 mb-2 text-sm uppercase">Materiais</h4>
-                    <table class="w-full text-xs text-gray-600">
-                        <thead><tr class="text-gray-400"><th class="text-left font-normal">Item</th><th class="text-center font-normal">Qtd</th><th class="text-right font-normal">Unit.</th><th class="text-right font-normal">Total</th></tr></thead>
-                        <tbody>${linhas}</tbody>
-                    </table>
-                </div>`;
-            }
-        }
+      const fullClient = currentOrcamento.cliente;
+      const corPrimaria = config.config_color_primary || '#000000';
+      const corTotal = config.config_color_secondary || '#333333';
+
+      const numeroSeq = String(currentOrcamento.numeroOrcamento || '').padStart(3, '0');
+      const dateRef = currentOrcamento.createdAt ? new Date(currentOrcamento.createdAt) : new Date();
+      const anoFull = dateRef.getFullYear();
+      const codigoCliente = fullClient.numeroCadastro || 'SEM-COD';
+      const codigoOrcamento = `${codigoCliente}-${numeroSeq}/${anoFull}`;
+
+      const hoje = new Date();
+      const dataFormatada = hoje.toLocaleDateString('pt-BR');
+
+      // --- 1. Serviços ---
+      let tiposDeServicoHtml = '';
+      let subtotalServicos = 0;
+      if (currentOrcamento.modoCobranca === 'por_servico' && currentOrcamento.tiposDeServico?.length > 0) {
+        const linhas = currentOrcamento.tiposDeServico.map(s => {
+          const qtd = s.quantidade || 1;
+          const totalLinha = s.valor * qtd;
+          subtotalServicos += totalLinha;
+          return `<tr><td style="padding:4px 2px;">${s.descricao}</td><td style="padding:4px 2px;text-align:center;">${qtd}</td><td style="padding:4px 2px;text-align:right;">R$ ${s.valor.toFixed(2)}</td><td style="padding:4px 2px;text-align:right;">R$ ${totalLinha.toFixed(2)}</td></tr>`;
+        }).join('');
         
-        // -- Gera HTML dos Serviços --
-        let htmlServ = '', subServ = 0;
-        if (currentOrcamento.modoCobranca === 'por_servico') {
-            let linhas = '';
-            currentOrcamento.tiposDeServico.forEach(s => {
-                const t = s.valor * (s.quantidade || 1); 
-                subServ += t;
-                linhas += `
-                <tr class="border-b border-gray-100">
-                    <td class="py-1 text-left">${s.descricao}</td>
-                    <td class="py-1 text-center">${s.quantidade}</td>
-                    <td class="py-1 text-right">R$ ${s.valor.toFixed(2)}</td>
-                    <td class="py-1 text-right font-medium">R$ ${t.toFixed(2)}</td>
-                </tr>`;
-            });
-            if (linhas) {
-                htmlServ = `
-                <div class="mb-4">
-                    <h4 class="font-bold text-gray-700 border-b border-gray-300 mb-2 text-sm uppercase">Serviços</h4>
-                    <table class="w-full text-xs text-gray-600">
-                        <thead><tr class="text-gray-400"><th class="text-left font-normal">Descrição</th><th class="text-center font-normal">Qtd</th><th class="text-right font-normal">Unit.</th><th class="text-right font-normal">Total</th></tr></thead>
-                        <tbody>${linhas}</tbody>
-                    </table>
-                </div>`;
-            }
-        }
-        
-        // -- Gera HTML Mão de Obra --
-        let htmlMO = '', subMO = 0;
-        if (currentOrcamento.modoCobranca === 'mao_de_obra') {
-            subMO = currentOrcamento.maoDeObra.valor || 0;
-            if (subMO > 0 || currentOrcamento.maoDeObra.label) {
-                htmlMO = `
-                <div class="mb-4 flex justify-between items-center border-b border-gray-100 pb-2">
-                    <span class="font-bold text-gray-700 text-sm uppercase">Mão de Obra <span class="text-gray-500 font-normal text-xs normal-case">(${currentOrcamento.maoDeObra.label})</span></span>
-                    <span class="font-bold text-gray-800 text-sm">R$ ${subMO.toFixed(2)}</span>
-                </div>`;
-            }
-        }
-        
-        // -- Totais --
-        let total = subItems + subServ + subMO;
-        let descVal = 0;
+        tiposDeServicoHtml = `
+          <h4 style="font-size:1.1em;font-weight:bold;margin-bottom:5px;color:${corPrimaria};">DESCRIÇÃO DOS SERVIÇOS:</h4>
+          <table style="width:100%;border-collapse:collapse;font-size:0.9em;margin-bottom:10px;">
+            <thead><tr><th style="text-align:left;border-bottom:1px solid #ccc;">Descrição</th><th style="text-align:center;border-bottom:1px solid #ccc;">Qtd.</th><th style="text-align:right;border-bottom:1px solid #ccc;">V. Unit.</th><th style="text-align:right;border-bottom:1px solid #ccc;">V. Total</th></tr></thead>
+            <tbody>${linhas}</tbody>
+          </table>`;
+      }
+
+      // --- 2. Materiais ---
+      let materiaisHtml = '';
+      let subtotalMateriais = 0;
+      if (currentOrcamento.usarMaterial === 'sim') {
+          const linhas = currentOrcamento.items.map(item => {
+            const total = item.valor * (item.quantidade || 1);
+            subtotalMateriais += total;
+            return `<tr><td style="padding:4px 2px;">${item.nome}</td><td style="padding:4px 2px;text-align:center;">${item.quantidade||1} ${item.unidade||'UNID'}</td><td style="padding:4px 2px;text-align:right;">R$ ${item.valor.toFixed(2)}</td><td style="padding:4px 2px;text-align:right;">R$ ${total.toFixed(2)}</td></tr>`;
+          }).join('');
+
+          materiaisHtml = `
+            <h4 style="font-size:1.1em;font-weight:bold;margin-bottom:5px;color:${corPrimaria};">DESCRIÇÃO DOS MATERIAIS:</h4>
+            <table style="width:100%;border-collapse:collapse;font-size:0.9em;">
+              ${linhas ? `<thead><tr><th style="text-align:left;border-bottom:1px solid #ccc;">Descrição</th><th style="text-align:center;border-bottom:1px solid #ccc;">Qtd.</th><th style="text-align:right;border-bottom:1px solid #ccc;">V. Unit.</th><th style="text-align:right;border-bottom:1px solid #ccc;">V. Total</th></tr></thead><tbody>${linhas}</tbody>` : '<tbody><tr><td colspan="4" style="color:#888;">Nenhum material.</td></tr></tbody>'}
+            </table>
+            ${linhas ? `<div style="text-align:right;font-weight:bold;margin-top:5px;border-top:1px solid #ccc;">Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</div>` : ''}`;
+      }
+
+      // --- 3. Mão de Obra ---
+      let maoDeObraHtml = '';
+      let totalMaoDeObra = 0;
+      if (currentOrcamento.modoCobranca === 'mao_de_obra') {
+        totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
+        maoDeObraHtml = `
+          <h4 style="font-size:1.1em;font-weight:bold;margin-top:15px;margin-bottom:5px;color:${corPrimaria};">MÃO DE OBRA:</h4>
+          <div style="text-align:right;"><span>${currentOrcamento.maoDeObra.label||''}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>`;
+      }
+
+      // --- 4. Totais e Desconto ---
+      const subtotal = subtotalServicos + subtotalMateriais + totalMaoDeObra;
+      let valorDesconto = 0;
+      let descontoHtml = '';
+      if (currentOrcamento.desconto && currentOrcamento.desconto.tipo !== 'nenhum') {
         if (currentOrcamento.desconto.tipo === 'percent') {
-            descVal = total * (currentOrcamento.desconto.valor / 100);
-        } else if (currentOrcamento.desconto.tipo === 'valor') {
-            descVal = currentOrcamento.desconto.valor;
+          valorDesconto = (subtotal * currentOrcamento.desconto.valor) / 100;
+          descontoHtml = `<div style="text-align:right;background:#f5f5f5;">Desconto (${currentOrcamento.desconto.valor}%): R$ -${valorDesconto.toFixed(2)}</div>`;
+        } else {
+          valorDesconto = currentOrcamento.desconto.valor;
+          descontoHtml = `<div style="text-align:right;background:#f5f5f5;">Desconto (R$): R$ -${valorDesconto.toFixed(2)}</div>`;
         }
-        currentOrcamento.total = total - descVal;
-        
-        // -- Renderiza HTML Final --
-        el.innerHTML = `
-            <div class="p-6 bg-white h-full text-gray-800 font-sans">
-                <div class="flex justify-between items-start mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900 leading-tight">${config.nome || 'Profissional'}</h2>
-                        <p class="text-xs text-gray-500 mt-1 w-64">${config.logradouro || ''}, ${config.numero || ''} - ${config.bairro || ''}<br>${config.cidade || ''}/${config.uf || ''}</p>
-                        <p class="text-xs text-gray-500 mt-1 font-bold">Tel: ${config.telefone ? formatarTelefone(config.telefone) : ''}</p>
-                    </div>
-                    ${config.logo ? `<img src="${config.logo}" class="h-16 object-contain max-w-[120px]">` : ''}
-                </div>
+      }
+      currentOrcamento.total = subtotal - valorDesconto;
 
-                <hr class="border-gray-200 my-4">
+      // --- 5. Pagamento ---
+      let pagamentoHtml = '';
+      if (config.config_pix_chave || config.config_cartao_vezes || config.config_deposito_banco) {
+        pagamentoHtml = `<div style="border:2px dotted #888;padding:10px;margin-top:20px;"><h4 style="font-size:1.1em;font-weight:bold;margin:0 0 5px 0;color:${corPrimaria};">Formas de Pagamento:</h4><div style="font-size:0.9em;line-height:1.4;">
+          ${config.config_pix_chave ? `<strong>PIX:</strong> ${config.config_pix_chave}<br>` : ''}
+          ${config.config_cartao_vezes ? `<strong>Cartão:</strong> Até ${config.config_cartao_vezes}x${config.config_cartao_juros ? ` (${config.config_cartao_juros}%)` : ''}<br>` : ''}
+          ${config.config_pagamento_dinheiro ? `<strong>Dinheiro</strong><br>` : ''}
+          ${(config.config_deposito_banco && config.config_deposito_conta) ? `<strong>Depósito:</strong> ${config.config_deposito_banco} | Ag: ${config.config_deposito_ag} | Cc: ${config.config_deposito_conta}<br>` : ''}
+        </div></div>`;
+      }
 
-                <div class="mb-6 bg-gray-50 p-3 rounded border border-gray-100">
-                    <p class="text-xs text-gray-500 uppercase font-bold mb-1">Cliente</p>
-                    <p class="font-bold text-base">${currentOrcamento.cliente.nome}</p>
-                    <p class="text-xs text-gray-600">${currentOrcamento.cliente.logradouro || ''}, ${currentOrcamento.cliente.numero || ''} - ${currentOrcamento.cliente.bairro || ''}</p>
-                    <p class="text-xs text-gray-600">${currentOrcamento.cliente.cidade || ''}/${currentOrcamento.cliente.uf || ''} • ${currentOrcamento.cliente.telefone ? formatarTelefone(currentOrcamento.cliente.telefone) : ''}</p>
-                </div>
-
-                ${currentOrcamento.descricaoServico ? `
-                <div class="mb-6">
-                    <h4 class="font-bold text-gray-700 border-b border-gray-300 mb-2 text-sm uppercase">Descrição do Serviço</h4>
-                    <p class="text-sm text-gray-600 whitespace-pre-line">${currentOrcamento.descricaoServico}</p>
-                </div>` : ''}
-
-                ${htmlItems}
-                ${htmlServ}
-                ${htmlMO}
-
-                <div class="mt-8 pt-4 border-t-2 border-gray-800">
-                    <div class="flex flex-col items-end">
-                        ${descVal > 0 ? `<p class="text-sm text-red-500 mb-1">Desconto: - R$ ${descVal.toFixed(2)}</p>` : ''}
-                        <div class="text-3xl font-bold text-gray-900">R$ ${currentOrcamento.total.toFixed(2)}</div>
-                        <p class="text-xs text-gray-400 mt-1">Orçamento válido por 15 dias</p>
-                    </div>
-                </div>
-                
-                ${(config.config_pix_chave || config.config_deposito_banco) ? `
-                <div class="mt-10 pt-4 border-t border-gray-200 text-xs text-gray-500">
-                    <p class="font-bold mb-1">Dados para Pagamento:</p>
-                    ${config.config_pix_chave ? `PIX: ${config.config_pix_chave} ` : ''}
-                    ${config.config_deposito_banco ? `| Banco: ${config.config_deposito_banco} Ag: ${config.config_deposito_ag} Cc: ${config.config_deposito_conta}` : ''}
-                </div>` : ''}
+      // --- 6. Renderização Final ---
+      const profEnd = `${config.logradouro||''}, ${config.numero||'s/n'} ${config.bairro ? '- '+config.bairro : ''}`;
+      const profCid = `${config.cidade||''}/${config.uf||''}`;
+      const cliEnd = `${fullClient.logradouro||''}, ${fullClient.numero||'s/n'} - ${fullClient.bairro||''}`;
+      
+      previewEl.innerHTML = `
+        <div style="padding:20px 25px 40px 25px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+            <div style="max-width:70%;">
+              <strong style="font-size:1.2em;display:block;">${config.nome||''}</strong>
+              <span style="display:block;font-size:0.9em;">${profEnd}</span>
+              <span style="display:block;font-size:0.9em;">${profCid}</span>
+              <span style="display:block;font-size:0.9em;">Tel: ${formatarTelefone(config.telefone)} | ${config.doc ? formatarCPFCNPJ(config.doc) : ''}</span>
             </div>
-        `;
+            ${config.logo ? `<div style="text-align:right;"><img src="${config.logo}" style="max-width:150px;max-height:80px;"></div>` : ''}
+          </div>
+          <hr style="margin:15px 0;">
+          
+          <h4 style="font-size:1.1em;font-weight:bold;color:${corPrimaria};">Pedido Nº: ${codigoOrcamento}</h4>
+          <h4 style="font-size:1.1em;font-weight:bold;margin-bottom:10px;color:${corPrimaria};">Data: ${dataFormatada}</h4>
+          
+          <strong style="display:block;">${fullClient.nome}</strong>
+          <span style="display:block;">${cliEnd}</span>
+          <span style="display:block;">${fullClient.cidade||''}/${fullClient.uf||''}</span>
+          <span style="display:block;">Tel: ${formatarTelefone(fullClient.telefone)}</span>
+          <hr style="margin:15px 0;">
+          
+          ${currentOrcamento.descricaoServico ? `<h4 style="font-size:1.1em;font-weight:bold;margin-bottom:5px;color:${corPrimaria};">DESCRIÇÃO DO SERVIÇO:</h4><p style="font-size:0.9em;margin-bottom:10px;white-space:pre-line;">${currentOrcamento.descricaoServico}</p>` : ''}
+          
+          ${tiposDeServicoHtml}
+          ${materiaisHtml}
+          ${maoDeObraHtml}
+          ${descontoHtml}
+
+          <div style="text-align:right;font-size:1.2em;font-weight:bold;margin-top:10px;padding:10px 5px;border-top:2px solid ${corTotal};color:${corTotal};background-color:#EEEEEE;">
+            <span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span>
+          </div>
+          
+          ${pagamentoHtml}
+
+          <div style="font-size:0.9em;margin-top:0px;text-align:center;color:#000;font-weight:bold;background-color:#FFFFCC;padding:5px 0;">
+            Orçamento válido por 15 dias.
+          </div>
+        </div>`;
     };
 
-    window.shareOrViewPDF=async()=>{const el=document.getElementById('pdf-preview'); const opt={margin:10,filename:'orcamento.pdf',image:{type:'jpeg',quality:0.98},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}; html2pdf().set(opt).from(el).save();};
+    // ===== 2. ENVIO DO PDF (COMPARTILHAMENTO NATIVO RESTAURADO) =====
+    window.shareOrViewPDF = async () => {
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+      
+      // Cria elemento temporário
+      const element = document.createElement('div');
+      element.innerHTML = document.getElementById('pdf-preview').innerHTML;
+      
+      // Estilos fixos para garantir a quebra de página correta
+      element.style.width = '100%';
+      element.style.padding = '20px';
+      element.style.fontSize = '12px'; 
+      element.style.fontFamily = 'Inter, sans-serif';
+      element.style.backgroundColor = '#ffffff';
+      
+      const nomeArq = `pedido-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`;
+
+      const opt = {
+        margin:       [10, 10, 10, 10],
+        filename:     nomeArq,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      try {
+        // Tenta Compartilhamento Nativo (Celular)
+        if (navigator.share && navigator.canShare) {
+            const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+            const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+            
+            if (navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: `Orçamento - ${appState.currentOrcamento.cliente.nome}`,
+                    text: 'Segue o orçamento em anexo.',
+                    files: [file]
+                });
+                return; 
+            }
+        }
+        // Fallback (PC): Baixa direto
+        html2pdf().set(opt).from(element).save();
+        
+      } catch (e) {
+        console.error("Erro PDF:", e);
+        // Se der erro no share, tenta salvar direto
+        html2pdf().set(opt).from(element).save();
+      }
+    };
+  
     window.sendWhatsAppText=()=>{if(!appState.currentOrcamento?.cliente)return; const t=appState.currentOrcamento.cliente.telefone.replace(/\D/g,''); window.open(`https://wa.me/55${t}`, '_blank');};
     window.loginWithGoogle=async()=>{try{await signInWithPopup(auth, new GoogleAuthProvider());}catch(e){alert('Erro login');}};
     window.logout=async()=>{if(confirm('Sair?'))await signOut(auth);};
