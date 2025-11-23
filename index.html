@@ -872,9 +872,9 @@
         <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">Enviar Mensagem</a>
       </div>
     </footer>
-
 <script type="module">
-    // VERSÃO 11.0 - CORREÇÃO DEFINITIVA DE FUNÇÕES AUSENTES
+    console.log("VERSÃO 12.0 (FINAL - Configurações, Filtros e Checkboxes) CARREGADA");
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, getDocs, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -898,7 +898,7 @@
       orcamentosParaExcluir: new Set()
     };
 
-    // ===== 1. INICIALIZAÇÃO =====
+    // ===== INICIALIZAÇÃO =====
     window.onload = async () => {
       app = initializeApp(firebaseConfig);
       db = getFirestore(app);
@@ -912,7 +912,7 @@
           document.getElementById('login-view').classList.add('hidden');
           document.getElementById('app-view').classList.remove('hidden');
           
-          // Datas Financeiro
+          // Datas Iniciais
           const hoje = new Date();
           const elAno = document.getElementById('fat-ano');
           const elMes = document.getElementById('fat-mes');
@@ -930,33 +930,41 @@
       });
     };
 
-    // ===== 2. CARREGAMENTO DE DADOS =====
+    // ===== CARREGAMENTO DE DADOS =====
     function loadAllData() {
       if (!userId) return;
       const prefix = `users/${userId}`;
 
+      // Configurações (Correção: Preenche TUDO ao carregar)
       onSnapshot(doc(db, `${prefix}/config/main`), (snap) => {
-        if (snap.exists()) { appState.config = snap.data(); updateConfigForm(); }
+        if (snap.exists()) { 
+            appState.config = snap.data(); 
+            updateConfigForm(); 
+        }
       });
 
+      // Clientes
       onSnapshot(query(collection(db, `${prefix}/clientes`)), (snap) => {
         appState.clientes = snap.docs.map(d => ({ ...d.data(), id: d.id }));
         renderClientesList();
-        renderOrcamentosList(); // Atualiza nomes
+        renderOrcamentosList(); 
         renderOrcamentosList(true);
       });
 
+      // Materiais
       onSnapshot(query(collection(db, `${prefix}/materiais`)), (snap) => {
         appState.materiais = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderMateriaisList();
       });
 
+      // Serviços
       onSnapshot(query(collection(db, `${prefix}/tiposdeservico`)), (snap) => {        
         appState.tiposDeServico = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderTiposDeServicoList();
         populateCategorySelect();
       });
 
+      // Orçamentos
       onSnapshot(query(collection(db, `${prefix}/orcamentos`)), (snap) => {
         appState.orcamentos = snap.docs.map(d => {
           const data = d.data();
@@ -971,32 +979,58 @@
       });
     }
 
-    // ===== 3. FUNÇÕES GLOBAIS (BOTÕES HTML) =====
-    
-    // --- NAVEGAÇÃO ---
-    window.changeTab = (event, tabName) => {
-      document.querySelectorAll('.tab-content, .tab, .mobile-tab').forEach(x=>x.classList.remove('active'));
-      const target = document.getElementById(tabName);
-      if(target) target.classList.add('active');
-      document.querySelectorAll(`[data-tab="${tabName}"]`).forEach(t => t.classList.add('active'));
-      if (tabName === 'financeiro') setTimeout(() => window.updateFinanceiroView(), 100);
-    };
+    // ===== 1. CONFIGURAÇÕES (CORREÇÃO DO "VAZIO") =====
+    function updateConfigForm() {
+        const c = appState.config || {};
+        const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val || ''; };
+        const setCheck = (id, val) => { const el = document.getElementById(id); if(el) el.checked = !!val; };
 
-    window.showAllOrcamentosPage = () => {
-      document.getElementById('main-view').classList.add('hidden');
-      document.getElementById('all-orcamentos-view').classList.remove('hidden');
-      renderOrcamentosList(true);
-    };
-    
-    window.showMainPage = () => {
-      document.getElementById('all-orcamentos-view').classList.add('hidden');
-      document.getElementById('main-view').classList.remove('hidden');
-    };
+        // Dados Pessoais
+        set('config-nome', c.nome);
+        set('config-telefone', formatarTelefone(c.telefone));
+        set('config-doc', formatarCPFCNPJ(c.doc));
+        set('config-cep', formatarCEP(c.cep));
+        set('config-numero', c.numero);
+        set('config-logradouro', c.logradouro);
+        set('config-bairro', c.bairro);
+        set('config-cidade', c.cidade);
+        set('config-uf', c.uf);
 
-    // --- CLIENTES ---
+        // Logo
+        if(c.logo) {
+            document.getElementById('config-logo').value = c.logo;
+            document.getElementById('config-logo-preview').src = c.logo;
+            document.getElementById('config-logo-preview-wrapper').classList.remove('hidden');
+        }
+
+        // Cores
+        set('config-color-primary', c.config_color_primary || '#000000');
+        set('config-color-secondary', c.config_color_secondary || '#333333');
+
+        // Mão de Obra (Aqui estava faltando!)
+        set('config-residencial-empreitada', c.residencial_empreitada);
+        set('config-residencial-diaria', c.residencial_diaria);
+        set('config-residencial-ponto', c.residencial_ponto);
+        set('config-residencial-hora', c.residencial_hora);
+        set('config-industrial-diaria', c.industrial_diaria);
+        set('config-industrial-ponto', c.industrial_ponto);
+        set('config-industrial-hora', c.industrial_hora);
+
+        // Pagamento
+        set('config-pix-chave', c.config_pix_chave);
+        set('config-cartao-vezes', c.config_cartao_vezes);
+        set('config-cartao-juros', c.config_cartao_juros);
+        setCheck('config-pagamento-dinheiro', c.config_pagamento_dinheiro);
+        set('config-deposito-banco', c.config_deposito_banco);
+        set('config-deposito-ag', c.config_deposito_ag);
+        set('config-deposito-conta', c.config_deposito_conta);
+    }
+
+    // ===== 2. LISTA DE CLIENTES (CORREÇÃO DO CLIQUE) =====
     window.openEditClienteModal = (id) => {
         const c = appState.clientes.find(x => x.id === id);
-        if(!c) return;
+        if(!c) { console.error("Cliente não encontrado:", id); return; }
+        
         const set=(i,v)=>document.getElementById(i).value=v||'';
         set('edit-cliente-id', c.id);
         set('edit-cliente-nome', c.nome);
@@ -1011,10 +1045,164 @@
         set('edit-cliente-uf', c.uf);
         document.getElementById('edit-cliente-modal').classList.add('active');
     };
-    window.closeEditClienteModal = () => document.getElementById('edit-cliente-modal').classList.remove('active');
-    window.deleteCliente = async (id) => { if(confirm('Excluir?')) await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); };
 
-    // --- MATERIAIS E SERVIÇOS ---
+    function renderClientesList() {
+        const el = document.getElementById('clientes-list');
+        if(!appState.clientes.length) { el.innerHTML='<p class="text-gray-500 p-2">Vazio.</p>'; return; }
+        // Atenção: O onclick aqui chama window.openEditClienteModal
+        el.innerHTML = appState.clientes.map(c => `
+            <div class="flex justify-between items-center p-3 border rounded bg-white mb-2 hover:bg-gray-50">
+                <div class="flex-grow cursor-pointer" onclick="window.openEditClienteModal('${c.id}')">
+                    <p class="font-bold text-gray-800">${c.nome} <span class="text-xs bg-gray-200 px-2 rounded-full text-gray-600">${c.numeroCadastro||''}</span></p>
+                    <p class="text-sm text-gray-600">${c.telefone ? formatarTelefone(c.telefone) : ''}</p>
+                </div>
+                <button onclick="window.deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700 p-2 text-xl">&times;</button>
+            </div>`).join('');
+    }
+
+    // ===== 3. ORÇAMENTOS (FILTROS E CHECKBOXES) =====
+    
+    // Funções de Checkbox de Exclusão
+    window.toggleOrcamentoExclusao = (checkbox) => {
+        const id = checkbox.dataset.id;
+        if (checkbox.checked) appState.orcamentosParaExcluir.add(id);
+        else appState.orcamentosParaExcluir.delete(id);
+        updateDeleteButtonState();
+    };
+    function updateDeleteButtonState() {
+        const btn = document.getElementById('btn-delete-selected-orcamentos');
+        if(btn) btn.disabled = (appState.orcamentosParaExcluir.size === 0);
+    }
+    window.confirmDeleteSelectedOrcamentos = () => {
+        if(appState.orcamentosParaExcluir.size===0) return;
+        document.getElementById('delete-confirm-modal').classList.add('active');
+        document.getElementById('delete-confirm-message').textContent = `Excluir ${appState.orcamentosParaExcluir.size} itens?`;
+    };
+    window.closeDeleteConfirmModal = (confirm) => {
+        document.getElementById('delete-confirm-modal').classList.remove('active');
+        if(confirm) deleteOrcamentosEmLote();
+    };
+    async function deleteOrcamentosEmLote() {
+        const ids = Array.from(appState.orcamentosParaExcluir);
+        const batch = writeBatch(db);
+        ids.forEach(id => batch.delete(doc(db, `users/${userId}/orcamentos/${id}`)));
+        await batch.commit();
+        appState.orcamentosParaExcluir.clear();
+        updateDeleteButtonState();
+        alert('Excluídos.');
+    }
+
+    function renderOrcamentosList(isFull = false) {
+        const el = isFull ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
+        if(!el) return;
+        
+        let list = [...appState.orcamentos];
+        
+        if (isFull) {
+            // Aplica Filtros
+            const s = document.getElementById('filtro-status-orcamento').value;
+            const m = document.getElementById('filtro-mes-orcamento').value;
+            const a = document.getElementById('filtro-ano-orcamento').value;
+            
+            list = list.filter(o => {
+                const st = (o.status === 'aprovado' || o.aprovado) ? 'aprovado' : 'pendente';
+                if (s !== 'todos' && st !== s) return false;
+                
+                if (o.createdAt) {
+                    const d = new Date(o.createdAt);
+                    if (m !== 'todos' && d.getMonth().toString() !== m) return false;
+                    if (a !== 'todos' && d.getFullYear().toString() !== a) return false;
+                }
+                return true;
+            });
+        } else {
+            list = list.slice(0, 3); // Apenas 3 na home
+        }
+
+        if(!list.length) { el.innerHTML = '<div class="p-4 text-center text-gray-500">Nenhum orçamento encontrado.</div>'; return; }
+
+        el.innerHTML = list.map(o => {
+            const cli = appState.clientes.find(c => c.id === o.cliente?.id);
+            const nome = cli ? cli.nome : 'Cliente Excluído';
+            
+            // Abrevia nome apenas na home
+            const nomeDisplay = (!isFull && nome.split(' ').length > 1) ? `${nome.split(' ')[0]} ${nome.split(' ')[1]}` : nome;
+            
+            const num = String(o.numeroOrcamento||'').padStart(3,'0');
+            const ano = o.createdAt ? o.createdAt.getFullYear() : '';
+            const cod = `${cli?.numeroCadastro||'CD'}-${num}/${ano}`;
+            const dateStr = o.createdAt ? o.createdAt.toLocaleDateString('pt-BR') : '';
+            
+            const isAp = (o.status === 'aprovado' || o.aprovado);
+            const badge = isAp 
+                ? `<span class="px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-bold border border-green-200">APROVADO</span>`
+                : `<span class="px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs font-bold border border-yellow-200">PENDENTE</span>`;
+
+            if (isFull) {
+                // Layout Completo com CHECKBOX e Lápis
+                const isChecked = appState.orcamentosParaExcluir.has(o.id);
+                return `
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-2 flex items-start gap-3">
+                   <div class="flex items-center h-full pt-1">
+                       <input type="checkbox" data-id="${o.id}" ${isChecked ? 'checked' : ''} onchange="window.toggleOrcamentoExclusao(this)" class="h-5 w-5 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer">
+                   </div>
+                   <div class="flex-grow">
+                      <div class="flex justify-between items-start">
+                          <h3 class="font-bold text-gray-800 text-base">${nome}</h3>
+                          ${badge}
+                      </div>
+                      <div class="text-xs text-gray-500 mt-1 font-mono">
+                          ${cod} • ${dateStr}
+                      </div>
+                      <div class="font-bold text-gray-800 mt-2">
+                          R$ ${Number(o.total || 0).toFixed(2)}
+                      </div>
+                   </div>
+                   <button onclick="window.editOrcamento('${o.id}')" class="bg-yellow-400 hover:bg-yellow-500 text-white p-2 rounded shadow-sm transition self-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                   </button>
+                </div>`;
+            } else {
+                // Layout Home (Simples)
+                return `
+                <div class="bg-white p-3 rounded border shadow-sm mb-2 flex justify-between items-center">
+                    <div class="overflow-hidden mr-2">
+                        <p class="font-bold text-gray-800 truncate">${nomeDisplay}</p>
+                        <p class="text-xs text-gray-500">${cod}</p>
+                        <p class="text-sm font-bold text-gray-700 mt-1">R$ ${Number(o.total||0).toFixed(2)}</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        ${badge}
+                        <button onclick="window.editOrcamento('${o.id}')" class="bg-yellow-400 text-white p-2 rounded hover:bg-yellow-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        </button>
+                    </div>
+                </div>`;
+            }
+        }).join('');
+        
+        if(isFull) updateDeleteButtonState();
+    }
+
+    // ===== OUTROS MODAIS E FUNÇÕES =====
+    window.changeTab = (event, tabName) => {
+      document.querySelectorAll('.tab-content, .tab, .mobile-tab').forEach(x=>x.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      document.querySelectorAll(`[data-tab="${tabName}"]`).forEach(t => t.classList.add('active'));
+      if (tabName === 'financeiro') setTimeout(() => window.updateFinanceiroView(), 100);
+    };
+
+    window.showAllOrcamentosPage = () => {
+      document.getElementById('main-view').classList.add('hidden');
+      document.getElementById('all-orcamentos-view').classList.remove('hidden');
+      renderOrcamentosList(true);
+    };
+    window.showMainPage = () => {
+      document.getElementById('all-orcamentos-view').classList.add('hidden');
+      document.getElementById('main-view').classList.remove('hidden');
+      appState.orcamentosParaExcluir.clear();
+    };
+
     window.openEditMaterialModal = (id) => {
         const m = appState.materiais.find(x=>x.id===id); if(!m)return;
         document.getElementById('edit-material-id').value=m.id;
@@ -1037,12 +1225,10 @@
     window.closeEditTipoServicoModal = () => document.getElementById('edit-tiposervico-modal').classList.remove('active');
     window.deleteTipoDeServico = async (id) => { if(confirm('Excluir?')) await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`)); };
 
-    // --- ORÇAMENTO ---
+    // --- ORÇAMENTO MODAL ---
     window.openOrcamentoModal = (editObj = null) => {
         const modal = document.getElementById('orcamento-modal');
         const sel = document.getElementById('orc-cliente-select');
-        
-        // Popula Selects
         sel.innerHTML = '<option value="">Selecione</option>' + appState.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
         populateMateriaisOrcamento();
         populateTiposDeServicoOrcamento();
@@ -1050,10 +1236,9 @@
         if (editObj) {
             document.getElementById('modal-title').textContent = 'Editar Orçamento';
             const clone = JSON.parse(JSON.stringify(editObj));
-            // Defaults
             clone.modoCobranca = clone.modoCobranca || 'mao_de_obra';
             clone.usarMaterial = clone.usarMaterial || 'sim';
-            clone.maoDeObra = clone.maoDeObra || {tipo:'',valor:0,raw_value:''};
+            clone.maoDeObra = clone.maoDeObra || {tipo:'',valor:0};
             clone.desconto = clone.desconto || {tipo:'nenhum',valor:0};
             appState.currentOrcamento = clone;
 
@@ -1063,205 +1248,100 @@
             checkRadio('modo-cobranca', clone.modoCobranca);
             checkRadio('usar-material', clone.usarMaterial);
             checkRadio('tipo-obra', clone.tipoObra || 'residencial');
-
             if(clone.maoDeObra.tipo) {
                 checkRadio('tipo-servico', clone.maoDeObra.tipo);
                 const map={'empreitada':'empreitada-valor', 'diaria':'diaria-qtd', 'ponto':'ponto-qtd', 'hora':'hora-qtd'};
                 const inp = document.getElementById(map[clone.maoDeObra.tipo]);
                 if(inp) inp.value = clone.maoDeObra.raw_value;
             }
-
             const dv = document.getElementById('orc-desconto-valor');
             document.getElementById('orc-desconto-tipo').value = clone.desconto.tipo;
             if(clone.desconto.tipo!=='nenhum') { dv.value=clone.desconto.valor; dv.disabled=false; }
             else { dv.value=''; dv.disabled=true; }
-            
             document.getElementById('orc-status-aprovado').checked = (clone.status === 'aprovado');
 
             applyVisualToggles(clone.modoCobranca, clone.usarMaterial);
-            
             setTimeout(() => {
                 if(clone.items) restoreCheckboxes('orc-materiais-list', clone.items);
                 if(clone.tiposDeServico) restoreCheckboxes('orc-tiposdeservico-list', clone.tiposDeServico);
-                window.calculateMaoDeObra();
-                window.updateOrcamentoPreview();
+                window.calculateMaoDeObra(); window.updateOrcamentoPreview();
             }, 200);
         } else {
             document.getElementById('modal-title').textContent = 'Criar Orçamento';
             appState.currentOrcamento = { id:null, cliente:null, modoCobranca:'mao_de_obra', usarMaterial:'sim', tiposDeServico:[], items:[], maoDeObra:{tipo:'',valor:0}, desconto:{tipo:'nenhum',valor:0}, total:0 };
-            
             document.getElementById('orc-descricao-servico').value='';
             document.getElementById('orc-status-aprovado').checked=false;
             sel.value='';
             document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(i=>i.value='');
             document.querySelectorAll('input[name="tipo-servico"]').forEach(r=>r.checked=false);
-            
             checkRadio('modo-cobranca', 'mao_de_obra');
             checkRadio('usar-material', 'sim');
-            checkRadio('tipo-obra', 'residencial');
             applyVisualToggles('mao_de_obra', 'sim');
             window.updateOrcamentoPreview();
         }
         modal.classList.add('active');
     };
-    
-    window.closeOrcamentoModal = () => document.getElementById('orcamento-modal').classList.remove('active');
+    window.closeOrcamentoModal = () => {
+        document.getElementById('orcamento-modal').classList.remove('active');
+        document.querySelectorAll('#orc-materiais-list input, #orc-tiposdeservico-list input').forEach(el => { if(el.type==='checkbox') el.checked=false; if(el.type==='number') { el.value=1; el.disabled=true; } });
+    };
     window.editOrcamento = (id) => { const o = appState.orcamentos.find(x=>String(x.id)===String(id)); if(o) window.openOrcamentoModal(o); };
-    
-    // --- TOGGLES ---
     function applyVisualToggles(modo, mat) {
         const mo=document.getElementById('orc-cobranca-mo-wrapper');
         const serv=document.getElementById('orc-cobranca-servico-wrapper');
         const mlist=document.getElementById('orc-cobranca-material-wrapper');
-        
         if(modo==='por_servico') { mo.classList.add('hidden'); serv.classList.remove('hidden'); }
         else { mo.classList.remove('hidden'); serv.classList.add('hidden'); }
-        
         if(mat==='nao') mlist.classList.add('hidden'); else mlist.classList.remove('hidden');
     }
 
-    // ===== 4. LISTAS E RENDERIZAÇÃO =====
-    function renderClientesList() {
-        const el = document.getElementById('clientes-list');
-        if(!appState.clientes.length) { el.innerHTML='<p class="text-gray-500 p-2">Vazio.</p>'; return; }
-        el.innerHTML = appState.clientes.map(c => `
-            <div class="flex justify-between items-center p-3 border rounded bg-white mb-1">
-                <div class="flex-grow cursor-pointer" onclick="openEditClienteModal('${c.id}')">
-                    <p class="font-bold text-gray-800">${c.nome}</p>
-                    <p class="text-sm text-gray-600">${formatarTelefone(c.telefone)}</p>
-                </div>
-                <button onclick="deleteCliente('${c.id}')" class="text-red-500 p-2">&times;</button>
-            </div>`).join('');
-    }
-    
-    function renderMateriaisList() {
-        const el = document.getElementById('materiais-list');
-        if(!appState.materiais.length) { el.innerHTML='<p class="text-gray-500 p-2">Vazio.</p>'; return; }
-        el.innerHTML = appState.materiais.map(m => `<div class="flex justify-between p-2 border rounded bg-white mb-1"><div class="flex-grow cursor-pointer" onclick="openEditMaterialModal('${m.id}')"><p class="font-medium">${m.nome}</p><p class="text-xs">R$ ${m.valor}</p></div><button onclick="deleteMaterial('${m.id}')" class="text-red-500 px-2">&times;</button></div>`).join('');
-    }
-
-    function renderTiposDeServicoList() {
-        const el = document.getElementById('tiposdeservico-list');
-        if(!appState.tiposDeServico.length) { el.innerHTML='<p class="text-gray-500 p-2">Vazio.</p>'; return; }
-        const grp = appState.tiposDeServico.reduce((a,c)=>{const k=(c.categoria||'OUTROS').toUpperCase();(a[k]||(a[k]=[])).push(c);return a;},{});
-        el.innerHTML = Object.keys(grp).sort().map(cat => `<details class="border rounded mb-1"><summary class="p-2 bg-gray-50 text-xs font-bold cursor-pointer">${cat}</summary><div class="p-2">${grp[cat].map(s=>`<div class="flex justify-between p-1 hover:bg-gray-50"><div class="flex-grow cursor-pointer" onclick="openEditTipoServicoModal('${s.id}')"><p class="text-sm">${s.descricao}</p><p class="text-xs text-green-600">R$ ${s.valor}</p></div><button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500">&times;</button></div>`).join('')}</div></details>`).join('');
-    }
-
-    function renderOrcamentosList(isFull=false) {
-        const el = isFull ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
-        if(!el) return;
-        let list = [...appState.orcamentos];
-        
-        if(isFull) {
-             const s=document.getElementById('filtro-status-orcamento').value;
-             const m=document.getElementById('filtro-mes-orcamento').value;
-             const a=document.getElementById('filtro-ano-orcamento').value;
-             list=list.filter(o=>{
-                 const st=(o.status==='aprovado'||o.aprovado)?'aprovado':'pendente';
-                 if(s!=='todos'&&st!==s) return false;
-                 const d=new Date(o.createdAt);
-                 if(m!=='todos'&&d.getMonth().toString()!==m) return false;
-                 if(a!=='todos'&&d.getFullYear().toString()!==a) return false;
-                 return true;
-             });
-        } else {
-            list = list.slice(0,3);
-        }
-        
-        if(!list.length) { el.innerHTML='<div class="p-4 text-gray-500 text-center">Nenhum orçamento.</div>'; return; }
-        el.innerHTML = list.map(o => {
-            const cli = appState.clientes.find(c=>c.id===o.cliente?.id);
-            const nome = cli ? cli.nome : 'Excluído';
-            const st = (o.status==='aprovado'||o.aprovado);
-            const badge = st ? '<span class="text-green-600 bg-green-100 text-xs font-bold px-2 py-1 rounded">APROVADO</span>' : '<span class="text-yellow-600 bg-yellow-100 text-xs font-bold px-2 py-1 rounded">PENDENTE</span>';
-            return `<div class="bg-white p-3 rounded border shadow-sm mb-2 flex justify-between items-center"><div class="overflow-hidden mr-2"><p class="font-bold truncate">${nome}</p><p class="text-xs text-gray-500">${o.numeroOrcamento||''} • R$ ${Number(o.total||0).toFixed(2)}</p></div><div class="flex items-center gap-2">${badge}<button onclick="editOrcamento('${o.id}')" class="bg-yellow-400 text-white p-2 rounded hover:bg-yellow-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button></div></div>`;
-        }).join('');
-        
-        if(isFull) {
-            const btn = document.getElementById('btn-delete-selected-orcamentos');
-            if(btn) btn.disabled = (appState.orcamentosParaExcluir.size===0);
-        }
-    }
-
-    // ===== 5. FINANCEIRO =====
-    window.updateFinanceiroView = () => {
-        const anoSel = document.getElementById('fat-ano')?.value || 'todos';
-        const mesSel = document.getElementById('fat-mes')?.value || 'all';
-        const vis = document.getElementById('chart-periodo')?.value || 'mensal';
-        const divMes = document.getElementById('fat-mes')?.parentElement;
-        
-        let tB=0, tL=0, ap=0, pe=0, labels=[], data=[];
-        
-        if(vis==='mensal') {
-            if(divMes) divMes.style.display='flex';
-            appState.orcamentos.forEach(o=>{
-                if(!o.createdAt)return;
-                const d=new Date(o.createdAt);
-                if(anoSel!=='todos' && d.getFullYear().toString()!==anoSel)return;
-                if(mesSel!=='all' && d.getMonth().toString()!==mesSel)return;
-                const v=Number(o.total||0); tB+=v;
-                if(o.status==='aprovado'||o.aprovado){tL+=v; ap++;} else pe++;
-            });
-            labels=['Gerado','Aprovado']; data=[tB,tL];
-        } else {
-            if(divMes) divMes.style.display='none';
-            const mb=Array(12).fill(0); const ml=Array(12).fill(0);
-            appState.orcamentos.forEach(o=>{
-                if(!o.createdAt)return;
-                const d=new Date(o.createdAt);
-                if(anoSel!=='todos' && d.getFullYear().toString()!==anoSel)return;
-                const v=Number(o.total||0); const i=d.getMonth();
-                mb[i]+=v; tB+=v;
-                if(o.status==='aprovado'||o.aprovado){ml[i]+=v; tL+=v; ap++;} else pe++;
-            });
-            labels=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-            data = (chartType==='pie') ? [tB,tL] : mb; // Simplificado para caber, pie mostra totais
-        }
-
-        // DOM
-        const fmt=v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
-        if(document.getElementById('fat-bruto')) document.getElementById('fat-bruto').textContent=fmt(tB);
-        if(document.getElementById('fat-liquido')) document.getElementById('fat-liquido').textContent=fmt(tL);
-        if(document.getElementById('fat-contagem')) document.getElementById('fat-contagem').textContent=`${ap} aprov / ${pe} pend`;
-
-        // Chart
-        const ctx = document.getElementById('finance-chart');
-        if(ctx) {
-            if(financeChart) financeChart.destroy();
-            financeChart = new Chart(ctx, {
-                type: chartType,
-                data: { labels: (chartType==='pie'&&vis==='anual')?['Gerado','Aprovado']:labels, datasets: [{ label:'Valor', data:data, backgroundColor:['#FACC15','#22C55E','#3B82F6'] }] },
-                options: { responsive:true, maintainAspectRatio:false }
-            });
-        }
-    };
-    window.mudarTipoGrafico=(t)=>{chartType=t; window.updateFinanceiroView();};
-
-    // ===== LISTENERS E UTILS =====
+    // ===== LISTENERS =====
     function setupListeners() {
         document.getElementById('config-doc')?.addEventListener('input', handleDocMask);
         document.getElementById('config-telefone')?.addEventListener('input', handleTelefoneMask);
         document.getElementById('config-cep')?.addEventListener('input', handleCEPMask);
         document.getElementById('btn-novo-orcamento')?.addEventListener('click', ()=>window.openOrcamentoModal());
-        
-        // Search
         document.getElementById('search-cliente')?.addEventListener('input', (e)=>{
             const q=e.target.value.toLowerCase();
             document.querySelectorAll('#clientes-list > div').forEach(d=>{ d.style.display=d.textContent.toLowerCase().includes(q)?'flex':'none'; });
         });
-        
-        // Toggles Listeners
+        document.getElementById('filter-tipos')?.addEventListener('input', (e)=>{
+            const q=e.target.value.toLowerCase();
+            document.querySelectorAll('#orc-tiposdeservico-list label span').forEach(s=>{ s.closest('label').parentElement.style.display=s.textContent.toLowerCase().includes(q)?'':'none'; });
+        });
         document.querySelectorAll('input[name="modo-cobranca"]').forEach(r=>{ r.addEventListener('change',(e)=>{if(appState.currentOrcamento)appState.currentOrcamento.modoCobranca=e.target.value; applyVisualToggles(e.target.value,appState.currentOrcamento?.usarMaterial||'sim'); window.updateOrcamentoPreview();}); });
         document.querySelectorAll('input[name="usar-material"]').forEach(r=>{ r.addEventListener('change',(e)=>{if(appState.currentOrcamento)appState.currentOrcamento.usarMaterial=e.target.value; applyVisualToggles(appState.currentOrcamento?.modoCobranca||'mao_de_obra',e.target.value); window.updateOrcamentoPreview();}); });
-    }
-    
-    function updateConfigForm() {
-        const c=appState.config||{}; const set=(i,v)=>{const e=document.getElementById(i);if(e)e.value=v||'';};
-        set('config-nome',c.nome); set('config-telefone',formatarTelefone(c.telefone));
-        if(c.logo){document.getElementById('config-logo').value=c.logo; document.getElementById('config-logo-preview').src=c.logo; document.getElementById('config-logo-preview-wrapper').classList.remove('hidden');}
+        
+        // Filtros da Lista de Orçamentos
+        const refreshList = () => renderOrcamentosList(true);
+        document.getElementById('filtro-status-orcamento')?.addEventListener('change', refreshList);
+        document.getElementById('filtro-mes-orcamento')?.addEventListener('change', refreshList);
+        document.getElementById('filtro-ano-orcamento')?.addEventListener('change', refreshList);
+        document.getElementById('btn-limpar-filtros-orcamento')?.addEventListener('click', () => {
+             document.getElementById('filtro-status-orcamento').value='todos';
+             document.getElementById('filtro-mes-orcamento').value='todos';
+             document.getElementById('filtro-ano-orcamento').value='todos';
+             refreshList();
+        });
     }
 
-    // Formatação
+    // ===== SUBMITS =====
+    document.getElementById('form-config')?.addEventListener('submit', async(e)=>{e.preventDefault(); const id='main'; const getVal=(i)=>document.getElementById(i).value; const d={nome:getVal('config-nome'), telefone:getVal('config-telefone').replace(/\D/g,''), doc:getVal('config-doc').replace(/\D/g,''), cep:getVal('config-cep').replace(/\D/g,''), numero:getVal('config-numero'), logradouro:getVal('config-logradouro'), bairro:getVal('config-bairro'), cidade:getVal('config-cidade'), uf:getVal('config-uf'), logo:getVal('config-logo'), config_color_primary:getVal('config-color-primary'), config_color_secondary:getVal('config-color-secondary'), residencial_empreitada:parseFloat(getVal('config-residencial-empreitada'))||0, residencial_diaria:parseFloat(getVal('config-residencial-diaria'))||0, residencial_ponto:parseFloat(getVal('config-residencial-ponto'))||0, residencial_hora:parseFloat(getVal('config-residencial-hora'))||0, industrial_diaria:parseFloat(getVal('config-industrial-diaria'))||0, industrial_ponto:parseFloat(getVal('config-industrial-ponto'))||0, industrial_hora:parseFloat(getVal('config-industrial-hora'))||0, config_pix_chave:getVal('config-pix-chave'), config_cartao_vezes:parseInt(getVal('config-cartao-vezes'))||0, config_cartao_juros:parseFloat(getVal('config-cartao-juros'))||0, config_pagamento_dinheiro:document.getElementById('config-pagamento-dinheiro').checked, config_deposito_banco:getVal('config-deposito-banco'), config_deposito_ag:getVal('config-deposito-ag'), config_deposito_conta:getVal('config-deposito-conta')}; await setDoc(doc(db,`users/${userId}/config/${id}`), d, {merge:true}); alert('Salvo'); });
+    document.getElementById('form-cliente')?.addEventListener('submit', async(e)=>{e.preventDefault(); const d={nome:document.getElementById('cliente-nome').value, telefone:document.getElementById('cliente-telefone').value.replace(/\D/g,''), documento:document.getElementById('cliente-documento').value.replace(/\D/g,''), numeroCadastro:gerarNovoNumeroCliente(), cep:document.getElementById('cliente-cep').value.replace(/\D/g,''), numero:document.getElementById('cliente-numero').value, logradouro:document.getElementById('cliente-logradouro').value, bairro:document.getElementById('cliente-bairro').value, cidade:document.getElementById('cliente-cidade').value, uf:document.getElementById('cliente-uf').value}; await addDoc(collection(db,`users/${userId}/clientes`), d); e.target.reset(); alert('Salvo'); });
+    document.getElementById('form-edit-cliente')?.addEventListener('submit', async(e)=>{e.preventDefault(); const id=document.getElementById('edit-cliente-id').value; const v=(i)=>document.getElementById(i).value; const d={nome:v('edit-cliente-nome'), numeroCadastro:v('edit-cliente-numerocadastro'), telefone:v('edit-cliente-telefone').replace(/\D/g,''), documento:v('edit-cliente-documento').replace(/\D/g,''), cep:v('edit-cliente-cep').replace(/\D/g,''), numero:v('edit-cliente-numero'), logradouro:v('edit-cliente-logradouro'), bairro:v('edit-cliente-bairro'), cidade:v('edit-cliente-cidade'), uf:v('edit-cliente-uf')}; await setDoc(doc(db,`users/${userId}/clientes/${id}`),d,{merge:true}); window.closeEditClienteModal(); alert('Atualizado'); });
+    document.getElementById('form-material')?.addEventListener('submit', async(e)=>{e.preventDefault(); await addDoc(collection(db,`users/${userId}/materiais`),{nome:document.getElementById('material-nome').value, valor:parseFloat(document.getElementById('material-valor').value), unidade:document.getElementById('material-unidade').value}); e.target.reset(); alert('Salvo'); });
+    document.getElementById('form-edit-material')?.addEventListener('submit', async(e)=>{e.preventDefault(); const id=document.getElementById('edit-material-id').value; const d={nome:document.getElementById('edit-material-nome').value, unidade:document.getElementById('edit-material-unidade').value, valor:parseFloat(document.getElementById('edit-material-valor').value)}; await setDoc(doc(db,`users/${userId}/materiais/${id}`),d); window.closeEditMaterialModal(); alert('Atualizado'); });
+    document.getElementById('form-tiposervico')?.addEventListener('submit', async(e)=>{e.preventDefault(); const s=document.getElementById('tiposervico-categoria-select'); const c=s.value==='new_category'?document.getElementById('tiposervico-categoria-new').value:s.value; await addDoc(collection(db,`users/${userId}/tiposdeservico`),{categoria:c.toUpperCase(), descricao:document.getElementById('tiposervico-descricao').value, valor:parseFloat(document.getElementById('tiposervico-valor').value)}); e.target.reset(); alert('Salvo'); });
+    document.getElementById('form-edit-tiposervico')?.addEventListener('submit', async(e)=>{e.preventDefault(); const id=document.getElementById('edit-tiposervico-id').value; const d={categoria:document.getElementById('edit-tiposervico-categoria').value.toUpperCase(), descricao:document.getElementById('edit-tiposervico-descricao').value, valor:parseFloat(document.getElementById('edit-tiposervico-valor').value)}; await setDoc(doc(db,`users/${userId}/tiposdeservico/${id}`),d); window.closeEditTipoServicoModal(); alert('Atualizado'); });
+
+    // ===== UTILS E HELPERS =====
+    function renderMateriaisList() { const el=document.getElementById('materiais-list'); if(!appState.materiais.length){el.innerHTML='<p class="text-gray-500">Vazio.</p>';return;} el.innerHTML=appState.materiais.map(m=>`<div class="flex justify-between p-2 border rounded mb-1"><div class="flex-grow cursor-pointer" onclick="window.openEditMaterialModal('${m.id}')"><p class="font-medium">${m.nome}</p><p class="text-xs">R$ ${m.valor}</p></div><button onclick="window.deleteMaterial('${m.id}')" class="text-red-500 px-2">&times;</button></div>`).join(''); }
+    function renderTiposDeServicoList() { const el=document.getElementById('tiposdeservico-list'); if(!appState.tiposDeServico.length){el.innerHTML='<p class="text-gray-500">Vazio.</p>';return;} const g=appState.tiposDeServico.reduce((a,c)=>{const k=(c.categoria||'OUTROS').toUpperCase();(a[k]||(a[k]=[])).push(c);return a;},{}); el.innerHTML=Object.keys(g).sort().map(k=>`<details class="border rounded mb-1"><summary class="p-2 bg-gray-50 text-xs font-bold uppercase">${k}</summary><div class="p-2">${g[k].map(s=>`<div class="flex justify-between p-1 hover:bg-gray-50"><div class="flex-grow cursor-pointer" onclick="window.openEditTipoServicoModal('${s.id}')"><p class="text-sm">${s.descricao}</p><p class="text-xs text-green-600">R$ ${s.valor}</p></div><button onclick="window.deleteTipoDeServico('${s.id}')" class="text-red-500">&times;</button></div>`).join('')}</div></details>`).join(''); }
+    function populateCategorySelect(){const s=document.getElementById('tiposervico-categoria-select'); const c=[...new Set(appState.tiposDeServico.map(x=>x.categoria).filter(Boolean))].sort(); while(s.options.length>2)s.remove(2); c.forEach(k=>{const o=document.createElement('option'); o.value=k; o.text=k; s.add(o);});}
+    function populateMateriaisOrcamento(){const l=document.getElementById('orc-materiais-list'); if(l) l.innerHTML=appState.materiais.map(m=>`<div class="flex justify-between p-2 hover:bg-gray-50"><label class="flex flex-grow"><input type="checkbox" data-id="${m.id}" class="mr-2"><span class="text-sm">${m.nome} - R$ ${m.valor}</span></label><input type="number" min="1" value="1" data-id="${m.id}" class="w-16 border rounded text-sm" disabled></div>`).join(''); l.addEventListener('input', e=>{const t=e.target; const id=t.dataset.id; const m=appState.materiais.find(x=>x.id===id); if(!m)return; const q=document.querySelector(`#orc-materiais-list input[type="number"][data-id="${id}"]`); if(t.type==='checkbox'){if(t.checked){q.disabled=false; appState.currentOrcamento.items.push({...m,quantidade:1});}else{q.disabled=true; appState.currentOrcamento.items=appState.currentOrcamento.items.filter(x=>x.id!==id);}} else if(t.type==='number'){const i=appState.currentOrcamento.items.find(x=>x.id===id); if(i)i.quantidade=parseInt(t.value)||1;} window.updateOrcamentoPreview();});}
+    function populateTiposDeServicoOrcamento(){const l=document.getElementById('orc-tiposdeservico-list'); const g=appState.tiposDeServico.reduce((a,c)=>{const k=(c.categoria||'OUTROS').toUpperCase();(a[k]||(a[k]=[])).push(c);return a;},{}); l.innerHTML=Object.keys(g).sort().map(k=>`<details class="mb-1 border rounded"><summary class="p-2 bg-gray-50 text-xs font-bold uppercase">${k}</summary><div class="p-2">${g[k].map(s=>`<div class="flex justify-between p-1 hover:bg-gray-50"><label class="flex flex-grow"><input type="checkbox" data-id="${s.id}" class="mr-2"><span class="text-sm">${s.descricao} - R$ ${s.valor}</span></label><input type="number" min="1" value="1" data-id="${s.id}" class="w-16 border rounded text-sm" disabled></div>`).join('')}</div></details>`).join(''); l.addEventListener('input', e=>{const t=e.target; const id=t.dataset.id; const s=appState.tiposDeServico.find(x=>x.id===id); if(!s)return; const q=document.querySelector(`#orc-tiposdeservico-list input[type="number"][data-id="${id}"]`); if(t.type==='checkbox'){if(t.checked){q.disabled=false; appState.currentOrcamento.tiposDeServico.push({...s,quantidade:1});}else{q.disabled=true; appState.currentOrcamento.tiposDeServico=appState.currentOrcamento.tiposDeServico.filter(x=>x.id!==id);}} else if(t.type==='number'){const i=appState.currentOrcamento.tiposDeServico.find(x=>x.id===id); if(i)i.quantidade=parseInt(t.value)||1;} window.updateOrcamentoPreview();});}
+    
+    function gerarNovoNumeroCliente(){const ids=appState.clientes.map(c=>c.numeroCadastro).filter(x=>x&&x.startsWith('CL')); let max=0; ids.forEach(i=>{const n=parseInt(i.substring(2,5)); if(!isNaN(n)&&n>max)max=n;}); const seq=(max+1).toString().padStart(3,'0'); const d=new Date(); return `CL${seq}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getFullYear().toString().slice(-2)}`;}
     function formatarTelefone(v){v=String(v).replace(/\D/g,''); return v.replace(/(\d{2})(\d{5})(\d{4})/,"($1) $2-$3");}
     function formatarCPFCNPJ(v){v=String(v).replace(/\D/g,''); if(v.length<=11)return v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.$2.$3-$4"); return v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,"$1.$2.$3/$4-$5");}
     function formatarCEP(v){v=String(v).replace(/\D/g,''); return v.replace(/(\d{5})(\d{3})/,"$1-$2");}
@@ -1270,59 +1350,42 @@
     function handleCEPMask(e){e.target.value=formatarCEP(e.target.value);}
     function checkRadio(n,v){const el=document.querySelector(`input[name="${n}"][value="${v}"]`); if(el)el.checked=true;}
     function restoreCheckboxes(lid, items){ if(!items)return; items.forEach(i=>{const cb=document.querySelector(`#${lid} input[data-id="${i.id}"]`); const qt=document.querySelector(`#${lid} input[type="number"][data-id="${i.id}"]`); if(cb)cb.checked=true; if(qt){qt.disabled=false; qt.value=i.quantidade;}});}
-    function populateCategorySelect(){const s=document.getElementById('tiposervico-categoria-select'); const c=[...new Set(appState.tiposDeServico.map(x=>x.categoria).filter(Boolean))].sort(); while(s.options.length>2)s.remove(2); c.forEach(k=>{const o=document.createElement('option'); o.value=k; o.text=k; s.add(o);});}
-    function populateMateriaisOrcamento(){const l=document.getElementById('orc-materiais-list'); if(l) l.innerHTML=appState.materiais.map(m=>`<div class="flex justify-between p-2 hover:bg-gray-50"><label class="flex flex-grow"><input type="checkbox" data-id="${m.id}" class="mr-2"><span class="text-sm">${m.nome} - R$ ${m.valor}</span></label><input type="number" min="1" value="1" data-id="${m.id}" class="w-16 border rounded text-sm" disabled></div>`).join(''); l.addEventListener('input', e=>{const t=e.target; const id=t.dataset.id; const m=appState.materiais.find(x=>x.id===id); if(!m)return; const q=document.querySelector(`#orc-materiais-list input[type="number"][data-id="${id}"]`); if(t.type==='checkbox'){if(t.checked){q.disabled=false; appState.currentOrcamento.items.push({...m,quantidade:1});}else{q.disabled=true; appState.currentOrcamento.items=appState.currentOrcamento.items.filter(x=>x.id!==id);}} else if(t.type==='number'){const i=appState.currentOrcamento.items.find(x=>x.id===id); if(i)i.quantidade=parseInt(t.value)||1;} window.updateOrcamentoPreview();});}
-    function populateTiposDeServicoOrcamento(){const l=document.getElementById('orc-tiposdeservico-list'); const g=appState.tiposDeServico.reduce((a,c)=>{const k=(c.categoria||'OUTROS').toUpperCase();(a[k]||(a[k]=[])).push(c);return a;},{}); l.innerHTML=Object.keys(g).sort().map(k=>`<details class="mb-1 border rounded"><summary class="p-2 bg-gray-50 text-xs font-bold uppercase">${k}</summary><div class="p-2">${g[k].map(s=>`<div class="flex justify-between p-1 hover:bg-gray-50"><label class="flex flex-grow"><input type="checkbox" data-id="${s.id}" class="mr-2"><span class="text-sm">${s.descricao} - R$ ${s.valor}</span></label><input type="number" min="1" value="1" data-id="${s.id}" class="w-16 border rounded text-sm" disabled></div>`).join('')}</div></details>`).join(''); l.addEventListener('input', e=>{const t=e.target; const id=t.dataset.id; const s=appState.tiposDeServico.find(x=>x.id===id); if(!s)return; const q=document.querySelector(`#orc-tiposdeservico-list input[type="number"][data-id="${id}"]`); if(t.type==='checkbox'){if(t.checked){q.disabled=false; appState.currentOrcamento.tiposDeServico.push({...s,quantidade:1});}else{q.disabled=true; appState.currentOrcamento.tiposDeServico=appState.currentOrcamento.tiposDeServico.filter(x=>x.id!==id);}} else if(t.type==='number'){const i=appState.currentOrcamento.tiposDeServico.find(x=>x.id===id); if(i)i.quantidade=parseInt(t.value)||1;} window.updateOrcamentoPreview();});}
-    function gerarNovoNumeroCliente(){const ids=appState.clientes.map(c=>c.numeroCadastro).filter(x=>x&&x.startsWith('CL')); let max=0; ids.forEach(i=>{const n=parseInt(i.substring(2,5)); if(!isNaN(n)&&n>max)max=n;}); const seq=(max+1).toString().padStart(3,'0'); const d=new Date(); return `CL${seq}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getFullYear().toString().slice(-2)}`;}
-    
-    // Preview / Calc
-    window.calculateMaoDeObra = () => {
-        const sel=document.querySelector('input[name="tipo-servico"]:checked');
-        if(!sel){if(appState.currentOrcamento)appState.currentOrcamento.maoDeObra={tipo:'',valor:0,raw_value:0};return;}
-        const t=sel.value; const c=appState.config; const isInd=appState.currentOrcamento.tipoObra==='industrial';
-        let v=0, r=0, l='';
-        if(t==='empreitada'){ r=parseFloat(document.getElementById('empreitada-valor').value)||0; v=r; l='Empreitada'; }
-        else if(t==='diaria'){ r=parseInt(document.getElementById('diaria-qtd').value)||0; v=r*(isInd?c.industrial_diaria:c.residencial_diaria); l=`${r} dias`; }
-        else if(t==='ponto'){ r=parseInt(document.getElementById('ponto-qtd').value)||0; v=r*(isInd?c.industrial_ponto:c.residencial_ponto); l=`${r} pts`; }
-        else if(t==='hora'){ r=parseFloat(document.getElementById('hora-qtd').value)||0; v=r*(isInd?c.industrial_hora:c.residencial_hora); l=`${r} hrs`; }
-        appState.currentOrcamento.maoDeObra={tipo:t, valor:v, label:l, raw_value:r};
-    };
-    document.getElementById('orc-tipo-obra')?.addEventListener('change', (e)=>{ if(appState.currentOrcamento) appState.currentOrcamento.tipoObra=e.target.value==='industrial'?'industrial':'residencial'; window.calculateMaoDeObra(); window.updateOrcamentoPreview(); });
-    document.getElementById('orc-mao-de-obra')?.addEventListener('input', ()=>{ window.calculateMaoDeObra(); window.updateOrcamentoPreview(); });
-    document.getElementById('orc-descricao-servico')?.addEventListener('input', (e)=>{ if(appState.currentOrcamento) appState.currentOrcamento.descricaoServico=e.target.value; window.updateOrcamentoPreview(); });
-    document.getElementById('orc-status-aprovado')?.addEventListener('change', (e)=>{ if(appState.currentOrcamento) appState.currentOrcamento.status=e.target.checked?'aprovado':'pendente'; });
-    document.getElementById('orc-desconto-tipo')?.addEventListener('change', (e)=>{ const v=document.getElementById('orc-desconto-valor'); if(e.target.value==='nenhum'){v.disabled=true;v.value='';appState.currentOrcamento.desconto={tipo:'nenhum',valor:0};}else{v.disabled=false;appState.currentOrcamento.desconto.tipo=e.target.value;} window.updateOrcamentoPreview(); });
-    document.getElementById('orc-desconto-valor')?.addEventListener('input', (e)=>{ appState.currentOrcamento.desconto.valor=parseFloat(e.target.value)||0; window.updateOrcamentoPreview(); });
 
-    window.updateOrcamentoPreview = () => {
-        const {config, currentOrcamento} = appState;
-        const el=document.getElementById('pdf-preview');
-        if(!currentOrcamento?.cliente){el.innerHTML='<p class="text-center text-gray-400 mt-10">Selecione Cliente</p>';return;}
-        
-        let hI='', tI=0; if(currentOrcamento.usarMaterial==='sim'){hI=`<h4 class="font-bold mt-2">MATERIAIS</h4><table class="w-full text-xs">`; currentOrcamento.items.forEach(i=>{const t=i.valor*i.quantidade; tI+=t; hI+=`<tr><td>${i.nome}</td><td class="text-right">${i.quantidade}</td><td class="text-right">R$ ${t.toFixed(2)}</td></tr>`;}); hI+=`</table>`;}
-        let hS='', tS=0; if(currentOrcamento.modoCobranca==='por_servico'){hS=`<h4 class="font-bold mt-2">SERVIÇOS</h4><table class="w-full text-xs">`; currentOrcamento.tiposDeServico.forEach(s=>{const t=s.valor*s.quantidade; tS+=t; hS+=`<tr><td>${s.descricao}</td><td class="text-right">${s.quantidade}</td><td class="text-right">R$ ${t.toFixed(2)}</td></tr>`;}); hS+=`</table>`;}
-        let hM='', tM=0; if(currentOrcamento.modoCobranca==='mao_de_obra'){tM=currentOrcamento.maoDeObra.valor||0; hM=`<div class="mt-2 text-right text-sm"><strong>Mão Obra:</strong> R$ ${tM.toFixed(2)}</div>`;}
-        
-        let tot=tI+tS+tM; let desc=0;
-        if(currentOrcamento.desconto.tipo==='percent') desc=tot*(currentOrcamento.desconto.valor/100); else if(currentOrcamento.desconto.tipo==='valor') desc=currentOrcamento.desconto.valor;
-        currentOrcamento.total=tot-desc;
-        
-        el.innerHTML=`<div class="p-4 text-sm"><div class="flex justify-between"><div><h2 class="font-bold text-lg">${config.nome||'Empresa'}</h2><p>${config.telefone?formatarTelefone(config.telefone):''}</p></div>${config.logo?`<img src="${config.logo}" class="h-12">`:''}</div><hr class="my-2"><p><strong>Cliente:</strong> ${currentOrcamento.cliente.nome}</p>${currentOrcamento.descricaoServico?`<p class="mt-2"><strong>Desc:</strong> ${currentOrcamento.descricaoServico}</p>`:''}${hI}${hS}${hM}<div class="text-right mt-4 pt-2 border-t font-bold text-lg">${desc>0?`<p class="text-xs font-normal">Desc: R$ ${desc.toFixed(2)}</p>`:''}Total: R$ ${currentOrcamento.total.toFixed(2)}</div></div>`;
-    };
-
+    window.closeEditClienteModal=()=>document.getElementById('edit-cliente-modal').classList.remove('active');
+    window.deleteCliente=async(id)=>{if(confirm('Excluir?'))await deleteDoc(doc(db,`users/${userId}/clientes/${id}`));};
     window.shareOrViewPDF=async()=>{const el=document.getElementById('pdf-preview'); const opt={margin:10,filename:'orcamento.pdf',image:{type:'jpeg',quality:0.98},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}; html2pdf().set(opt).from(el).save();};
     window.sendWhatsAppText=()=>{if(!appState.currentOrcamento?.cliente)return; const t=appState.currentOrcamento.cliente.telefone.replace(/\D/g,''); window.open(`https://wa.me/55${t}`, '_blank');};
     window.loginWithGoogle=async()=>{try{await signInWithPopup(auth, new GoogleAuthProvider());}catch(e){alert('Erro login');}};
     window.logout=async()=>{if(confirm('Sair?'))await signOut(auth);};
 
-    // Submits (Fixos)
-    document.getElementById('form-config')?.addEventListener('submit', async(e)=>{e.preventDefault(); const id='main'; const d={nome:document.getElementById('config-nome').value, telefone:document.getElementById('config-telefone').value.replace(/\D/g,''), doc:document.getElementById('config-doc').value.replace(/\D/g,''), cep:document.getElementById('config-cep').value.replace(/\D/g,''), numero:document.getElementById('config-numero').value, logradouro:document.getElementById('config-logradouro').value, bairro:document.getElementById('config-bairro').value, cidade:document.getElementById('config-cidade').value, uf:document.getElementById('config-uf').value, logo:document.getElementById('config-logo').value, config_color_primary:document.getElementById('config-color-primary').value, config_color_secondary:document.getElementById('config-color-secondary').value, residencial_empreitada:parseFloat(document.getElementById('config-residencial-empreitada').value)||0, residencial_diaria:parseFloat(document.getElementById('config-residencial-diaria').value)||0, residencial_ponto:parseFloat(document.getElementById('config-residencial-ponto').value)||0, residencial_hora:parseFloat(document.getElementById('config-residencial-hora').value)||0, industrial_diaria:parseFloat(document.getElementById('config-industrial-diaria').value)||0, industrial_ponto:parseFloat(document.getElementById('config-industrial-ponto').value)||0, industrial_hora:parseFloat(document.getElementById('config-industrial-hora').value)||0, config_pix_chave:document.getElementById('config-pix-chave').value, config_cartao_vezes:parseInt(document.getElementById('config-cartao-vezes').value)||0, config_cartao_juros:parseFloat(document.getElementById('config-cartao-juros').value)||0, config_pagamento_dinheiro:document.getElementById('config-pagamento-dinheiro').checked, config_deposito_banco:document.getElementById('config-deposito-banco').value, config_deposito_ag:document.getElementById('config-deposito-ag').value, config_deposito_conta:document.getElementById('config-deposito-conta').value}; await setDoc(doc(db,`users/${userId}/config/${id}`), d, {merge:true}); alert('Salvo'); });
-    document.getElementById('form-cliente')?.addEventListener('submit', async(e)=>{e.preventDefault(); const d={nome:document.getElementById('cliente-nome').value, telefone:document.getElementById('cliente-telefone').value.replace(/\D/g,''), documento:document.getElementById('cliente-documento').value.replace(/\D/g,''), numeroCadastro:gerarNovoNumeroCliente(), cep:document.getElementById('cliente-cep').value.replace(/\D/g,''), numero:document.getElementById('cliente-numero').value, logradouro:document.getElementById('cliente-logradouro').value, bairro:document.getElementById('cliente-bairro').value, cidade:document.getElementById('cliente-cidade').value, uf:document.getElementById('cliente-uf').value}; await addDoc(collection(db,`users/${userId}/clientes`), d); e.target.reset(); alert('Salvo'); });
-    document.getElementById('form-material')?.addEventListener('submit', async(e)=>{e.preventDefault(); await addDoc(collection(db,`users/${userId}/materiais`),{nome:document.getElementById('material-nome').value, valor:parseFloat(document.getElementById('material-valor').value), unidade:document.getElementById('material-unidade').value}); e.target.reset(); alert('Salvo'); });
-    document.getElementById('form-tiposervico')?.addEventListener('submit', async(e)=>{e.preventDefault(); const s=document.getElementById('tiposervico-categoria-select'); const c=s.value==='new_category'?document.getElementById('tiposervico-categoria-new').value:s.value; await addDoc(collection(db,`users/${userId}/tiposdeservico`),{categoria:c.toUpperCase(), descricao:document.getElementById('tiposervico-descricao').value, valor:parseFloat(document.getElementById('tiposervico-valor').value)}); e.target.reset(); alert('Salvo'); });
-    document.getElementById('form-edit-cliente')?.addEventListener('submit', async(e)=>{e.preventDefault(); const id=document.getElementById('edit-cliente-id').value; const d={nome:document.getElementById('edit-cliente-nome').value, numeroCadastro:document.getElementById('edit-cliente-numerocadastro').value, telefone:document.getElementById('edit-cliente-telefone').value.replace(/\D/g,''), documento:document.getElementById('edit-cliente-documento').value.replace(/\D/g,''), cep:document.getElementById('edit-cliente-cep').value.replace(/\D/g,''), numero:document.getElementById('edit-cliente-numero').value, logradouro:document.getElementById('edit-cliente-logradouro').value, bairro:document.getElementById('edit-cliente-bairro').value, cidade:document.getElementById('edit-cliente-cidade').value, uf:document.getElementById('edit-cliente-uf').value}; await setDoc(doc(db,`users/${userId}/clientes/${id}`),d,{merge:true}); window.closeEditClienteModal(); });
-    document.getElementById('form-edit-material')?.addEventListener('submit', async(e)=>{e.preventDefault(); const id=document.getElementById('edit-material-id').value; const d={nome:document.getElementById('edit-material-nome').value, unidade:document.getElementById('edit-material-unidade').value, valor:parseFloat(document.getElementById('edit-material-valor').value)}; await setDoc(doc(db,`users/${userId}/materiais/${id}`),d); window.closeEditMaterialModal(); });
-    document.getElementById('form-edit-tiposervico')?.addEventListener('submit', async(e)=>{e.preventDefault(); const id=document.getElementById('edit-tiposervico-id').value; const d={categoria:document.getElementById('edit-tiposervico-categoria').value.toUpperCase(), descricao:document.getElementById('edit-tiposervico-descricao').value, valor:parseFloat(document.getElementById('edit-tiposervico-valor').value)}; await setDoc(doc(db,`users/${userId}/tiposdeservico/${id}`),d); window.closeEditTipoServicoModal(); });
+    // Financeiro
+    window.updateFinanceiroView = () => {
+        const anoSel = document.getElementById('fat-ano')?.value || 'todos';
+        const mesSel = document.getElementById('fat-mes')?.value || 'all';
+        const vis = document.getElementById('chart-periodo')?.value || 'mensal';
+        const divMes = document.getElementById('fat-mes')?.parentElement;
+        let tB=0, tL=0, ap=0, pe=0, labels=[], data=[];
+        if(vis==='mensal') {
+            if(divMes) divMes.style.display='flex';
+            appState.orcamentos.forEach(o=>{ if(!o.createdAt)return; const d=new Date(o.createdAt); if(anoSel!=='todos' && d.getFullYear().toString()!==anoSel)return; if(mesSel!=='all' && d.getMonth().toString()!==mesSel)return; const v=Number(o.total||0); tB+=v; if(o.status==='aprovado'||o.aprovado){tL+=v; ap++;} else pe++; });
+            labels=['Gerado','Aprovado']; data=[tB,tL];
+        } else {
+            if(divMes) divMes.style.display='none';
+            const mb=Array(12).fill(0); 
+            appState.orcamentos.forEach(o=>{ if(!o.createdAt)return; const d=new Date(o.createdAt); if(anoSel!=='todos' && d.getFullYear().toString()!==anoSel)return; const v=Number(o.total||0); const i=d.getMonth(); mb[i]+=v; tB+=v; if(o.status==='aprovado'||o.aprovado){tL+=v; ap++;} else pe++; });
+            labels=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; data = mb; 
+        }
+        const fmt=v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+        if(document.getElementById('fat-bruto')) document.getElementById('fat-bruto').textContent=fmt(tB);
+        if(document.getElementById('fat-liquido')) document.getElementById('fat-liquido').textContent=fmt(tL);
+        if(document.getElementById('fat-contagem')) document.getElementById('fat-contagem').textContent=`${ap} aprov / ${pe} pend`;
+        const ctx = document.getElementById('finance-chart');
+        if(ctx) {
+            if(financeChart) financeChart.destroy();
+            financeChart = new Chart(ctx, { type: chartType, data: { labels, datasets: [{ label:'Valor', data:data, backgroundColor:['#FACC15','#22C55E'] }] }, options: { responsive:true, maintainAspectRatio:false } });
+        }
+    };
+    window.mudarTipoGrafico=(t)=>{chartType=t; window.updateFinanceiroView();};
 
   </script>
  
