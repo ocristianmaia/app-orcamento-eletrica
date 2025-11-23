@@ -898,6 +898,90 @@
       orcamentosParaExcluir: new Set()
     };
 
+// ===== CORREÇÃO DE EMERGÊNCIA: SELETOR DE CLIENTE =====
+    // Cole isso logo antes do final do script
+
+    // 1. Força a detecção da mudança de cliente
+    const clienteSelect = document.getElementById('orc-cliente-select');
+    if (clienteSelect) {
+        clienteSelect.addEventListener('change', (e) => {
+            console.log("Cliente selecionado:", e.target.value); // Debug para você ver no console
+            const clienteId = e.target.value;
+            
+            // Garante que o objeto de orçamento existe
+            if (!appState.currentOrcamento) {
+                appState.currentOrcamento = { 
+                    id: null, 
+                    cliente: null, 
+                    modoCobranca: 'mao_de_obra', 
+                    usarMaterial: 'sim', 
+                    tiposDeServico: [], 
+                    items: [], 
+                    maoDeObra: { tipo: '', valor: 0 }, 
+                    desconto: { tipo: 'nenhum', valor: 0 }, 
+                    total: 0 
+                };
+            }
+
+            if (clienteId) {
+                const clienteEncontrado = appState.clientes.find(c => c.id === clienteId);
+                if (clienteEncontrado) {
+                    appState.currentOrcamento.cliente = clienteEncontrado;
+                    // Atualiza o preview imediatamente
+                    if(typeof window.updateOrcamentoPreview === 'function') {
+                        window.updateOrcamentoPreview();
+                    }
+                }
+            } else {
+                appState.currentOrcamento.cliente = null;
+                document.getElementById('pdf-preview').innerHTML = '<p class="text-gray-500 text-center mt-8">Selecione um cliente.</p>';
+            }
+        });
+    }
+
+    // 2. Reforça a função de PDF (Caso tenha se perdido)
+    window.shareOrViewPDF = async () => {
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
+      
+      const element = document.createElement('div');
+      element.innerHTML = document.getElementById('pdf-preview').innerHTML;
+      element.style.width = '800px';
+      element.style.padding = '20px';
+      element.style.backgroundColor = 'white';
+      
+      const nomeArq = `orcamento_${appState.currentOrcamento.cliente.nome.split(' ')[0]}.pdf`;
+      const opt = {
+        margin: 0,
+        filename: nomeArq,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, windowWidth: 800 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      try {
+          // Tenta compartilhar no celular
+          if (navigator.share && navigator.canShare) {
+              const worker = html2pdf().set(opt).from(element).toPdf();
+              const pdfBlob = await worker.output('blob');
+              const file = new File([pdfBlob], nomeArq, { type: 'application/pdf' });
+              
+              if (navigator.canShare({ files: [file] })) {
+                  await navigator.share({
+                      files: [file],
+                      title: 'Orçamento',
+                      text: 'Segue o orçamento em PDF.'
+                  });
+                  return;
+              }
+          }
+          // Se for PC, baixa
+          html2pdf().set(opt).from(element).save();
+      } catch (e) {
+          alert('Erro ao gerar PDF. O arquivo será baixado.');
+          html2pdf().set(opt).from(element).save();
+      }
+    };
+  
     // ===== 1. INICIALIZAÇÃO =====
     window.onload = async () => {
       app = initializeApp(firebaseConfig);
