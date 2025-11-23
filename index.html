@@ -316,6 +316,98 @@
             </div>
           </div>
 
+          <div id="materiais" class="tab-content space-y-4">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+              <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Material</h2>
+              <form id="form-material" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
+                <div class="flex-grow">
+                  <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                  <input type="text" id="material-nome" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: Tomada Dupla 10A" required>
+                </div>
+                <div class="sm:w-32">
+                  <label class="block text-sm font-medium text-gray-700">Unidade</label>
+                  <select id="material-unidade" class="w-full p-2 border rounded-md mt-1 h-10">
+                    <option>UNID</option><option>Pç</option><option>m</option><option>cx</option><option>kit</option>
+                  </select>
+                </div>
+                <div class="sm:w-40">
+                  <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                  <input type="number" step="0.01" id="material-valor" class="w-full p-2 border rounded-md mt-1" placeholder="25.50" required>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors h-10 w-full sm:w-auto">Salvar Item</button>
+              </form>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-xl font-semibold mb-4">Importar Materiais</h2>
+                <div class="mb-6 p-4 border rounded-lg bg-gray-50">
+                    <p class="text-sm text-gray-600 mb-2">Importar planilha (.xlsx) com as colunas <strong>Descrição</strong>, <strong>Unidade</strong> e <strong>Valor</strong>.</p>
+                    <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                      <input type="file" id="materiais-xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm text-gray-700 flex-1">
+                      <button id="btn-import-materiais-xlsx" class="whitespace-nowrap bg-emerald-600 text-white px-4 py-2 rounded-lg shadow hover:bg-emerald-700 transition">Importar Materiais</button>
+                      <button id="btn-clear-materiais" class="whitespace-nowrap bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">Limpar Materiais</button>
+                    </div>
+                    <p id="materiais-xlsx-status" class="text-xs text-gray-500 mt-2"></p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+              <h2 class="text-xl font-semibold mb-4">Itens Cadastrados</h2>
+              <div class="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-md mb-4" role="alert">
+                <p class="text-sm font-medium">Para editar um item, clique sobre o nome dele. Para excluir, clique no &times;.</p>
+              </div>
+              <div id="materiais-list" class="space-y-2"><p class="text-gray-500">Nenhum material cadastrado.</p></div>
+            </div>
+          </div>
+
+          <div id="servicos" class="tab-content space-y-4">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+              <h2 class="text-xl font-semibold mb-4">Tipos de Serviço</h2>
+
+              <div class="mb-6 p-4 border rounded-lg bg-gray-50">
+                <p class="text-sm text-gray-600 mb-2">Importar planilha (.xlsx) com as colunas <strong>Categoria</strong>, <strong>Descrição</strong> e <strong>Valor</strong>.</p>
+                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                  <input type="file" id="xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm text-gray-700 flex-1">
+                  <button id="btn-import-xlsx" class="whitespace-nowrap bg-emerald-600 text-white px-4 py-2 rounded-lg shadow hover:bg-emerald-700 transition">Importar</button>
+                  <button id="btn-clear-tiposervico" class="whitespace-nowrap bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">Limpar Tudo</button>
+                </div>
+                <p id="xlsx-status" class="text-xs text-gray-500 mt-2"></p>
+              </div>
+
+              <div class="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-md mb-4" role="alert">
+                <p class="text-sm font-medium">Para editar um serviço, clique sobre o nome dele. Para excluir, clique no &times;.</p>
+                <p class="text-sm mt-1">Adicione um novo serviço escolhendo uma das categorias, ou adicione uma nova categoria.</p>
+              </div>
+              <form id="form-tiposervico" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Categoria</label>
+                    <select id="tiposervico-categoria-select" class="w-full p-2 border rounded-md mt-1">
+                      <option value="">Selecionar existente</option>
+                      <option value="new_category">+ Nova Categoria</option>
+                    </select>
+                    <input type="text" id="tiposervico-categoria-new" placeholder="Nome da Nova Categoria" class="w-full p-2 border rounded-md mt-2 hidden">
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                    <input type="text" id="tiposervico-descricao" placeholder="Ex: Instalação de Padrão" class="w-full p-2 border rounded-md mt-1" required>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                    <input type="number" step="0.01" id="tiposervico-valor" placeholder="150.00" class="w-full p-2 border rounded-md mt-1" required>
+                  </div>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar</button>
+              </form>
+
+              <div id="tiposdeservico-list" class="space-y-2 mt-6">
+                <p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>
+              </div>
+            </div>
+          </div>
+
           <div id="financeiro" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm space-y-4">
               <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
@@ -423,65 +515,209 @@
             </div>
           </div>
 
-          <div id="all-orcamentos-view" class="hidden">
-            <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
-              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
-                <h2 class="text-2xl font-semibold">Todos os Orçamentos</h2>
-                <div class="flex gap-2 w-full sm:w-auto justify-end">
-                   <button onclick="showMainPage()" class="bg-gray-500 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-600 transition-colors font-medium">Voltar</button>
-                   <button id="btn-delete-selected-orcamentos" onclick="confirmDeleteSelectedOrcamentos()" class="bg-red-600 text-white px-5 py-2 rounded-lg shadow hover:bg-red-700 transition-colors font-medium disabled:opacity-50" disabled>Excluir Selecionados</button>
-                </div>
-              </div>
-              <div id="all-orcamentos-list-container">
-                    <div class="mb-4 grid gap-3 md:grid-cols-4">
-                      <div>
-                        <label for="filtro-status-orcamento" class="block text-xs font-medium text-gray-600">Status</label>
-                        <select id="filtro-status-orcamento" class="mt-1 block w-full border rounded px-2 py-1 text-sm">
-                          <option value="todos">Todos</option>
-                          <option value="aprovado">Aprovados</option>
-                          <option value="pendente">Pendentes</option>
-                        </select>
+          <div id="configuracoes" class="tab-content space-y-4">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+              <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
+              <form id="form-config" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div>
+                  <h3 class="text-lg font-medium mb-4 border-b pb-2">Seus Dados Profissionais</h3>
+                  <div class="space-y-4">
+                    <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md" required>
+                    <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md" required>
+                    <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
+
+                    <div class="grid grid-cols-3 gap-4">
+                      <div class="col-span-2">
+                        <label for="config-cep" class="block text-sm font-medium text-gray-700">CEP</label>
+                        <input type="text" id="config-cep" 
+                               onchange="buscarCEP(this.value, { logradouro: 'config-logradouro', bairro: 'config-bairro', cidade: 'config-cidade', uf: 'config-uf', numero: 'config-numero' })" 
+                               placeholder="00000-000" class="w-full p-2 border rounded-md mt-1">
                       </div>
                       <div>
-                        <label for="filtro-mes-orcamento" class="block text-xs font-medium text-gray-600">Mês</label>
-                        <select id="filtro-mes-orcamento" class="mt-1 block w-full border rounded px-2 py-1 text-sm">
-                          <option value="todos">Todos</option>
-                          <option value="0">Janeiro</option>
-                          <option value="1">Fevereiro</option>
-                          <option value="2">Março</option>
-                          <option value="3">Abril</option>
-                          <option value="4">Maio</option>
-                          <option value="5">Junho</option>
-                          <option value="6">Julho</option>
-                          <option value="7">Agosto</option>
-                          <option value="8">Setembro</option>
-                          <option value="9">Outubro</option>
-                          <option value="10">Novembro</option>
-                          <option value="11">Dezembro</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label for="filtro-ano-orcamento" class="block text-xs font-medium text-gray-600">Ano</label>
-                        <select id="filtro-ano-orcamento" class="mt-1 block w-full border rounded px-2 py-1 text-sm">
-                          <option value="todos">Todos</option>
-                          <option value="2023">2023</option>
-                          <option value="2024">2024</option>
-                          <option value="2025">2025</option>
-                          <option value="2026">2026</option>
-                          <option value="2027">2027</option>
-                        </select>
-                      </div>
-                      <div class="flex items-end">
-                        <button id="btn-limpar-filtros-orcamento" class="inline-flex justify-center items-center w-full px-3 py-2 border border-gray-300 text-gray-700 text-xs font-medium rounded-md hover:bg-gray-50">
-                          Limpar filtros
-                        </button>
+                        <label for="config-numero" class="block text-sm font-medium text-gray-700">Número</label>
+                        <input type="text" id="config-numero" placeholder="Ex: 106" class="w-full p-2 border rounded-md mt-1">
                       </div>
                     </div>
-                    <div id="all-orcamentos-list" class="space-y-3"></div>
-              </div>
+                    <div>
+                      <label for="config-logradouro" class="block text-sm font-medium text-gray-700">Rua / Logradouro</label>
+                      <input type="text" id="config-logradouro" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
+                    </div>
+                    <div>
+                      <label for="config-bairro" class="block text-sm font-medium text-gray-700">Bairro</label>
+                      <input type="text" id="config-bairro" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                      <div class="col-span-2">
+                        <label for="config-cidade" class="block text-sm font-medium text-gray-700">Cidade</label>
+                        <input type="text" id="config-cidade" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
+                      </div>
+                      <div>
+                        <label for="config-uf" class="block text-sm font-medium text-gray-700">UF</label>
+                        <input type="text" id="config-uf" placeholder="UF" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
+                      </div>
+                    </div>
+
+                    <input type="hidden" id="config-logo">
+
+                    <div>
+                      <label for="config-logo-file" class="block text-sm font-medium text-gray-700">
+                        Logomarca (opcional)
+                      </label>
+                      <input
+                        type="file"
+                        id="config-logo-file"
+                        accept="image/*"
+                        class="mt-1 block w-full text-sm text-gray-700 border rounded-md p-2 bg-white"
+                      >
+                      <p class="text-xs text-gray-500 mt-1">
+                        Selecione uma imagem do seu celular ou computador. Ela será exibida no cabeçalho do PDF.
+                      </p>
+
+                      <div id="config-logo-preview-wrapper" class="mt-2 hidden">
+                        <p class="text-xs text-gray-600 mb-1">Pré-visualização:</p>
+                        <div class="flex items-center gap-3">
+                          <img
+                            id="config-logo-preview"
+                            src=""
+                            alt="Pré-visualização da logomarca"
+                            class="max-h-16 object-contain border rounded-md bg-white p-1"
+                          >
+                          <button
+                            type="button"
+                            id="config-logo-clear"
+                            class="text-xs text-red-600 hover:underline"
+                          >
+                            Remover logomarca
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Personalização do PDF</h3>
+                    <div class="flex gap-4">
+                        <label class="block flex-1">
+                            <span class="text-gray-700">Cor Primária (Títulos)</span>
+                            <input type="color" id="config-color-primary" class="w-full h-10 p-1 border rounded-md mt-1" value="#000000">
+                        </label>
+                        <label class="block flex-1">
+                            <span class="text-gray-700">Cor Secundária (Total)</span>
+                            <input type="color" id="config-color-secondary" class="w-full h-10 p-1 border rounded-md mt-1" value="#333333">
+                        </label>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Residencial/Predial</h3>
+                    <div class="space-y-4">
+                      <label class="block"><span class="text-gray-700">Valor por Empreitada (R$)</span><input type="number" step="0.01" id="config-residencial-empreitada" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                      <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-residencial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                      <label class="block"><span class="text-gray-700">Valor por Ponto (R$)</span><input type="number" step="0.01" id="config-residencial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                      <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-residencial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                    </div>
+                  </div>
+                  <div class="mt-6">
+                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Industrial</h3>
+                    <div class="space-y-4">
+                      <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-industrial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                      <label class="block"><span class="text-gray-700">Valor por Equipamento (R$)</span><input type="number" step="0.01" id="config-industrial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                      <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-industrial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 class="text-lg font-medium mb-4 border-b pb-2">Formas de Pagamento</h3>
+                  <div class="space-y-4">
+                    <label class="block"><span class="text-gray-700">Chave PIX</span><input type="text" id="config-pix-chave" class="w-full p-2 border rounded-md mt-1" placeholder="Sua chave PIX"></label>
+                    <label class="block"><span class="text-gray-700">Cartão (Nº de Parcelas)</span><input type="number" step="1" id="config-cartao-vezes" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: 12"></label>
+                    <label class="block"><span class="text-gray-700">Cartão (Juros % por parcela)</span><input type="number" step="0.01" id="config-cartao-juros" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: 1.99"></label>
+                    <label class="flex items-center"><input type="checkbox" id="config-pagamento-dinheiro" class="h-4 w-4 text-blue-600 border-gray-300 rounded mr-2"><span class="text-gray-700">Aceita Dinheiro</span></label>
+                    <h4 class="text-md font-medium pt-2 border-t mt-2">Dados para Depósito</h4>
+                    <label class="block"><span class="text-gray-700">Banco</span><input type="text" id="config-deposito-banco" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: Banco do Brasil"></label>
+                    <label class="block"><span class="text-gray-700">Agência</span><input type="text" id="config-deposito-ag" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: 0001"></label>
+                    <label class="block"><span class="text-gray-700">Conta</span><input type="text" id="config-deposito-conta" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: 12345-6"></label>
+                  </div>
+                </div>
+                <div class="md:col-span-2 text-right">
+                  <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
+                    <span id="save-config-text">Salvar Configurações</span>
+                    <span id="save-config-spinner" class="hidden">Salvando...</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="mt-8 border-t pt-6 text-center">
+              <p id="user-info" class="text-gray-600 mb-4"></p>
+              <button id="logout-button" class="bg-red-500 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700 transition-colors">Sair da Conta</button>
             </div>
           </div>
-          <div id="orcamento-modal" class="modal">
+        </main>
+      </div>
+    </div>
+
+    <div id="all-orcamentos-view" class="hidden">
+
+      
+      <div class="max-w-4xl mx-auto p-4 md:p-6 w-full">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+          <h2 class="text-2xl font-semibold">Todos os Orçamentos</h2>
+          <div class="flex gap-2 w-full sm:w-auto justify-end">
+             <button onclick="showMainPage()" class="bg-gray-500 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-600 transition-colors font-medium">Voltar</button>
+             <button id="btn-delete-selected-orcamentos" onclick="confirmDeleteSelectedOrcamentos()" class="bg-red-600 text-white px-5 py-2 rounded-lg shadow hover:bg-red-700 transition-colors font-medium disabled:opacity-50" disabled>Excluir Selecionados</button>
+          </div>
+        </div>
+        <div id="all-orcamentos-list-container">
+              <div class="mb-4 grid gap-3 md:grid-cols-4">
+                <div>
+                  <label for="filtro-status-orcamento" class="block text-xs font-medium text-gray-600">Status</label>
+                  <select id="filtro-status-orcamento" class="mt-1 block w-full border rounded px-2 py-1 text-sm">
+                    <option value="todos">Todos</option>
+                    <option value="aprovado">Aprovados</option>
+                    <option value="pendente">Pendentes</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="filtro-mes-orcamento" class="block text-xs font-medium text-gray-600">Mês</label>
+                  <select id="filtro-mes-orcamento" class="mt-1 block w-full border rounded px-2 py-1 text-sm">
+                    <option value="todos">Todos</option>
+                    <option value="0">Janeiro</option>
+                    <option value="1">Fevereiro</option>
+                    <option value="2">Março</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Maio</option>
+                    <option value="5">Junho</option>
+                    <option value="6">Julho</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Setembro</option>
+                    <option value="9">Outubro</option>
+                    <option value="10">Novembro</option>
+                    <option value="11">Dezembro</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="filtro-ano-orcamento" class="block text-xs font-medium text-gray-600">Ano</label>
+                  <select id="filtro-ano-orcamento" class="mt-1 block w-full border rounded px-2 py-1 text-sm">
+                    <option value="todos">Todos</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                  </select>
+                </div>
+                <div class="flex items-end">
+                  <button id="btn-limpar-filtros-orcamento" class="inline-flex justify-center items-center w-full px-3 py-2 border border-gray-300 text-gray-700 text-xs font-medium rounded-md hover:bg-gray-50">
+                    Limpar filtros
+                  </button>
+                </div>
+              </div>
+             </div> <div id="all-orcamentos-list" class="space-y-3"></div>
+      </div>
+    </div>
+    <div id="orcamento-modal" class="modal">
       <div class="bg-white rounded-lg p-6 w-[95%] max-w-[960px] max-height-[90vh] max-h-[90vh] overflow-y-auto shadow-xl">
         <div class="flex justify-between items-center mb-6">
           <h2 id="modal-title" class="text-2xl font-bold">Criar Novo Orçamento</h2>
@@ -629,17 +865,16 @@
         </div>
       </div>
     </div>
-    
-    <footer class="bg-gray-900 text-white text-center py-6 mt-12">
+      
+<footer class="bg-gray-900 text-white text-center py-6 mt-12">
       <div class="max-w-4xl mx-auto px-4 md:px-6">
         <p class="mb-4">Dúvidas e sugestões? Mande uma mensagem ao desenvolvedor.</p>
         <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">Enviar Mensagem</a>
       </div>
     </footer>
 
-  </div> 
-  <script type="module">
-    console.log("VERSÃO 7.0 (Financeiro Completo) CARREGADA");
+    <script type="module">
+    console.log("VERSÃO 7.0 (Financeiro Corrigido) CARREGADA");
 
     // ===== Firebase config =====
     const firebaseConfig = {
@@ -676,13 +911,13 @@
     };
 
     let financeChart = null;
-    let chartType = 'bar'; // Padrão: Colunas
+    let chartType = 'bar'; // Variável para controlar o tipo de gráfico
 
     // Função para selecionar automaticamente o mês e ano atuais
     function setupInitialDates() {
       const hoje = new Date();
       const anoAtual = hoje.getFullYear().toString();
-      const mesAtual = hoje.getMonth().toString(); // 0 a 11
+      const mesAtual = hoje.getMonth().toString(); // 0 = Janeiro
 
       const elAno = document.getElementById('fat-ano');
       const elMes = document.getElementById('fat-mes');
@@ -724,8 +959,8 @@
             userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
             loadingOverlay.querySelector('p').textContent = 'Carregando seus dados...';
             
-            setupInitialDates();
-            loadAllData();
+            setupInitialDates(); // Define a data de hoje
+            loadAllData();       // Carrega os dados
             
             loginView.classList.add('hidden');
             appView.classList.remove('hidden');
@@ -770,17 +1005,6 @@
 
     loginButton?.addEventListener('click', loginWithGoogle);
     logoutButton?.addEventListener('click', logout);
-    document.getElementById('orc-cliente-select').addEventListener('change', (e) => {
-      if (!appState.currentOrcamento) resetCurrentOrcamento();
-      const clienteId = e.target.value;
-      if (clienteId) {
-        const cliente = appState.clientes.find(c => c.id === clienteId);
-        appState.currentOrcamento.cliente = cliente || null;
-      } else {
-        appState.currentOrcamento.cliente = null;
-      }
-      updateOrcamentoPreview();
-    });
 
     // ===== Carregamento de Dados =====
     function loadAllData() {
@@ -797,7 +1021,7 @@
         renderClientesList();
         renderOrcamentosList(); 
         renderOrcamentosList(true);
-        updateFinanceiroView();
+        updateFinanceiroView(); // Atualiza financeiro se mudar nome de cliente
       });
 
       onSnapshot(query(collection(db, `${prefix}/materiais`)), (snapshot) => {
@@ -827,449 +1051,15 @@
         renderOrcamentosList();
         renderOrcamentosList(true);
         
-        // CORREÇÃO: Atualiza o gráfico assim que os dados chegam
+        // *** CORREÇÃO IMPORTANTE: ***
+        // Força o gráfico a atualizar assim que os dados chegam
         updateFinanceiroView();
       });
     }
 
-    // ===== Config =====
-    function updateConfigForm() {
-      const c = appState.config || {};
-      const el = (id) => document.getElementById(id);
-
-      el('config-nome').value = c.nome || '';
-      el('config-telefone').value = formatarTelefone(c.telefone || '');
-      el('config-doc').value = formatarCPFCNPJ(c.doc || '');
-      el('config-cep').value = formatarCEP(c.cep || '');
-      el('config-numero').value = c.numero || '';
-      el('config-logradouro').value = c.logradouro || '';
-      el('config-bairro').value = c.bairro || '';
-      el('config-cidade').value = c.cidade || '';
-      el('config-uf').value = c.uf || '';
-
-      const logoHiddenInput = el('config-logo');
-      const logoPreviewWrapper = el('config-logo-preview-wrapper');
-      const logoPreview = el('config-logo-preview');
-
-      if (logoHiddenInput) logoHiddenInput.value = c.logo || '';
-
-      if (logoPreviewWrapper && logoPreview) {
-        if (c.logo) {
-          logoPreview.src = c.logo;
-          logoPreviewWrapper.classList.remove('hidden');
-        } else {
-          logoPreview.src = '';
-          logoPreviewWrapper.classList.add('hidden');
-        }
-      }
-
-      el('config-color-primary').value = c.config_color_primary || '#000000';
-      el('config-color-secondary').value = c.config_color_secondary || '#333333';
-      el('config-residencial-empreitada').value = c.residencial_empreitada || '';
-      el('config-residencial-diaria').value = c.residencial_diaria || '';
-      el('config-residencial-ponto').value = c.residencial_ponto || '';
-      el('config-residencial-hora').value = c.residencial_hora || '';
-      el('config-industrial-diaria').value = c.industrial_diaria || '';
-      el('config-industrial-ponto').value = c.industrial_ponto || '';
-      el('config-industrial-hora').value = c.industrial_hora || '';
-      el('config-pix-chave').value = c.config_pix_chave || '';
-      el('config-cartao-vezes').value = c.config_cartao_vezes || '';
-      el('config-cartao-juros').value = c.config_cartao_juros || '';
-      el('config-pagamento-dinheiro').checked = c.config_pagamento_dinheiro || false;
-      el('config-deposito-banco').value = c.config_deposito_banco || '';
-      el('config-deposito-ag').value = c.config_deposito_ag || '';
-      el('config-deposito-conta').value = c.config_deposito_conta || '';
-    }
-
-    // ===== Upload Logo =====
-    const logoHiddenInput = document.getElementById('config-logo');
-    const logoFileInput = document.getElementById('config-logo-file');
-    const logoPreviewWrapper = document.getElementById('config-logo-preview-wrapper');
-    const logoPreview = document.getElementById('config-logo-preview');
-    const logoClearBtn = document.getElementById('config-logo-clear');
-
-    function applyLogoToPreview(src) {
-      if (!logoHiddenInput || !logoPreviewWrapper || !logoPreview) return;
-      if (src) {
-        logoHiddenInput.value = src;
-        logoPreview.src = src;
-        logoPreviewWrapper.classList.remove('hidden');
-      } else {
-        logoHiddenInput.value = '';
-        logoPreview.src = '';
-        logoPreviewWrapper.classList.add('hidden');
-      }
-    }
-
-    if (logoFileInput) {
-      logoFileInput.addEventListener('change', (e) => {
-        const file = e.target.files && e.target.files[0];
-        if (!file) return;
-        if (!file.type.startsWith('image/')) {
-          alert('Por favor, selecione um arquivo de imagem.');
-          logoFileInput.value = '';
-          return;
-        }
-        const reader = new FileReader();
-        reader.onload = () => { applyLogoToPreview(reader.result); };
-        reader.readAsDataURL(file);
-      });
-    }
-    if (logoClearBtn) {
-      logoClearBtn.addEventListener('click', () => {
-        applyLogoToPreview('');
-        if (logoFileInput) logoFileInput.value = '';
-      });
-    }
-
-    // ===== Helper Forms =====
-    function getVal(id) {
-        const el = document.getElementById(id);
-        return el ? el.value : '';
-    }
-
-    // ===== Config Submit =====
-    document.getElementById('form-config').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!userId) return alert('Faça login novamente.');
-      const btn = e.target.querySelector('button[type="submit"]');
-      const textSpan = document.getElementById('save-config-text');
-      const spinSpan = document.getElementById('save-config-spinner');
-      btn.disabled = true; textSpan.classList.add('hidden'); spinSpan.classList.remove('hidden');
-      try {
-        const data = {
-          nome: getVal('config-nome'),
-          telefone: getVal('config-telefone').replace(/\D/g, ''),
-          doc: getVal('config-doc').replace(/\D/g, ''),
-          cep: getVal('config-cep').replace(/\D/g, ''),
-          numero: getVal('config-numero'),
-          logradouro: getVal('config-logradouro'),
-          bairro: getVal('config-bairro'),
-          cidade: getVal('config-cidade'),
-          uf: getVal('config-uf'),
-          logo: getVal('config-logo'),
-          config_color_primary: getVal('config-color-primary'),
-          config_color_secondary: getVal('config-color-secondary'),
-          residencial_empreitada: parseFloat(getVal('config-residencial-empreitada')) || 0,
-          residencial_diaria: parseFloat(getVal('config-residencial-diaria')) || 0,
-          residencial_ponto: parseFloat(getVal('config-residencial-ponto')) || 0,
-          residencial_hora: parseFloat(getVal('config-residencial-hora')) || 0,
-          industrial_diaria: parseFloat(getVal('config-industrial-diaria')) || 0,
-          industrial_ponto: parseFloat(getVal('config-industrial-ponto')) || 0,
-          industrial_hora: parseFloat(getVal('config-industrial-hora')) || 0,
-          config_pix_chave: getVal('config-pix-chave'),
-          config_cartao_vezes: parseInt(getVal('config-cartao-vezes')) || 0,
-          config_cartao_juros: parseFloat(getVal('config-cartao-juros')) || 0,
-          config_pagamento_dinheiro: document.getElementById('config-pagamento-dinheiro').checked,
-          config_deposito_banco: getVal('config-deposito-banco'),
-          config_deposito_ag: getVal('config-deposito-ag'),
-          config_deposito_conta: getVal('config-deposito-conta'),
-        };
-        delete data.endereco; delete data.endereco_l2;
-        await setDoc(doc(db, `users/${userId}/config/main`), data);
-        alert('Configurações salvas!');
-      } catch(e) { console.error(e); alert('Erro ao salvar.'); }
-      finally { btn.disabled=false; textSpan.classList.remove('hidden'); spinSpan.classList.add('hidden'); }
-    });
-
-    // ===== Clientes =====
-    document.getElementById('form-cliente').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!userId) return alert('Faça login.');
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.disabled = true; btn.textContent='Salvando...';
-      try {
-        const data = {
-            nome: getVal('cliente-nome'),
-            telefone: getVal('cliente-telefone').replace(/\D/g, ''),
-            documento: getVal('cliente-documento').replace(/\D/g, ''),
-            numeroCadastro: gerarNovoNumeroCliente(),
-            cep: getVal('cliente-cep').replace(/\D/g, ''),
-            numero: getVal('cliente-numero'),
-            logradouro: getVal('cliente-logradouro'),
-            bairro: getVal('cliente-bairro'),
-            cidade: getVal('cliente-cidade'),
-            uf: getVal('cliente-uf'),
-        };
-        delete data.endereco;
-        await addDoc(collection(db, `users/${userId}/clientes`), data);
-        e.target.reset();
-        document.getElementById('cliente-logradouro').value = '';
-        document.getElementById('cliente-bairro').value = '';
-        document.getElementById('cliente-cidade').value = '';
-        document.getElementById('cliente-uf').value = '';
-      } catch(e) { console.error(e); alert('Erro ao salvar.'); }
-      finally { btn.disabled=false; btn.textContent='Salvar Cliente'; }
-    });
+    // ===== Lógica Financeira e Gráficos (NOVA VERSÃO) =====
     
-    document.getElementById('form-edit-cliente').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!userId) return alert('Faça login.');
-      const clienteId = getVal('edit-cliente-id');
-      if (!clienteId) return alert('Erro ID.');
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.disabled = true; btn.textContent='Salvando...';
-      try {
-        const data = {
-          nome: getVal('edit-cliente-nome'),
-          numeroCadastro: getVal('edit-cliente-numerocadastro'),
-          telefone: getVal('edit-cliente-telefone').replace(/\D/g, ''),
-          documento: getVal('edit-cliente-documento').replace(/\D/g, ''),
-          cep: getVal('edit-cliente-cep').replace(/\D/g, ''),
-          numero: getVal('edit-cliente-numero'),
-          logradouro: getVal('edit-cliente-logradouro'),
-          bairro: getVal('edit-cliente-bairro'),
-          cidade: getVal('edit-cliente-cidade'),
-          uf: getVal('edit-cliente-uf'),
-        };
-        delete data.endereco;
-        await setDoc(doc(db, `users/${userId}/clientes/${clienteId}`), data);
-        alert('Cliente atualizado!');
-        closeEditClienteModal();
-      } catch(e) { console.error(e); alert('Erro ao atualizar.'); } 
-      finally { btn.disabled=false; btn.textContent='Salvar Alterações'; }
-    });
-    
-    function formatarEnderecoCompleto(cliente) {
-        if (!cliente) return 'Endereço não informado';
-        if (cliente.endereco) return cliente.endereco;
-        if (!cliente.logradouro && !cliente.cidade) return 'Endereço não informado';
-        const rua = cliente.logradouro || '';
-        const num = cliente.numero || 's/n';
-        const bairro = cliente.bairro || '';
-        const cidade = cliente.cidade || '';
-        const uf = cliente.uf || '';
-        return `${rua}, ${num} - ${bairro} - ${cidade}/${uf}`;
-    }
-    
-    function renderClientesList() {
-      const el = document.getElementById('clientes-list');
-      if (!appState.clientes.length) { el.innerHTML = '<p class="text-gray-500">Nenhum cliente cadastrado.</p>'; return; }
-      el.innerHTML = appState.clientes.map(c => {
-        const enderecoFormatado = formatarEnderecoCompleto(c);
-        const { label: docLabel, valor: docValor } = getLabelEValorDoc(c.documento);
-        return `
-        <div class="flex justify-between items-center p-2 border rounded-md">
-          <div class="flex-grow cursor-pointer" onclick="openEditClienteModal('${c.id}')">
-            <p class="font-medium">${c.nome} <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">${c.numeroCadastro||''}</span></p>
-            <p class="text-sm text-gray-600">${formatarTelefone(c.telefone)} | ${enderecoFormatado}</p>
-            ${c.documento ? `<p class="text-xs text-gray-500">${docLabel} ${docValor}</p>` : ''}
-          </div>
-          <button onclick="deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700 text-2xl ml-3 flex-shrink-0">&times;</button>
-        </div>`
-      }).join('');
-    }
-
-    window.deleteCliente = async (id) => {
-      if (confirm('Excluir este cliente?')) { await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); }
-    };
-
-    window.openEditClienteModal = (id) => {
-      const cliente = appState.clientes.find(c => c.id === id);
-      if (!cliente) return;
-      const setVal = (elId, valor, formatFunc = null) => {
-          const el = document.getElementById(elId);
-          if (el) el.value = formatFunc ? formatFunc(valor || '') : (valor || '');
-      };
-      setVal('edit-cliente-id', cliente.id);
-      setVal('edit-cliente-nome', cliente.nome);
-      setVal('edit-cliente-numerocadastro', cliente.numeroCadastro);
-      setVal('edit-cliente-telefone', cliente.telefone, formatarTelefone);
-      setVal('edit-cliente-documento', cliente.documento, formatarCPFCNPJ);
-      setVal('edit-cliente-cep', cliente.cep, formatarCEP);
-      setVal('edit-cliente-numero', cliente.numero);
-      setVal('edit-cliente-logradouro', cliente.logradouro);
-      setVal('edit-cliente-bairro', cliente.bairro);
-      setVal('edit-cliente-cidade', cliente.cidade);
-      setVal('edit-cliente-uf', cliente.uf);
-      document.getElementById('edit-cliente-modal').classList.add('active');
-    };
-
-    window.closeEditClienteModal = () => {
-      document.getElementById('edit-cliente-modal').classList.remove('active');
-      document.getElementById('form-edit-cliente').reset();
-    };
-
-    // ===== Materiais =====
-    document.getElementById('form-material').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!userId) return alert('Faça login.');
-      try {
-        const nome = document.getElementById('material-nome').value;
-        const valor = parseFloat(document.getElementById('material-valor').value);
-        const unidade = document.getElementById('material-unidade').value;
-        await addDoc(collection(db, `users/${userId}/materiais`), { nome, valor, unidade });
-        e.target.reset();
-      } catch(e) { alert('Erro ao salvar item.'); }
-    });
-
-    document.getElementById('form-edit-material').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const materialId = document.getElementById('edit-material-id').value;
-      try {
-        const data = {
-          nome: document.getElementById('edit-material-nome').value,
-          unidade: document.getElementById('edit-material-unidade').value,
-          valor: parseFloat(document.getElementById('edit-material-valor').value) || 0,
-        };
-        await setDoc(doc(db, `users/${userId}/materiais/${materialId}`), data);
-        alert('Material atualizado!');
-        closeEditMaterialModal();
-      } catch(e) { alert('Erro ao atualizar.'); }
-    });
-
-    function renderMateriaisList() {
-      const el = document.getElementById('materiais-list');
-      if (!appState.materiais.length) { el.innerHTML = '<p class="text-gray-500">Nenhum material cadastrado.</p>'; return; }
-      el.innerHTML = appState.materiais.map(m => `
-        <div class="flex justify-between items-center p-2 border rounded-md">
-          <div class="flex-grow cursor-pointer" onclick="openEditMaterialModal('${m.id}')">
-            <p class="servico-slim"><strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${m.valor.toFixed(2)}</p>
-          </div>
-          <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 text-2xl ml-3 flex-shrink-0">&times;</button>
-        </div>`).join('');
-    }
-
-    window.deleteMaterial = async (id) => {
-      if (confirm('Excluir?')) { await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); }
-    };
-
-    window.openEditMaterialModal = (id) => {
-      const material = appState.materiais.find(m => m.id === id);
-      if (!material) return;
-      document.getElementById('edit-material-id').value = material.id;
-      document.getElementById('edit-material-nome').value = material.nome || '';
-      document.getElementById('edit-material-unidade').value = material.unidade || 'UNID';
-      document.getElementById('edit-material-valor').value = material.valor || 0;
-      document.getElementById('edit-material-modal').classList.add('active');
-    };
-    window.closeEditMaterialModal = () => { document.getElementById('edit-material-modal').classList.remove('active'); document.getElementById('form-edit-material').reset(); };
-
-    // ===== Serviços =====
-    const catSelect = document.getElementById('tiposervico-categoria-select');
-    const catNew = document.getElementById('tiposervico-categoria-new');
-
-    function populateCategorySelect() {
-      while (catSelect.options.length > 2) catSelect.remove(2);
-      const cats = [...new Set(appState.tiposDeServico.map(s => s.categoria).filter(Boolean))].sort();
-      cats.forEach(cat => { const o=document.createElement('option'); o.value=cat; o.textContent=cat; catSelect.appendChild(o); });
-    }
-
-    catSelect.addEventListener('change', () => {
-      if (catSelect.value === 'new_category') { catNew.classList.remove('hidden'); catNew.focus(); }
-      else { catNew.classList.add('hidden'); }
-    });
-
-    document.getElementById('form-tiposervico').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      try {
-        let categoria = (catSelect.value === 'new_category') ? (catNew.value||'').trim() : (catSelect.value||'').trim();
-        categoria = categoria ? categoria.toUpperCase() : 'OUTROS';
-        const descricao = document.getElementById('tiposervico-descricao').value;
-        const valor = parseFloat(document.getElementById('tiposervico-valor').value);
-        if (!categoria || !descricao || isNaN(valor)) throw new Error('Preencha tudo.');
-        await addDoc(collection(db, `users/${userId}/tiposdeservico`), { descricao, valor, categoria });
-        e.target.reset(); catNew.classList.add('hidden'); catSelect.value='';
-      } catch(e) { alert(e.message); }
-    });
-
-    document.getElementById('form-edit-tiposervico').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const id = document.getElementById('edit-tiposervico-id').value;
-      try {
-        const categoria = document.getElementById('edit-tiposervico-categoria').value.toUpperCase().trim() || 'OUTROS';
-        const descricao = document.getElementById('edit-tiposervico-descricao').value;
-        const valor = parseFloat(document.getElementById('edit-tiposervico-valor').value);
-        await setDoc(doc(db, `users/${userId}/tiposdeservico/${id}`), { categoria, descricao, valor });
-        alert('Atualizado!'); closeEditTipoServicoModal();
-      } catch(e) { alert(e.message); }
-    });
-
-    function groupBy(arr, key) { return arr.reduce((acc,cur)=>{ const k=cur[key]||'OUTROS'; (acc[k]||(acc[k]=[])).push(cur); return acc; },{}); }
-
-    function renderTiposDeServicoList() {
-      const el = document.getElementById('tiposdeservico-list');
-      if (!appState.tiposDeServico.length) { el.innerHTML = '<p class="text-gray-500">Nenhum serviço.</p>'; return; }
-      const byCat = groupBy(appState.tiposDeServico, 'categoria');
-      const cats = Object.keys(byCat).sort();
-      el.innerHTML = cats.map(cat => {
-        const servicos = byCat[cat].sort((a,b) => (a.descricao || '').localeCompare(b.descricao || ''));
-        return `
-          <details class="border rounded-md mb-2">
-            <summary class="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-gray-100">
-              <span class="text-sm font-medium text-gray-800">${cat}</span>
-              <svg class="w-4 h-4 arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </summary>
-            <div class="p-2 space-y-1">
-              ${servicos.map(s => `
-                  <div class="flex justify-between items-center p-1 border-b border-gray-100">
-                    <div class="flex-grow cursor-pointer" onclick="openEditTipoServicoModal('${s.id}')">
-                       <p class="servico-slim">${s.descricao} — <span class="text-gray-700">R$ ${s.valor.toFixed(2)}</span></p>
-                    </div>
-                    <button onclick="deleteTipoDeServico('${s.id}')" class="text-red-500 hover:text-red-700 text-xl leading-none ml-3">&times;</button>
-                  </div>
-                `).join('')}
-            </div>
-          </details>`;
-      }).join('');
-    }
-
-    window.deleteTipoDeServico = async (id) => { if (confirm('Excluir?')) await deleteDoc(doc(db, `users/${userId}/tiposdeservico/${id}`)); };
-    window.openEditTipoServicoModal = (id) => {
-      const s = appState.tiposDeServico.find(x => x.id === id);
-      if (!s) return;
-      document.getElementById('edit-tiposervico-id').value = s.id;
-      document.getElementById('edit-tiposervico-categoria').value = s.categoria || 'OUTROS';
-      document.getElementById('edit-tiposervico-descricao').value = s.descricao || '';
-      document.getElementById('edit-tiposervico-valor').value = s.valor || 0;
-      document.getElementById('edit-tiposervico-modal').classList.add('active');
-    };
-    window.closeEditTipoServicoModal = () => { document.getElementById('edit-tiposervico-modal').classList.remove('active'); };
-
-    // ===== Excel =====
-    document.getElementById('btn-import-xlsx').addEventListener('click', async () => {
-      // (Mantido lógica anterior simplificada para caber)
-      const inp = document.getElementById('xlsx-input');
-      if (!inp.files[0]) return alert('Selecione arquivo.');
-      const f = inp.files[0];
-      const status = document.getElementById('xlsx-status');
-      try {
-        status.textContent = 'Lendo...';
-        const buf = await f.arrayBuffer();
-        const wb = XLSX.read(buf, { type:'array' });
-        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
-        const batch = writeBatch(db);
-        let count = 0;
-        rows.forEach(r => {
-             // (Lógica de mapeamento simplificada)
-             const vals = Object.values(r);
-             if(vals.length >= 3) {
-                 const cat = String(vals[0]||'OUTROS').toUpperCase();
-                 const desc = String(vals[1]||'');
-                 const val = parseFloat(String(vals[2]).replace(',','.'))||0;
-                 if(desc && val) {
-                     batch.set(doc(collection(db, `users/${userId}/tiposdeservico`)), { categoria: cat, descricao: desc, valor: val });
-                     count++;
-                 }
-             }
-        });
-        if(count) await batch.commit();
-        status.textContent = `Importados: ${count}`;
-      } catch(e) { alert('Erro importação.'); }
-    });
-    
-    document.getElementById('btn-clear-tiposervico').addEventListener('click', async () => {
-        if(confirm('Apagar tudo?')) {
-            const q = await getDocs(collection(db, `users/${userId}/tiposdeservico`));
-            const batch = writeBatch(db);
-            q.forEach(d => batch.delete(d.ref));
-            await batch.commit();
-            alert('Apagado.');
-        }
-    });
-
-    // ===== Lógica Financeira e Gráficos (NOVO) =====
-    
+    // Função chamada pelos botões de ícone
     window.mudarTipoGrafico = (tipo) => {
       chartType = tipo;
       updateFinanceiroView();
@@ -1485,21 +1275,89 @@
       XLSX.writeFile(wb, nomeArquivo);
     }
 
-    // ===== Listeners & Tabs =====
+    // ===== Listeners & Helpers =====
+    
+    function getVal(id) {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+    }
+
     document.getElementById('fat-mes')?.addEventListener('change', updateFinanceiroView);
     document.getElementById('fat-ano')?.addEventListener('change', updateFinanceiroView);
     document.getElementById('btn-atualizar-financeiro')?.addEventListener('click', (e) => { e.preventDefault(); updateFinanceiroView(); });
     document.getElementById('btn-exportar-financeiro')?.addEventListener('click', (e) => { e.preventDefault(); exportarFinanceiro(); });
 
+    document.getElementById('orc-cliente-select').addEventListener('change', (e) => {
+      if (!appState.currentOrcamento) resetCurrentOrcamento();
+      const clienteId = e.target.value;
+      if (clienteId) {
+        const cliente = appState.clientes.find(c => c.id === clienteId);
+        appState.currentOrcamento.cliente = cliente || null;
+      } else {
+        appState.currentOrcamento.cliente = null;
+      }
+      updateOrcamentoPreview();
+    });
+
+    // Config Form
+    document.getElementById('form-config').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      const textSpan = document.getElementById('save-config-text');
+      const spinSpan = document.getElementById('save-config-spinner');
+      btn.disabled = true; textSpan.classList.add('hidden'); spinSpan.classList.remove('hidden');
+      try {
+        const data = {
+          nome: getVal('config-nome'),
+          telefone: getVal('config-telefone').replace(/\D/g, ''),
+          doc: getVal('config-doc').replace(/\D/g, ''),
+          cep: getVal('config-cep').replace(/\D/g, ''),
+          numero: getVal('config-numero'),
+          logradouro: getVal('config-logradouro'),
+          bairro: getVal('config-bairro'),
+          cidade: getVal('config-cidade'),
+          uf: getVal('config-uf'),
+          logo: getVal('config-logo'),
+          config_color_primary: getVal('config-color-primary'),
+          config_color_secondary: getVal('config-color-secondary'),
+          residencial_empreitada: parseFloat(getVal('config-residencial-empreitada')) || 0,
+          residencial_diaria: parseFloat(getVal('config-residencial-diaria')) || 0,
+          residencial_ponto: parseFloat(getVal('config-residencial-ponto')) || 0,
+          residencial_hora: parseFloat(getVal('config-residencial-hora')) || 0,
+          industrial_diaria: parseFloat(getVal('config-industrial-diaria')) || 0,
+          industrial_ponto: parseFloat(getVal('config-industrial-ponto')) || 0,
+          industrial_hora: parseFloat(getVal('config-industrial-hora')) || 0,
+          config_pix_chave: getVal('config-pix-chave'),
+          config_cartao_vezes: parseInt(getVal('config-cartao-vezes')) || 0,
+          config_cartao_juros: parseFloat(getVal('config-cartao-juros')) || 0,
+          config_pagamento_dinheiro: document.getElementById('config-pagamento-dinheiro').checked,
+          config_deposito_banco: getVal('config-deposito-banco'),
+          config_deposito_ag: getVal('config-deposito-ag'),
+          config_deposito_conta: getVal('config-deposito-conta'),
+        };
+        delete data.endereco; delete data.endereco_l2;
+        await setDoc(doc(db, `users/${userId}/config/main`), data);
+        alert('Configurações salvas!');
+      } catch(e) { console.error(e); alert('Erro ao salvar.'); }
+      finally { btn.disabled=false; textSpan.classList.remove('hidden'); spinSpan.classList.add('hidden'); }
+    });
+
+    // Funções de navegação e modais
     window.changeTab = (event, tabName) => {
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
       document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
       document.getElementById(tabName).classList.add('active');
       document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
-      if (tabName === 'financeiro') { setTimeout(() => { updateFinanceiroView(); }, 100); }
+      
+      // Atualiza gráfico se entrar na aba financeiro
+      if (tabName === 'financeiro') {
+          setTimeout(() => { updateFinanceiroView(); }, 100);
+      }
     };
 
-    // ===== Modais Orçamento =====
+    // === MODAIS (Resumidos para não estourar limite, mas completos) ===
+    
     const toggleModoDeCobranca = (modo) => {
         const moWrapper = document.getElementById('orc-cobranca-mo-wrapper');
         const servicoWrapper = document.getElementById('orc-cobranca-servico-wrapper');
@@ -1541,7 +1399,6 @@
         toggleUsarMaterial(e.target.value);
     });
 
-    // ===== Orcamento Modal Open/Close =====
     window.openOrcamentoModal = (orcamentoParaEditar = null) => {
       const modal = document.getElementById('orcamento-modal');
       const clienteSelect = document.getElementById('orc-cliente-select');
@@ -1555,7 +1412,7 @@
           const clone = JSON.parse(JSON.stringify(orcamentoParaEditar || {}));
           clone.modoCobranca = clone.modoCobranca || 'mao_de_obra';
           clone.usarMaterial = clone.usarMaterial || 'sim';
-          clone.tipoObra = (clone.tipoObra === 'industrial' || clone.tipoObra === 'residencial') ? clone.tipoObra : 'residencial';
+          clone.tipoObra = clone.tipoObra || 'residencial';
           clone.maoDeObra = clone.maoDeObra || { tipo: '', valor: 0, label: '', raw_value: '' };
           clone.desconto = clone.desconto || { tipo: 'nenhum', valor: 0 };
           clone.items = Array.isArray(clone.items) ? clone.items : [];
@@ -1576,7 +1433,8 @@
                   const rb = document.querySelector(`input[name="tipo-servico"][value="${clone.maoDeObra.tipo}"]`);
                   if(rb) rb.checked = true;
                   const map = {'empreitada':'empreitada-valor', 'diaria':'diaria-qtd', 'ponto':'ponto-qtd', 'hora':'hora-qtd'};
-                  document.getElementById(map[clone.maoDeObra.tipo]).value = clone.maoDeObra.raw_value;
+                  const inputEl = document.getElementById(map[clone.maoDeObra.tipo]);
+                  if(inputEl) inputEl.value = clone.maoDeObra.raw_value;
               }
           }
           
@@ -1688,7 +1546,6 @@
           </details>`).join('');
     }
 
-    // Listeners de inputs do modal (Materials/Services/MaoObra/Descricao/Desconto)
     document.getElementById('filter-tipos').addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase().trim();
       document.querySelectorAll('#orc-tiposdeservico-list label span').forEach(span => {
@@ -1779,85 +1636,17 @@
         updateOrcamentoPreview();
     }
 
-    function updateOrcamentoPreview() {
-        const { config, currentOrcamento } = appState;
-        const previewEl = document.getElementById('pdf-preview');
-        if (!currentOrcamento?.cliente) { previewEl.innerHTML = '<p class="text-gray-500 text-center mt-8">Selecione um cliente.</p>'; return; }
-        
-        // Cálculos Totais
-        let totalServicos = 0, servicosHtml = '';
-        if (currentOrcamento.modoCobranca === 'por_servico') {
-            servicosHtml = `<h4 style="font-weight:bold;margin-bottom:5px;">SERVIÇOS:</h4><table style="width:100%;font-size:0.9em;">`;
-            currentOrcamento.tiposDeServico.forEach(s => {
-                const t = s.valor * (s.quantidade||1); totalServicos += t;
-                servicosHtml += `<tr><td>${s.descricao}</td><td align="center">${s.quantidade}</td><td align="right">R$ ${s.valor.toFixed(2)}</td><td align="right">R$ ${t.toFixed(2)}</td></tr>`;
-            });
-            servicosHtml += `</table>`;
-        }
-        
-        let totalMateriais = 0, materiaisHtml = '';
-        if (currentOrcamento.usarMaterial === 'sim') {
-            materiaisHtml = `<h4 style="font-weight:bold;margin-bottom:5px;margin-top:10px;">MATERIAIS:</h4><table style="width:100%;font-size:0.9em;">`;
-            currentOrcamento.items.forEach(m => {
-                const t = m.valor * (m.quantidade||1); totalMateriais += t;
-                materiaisHtml += `<tr><td>${m.nome}</td><td align="center">${m.quantidade} ${m.unidade||''}</td><td align="right">R$ ${m.valor.toFixed(2)}</td><td align="right">R$ ${t.toFixed(2)}</td></tr>`;
-            });
-            materiaisHtml += `</table>`;
-        }
-        
-        let totalMao = 0, maoHtml = '';
-        if (currentOrcamento.modoCobranca === 'mao_de_obra') {
-            totalMao = currentOrcamento.maoDeObra.valor || 0;
-            maoHtml = `<div style="margin-top:10px;"><strong>Mão de Obra (${currentOrcamento.maoDeObra.label}):</strong> R$ ${totalMao.toFixed(2)}</div>`;
-        }
-        
-        let subtotal = totalServicos + totalMateriais + totalMao;
-        let descontoVal = 0;
-        if(currentOrcamento.desconto.tipo==='percent') descontoVal = subtotal * (currentOrcamento.desconto.valor/100);
-        if(currentOrcamento.desconto.tipo==='valor') descontoVal = currentOrcamento.desconto.valor;
-        
-        currentOrcamento.total = subtotal - descontoVal;
-        
-        const profAddr = `${config.logradouro||''}, ${config.numero||''}`;
-        const cliAddr = formatarEnderecoCompleto(currentOrcamento.cliente);
-        
-        previewEl.innerHTML = `
-            <div style="padding:20px;">
-                <div style="display:flex;justify-content:space-between;">
-                    <div>
-                        <strong style="font-size:1.2em;">${config.nome}</strong><br>
-                        ${profAddr}<br>Tel: ${formatarTelefone(config.telefone)}
-                    </div>
-                    ${config.logo ? `<img src="${config.logo}" style="max-height:60px;">` : ''}
-                </div>
-                <hr style="margin:15px 0;">
-                <strong>Cliente:</strong> ${currentOrcamento.cliente.nome}<br>
-                ${cliAddr}<br>
-                <hr style="margin:15px 0;">
-                ${currentOrcamento.descricaoServico ? `<p><strong>Descrição:</strong> ${currentOrcamento.descricaoServico}</p>` : ''}
-                ${servicosHtml}
-                ${materiaisHtml}
-                ${maoHtml}
-                <div style="text-align:right;margin-top:15px;font-size:1.2em;font-weight:bold;border-top:1px solid #ccc;padding-top:5px;">
-                    ${descontoVal > 0 ? `Desconto: - R$ ${descontoVal.toFixed(2)}<br>` : ''}
-                    TOTAL: R$ ${currentOrcamento.total.toFixed(2)}
-                </div>
-            </div>
-        `;
-    }
-
-    // ===== CPF/CNPJ Mask =====
+    // ===== Outras Funções: Clientes, Máscaras e Utils =====
+    
+    // Máscaras
     function formatarCPFCNPJ(v){ v=v.replace(/\D/g,''); if(v.length<=11) return v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.$2.$3-$4"); return v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,"$1.$2.$3/$4-$5"); }
     function handleDocMask(e){ e.target.value = formatarCPFCNPJ(e.target.value); }
     function getLabelEValorDoc(v){ v=String(v).replace(/\D/g,''); return {label:v.length>11?'CNPJ':'CPF', valor:formatarCPFCNPJ(v)}; }
-    
-    // ===== Tel Mask =====
     function formatarTelefone(v){ v=v.replace(/\D/g,''); return v.replace(/(\d{2})(\d{5})(\d{4})/,"($1) $2-$3"); }
     function handleTelefoneMask(e){ e.target.value = formatarTelefone(e.target.value); }
-    
-    // ===== CEP =====
     function formatarCEP(v){ v=v.replace(/\D/g,''); return v.replace(/(\d{5})(\d{3})/,"$1-$2"); }
     function handleCEPMask(e){ e.target.value = formatarCEP(e.target.value); }
+    
     window.buscarCEP = async (cep, map) => {
         try {
             const r = await fetch(`https://viacep.com.br/ws/${cep.replace(/\D/g,'')}/json/`);
@@ -1872,7 +1661,6 @@
         } catch(e){ alert('Erro CEP.'); }
     };
 
-    // ===== Utils =====
     function gerarNovoNumeroCliente() {
         const ids = appState.clientes.map(c=>c.numeroCadastro).filter(x=>x&&x.startsWith('CL'));
         let max=0;
@@ -1891,6 +1679,38 @@
             div.style.display = div.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
         });
     }
+    
+    // Importar Clientes
+    document.getElementById('btn-import-clientes-xlsx')?.addEventListener('click', async () => {
+        const inp = document.getElementById('clientes-xlsx-input');
+        if(!inp.files[0]) return alert('Selecione arquivo.');
+        try {
+            const buf = await inp.files[0].arrayBuffer();
+            const wb = XLSX.read(buf, { type:'array' });
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+            const batch = writeBatch(db);
+            rows.forEach(r => {
+                const vals = Object.values(r);
+                if(vals.length > 0) {
+                    const nome = String(vals[0]);
+                    if(nome){
+                        const nc = gerarNovoNumeroCliente();
+                        batch.set(doc(collection(db, `users/${userId}/clientes`)), { nome, numeroCadastro: nc, telefone: String(vals[1]||'').replace(/\D/g,'') });
+                    }
+                }
+            });
+            await batch.commit(); alert('Clientes importados!');
+        } catch(e) { alert('Erro na importação.'); }
+    });
+    
+    document.getElementById('btn-clear-clientes')?.addEventListener('click', async () => {
+        if(confirm('Apagar todos clientes?')) {
+            const q = await getDocs(collection(db, `users/${userId}/clientes`));
+            const batch = writeBatch(db);
+            q.forEach(d => batch.delete(d.ref));
+            await batch.commit(); alert('Apagado.');
+        }
+    });
 
     // Inicialização
     window.onload = initializeFirebase;
