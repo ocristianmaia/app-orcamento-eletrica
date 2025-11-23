@@ -1386,6 +1386,30 @@
         document.getElementById('btn-novo-orcamento')?.addEventListener('click', ()=>window.openOrcamentoModal());
         
         // Pesquisas (Mantido)
+    // === SELEÇÃO DO CLIENTE NO MODAL DE ORÇAMENTO ===
+    const selectCliente = document.getElementById('orc-cliente-select');
+    if (selectCliente) {
+        selectCliente.addEventListener('change', (e) => {
+            if (!appState.currentOrcamento) return; // segurança
+
+            const id = e.target.value;
+
+            if (!id) {
+                // nada selecionado
+                appState.currentOrcamento.cliente = null;
+            } else {
+                // procura o cliente completo na lista
+                const cli = appState.clientes.find(c => c.id === id);
+                // guarda o objeto inteiro (nome, telefone, endereço, etc.)
+                appState.currentOrcamento.cliente = cli ? { ...cli } : { id };
+            }
+
+            // atualiza a pré-visualização do PDF
+            window.updateOrcamentoPreview();
+        });
+    }
+
+      
         document.getElementById('search-cliente')?.addEventListener('input', (e)=>{
             const q=e.target.value.toLowerCase();
             document.querySelectorAll('#clientes-list > div').forEach(d=>{ d.style.display=d.textContent.toLowerCase().includes(q)?'flex':'none'; });
