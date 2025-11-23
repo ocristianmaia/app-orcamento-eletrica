@@ -903,7 +903,25 @@
         numeroOrcamento: null, versao: 1
       };
     }
+// Função para selecionar automaticamente o mês e ano atuais
+    function setupInitialDates() {
+      const hoje = new Date();
+      const anoAtual = hoje.getFullYear().toString();
+      const mesAtual = hoje.getMonth().toString(); // 0 a 11
 
+      const elAno = document.getElementById('fat-ano');
+      const elMes = document.getElementById('fat-mes');
+
+      if (elAno) {
+        // Verifica se o ano atual existe nas opções, se não, mantém o padrão
+        const optionExists = [...elAno.options].some(o => o.value === anoAtual);
+        if (optionExists) elAno.value = anoAtual;
+      }
+      
+      if (elMes) {
+        elMes.value = mesAtual;
+      }
+    }
     // ===== Inicialização Firebase e Auth =====
     async function initializeFirebase() {
       try {
@@ -916,6 +934,7 @@
             userId = user.uid;
             userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
             loadingOverlay.querySelector('p').textContent = 'Carregando seus dados...';
+            setupInitialDates();
             loadAllData();
             loginView.classList.add('hidden');
             appView.classList.remove('hidden');
