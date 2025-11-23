@@ -1055,6 +1055,10 @@
             clone.usarMaterial = clone.usarMaterial || 'sim';
             clone.maoDeObra = clone.maoDeObra || {tipo:'',valor:0,raw_value:''};
             clone.desconto = clone.desconto || {tipo:'nenhum',valor:0};
+            if (clone.cliente && clone.cliente.id && (!clone.cliente.nome || !clone.cliente.telefone || !clone.cliente.logradouro)) {
+                const cliFull = appState.clientes.find(c => c.id === clone.cliente.id);
+                if (cliFull) clone.cliente = { ...cliFull };
+            }
             appState.currentOrcamento = clone;
 
             document.getElementById('orc-descricao-servico').value = clone.descricaoServico || '';
@@ -1704,7 +1708,11 @@ function updateServiceInCurrentOrcamento(service) {
            if(temInput) window.calculateMaoDeObra();
       }
 
-      const fullClient = currentOrcamento.cliente;
+      let fullClient = currentOrcamento.cliente;
+      if (fullClient && (!fullClient.nome || !fullClient.telefone || !fullClient.logradouro)) {
+        const foundCli = appState?.clientes?.find?.(c => c.id === fullClient.id);
+        if (foundCli) fullClient = { ...foundCli };
+      }
       const corPrimaria = config.config_color_primary || '#000000';
       const corTotal = config.config_color_secondary || '#333333';
 
@@ -1918,29 +1926,80 @@ function updateServiceInCurrentOrcamento(service) {
 
 // ===== 2. ENVIO DO PDF (COMPARTILHAMENTO NATIVO RESTAURADO) =====
     window.shareOrViewPDF = async () => {
-      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
-      
-      // Cria elemento temporário
+      if (!appState.currentOrcamento?.cliente) {
+        alert('Selecione um cliente para gerar o PDF.');
+        return;
+      }
+
+      const preview = document.getElementById('pdf-preview');
+      if (!preview || !preview.innerHTML.trim()) {
+        alert('Pré-visualização não encontrada.');
+        return;
+      }
+
+      // Clona o conteúdo do preview em um container limpo
       const element = document.createElement('div');
-      element.innerHTML = document.getElementById('pdf-preview').innerHTML;
-      
-      // Estilos fixos para garantir a quebra de página correta
-      element.style.width = '100%';
-      element.style.padding = '20px';
-      element.style.fontSize = '12px'; 
+      element.innerHTML = preview.innerHTML;
+      element.style.width = '800px';
+      element.style.maxWidth = '800px';
+      element.style.margin = '0 auto';
+      element.style.padding = '20px 25px 30px 25px';
+      element.style.fontSize = '12px';
       element.style.fontFamily = 'Inter, sans-serif';
       element.style.backgroundColor = '#ffffff';
-      
+
+      document.body.appendChild(element);
+
       const nomeArq = `pedido-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`;
 
       const opt = {
-        margin:       [10, 10, 10, 10],
+        margin:       [15, 15, 20, 15], // margens padrão A4
         filename:     nomeArq,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
+        html2canvas:  { 
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          scrollY: 0,
+          windowWidth: 900,
+          windowHeight: element.scrollHeight + 40
+        }, 
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak:    { mode: ['css', 'legacy'] }
       };
+
+      try {
+        // Tenta Compartilhamento Nativo (Celular)
+        if (navigator.share && navigator.canShare) {
+            const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+            const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+
+            if (navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: `Orçamento - ${appState.currentOrcamento.cliente.nome}`,
+                    text: 'Segue o orçamento em anexo.',
+                    files: [file]
+                });
+                document.body.removeChild(element);
+                return; 
+            }
+        }
+        // Fallback (PC): Baixa direto
+        await html2pdf().set(opt).from(element).save();
+      } catch (e) {
+        console.error("Erro PDF:", e);
+        try {
+          await html2pdf().set(opt).from(element).save();
+        } catch (e2) {
+          console.error("Erro PDF fallback:", e2);
+          alert('Erro ao gerar o PDF.');
+        }
+      } finally {
+        if (element.parentNode) {
+          document.body.removeChild(element);
+        }
+      }
+    };
 
       try {
         // Tenta Compartilhamento Nativo (Celular)
