@@ -1526,6 +1526,33 @@
     function populateCategorySelect(){const s=document.getElementById('tiposervico-categoria-select'); const c=[...new Set(appState.tiposDeServico.map(x=>x.categoria).filter(Boolean))].sort(); while(s.options.length>2)s.remove(2); c.forEach(k=>{const o=document.createElement('option'); o.value=k; o.text=k; s.add(o);});}
     function populateMateriaisOrcamento(){const l=document.getElementById('orc-materiais-list'); if(l) l.innerHTML=appState.materiais.map(m=>`<div class="flex justify-between p-2 hover:bg-gray-50"><label class="flex flex-grow"><input type="checkbox" data-id="${m.id}" class="mr-2"><span class="text-sm">${m.nome} - R$ ${m.valor}</span></label><input type="number" min="1" value="1" data-id="${m.id}" class="w-16 border rounded text-sm" disabled></div>`).join(''); l.addEventListener('input', e=>{const t=e.target; const id=t.dataset.id; const m=appState.materiais.find(x=>x.id===id); if(!m)return; const q=document.querySelector(`#orc-materiais-list input[type="number"][data-id="${id}"]`); if(t.type==='checkbox'){if(t.checked){q.disabled=false; appState.currentOrcamento.items.push({...m,quantidade:1});}else{q.disabled=true; appState.currentOrcamento.items=appState.currentOrcamento.items.filter(x=>x.id!==id);}} else if(t.type==='number'){const i=appState.currentOrcamento.items.find(x=>x.id===id); if(i)i.quantidade=parseInt(t.value)||1;} window.updateOrcamentoPreview();});}
     function populateTiposDeServicoOrcamento(){const l=document.getElementById('orc-tiposdeservico-list'); const g=appState.tiposDeServico.reduce((a,c)=>{const k=(c.categoria||'OUTROS').toUpperCase();(a[k]||(a[k]=[])).push(c);return a;},{}); l.innerHTML=Object.keys(g).sort().map(k=>`<details class="mb-1 border rounded"><summary class="p-2 bg-gray-50 text-xs font-bold uppercase">${k}</summary><div class="p-2">${g[k].map(s=>`<div class="flex justify-between p-1 hover:bg-gray-50"><label class="flex flex-grow"><input type="checkbox" data-id="${s.id}" class="mr-2"><span class="text-sm">${s.descricao} - R$ ${s.valor}</span></label><input type="number" min="1" value="1" data-id="${s.id}" class="w-16 border rounded text-sm" disabled></div>`).join('')}</div></details>`).join(''); l.addEventListener('input', e=>{const t=e.target; const id=t.dataset.id; const s=appState.tiposDeServico.find(x=>x.id===id); if(!s)return; const q=document.querySelector(`#orc-tiposdeservico-list input[type="number"][data-id="${id}"]`); if(t.type==='checkbox'){if(t.checked){q.disabled=false; appState.currentOrcamento.tiposDeServico.push({...s,quantidade:1});}else{q.disabled=true; appState.currentOrcamento.tiposDeServico=appState.currentOrcamento.tiposDeServico.filter(x=>x.id!==id);}} else if(t.type==='number'){const i=appState.currentOrcamento.tiposDeServico.find(x=>x.id===id); if(i)i.quantidade=parseInt(t.value)||1;} window.updateOrcamentoPreview();});}
+
+  // ================================================
+// CORREÇÃO — Impedir duplicação de serviços
+// ================================================
+function updateServiceInCurrentOrcamento(service) {
+    if (!appState.currentOrcamento) return;
+
+    // Verifica se já existe
+    const exist = appState.currentOrcamento.tiposDeServico.find(s => s.id === service.id);
+
+    if (service.checked) {
+        if (exist) {
+            // Atualiza somente quantidade (NÃO DUPLICA)
+            exist.quantidade = service.quantidade;
+        } else {
+            // Adiciona somente uma vez
+            appState.currentOrcamento.tiposDeServico.push(service);
+        }
+    } else {
+        // Remove quando desmarcar o checkbox
+        appState.currentOrcamento.tiposDeServico =
+            appState.currentOrcamento.tiposDeServico.filter(s => s.id !== service.id);
+    }
+
+    window.updateOrcamentoPreview();
+}
+
     function gerarNovoNumeroCliente(){const ids=appState.clientes.map(c=>c.numeroCadastro).filter(x=>x&&x.startsWith('CL')); let max=0; ids.forEach(i=>{const n=parseInt(i.substring(2,5)); if(!isNaN(n)&&n>max)max=n;}); const seq=(max+1).toString().padStart(3,'0'); const d=new Date(); return `CL${seq}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getFullYear().toString().slice(-2)}`;}
     
     // Preview / Calc
