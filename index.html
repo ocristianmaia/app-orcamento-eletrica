@@ -1823,127 +1823,140 @@ function updateServiceInCurrentOrcamento(service) {
         </div>`;
     };
 
-window.saveOrcamento = async () => {
-    if (!appState.currentOrcamento) {
+    
+    // ===== SALVAR ORÇAMENTO NO FIRESTORE =====
+    window.saveOrcamento = async () => {
+      if (!appState.currentOrcamento) {
         alert("Nenhum orçamento em edição.");
         return;
-    }
+      }
 
-    const cliId = document.getElementById('orc-cliente-select').value;
-    if (!cliId) {
+      const cliId = document.getElementById('orc-cliente-select').value;
+      if (!cliId) {
         alert("Selecione um cliente antes de salvar.");
         return;
-    }
+      }
 
-    const cliente = appState.clientes.find(c => c.id === cliId);
-    if (!cliente) {
+      const cliente = appState.clientes.find(c => c.id === cliId);
+      if (!cliente) {
         alert("Erro ao localizar dados do cliente.");
         return;
-    }
+      }
 
-    const orc = appState.currentOrcamento;
+      const o = appState.currentOrcamento;
 
-    // Monta estrutura padronizada
-    const payload = {
+      const payload = {
         cliente: {
-            id: cliente.id,
-            nome: cliente.nome,
-            telefone: cliente.telefone,
-            documento: cliente.documento,
-            endereco: `${cliente.logradouro}, ${cliente.numero} - ${cliente.bairro}, ${cliente.cidade}/${cliente.uf}`
+          id: cliente.id,
+          nome: cliente.nome,
+          telefone: cliente.telefone,
+          documento: cliente.documento || "",
+          endereco: `${cliente.logradouro || ""}, ${cliente.numero || ""} - ${cliente.bairro || ""}, ${cliente.cidade || ""}/${cliente.uf || ""}`
         },
-        descricaoServico: orc.descricaoServico || "",
-        modoCobranca: orc.modoCobranca || "mao_de_obra",
-        usarMaterial: orc.usarMaterial || "nao",
-        tipoObra: orc.tipoObra || "residencial",
-        maoDeObra: orc.maoDeObra || {},
-        items: orc.items || [],
-        tiposDeServico: orc.tiposDeServico || [],
-        desconto: orc.desconto || { tipo: "nenhum", valor: 0 },
-        status: orc.status === "aprovado" ? "aprovado" : "pendente",
+        descricaoServico: o.descricaoServico || "",
+        modoCobranca: o.modoCobranca || "mao_de_obra",
+        usarMaterial: o.usarMaterial || "sim",
+        tipoObra: o.tipoObra || "residencial",
+        maoDeObra: o.maoDeObra || { tipo: "", valor: 0, label: "", raw_value: 0 },
+        items: o.items || [],
+        tiposDeServico: o.tiposDeServico || [],
+        desconto: o.desconto || { tipo: "nenhum", valor: 0 },
+        status: o.status === "aprovado" ? "aprovado" : "pendente",
         data: serverTimestamp()
-    };
+      };
 
-    try {
-        if (orc.id) {
-            // Atualizar orçamento existente
-            await setDoc(doc(db, `users/${userId}/orcamentos/${orc.id}`), payload);
+      try {
+        if (o.id) {
+          await setDoc(doc(db, `users/${userId}/orcamentos/${o.id}`), payload);
         } else {
-            // Criar novo orçamento
-            const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), payload);
-            orc.id = ref.id;
+          const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), payload);
+          o.id = ref.id;
         }
 
         alert("Orçamento salvo com sucesso!");
         document.getElementById('orcamento-modal').classList.remove('active');
-
-    } catch (e) {
+      } catch (e) {
         console.error("Erro ao salvar orçamento:", e);
         alert("Erro ao salvar orçamento.");
-    }
-};
+      }
+    };
 
-  
-    // ===== 2. ENVIO DO PDF (COMPARTILHAMENTO NATIVO RESTAURADO) =====
+// ===== 2. ENVIO DO PDF (COMPARTILHAMENTO NATIVO RESTAURADO) =====
     window.shareOrViewPDF = async () => {
-      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
-      
-      // Cria elemento temporário
+      if (!appState.currentOrcamento?.cliente) {
+        alert('Selecione um cliente para gerar o PDF.');
+        return;
+      }
+
+      const preview = document.getElementById('pdf-preview');
+      if (!preview) {
+        alert('Pré-visualização não encontrada.');
+        return;
+      }
+
       const element = document.createElement('div');
-     element.innerHTML = document.querySelector('#pdf-preview').innerHTML;
-element.style.height = "auto";  
-element.style.minHeight = "100%";
-      opt.html2canvas = {
-    scale: 2,
-    useCORS: true,
-    letterRendering: true,
-    windowHeight: element.scrollHeight  // <--- garante capturar tudo
-};
-      
+      element.innerHTML = preview.innerHTML;
+
       // Estilos fixos para garantir a quebra de página correta
-      element.style.width = '100%';
+      element.style.width = '800px';
       element.style.padding = '20px';
-      element.style.fontSize = '12px'; 
+      element.style.fontSize = '12px';
       element.style.fontFamily = 'Inter, sans-serif';
       element.style.backgroundColor = '#ffffff';
-      
+      element.style.position = 'absolute';
+      element.style.left = '-9999px';
+      element.style.top = '0';
+
+      document.body.appendChild(element);
+      const fullHeight = element.scrollHeight || element.offsetHeight || document.body.scrollHeight;
+
       const nomeArq = `pedido-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`;
 
       const opt = {
-        margin:       [10, 10, 10, 10],
-        filename:     nomeArq,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        margin: [10, 10, 10, 10],
+        filename: nomeArq,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          scrollY: 0,
+          windowHeight: fullHeight
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
       };
 
       try {
-        // Tenta Compartilhamento Nativo (Celular)
-        if (navigator.share && navigator.canShare) {
-            const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
-            const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
-            
-            if (navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    title: `Orçamento - ${appState.currentOrcamento.cliente.nome}`,
-                    text: 'Segue o orçamento em anexo.',
-                    files: [file]
-                });
-                return; 
-            }
+        const worker = html2pdf().set(opt).from(element);
+        const pdfBlob = await worker.output('blob');
+        const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: `Orçamento - ${appState.currentOrcamento.cliente.nome}`,
+            text: 'Segue o orçamento em anexo.',
+            files: [file]
+          });
+        } else {
+          const url = URL.createObjectURL(pdfBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = opt.filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
         }
-        // Fallback (PC): Baixa direto
-        html2pdf().set(opt).from(element).save();
-        
       } catch (e) {
-        console.error("Erro PDF:", e);
-        // Se der erro no share, tenta salvar direto
-        html2pdf().set(opt).from(element).save();
+        console.error('Erro PDF:', e);
+        alert('Erro ao gerar o PDF.');
+      } finally {
+        document.body.removeChild(element);
       }
     };
-  
-    window.sendWhatsAppText=()=>{if(!appState.currentOrcamento?.cliente)return; const t=appState.currentOrcamento.cliente.telefone.replace(/\D/g,''); window.open(`https://wa.me/55${t}`, '_blank');};
+
+window.sendWhatsAppText=()=>{if(!appState.currentOrcamento?.cliente)return; const t=appState.currentOrcamento.cliente.telefone.replace(/\D/g,''); window.open(`https://wa.me/55${t}`, '_blank');};
     window.loginWithGoogle=async()=>{try{await signInWithPopup(auth, new GoogleAuthProvider());}catch(e){alert('Erro login');}};
     window.logout=async()=>{if(confirm('Sair?'))await signOut(auth);};
 
