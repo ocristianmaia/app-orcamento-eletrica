@@ -899,36 +899,59 @@
     };
 
     // ===== 1. INICIALIZAÇÃO =====
-    window.onload = async () => {
-      app = initializeApp(firebaseConfig);
-      db = getFirestore(app);
-      auth = getAuth(app);
+   // ===== FUNÇÃO DE FILTROS CORRIGIDA (COLE ISTO NO LUGAR DA ANTIGA) =====
+    function setupManualListeners() {
+        console.log("Ativando Filtros Manuais...");
 
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          userId = user.uid;
-          document.getElementById('user-info').textContent = `Logado: ${user.email}`;
-          document.getElementById('loading-overlay').style.display = 'none';
-          document.getElementById('login-view').classList.add('hidden');
-          document.getElementById('app-view').classList.remove('hidden');
-          
-          // Datas Financeiro
-          const hoje = new Date();
-          const elAno = document.getElementById('fat-ano');
-          const elMes = document.getElementById('fat-mes');
-          if(elAno) elAno.value = hoje.getFullYear().toString();
-          if(elMes) elMes.value = hoje.getMonth().toString();
+        // 1. Botão Novo Orçamento
+        const btnNovo = document.getElementById('btn-novo-orcamento');
+        if(btnNovo) btnNovo.onclick = () => window.openOrcamentoModal();
+        
+        // 2. Pesquisa de Clientes
+        const searchCli = document.getElementById('search-cliente');
+        if(searchCli) searchCli.oninput = (e) => {
+            const q = e.target.value.toLowerCase();
+            document.querySelectorAll('#clientes-list > div').forEach(div => {
+                div.style.display = div.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
+            });
+        };
+        
+        // 3. FILTROS DA ABA ORÇAMENTOS
+        const refreshOrcamentos = () => {
+             // Garante que a função de renderizar existe antes de chamar
+             if(typeof renderOrcamentosList === 'function') renderOrcamentosList(true);
+        };
+        
+        const fStatus = document.getElementById('filtro-status-orcamento');
+        const fMes = document.getElementById('filtro-mes-orcamento');
+        const fAno = document.getElementById('filtro-ano-orcamento');
+        const btnLimpar = document.getElementById('btn-limpar-filtros-orcamento');
 
-          loadAllData();
-          setupListeners();
-        } else {
-          userId = null;
-          document.getElementById('loading-overlay').style.display = 'none';
-          document.getElementById('login-view').classList.remove('hidden');
-          document.getElementById('app-view').classList.add('hidden');
-        }
-      });
-    };
+        if(fStatus) fStatus.onchange = refreshOrcamentos;
+        if(fMes) fMes.onchange = refreshOrcamentos;
+        if(fAno) fAno.onchange = refreshOrcamentos;
+        
+        if(btnLimpar) btnLimpar.onclick = () => {
+             if(fStatus) fStatus.value = 'todos';
+             if(fMes) fMes.value = 'todos';
+             if(fAno) fAno.value = 'todos';
+             refreshOrcamentos();
+        };
+
+        // 4. FILTROS DA ABA FINANCEIRO
+        const fatAno = document.getElementById('fat-ano');
+        const fatMes = document.getElementById('fat-mes');
+        const chartPer = document.getElementById('chart-periodo');
+        const btnFat = document.getElementById('btn-atualizar-financeiro');
+
+        if(fatAno) fatAno.onchange = () => window.updateFinanceiroView();
+        if(fatMes) fatMes.onchange = () => window.updateFinanceiroView();
+        if(chartPer) chartPer.onchange = () => window.updateFinanceiroView();
+        if(btnFat) btnFat.onclick = (e) => { 
+            e.preventDefault(); 
+            window.updateFinanceiroView(); 
+        };
+    }
 
     // ===== 2. CARREGAMENTO DE DADOS =====
     function loadAllData() {
@@ -968,6 +991,7 @@
         renderOrcamentosList();
         renderOrcamentosList(true);
         window.updateFinanceiroView();
+        setupManualListeners();
       });
     }
 
