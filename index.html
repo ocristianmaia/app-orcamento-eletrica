@@ -1712,6 +1712,70 @@
         }
     });
 
+// ============================================================
+    // 🚨 BLOCO DE NAVEGAÇÃO E EDIÇÃO (QUE ESTAVA FALTANDO) 🚨
+    // ============================================================
+
+    window.showAllOrcamentosPage = () => {
+      document.getElementById('main-view').classList.add('hidden');
+      document.getElementById('all-orcamentos-view').classList.remove('hidden');
+      renderOrcamentosList(true);
+    };
+
+    window.showMainPage = () => {
+      document.getElementById('all-orcamentos-view').classList.add('hidden');
+      document.getElementById('main-view').classList.remove('hidden');
+      appState.orcamentosParaExcluir.clear();
+      updateDeleteButtonState();
+    };
+
+    window.editOrcamento = (id) => {
+      const orc = appState.orcamentos.find(o => String(o.id) === String(id));
+      if (!orc) return alert('Erro: Orçamento não encontrado.');
+      openOrcamentoModal(orc);
+    };
+
+    window.toggleOrcamentoExclusao = (checkbox) => {
+        const id = checkbox.dataset.id;
+        if (checkbox.checked) appState.orcamentosParaExcluir.add(id);
+        else appState.orcamentosParaExcluir.delete(id);
+        updateDeleteButtonState();
+    };
+
+    function updateDeleteButtonState() {
+        const btn = document.getElementById('btn-delete-selected-orcamentos');
+        if (btn) btn.disabled = appState.orcamentosParaExcluir.size === 0;
+    }
+
+    window.confirmDeleteSelectedOrcamentos = () => {
+        if (appState.orcamentosParaExcluir.size === 0) return;
+        const modal = document.getElementById('delete-confirm-modal');
+        document.getElementById('delete-confirm-message').innerHTML = `Excluir ${appState.orcamentosParaExcluir.size} item(ns)?`;
+        modal.classList.add('active');
+    };
+
+    window.closeDeleteConfirmModal = (confirmAction) => {
+        document.getElementById('delete-confirm-modal').classList.remove('active');
+        if (confirmAction) deleteOrcamentosEmLote(Array.from(appState.orcamentosParaExcluir));
+    };
+
+    async function deleteOrcamentosEmLote(ids) {
+      if (!userId) return;
+      const btn = document.getElementById('btn-delete-selected-orcamentos');
+      btn.disabled = true;
+      try {
+        const batch = writeBatch(db);
+        ids.forEach(id => {
+            const ref = doc(db, `users/${userId}/orcamentos/${id}`);
+            batch.delete(ref);
+        });
+        await batch.commit();
+        appState.orcamentosParaExcluir.clear();
+        alert('Itens excluídos.');
+      } catch (e) { console.error(e); alert('Erro ao excluir.'); }
+      finally { btn.disabled = false; updateDeleteButtonState(); }
+    }
+
     // Inicialização
     window.onload = initializeFirebase;
   </script>
