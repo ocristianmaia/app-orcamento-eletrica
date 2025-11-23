@@ -1256,9 +1256,64 @@
     }
     
     function updateConfigForm() {
-        const c=appState.config||{}; const set=(i,v)=>{const e=document.getElementById(i);if(e)e.value=v||'';};
-        set('config-nome',c.nome); set('config-telefone',formatarTelefone(c.telefone));
-        if(c.logo){document.getElementById('config-logo').value=c.logo; document.getElementById('config-logo-preview').src=c.logo; document.getElementById('config-logo-preview-wrapper').classList.remove('hidden');}
+      const c = appState.config || {};
+      
+      // Helper para preencher campos de texto sem erro se for nulo
+      const set = (id, val) => { 
+          const el = document.getElementById(id); 
+          if (el) el.value = (val !== undefined && val !== null) ? val : ''; 
+      };
+
+      // Dados Pessoais
+      set('config-nome', c.nome);
+      set('config-telefone', formatarTelefone(c.telefone));
+      set('config-doc', formatarCPFCNPJ(c.doc));
+      
+      // Endereço
+      set('config-cep', formatarCEP(c.cep));
+      set('config-numero', c.numero);
+      set('config-logradouro', c.logradouro);
+      set('config-bairro', c.bairro);
+      set('config-cidade', c.cidade);
+      set('config-uf', c.uf);
+
+      // Logomarca
+      if (c.logo) {
+          const logoInput = document.getElementById('config-logo');
+          const logoPreview = document.getElementById('config-logo-preview');
+          const logoWrapper = document.getElementById('config-logo-preview-wrapper');
+          
+          if(logoInput) logoInput.value = c.logo;
+          if(logoPreview) logoPreview.src = c.logo;
+          if(logoWrapper) logoWrapper.classList.remove('hidden');
+      }
+
+      // Cores PDF
+      set('config-color-primary', c.config_color_primary);
+      set('config-color-secondary', c.config_color_secondary);
+
+      // Valores Mão de Obra (Residencial)
+      set('config-residencial-empreitada', c.residencial_empreitada);
+      set('config-residencial-diaria', c.residencial_diaria);
+      set('config-residencial-ponto', c.residencial_ponto);
+      set('config-residencial-hora', c.residencial_hora);
+
+      // Valores Mão de Obra (Industrial)
+      set('config-industrial-diaria', c.industrial_diaria);
+      set('config-industrial-ponto', c.industrial_ponto);
+      set('config-industrial-hora', c.industrial_hora);
+
+      // Pagamento
+      set('config-pix-chave', c.config_pix_chave);
+      set('config-cartao-vezes', c.config_cartao_vezes);
+      set('config-cartao-juros', c.config_cartao_juros);
+      
+      const checkDinheiro = document.getElementById('config-pagamento-dinheiro');
+      if(checkDinheiro) checkDinheiro.checked = !!c.config_pagamento_dinheiro;
+
+      set('config-deposito-banco', c.config_deposito_banco);
+      set('config-deposito-ag', c.config_deposito_ag);
+      set('config-deposito-conta', c.config_deposito_conta);
     }
 
     // Formatação
