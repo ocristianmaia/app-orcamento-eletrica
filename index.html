@@ -872,8 +872,9 @@
         <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">Enviar Mensagem</a>
       </div>
     </footer>
-<script type="module">
-    console.log("VERSÃO 12.0 (FINAL - Configurações, Filtros e Checkboxes) CARREGADA");
+
+    <script type="module">
+    console.log("VERSÃO 13.0 (Correção Cirúrgica - Config, Clientes e Filtros) CARREGADA");
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -935,11 +936,11 @@
       if (!userId) return;
       const prefix = `users/${userId}`;
 
-      // Configurações (Correção: Preenche TUDO ao carregar)
+      // Configurações
       onSnapshot(doc(db, `${prefix}/config/main`), (snap) => {
         if (snap.exists()) { 
             appState.config = snap.data(); 
-            updateConfigForm(); 
+            updateConfigForm(); // Atualiza o form assim que os dados chegam
         }
       });
 
@@ -979,13 +980,16 @@
       });
     }
 
-    // ===== 1. CONFIGURAÇÕES (CORREÇÃO DO "VAZIO") =====
+    // ===== 1. CONFIGURAÇÕES (CORREÇÃO: Preenchimento Seguro) =====
     function updateConfigForm() {
         const c = appState.config || {};
-        const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val || ''; };
+        // Helper seguro que não quebra se o valor for 0 ou nulo
+        const set = (id, val) => { 
+            const el = document.getElementById(id); 
+            if(el) el.value = (val !== undefined && val !== null) ? val : ''; 
+        };
         const setCheck = (id, val) => { const el = document.getElementById(id); if(el) el.checked = !!val; };
 
-        // Dados Pessoais
         set('config-nome', c.nome);
         set('config-telefone', formatarTelefone(c.telefone));
         set('config-doc', formatarCPFCNPJ(c.doc));
@@ -996,18 +1000,16 @@
         set('config-cidade', c.cidade);
         set('config-uf', c.uf);
 
-        // Logo
         if(c.logo) {
             document.getElementById('config-logo').value = c.logo;
             document.getElementById('config-logo-preview').src = c.logo;
             document.getElementById('config-logo-preview-wrapper').classList.remove('hidden');
         }
 
-        // Cores
-        set('config-color-primary', c.config_color_primary || '#000000');
-        set('config-color-secondary', c.config_color_secondary || '#333333');
+        set('config-color-primary', c.config_color_primary);
+        set('config-color-secondary', c.config_color_secondary);
 
-        // Mão de Obra (Aqui estava faltando!)
+        // Valores Mão de Obra
         set('config-residencial-empreitada', c.residencial_empreitada);
         set('config-residencial-diaria', c.residencial_diaria);
         set('config-residencial-ponto', c.residencial_ponto);
@@ -1026,7 +1028,7 @@
         set('config-deposito-conta', c.config_deposito_conta);
     }
 
-    // ===== 2. LISTA DE CLIENTES (CORREÇÃO DO CLIQUE) =====
+    // ===== 2. CLIENTES (CORREÇÃO: Clique Global) =====
     window.openEditClienteModal = (id) => {
         const c = appState.clientes.find(x => x.id === id);
         if(!c) { console.error("Cliente não encontrado:", id); return; }
@@ -1049,7 +1051,6 @@
     function renderClientesList() {
         const el = document.getElementById('clientes-list');
         if(!appState.clientes.length) { el.innerHTML='<p class="text-gray-500 p-2">Vazio.</p>'; return; }
-        // Atenção: O onclick aqui chama window.openEditClienteModal
         el.innerHTML = appState.clientes.map(c => `
             <div class="flex justify-between items-center p-3 border rounded bg-white mb-2 hover:bg-gray-50">
                 <div class="flex-grow cursor-pointer" onclick="window.openEditClienteModal('${c.id}')">
@@ -1060,9 +1061,9 @@
             </div>`).join('');
     }
 
-    // ===== 3. ORÇAMENTOS (FILTROS E CHECKBOXES) =====
+    // ===== 3. ORÇAMENTOS (CORREÇÃO: Checkbox e Filtros) =====
     
-    // Funções de Checkbox de Exclusão
+    // Funções de Checkbox de Exclusão (agora globais)
     window.toggleOrcamentoExclusao = (checkbox) => {
         const id = checkbox.dataset.id;
         if (checkbox.checked) appState.orcamentosParaExcluir.add(id);
@@ -1099,7 +1100,7 @@
         let list = [...appState.orcamentos];
         
         if (isFull) {
-            // Aplica Filtros
+            // Aplica Filtros APENAS na tela completa
             const s = document.getElementById('filtro-status-orcamento').value;
             const m = document.getElementById('filtro-mes-orcamento').value;
             const a = document.getElementById('filtro-ano-orcamento').value;
@@ -1124,8 +1125,6 @@
         el.innerHTML = list.map(o => {
             const cli = appState.clientes.find(c => c.id === o.cliente?.id);
             const nome = cli ? cli.nome : 'Cliente Excluído';
-            
-            // Abrevia nome apenas na home
             const nomeDisplay = (!isFull && nome.split(' ').length > 1) ? `${nome.split(' ')[0]} ${nome.split(' ')[1]}` : nome;
             
             const num = String(o.numeroOrcamento||'').padStart(3,'0');
@@ -1139,7 +1138,7 @@
                 : `<span class="px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs font-bold border border-yellow-200">PENDENTE</span>`;
 
             if (isFull) {
-                // Layout Completo com CHECKBOX e Lápis
+                // Layout Completo com CHECKBOX (Aqui estava o erro do sumiço)
                 const isChecked = appState.orcamentosParaExcluir.has(o.id);
                 return `
                 <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-2 flex items-start gap-3">
@@ -1163,7 +1162,7 @@
                    </button>
                 </div>`;
             } else {
-                // Layout Home (Simples)
+                // Layout Home (Sem Checkbox)
                 return `
                 <div class="bg-white p-3 rounded border shadow-sm mb-2 flex justify-between items-center">
                     <div class="overflow-hidden mr-2">
@@ -1187,7 +1186,8 @@
     // ===== OUTROS MODAIS E FUNÇÕES =====
     window.changeTab = (event, tabName) => {
       document.querySelectorAll('.tab-content, .tab, .mobile-tab').forEach(x=>x.classList.remove('active'));
-      document.getElementById(tabName).classList.add('active');
+      const target = document.getElementById(tabName);
+      if(target) target.classList.add('active');
       document.querySelectorAll(`[data-tab="${tabName}"]`).forEach(t => t.classList.add('active'));
       if (tabName === 'financeiro') setTimeout(() => window.updateFinanceiroView(), 100);
     };
@@ -1229,6 +1229,8 @@
     window.openOrcamentoModal = (editObj = null) => {
         const modal = document.getElementById('orcamento-modal');
         const sel = document.getElementById('orc-cliente-select');
+        
+        // Popula Selects
         sel.innerHTML = '<option value="">Selecione</option>' + appState.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
         populateMateriaisOrcamento();
         populateTiposDeServicoOrcamento();
@@ -1236,6 +1238,7 @@
         if (editObj) {
             document.getElementById('modal-title').textContent = 'Editar Orçamento';
             const clone = JSON.parse(JSON.stringify(editObj));
+            // Defaults
             clone.modoCobranca = clone.modoCobranca || 'mao_de_obra';
             clone.usarMaterial = clone.usarMaterial || 'sim';
             clone.maoDeObra = clone.maoDeObra || {tipo:'',valor:0};
@@ -1248,50 +1251,62 @@
             checkRadio('modo-cobranca', clone.modoCobranca);
             checkRadio('usar-material', clone.usarMaterial);
             checkRadio('tipo-obra', clone.tipoObra || 'residencial');
+
             if(clone.maoDeObra.tipo) {
                 checkRadio('tipo-servico', clone.maoDeObra.tipo);
                 const map={'empreitada':'empreitada-valor', 'diaria':'diaria-qtd', 'ponto':'ponto-qtd', 'hora':'hora-qtd'};
                 const inp = document.getElementById(map[clone.maoDeObra.tipo]);
                 if(inp) inp.value = clone.maoDeObra.raw_value;
             }
+
             const dv = document.getElementById('orc-desconto-valor');
             document.getElementById('orc-desconto-tipo').value = clone.desconto.tipo;
             if(clone.desconto.tipo!=='nenhum') { dv.value=clone.desconto.valor; dv.disabled=false; }
             else { dv.value=''; dv.disabled=true; }
+            
             document.getElementById('orc-status-aprovado').checked = (clone.status === 'aprovado');
 
             applyVisualToggles(clone.modoCobranca, clone.usarMaterial);
+            
             setTimeout(() => {
                 if(clone.items) restoreCheckboxes('orc-materiais-list', clone.items);
                 if(clone.tiposDeServico) restoreCheckboxes('orc-tiposdeservico-list', clone.tiposDeServico);
-                window.calculateMaoDeObra(); window.updateOrcamentoPreview();
+                window.calculateMaoDeObra();
+                window.updateOrcamentoPreview();
             }, 200);
         } else {
             document.getElementById('modal-title').textContent = 'Criar Orçamento';
             appState.currentOrcamento = { id:null, cliente:null, modoCobranca:'mao_de_obra', usarMaterial:'sim', tiposDeServico:[], items:[], maoDeObra:{tipo:'',valor:0}, desconto:{tipo:'nenhum',valor:0}, total:0 };
+            
             document.getElementById('orc-descricao-servico').value='';
             document.getElementById('orc-status-aprovado').checked=false;
             sel.value='';
             document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(i=>i.value='');
             document.querySelectorAll('input[name="tipo-servico"]').forEach(r=>r.checked=false);
+            
             checkRadio('modo-cobranca', 'mao_de_obra');
             checkRadio('usar-material', 'sim');
+            checkRadio('tipo-obra', 'residencial');
             applyVisualToggles('mao_de_obra', 'sim');
             window.updateOrcamentoPreview();
         }
         modal.classList.add('active');
     };
+    
     window.closeOrcamentoModal = () => {
         document.getElementById('orcamento-modal').classList.remove('active');
         document.querySelectorAll('#orc-materiais-list input, #orc-tiposdeservico-list input').forEach(el => { if(el.type==='checkbox') el.checked=false; if(el.type==='number') { el.value=1; el.disabled=true; } });
     };
     window.editOrcamento = (id) => { const o = appState.orcamentos.find(x=>String(x.id)===String(id)); if(o) window.openOrcamentoModal(o); };
+    
     function applyVisualToggles(modo, mat) {
         const mo=document.getElementById('orc-cobranca-mo-wrapper');
         const serv=document.getElementById('orc-cobranca-servico-wrapper');
         const mlist=document.getElementById('orc-cobranca-material-wrapper');
+        
         if(modo==='por_servico') { mo.classList.add('hidden'); serv.classList.remove('hidden'); }
         else { mo.classList.remove('hidden'); serv.classList.add('hidden'); }
+        
         if(mat==='nao') mlist.classList.add('hidden'); else mlist.classList.remove('hidden');
     }
 
@@ -1301,6 +1316,7 @@
         document.getElementById('config-telefone')?.addEventListener('input', handleTelefoneMask);
         document.getElementById('config-cep')?.addEventListener('input', handleCEPMask);
         document.getElementById('btn-novo-orcamento')?.addEventListener('click', ()=>window.openOrcamentoModal());
+        
         document.getElementById('search-cliente')?.addEventListener('input', (e)=>{
             const q=e.target.value.toLowerCase();
             document.querySelectorAll('#clientes-list > div').forEach(d=>{ d.style.display=d.textContent.toLowerCase().includes(q)?'flex':'none'; });
@@ -1312,7 +1328,7 @@
         document.querySelectorAll('input[name="modo-cobranca"]').forEach(r=>{ r.addEventListener('change',(e)=>{if(appState.currentOrcamento)appState.currentOrcamento.modoCobranca=e.target.value; applyVisualToggles(e.target.value,appState.currentOrcamento?.usarMaterial||'sim'); window.updateOrcamentoPreview();}); });
         document.querySelectorAll('input[name="usar-material"]').forEach(r=>{ r.addEventListener('change',(e)=>{if(appState.currentOrcamento)appState.currentOrcamento.usarMaterial=e.target.value; applyVisualToggles(appState.currentOrcamento?.modoCobranca||'mao_de_obra',e.target.value); window.updateOrcamentoPreview();}); });
         
-        // Filtros da Lista de Orçamentos
+        // Filtros (Correção: Agora chama a função com true)
         const refreshList = () => renderOrcamentosList(true);
         document.getElementById('filtro-status-orcamento')?.addEventListener('change', refreshList);
         document.getElementById('filtro-mes-orcamento')?.addEventListener('change', refreshList);
