@@ -2847,6 +2847,15 @@ function updateOrcamentoPreview() {
       document.querySelectorAll('.tab, .mobile-tab').forEach(tab => tab.classList.remove('active'));
       document.getElementById(tabName).classList.add('active');
       document.querySelectorAll(`.tab[data-tab="${tabName}"], .mobile-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
+      // --- ADICIONE ESTE BLOCO NOVO ---
+      // Se a aba for Financeiro, atualiza o gráfico para garantir que ele apareça
+      if (tabName === 'financeiro') {
+          // Pequeno delay para garantir que a tela já apareceu
+          setTimeout(() => {
+              updateFinanceiroView();
+          }, 100);
+      }
+      // --------------------------------
     };
 
     // Lógica do Desconto
@@ -3129,88 +3138,219 @@ function gerarNovoNumeroCliente() {
       });
     }
 
-    function calcularFinanceiro(anoSel, mesSel) {
-      const orcs = filtrarOrcamentosPorMesAno(anoSel, mesSel);
-      let bruto = 0;
-      let liquido = 0;
-      let aprovados = 0;
-      let pendentes = 0;
+    // --- NOVO BLOCO DE LÓGICA FINANCEIRA ---
 
-      orcs.forEach(orc => {
-        const total = Number(orc.total || 0);
-        bruto += total;
-        const aprovado = (orc.status === 'aprovado' || orc.aprovado === true);
-        if (aprovado) {
-          liquido += total;
-          aprovados += 1;
-        } else {
-          pendentes += 1;
-        }
-      });
+    let chartType = 'bar'; // Padrão: Colunas
 
-      return {
-        bruto, liquido, aprovados, pendentes, totalOrcamentos: orcs.length,
-      };
-    }
+    window.mudarTipoGrafico = (tipo) => {
+      chartType = tipo;
+      updateFinanceiroView();
+    };
 
     function formatBRL(valor) {
       return (Number(valor || 0)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
-    function updateFinanceiroView() {
+    // Calcula dados para a visão MENSAL (Bruto vs Líquido do mês selecionado)
+    function calcularFinanceiroMensal(anoSel, mesSel) {
+      let bruto = 0;
+      let liquido = 0;
+      let aprovados = 0;
+      let pendentes = 0;
+
+      appState.orcamentos.forEach(orc => {
+        if (!orc.createdAt) return;
+        const d = new Date(orc.createdAt);
+        const ano = d.getFullYear().toString();
+        const mes = d.getMonth().toString();
+
+        // Filtra pelo Ano e Mês selecionados
+        if (anoSel !== 'todos' && ano !== anoSel) return;
+        if (mesSel !== 'all' && mes !== mesSel) return;
+
+        const total = Number(orc.total || 0);
+        bruto += total;
+        
+        const isAprovado = (orc.status === 'aprovado' || orc.aprovado === true);
+        if (isAprovado) {
+          liquido += total;
+          aprovados++;
+        } else {
+          pendentes++;
+        }
+      });
+
+      return { bruto, liquido, aprovados, pendentes };
+    }
+
+    // Calcula dados para a visão ANUAL (Mes a Mes do ano selecionado)
+    function calcularFinanceiroAnual(anoSel) {
+      // Cria array com 12 posições (jan a dez) zeradas
+      const mesesBruto = Array(12).fill(0);
+      const mesesLiquido = Array(12).fill(0);
+      
+      let totalBrutoAno = 0;
+      let totalLiquidoAno = 0;
+      let aprovadosAno = 0;
+      let pendentesAno = 0;
+
+      appState.orcamentos.forEach(orc => {
+        if (!orc.createdAt) return;
+        const d = new Date(orc.createdAt);
+        const ano = d.getFullYear().toString();
+        const mesIndex = d.getMonth(); // 0 a 11
+
+        // Se o ano não bater, ignora (a menos que seja "todos")
+        if (anoSel !== 'todos' && ano !== anoSel) return;
+
+        const total = Number(orc.total || 0);
+        const isAprovado = (orc.status === 'aprovado' || orc.aprovado === true);
+
+        // Soma nos totais gerais
+        totalBrutoAno += total;
+        mesesBruto[mesIndex] += total;
+
+        if (isAprovado) {
+          totalLiquidoAno += total;
+          mesesLiquido[mesIndex] += total;
+          aprovadosAno++;
+        } else {
+          pendentesAno++;
+        }
+      });
+
+      return { 
+        mesesBruto, 
+        mesesLiquido, 
+        totalBrutoAno, 
+        totalLiquidoAno, 
+        aprovadosAno, 
+        pendentesAno 
+      };
+    }
+
+    window.updateFinanceiroView = () => {
       const anoSel = document.getElementById('fat-ano')?.value || 'todos';
       const mesSel = document.getElementById('fat-mes')?.value || 'all';
-
-      const { bruto, liquido, aprovados, pendentes } = calcularFinanceiro(anoSel, mesSel);
-
+      const visualizacao = document.getElementById('chart-periodo')?.value || 'mensal';
+      
+      // Elementos de Texto (Cards)
       const brutoEl = document.getElementById('fat-bruto');
       const liquidoEl = document.getElementById('fat-liquido');
       const contagemEl = document.getElementById('fat-contagem');
+      
+      // Elemento seletor de mês (esconder se for visão anual)
+      const divSeletorMes = document.getElementById('fat-mes')?.parentElement;
 
-      if (brutoEl) brutoEl.textContent = formatBRL(bruto);
-      if (liquidoEl) liquidoEl.textContent = formatBRL(liquido);
-      if (contagemEl) contagemEl.textContent = `${aprovados} aprovados / ${pendentes} pendentes`;
+      let labelsGrafico = [];
+      let datasetsGrafico = [];
 
-      const canvas = document.getElementById('finance-chart');
-      if (!canvas || typeof Chart === 'undefined') return;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      // --- LÓGICA DE VISUALIZAÇÃO ---
+      if (visualizacao === 'mensal') {
+        // Mostra o seletor de mês
+        if(divSeletorMes) divSeletorMes.style.display = 'flex';
 
-      if (financeChart) {
-        try { financeChart.destroy(); } catch(e) { console.warn('Erro ao destruir gráfico antigo', e); }
+        const dados = calcularFinanceiroMensal(anoSel, mesSel);
+        
+        // Atualiza Cards
+        if (brutoEl) brutoEl.textContent = formatBRL(dados.bruto);
+        if (liquidoEl) liquidoEl.textContent = formatBRL(dados.liquido);
+        if (contagemEl) contagemEl.textContent = `${dados.aprovados} aprovados / ${dados.pendentes} pendentes`;
+
+        // Configura Gráfico Mensal (Comparativo Bruto x Líquido)
+        labelsGrafico = ['Valor Bruto (Gerado)', 'Valor Líquido (Aprovado)'];
+        datasetsGrafico = [{
+            label: 'Valores do Mês',
+            data: [dados.bruto, dados.liquido],
+            backgroundColor: ['#FACC15', '#22C55E'],
+            borderWidth: 1
+        }];
+
+      } else {
+        // VISÃO ANUAL
+        // Esconde o seletor de mês (pois estamos vendo o ano todo)
+        if(divSeletorMes) divSeletorMes.style.display = 'none';
+
+        const dados = calcularFinanceiroAnual(anoSel);
+
+        // Atualiza Cards com o total do ANO
+        if (brutoEl) brutoEl.textContent = formatBRL(dados.totalBrutoAno);
+        if (liquidoEl) liquidoEl.textContent = formatBRL(dados.totalLiquidoAno);
+        if (contagemEl) contagemEl.textContent = `${dados.aprovadosAno} aprovados / ${dados.pendentesAno} pendentes (Ano)`;
+
+        // Configura Gráfico Anual (Jan a Dez)
+        labelsGrafico = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        
+        if (chartType === 'pie') {
+           // Pizza Anual não faz sentido comparar meses, então mostramos Bruto x Liquido do ano
+           labelsGrafico = ['Total Bruto Anual', 'Total Líquido Anual'];
+           datasetsGrafico = [{
+              data: [dados.totalBrutoAno, dados.totalLiquidoAno],
+              backgroundColor: ['#FACC15', '#22C55E']
+           }];
+        } else {
+           // Barras Anuais (Lado a Lado: Gerado vs Aprovado)
+           datasetsGrafico = [
+             {
+               label: 'Gerado (Bruto)',
+               data: dados.mesesBruto,
+               backgroundColor: '#FACC15',
+               borderRadius: 4
+             },
+             {
+               label: 'Aprovado (Líquido)',
+               data: dados.mesesLiquido,
+               backgroundColor: '#22C55E',
+               borderRadius: 4
+             }
+           ];
+        }
       }
 
+      // --- RENDERIZAÇÃO DO GRÁFICO ---
+      const canvas = document.getElementById('finance-chart');
+      if (!canvas || typeof Chart === 'undefined') return;
+      
+      // Destroi gráfico antigo se existir
+      if (financeChart) {
+        financeChart.destroy();
+      }
+
+      const ctx = canvas.getContext('2d');
+      
       financeChart = new Chart(ctx, {
-        type: 'bar',
+        type: chartType, // 'bar' ou 'pie'
         data: {
-          labels: ['Faturamento'],
-          datasets: [
-            {
-              label: 'Valor Bruto',
-              data: [bruto],
-              backgroundColor: '#FACC15',
-            },
-            {
-              label: 'Valor Líquido (aprovado)',
-              data: [liquido],
-              backgroundColor: '#22C55E',
-            },
-          ],
+          labels: labelsGrafico,
+          datasets: datasetsGrafico
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false, // Importante para não deformar no celular
           plugins: {
-            legend: { position: 'top' },
-            tooltip: { enabled: true },
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) label += ': ';
+                  if (context.parsed.y !== null) {
+                    label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+                  } else if (context.parsed !== null) {
+                     // Para pizza
+                     label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed);
+                  }
+                  return label;
+                }
+              }
+            }
           },
-          scales: {
-            y: {
-              beginAtZero: true,
-            },
-          },
-        },
+          scales: chartType === 'bar' ? {
+            y: { beginAtZero: true }
+          } : {} // Pizza não tem eixos X/Y
+        }
       });
-    }
+    };
 
     function exportarFinanceiro() {
       const inicioStr = document.getElementById('fat-data-inicio')?.value || '';
