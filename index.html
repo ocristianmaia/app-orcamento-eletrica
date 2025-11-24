@@ -2794,16 +2794,22 @@ function updateOrcamentoPreview() {
       // 1. Cria o elemento temporário para o PDF
      const element = document.createElement('div');
 element.innerHTML = preview.innerHTML;
+
 // largura menor para garantir margem lateral segura no A4
 element.style.width = '700px';
+
 // garante que o padding conte dentro desses 700px
 element.style.boxSizing = 'border-box';
+
 // centraliza o conteúdo na página
 element.style.margin = '0 auto';
+
 // mais respiro na direita: top 10, right 30, bottom 10, left 20
 element.style.padding = '10px 30px 10px 20px';
+
 element.style.fontSize = '12px';
 element.style.fontFamily = 'Inter, sans-serif';
+
       
       // Configurações da biblioteca html2pdf
       const opt = {
