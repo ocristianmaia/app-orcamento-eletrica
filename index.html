@@ -2796,8 +2796,8 @@ function updateOrcamentoPreview() {
       element.innerHTML = document.getElementById('pdf-preview').innerHTML;
       
       // Aplica estilos específicos para garantir que a quebra de página não corte textos ao meio
-      element.style.width = '100%';
-      element.style.padding = '20px';
+      element.style.width = '800px';
+      element.style.padding = '10px 20px 10px 20px';
       element.style.fontSize = '12px'; 
       element.style.fontFamily = 'Inter, sans-serif';
       // Importante: Força fundo branco para não ficar transparente
@@ -2805,12 +2805,14 @@ function updateOrcamentoPreview() {
       
       // Configurações da biblioteca html2pdf
       const opt = {
-        margin:       [10, 10, 10, 10], // Margens (mm)
+        // Margens em mm: topo menor, rodapé um pouco maior
+        margin:       [5, 10, 15, 10],
         filename:     `pedido-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // Evita cortes bruscos
+        // Permite quebras naturais e via CSS sem cortar a parte final
+        pagebreak:    { mode: ['css', 'legacy'] }
       };
 
       // 2. Gera e Salva/Compartilha
