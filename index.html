@@ -14,6 +14,8 @@
 
     @media (max-width: 640px) {
   .orcamento-nome {
+    .orcamento-actions {
+      gap: 6px;
     font-size: 0.95rem !important;
     font-weight: 600;
     white-space: nowrap;
@@ -21,6 +23,7 @@
     text-overflow: ellipsis;
     max-width: 180px;
   }
+}
 }
     
     body { font-family: 'Inter', sans-serif; }
@@ -1896,25 +1899,53 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
 
   let list = [...appState.orcamentos];
 
-  if (isFullList) {
-    const statusFiltro = document.getElementById('filtro-status-orcamento')?.value || 'todos';
-    const mesFiltro = document.getElementById('filtro-mes-orcamento')?.value || 'todos';
-    const anoFiltro = document.getElementById('filtro-ano-orcamento')?.value || 'todos';
+if (isFullList) {
+  const isChecked = appState.orcamentosParaExcluir.has(orc.id);
+  return `
+    <div class="bg-white p-4 rounded-lg shadow-sm flex justify-between items-start w-full">
+      <!-- LADO ESQUERDO: checkbox + textos -->
+      <div class="flex items-start gap-3 flex-1">
+        <label class="flex items-start cursor-pointer flex-1">
+          <input
+            type="checkbox"
+            data-id="${orc.id}"
+            ${isChecked ? 'checked' : ''}
+            onchange="toggleOrcamentoExclusao(this)"
+            class="h-5 w-5 mt-1 text-red-600 border-gray-300 rounded focus:ring-red-500"
+          >
+          <div class="ml-3 flex-1">
+            <p class="orcamento-nome font-medium text-lg text-gray-800">${nomeParaExibir}</p>
+            <p class="text-sm text-gray-500">${codigoOrcamento}</p>
+            <p class="text-sm text-gray-500">Data: ${dateStr}</p>
+            <div class="mt-2">
+              <span class="inline-block text-lg font-semibold text-gray-900 bg-yellow-50 border-2 border-dashed border-yellow-400 rounded px-4 py-1 tracking-wide">
+                ${valorOrc}
+              </span>
+            </div>
+          </div>
+        </label>
+      </div>
 
-    list = list.filter(orc => {
-      const status = (orc.status === 'aprovado' || orc.aprovado === true) ? 'aprovado' : 'pendente';
-      if (statusFiltro !== 'todos' && status !== statusFiltro) return false;
-
-      if (!orc.createdAt) return true;
-      const d = new Date(orc.createdAt);
-      const mes = d.getMonth().toString();
-      const ano = d.getFullYear().toString();
-      if (mesFiltro !== 'todos' && mes !== mesFiltro) return false;
-      if (anoFiltro !== 'todos' && ano !== anoFiltro) return false;
-
-      return true;
-    });
-  } else {
+      <!-- LADO DIREITO: status + botão editar -->
+      <div class="orcamento-actions flex flex-col items-end gap-2 flex-shrink-0">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">
+          ${statusRaw}
+        </span>
+        <button
+          onclick="editOrcamento('${orc.id}')"
+          class="flex items-center justify-center w-10 h-10 rounded-lg border border-yellow-500 bg-yellow-400 text-black shadow-sm hover:bg-yellow-500"
+          title="Editar orçamento"
+        >
+          <span class="sr-only">Editar orçamento</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l1.536-1.536a2 2 0 112.828 2.828L9 18H5v-4l10.232-8.768z" />
+          </svg>
+        </button>
+      </div>
+    </div>`;
+}
+ else {
     list = list.slice(0, 3);
   }
 
