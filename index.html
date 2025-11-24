@@ -11,6 +11,17 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+
+    @media (max-width: 640px) {
+  .orcamento-nome {
+    font-size: 0.95rem !important;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+}
     
     body { font-family: 'Inter', sans-serif; }
     .tab-content { display: none; }
@@ -1927,10 +1938,15 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
     const valorOrc = formatBRL(total);
     const d = new Date(date);
     const dateStr = d.toLocaleDateString('pt-BR');
-    const nome = cliente ? cliente.nome : 'Cliente Excluído';
-    const nomes = nome.split(' ');
-    const nomeAbreviado = nomes[0];
-    const nomeParaExibir = isFullList ? nome : nomeAbreviado;
+   const nome = cliente ? cliente.nome : 'Cliente Excluído';
+const nomes = nome.split(' ');
+const nomeAbreviado = nomes[0] || nome;
+
+// se for mobile (tela até 640px) mostra só o primeiro nome
+// se for desktop mostra o nome completo
+const isMobile = window.innerWidth <= 640;
+const nomeParaExibir = isMobile ? nomeAbreviado : nome;
+
 
     const statusRaw = (orc.status === 'aprovado' || orc.aprovado === true) ? 'APROVADO' : 'PENDENTE';
     const statusClass = statusRaw === 'APROVADO'
@@ -1952,7 +1968,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
                 class="h-5 w-5 mt-1 text-red-600 border-gray-300 rounded focus:ring-red-500"
               >
               <div class="ml-3 flex-1">
-                <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
+                <p class="orcamento-nome font-medium text-lg text-gray-800">${nomeParaExibir}</p>
                 <p class="text-sm text-gray-500">${codigoOrcamento}</p>
                 <p class="text-sm text-gray-500">Data: ${dateStr}</p>
                 <div class="mt-2">
@@ -1984,7 +2000,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
     return `
       <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center w-full">
         <div class="flex-grow mr-2">
-          <p class="font-medium text-base text-gray-800 truncate">${nomeParaExibir}</p>
+          <p class="orcamento-nome font-medium text-base text-gray-800 truncate">${nomeParaExibir}</p>
           <p class="text-xs text-gray-500">${codigoOrcamento} • ${dateStr}</p>
           <div class="mt-2">
             <span class="inline-block text-base font-semibold text-gray-900 bg-yellow-50 border-2 border-dashed border-yellow-400 rounded px-4 py-1 tracking-wide">
