@@ -2807,7 +2807,7 @@ function updateOrcamentoPreview() {
       // Configurações da biblioteca html2pdf
       const opt = {
         // Margens padrão A4
-        margin:       [10, 10, 10, 10],
+        margin:       [10, 10, 10, 30],
         filename:     `pedido-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 }, 
