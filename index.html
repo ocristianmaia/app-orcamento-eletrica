@@ -2631,11 +2631,16 @@ function updateOrcamentoPreview() {
       const codigoCliente = fullClient.numeroCadastro || 'SEM-COD';
       const codigoOrcamento = `${codigoCliente}-${numeroSeq}/${anoFull}`;
 
-      const hoje = new Date();
-    const dia = hoje.getDate().toString().padStart(2, '0');
-    const mes = (hoje.getMonth() + 1).toString().padStart(2, '0');
-    const ano = hoje.getFullYear();
-    const dataFormatada = `${dia}/${mes}/${ano}`;
+      const dateRef = currentOrcamento.createdAt 
+    ? new Date(currentOrcamento.createdAt)
+    : new Date();
+
+const dia = dateRef.getDate().toString().padStart(2, '0');
+const mes = (dateRef.getMonth() + 1).toString().padStart(2, '0');
+const ano = dateRef.getFullYear();
+
+const dataFormatada = `${dia}/${mes}/${ano}`;
+
 
       let tiposDeServicoHtml = '';
       let subtotalServicos = 0;
