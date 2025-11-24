@@ -2695,7 +2695,7 @@ function updateOrcamentoPreview() {
       
       // 7. Renderização Final
       previewEl.innerHTML = `
-        <div style="padding: 20px 25px 40px 25px;">
+        <div style="padding: 10px 20px 20px 20px;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding: 0 10px;">
             <div style="text-align: left; max-width: 70%;">
               <strong style="font-size: 1.2em; display: block;">${config.nome || 'Nome do Profissional'}</strong>
@@ -2734,10 +2734,11 @@ function updateOrcamentoPreview() {
             <span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span>
           </div>
           
-          ${pagamentoHtml}
-
-          <div style="font-size: 0.9em; margin-top: 0px; text-align: center; color: #000; font-weight: bold; background-color: #FFFFCC; padding: 5px 0;">
-            Orçamento válido por 15 dias.
+          <div style="page-break-inside: avoid; margin-top: 10px;">
+            ${pagamentoHtml}
+            <div style="font-size: 0.9em; margin-top: 5px; text-align: center; font-weight: bold; background-color: #FFFFCC; padding: 5px 0;">
+              Orçamento válido por 15 dias.
+            </div>
           </div>
         </div>`;
     }
@@ -2796,8 +2797,8 @@ function updateOrcamentoPreview() {
       element.innerHTML = document.getElementById('pdf-preview').innerHTML;
       
       // Aplica estilos específicos para garantir que a quebra de página não corte textos ao meio
-      element.style.width = '800px';
-      element.style.padding = '10px 20px 10px 20px';
+      element.style.width = '100%';
+      element.style.padding = '20px';
       element.style.fontSize = '12px'; 
       element.style.fontFamily = 'Inter, sans-serif';
       // Importante: Força fundo branco para não ficar transparente
@@ -2805,14 +2806,12 @@ function updateOrcamentoPreview() {
       
       // Configurações da biblioteca html2pdf
       const opt = {
-        // Margens em mm: topo menor, rodapé um pouco maior
-        margin:       [5, 10, 15, 10],
+        margin:       [10, 10, 10, 10], // Margens (mm)
         filename:     `pedido-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        // Permite quebras naturais e via CSS sem cortar a parte final
-        pagebreak:    { mode: ['css', 'legacy'] }
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // Evita cortes bruscos
       };
 
       // 2. Gera e Salva/Compartilha
