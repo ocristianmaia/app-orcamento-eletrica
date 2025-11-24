@@ -2792,24 +2792,17 @@ function updateOrcamentoPreview() {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
       
       // 1. Cria o elemento temporário para o PDF
-     const element = document.createElement('div');
-element.innerHTML = preview.innerHTML;
-
-// largura menor para garantir margem lateral segura no A4
-element.style.width = '700px';
-
-// garante que o padding conte dentro desses 700px
-element.style.boxSizing = 'border-box';
-
-// centraliza o conteúdo na página
-element.style.margin = '0 auto';
-
-// mais respiro na direita: top 10, right 30, bottom 10, left 20
-element.style.padding = '10px 30px 10px 20px';
-
-element.style.fontSize = '12px';
-element.style.fontFamily = 'Inter, sans-serif';
-
+      const element = document.createElement('div');
+      // Copia o conteúdo do preview
+      element.innerHTML = document.getElementById('pdf-preview').innerHTML;
+      
+      // Aplica estilos específicos para garantir que a quebra de página não corte textos ao meio
+      element.style.width = '800px';
+      element.style.padding = '10px 20px 50px 20px';
+      element.style.fontSize = '12px'; 
+      element.style.fontFamily = 'Inter, sans-serif';
+      // Importante: Força fundo branco para não ficar transparente
+      element.style.backgroundColor = '#ffffff';
       
       // Configurações da biblioteca html2pdf
       const opt = {
