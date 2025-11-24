@@ -1876,108 +1876,143 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
         }
     }
 
-    
     function renderOrcamentosList(isFullList = false) {
-      const el = isFullList ? document.getElementById('all-orcamentos-list') : document.getElementById('orcamentos-list-recent');
-      if (!el) return;
+  const el = isFullList
+    ? document.getElementById('all-orcamentos-list')
+    : document.getElementById('orcamentos-list-recent');
+  if (!el) return;
 
-      let list = [...appState.orcamentos];
+  let list = [...appState.orcamentos];
 
-      if (isFullList) {
-        const statusFiltro = document.getElementById('filtro-status-orcamento')?.value || 'todos';
-        const mesFiltro = document.getElementById('filtro-mes-orcamento')?.value || 'todos';
-        const anoFiltro = document.getElementById('filtro-ano-orcamento')?.value || 'todos';
+  if (isFullList) {
+    const statusFiltro = document.getElementById('filtro-status-orcamento')?.value || 'todos';
+    const mesFiltro = document.getElementById('filtro-mes-orcamento')?.value || 'todos';
+    const anoFiltro = document.getElementById('filtro-ano-orcamento')?.value || 'todos';
 
-        list = list.filter(orc => {
-          const status = (orc.status === 'aprovado' || orc.aprovado === true) ? 'aprovado' : 'pendente';
-          if (statusFiltro !== 'todos' && status !== statusFiltro) return false;
+    list = list.filter(orc => {
+      const status = (orc.status === 'aprovado' || orc.aprovado === true) ? 'aprovado' : 'pendente';
+      if (statusFiltro !== 'todos' && status !== statusFiltro) return false;
 
-          if (!orc.createdAt) return true;
-          const d = new Date(orc.createdAt);
-          const mes = d.getMonth().toString();
-          const ano = d.getFullYear().toString();
-          if (mesFiltro !== 'todos' && mes !== mesFiltro) return false;
-          if (anoFiltro !== 'todos' && ano !== anoFiltro) return false;
+      if (!orc.createdAt) return true;
+      const d = new Date(orc.createdAt);
+      const mes = d.getMonth().toString();
+      const ano = d.getFullYear().toString();
+      if (mesFiltro !== 'todos' && mes !== mesFiltro) return false;
+      if (anoFiltro !== 'todos' && ano !== anoFiltro) return false;
 
-          return true;
-        });
-      } else {
-        list = list.slice(0, 3);
-      }
+      return true;
+    });
+  } else {
+    list = list.slice(0, 3);
+  }
 
-      if (!list.length) {
-        el.innerHTML = `<div class="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center w-full">
-          <p class="text-sm text-gray-500">Nenhum orçamento salvo ainda.</p>
+  if (!list.length) {
+    el.innerHTML = `
+      <div class="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center w-full">
+        <p class="text-sm text-gray-500">Nenhum orçamento salvo ainda.</p>
+      </div>`;
+    if (isFullList) updateDeleteButtonState();
+    return;
+  }
+
+  el.innerHTML = list.map(orc => {
+    const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
+    const numeroSeq = String(orc.numeroOrcamento || '').padStart(3, '0');
+    const date = orc.createdAt || new Date();
+    const anoFull = (new Date(date)).getFullYear();
+    const codigoCliente = cliente?.numeroCadastro || 'SEM-COD';
+    const codigoOrcamento = `${codigoCliente}-${numeroSeq}/${anoFull}`;
+    const total = Number(orc.total || 0);
+    const valorOrc = formatBRL(total);
+    const d = new Date(date);
+    const dateStr = d.toLocaleDateString('pt-BR');
+    const nome = cliente ? cliente.nome : 'Cliente Excluído';
+    const nomes = nome.split(' ');
+    const nomeAbreviado = nomes[0];
+    const nomeParaExibir = isFullList ? nome : nomeAbreviado;
+
+    const statusRaw = (orc.status === 'aprovado' || orc.aprovado === true) ? 'APROVADO' : 'PENDENTE';
+    const statusClass = statusRaw === 'APROVADO'
+      ? 'bg-green-100 text-green-800 border border-green-300'
+      : 'bg-yellow-100 text-yellow-800 border border-yellow-300';
+
+    // LISTA COMPLETA (TELA "TODOS OS ORÇAMENTOS")
+    if (isFullList) {
+      const isChecked = appState.orcamentosParaExcluir.has(orc.id);
+      return `
+        <div class="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center w-full">
+          <div class="flex items-start gap-3 flex-1">
+            <label class="flex items-start cursor-pointer flex-1">
+              <input
+                type="checkbox"
+                data-id="${orc.id}"
+                ${isChecked ? 'checked' : ''}
+                onchange="toggleOrcamentoExclusao(this)"
+                class="h-5 w-5 mt-1 text-red-600 border-gray-300 rounded focus:ring-red-500"
+              >
+              <div class="ml-3 flex-1">
+                <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
+                <p class="text-sm text-gray-500">${codigoOrcamento}</p>
+                <p class="text-sm text-gray-500">Data: ${dateStr}</p>
+                <div class="mt-2">
+                  <span class="inline-block text-lg font-semibold text-gray-900 bg-yellow-50 border-2 border-dashed border-yellow-400 rounded px-4 py-1 tracking-wide">
+                    ${valorOrc}
+                  </span>
+                </div>
+              </div>
+            </label>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">
+              ${statusRaw}
+            </span>
+          </div>
+          <button
+            onclick="editOrcamento('${orc.id}')"
+            class="ml-3 flex items-center justify-center w-10 h-10 rounded-lg border border-yellow-500 bg-yellow-400 text-black shadow-sm hover:bg-yellow-500"
+            title="Editar orçamento"
+          >
+            <span class="sr-only">Editar orçamento</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l1.536-1.536a2 2 0 112.828 2.828L9 18H5v-4l10.232-8.768z" />
+            </svg>
+          </button>
         </div>`;
-        if (isFullList) updateDeleteButtonState();
-        return;
-      }
+    }
 
-      el.innerHTML = list.map(orc => {
-        const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
-        const numeroSeq = String(orc.numeroOrcamento || '').padStart(3, '0');
-        const date = orc.createdAt || new Date();
-        const anoFull = (new Date(date)).getFullYear();
-        const codigoCliente = cliente?.numeroCadastro || 'SEM-COD';
-        const codigoOrcamento = `${codigoCliente}-${numeroSeq}/${anoFull}`;
-        const total = Number(orc.total || 0);
-        const valorOrc = formatBRL(total);
-        const d = new Date(date);
-        const dateStr = d.toLocaleDateString('pt-BR');
-        const nome = cliente ? cliente.nome : 'Cliente Excluído';
-        const nomes = nome.split(' ');
-        const nomeAbreviado = nomes[0];
-        const nomeParaExibir = isFullList ? nome : nomeAbreviado;
-
-        const statusRaw = (orc.status === 'aprovado' || orc.aprovado === true) ? 'APROVADO' : 'PENDENTE';
-        const statusClass = statusRaw === 'APROVADO'
-          ? 'bg-green-100 text-green-800 border border-green-300'
-          : 'bg-yellow-100 text-yellow-800 border border-yellow-300';
-
-        if (isFullList) {
-          const isChecked = appState.orcamentosParaExcluir.has(orc.id);
-          return `
-              <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col gap-y-2">
-                <div class="flex justify-between items-start w-full">
-                  <label class="flex items-center cursor-pointer flex-grow">
-                    <input type="checkbox" data-id="${orc.id}" ${isChecked ? 'checked' : ''}
-                      onchange="toggleOrcamentoExclusao(this)"
-                      class="h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
-                    <div class="ml-3">
-                      <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
-                      <p class="text-sm text-gray-500">${codigoOrcamento}</p>
-                      <p class="text-sm text-gray-500">Data: ${dateStr}</p>
-                      <p class="text-sm font-semibold text-gray-700">${valorOrc}</p>
-                    </div>
-                  </label>
-                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusClass}">${statusRaw}</span>
-                </div>
-                <div class="flex gap-2 self-end">
-                  <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-4 py-1 rounded-md text-sm hover:bg-yellow-600">
-                    Editar
-                  </button>
-                </div>
-              </div>`;
-        }
-
-        return `
+    // LISTA "ÚLTIMOS 3 ORÇAMENTOS" (TELA INICIAL)
+    return `
       <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center w-full">
         <div class="flex-grow mr-2">
           <p class="font-medium text-base text-gray-800 truncate">${nomeParaExibir}</p>
           <p class="text-xs text-gray-500">${codigoOrcamento} • ${dateStr}</p>
-          <p class="text-sm font-semibold text-gray-700 mt-1">${valorOrc}</p>
+          <div class="mt-2">
+            <span class="inline-block text-base font-semibold text-gray-900 bg-yellow-50 border-2 border-dashed border-yellow-400 rounded px-4 py-1 tracking-wide">
+              ${valorOrc}
+            </span>
+          </div>
         </div>
         <div class="flex items-center gap-2 flex-shrink-0">
-          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusClass}">${statusRaw}</span>
-          <button onclick="editOrcamento('${orc.id}')" class="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600">
-            Editar
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">
+            ${statusRaw}
+          </span>
+          <button
+            onclick="editOrcamento('${orc.id}')"
+            class="flex items-center justify-center w-9 h-9 rounded-lg border border-yellow-500 bg-yellow-400 text-black shadow-sm hover:bg-yellow-500"
+            title="Editar orçamento"
+          >
+            <span class="sr-only">Editar orçamento</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l1.536-1.536a2 2 0 112.828 2.828L9 18H5v-4l10.232-8.768z" />
+            </svg>
           </button>
         </div>
       </div>`;
-      }).join('');
+  }).join('');
 
-      if (isFullList) updateDeleteButtonState();
-    }
+  if (isFullList) updateDeleteButtonState();
+}
+    
 window.toggleOrcamentoExclusao = (checkbox) => {
         const id = checkbox.dataset.id;
         console.log(`[DEBUG-CLICK] Checkbox clicado! ID lido do HTML (data-id):`, id);
