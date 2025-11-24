@@ -1076,6 +1076,7 @@
         
         renderOrcamentosList();
         renderOrcamentosList(true); 
+        updateFinanceiroView();
       });
     }
 
@@ -3108,16 +3109,21 @@ function gerarNovoNumeroCliente() {
 // FIM DO NOVO BLOCO
 // =====================================
     // Eventos do Financeiro
-    document.getElementById('fat-mes')?.addEventListener('change', updateFinanceiroView);
-    document.getElementById('fat-ano')?.addEventListener('change', updateFinanceiroView);
-    document.getElementById('btn-atualizar-financeiro')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      updateFinanceiroView();
-    });
-    document.getElementById('btn-exportar-financeiro')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      exportarFinanceiro();
-    });
+   // Filtros do painel financeiro
+document.getElementById('fat-ano')?.addEventListener('change', updateFinanceiroView);
+document.getElementById('fat-mes')?.addEventListener('change', updateFinanceiroView);
+document.getElementById('fat-data-inicio')?.addEventListener('change', updateFinanceiroView);
+document.getElementById('fat-data-fim')?.addEventListener('change', updateFinanceiroView);
+
+document.getElementById('btn-atualizar-financeiro')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  updateFinanceiroView();
+});
+
+document.getElementById('btn-exportar-financeiro')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  exportarFinanceiro();
+});
 
 
     
