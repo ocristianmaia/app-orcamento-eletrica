@@ -913,6 +913,8 @@
     let financeChart = null;
 
 
+    let chartType = 'bar';
+
     function resetCurrentOrcamento() {
       appState.currentOrcamento = {
         id: null, cliente: null, 
@@ -1917,9 +1919,13 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
         const anoFull = (new Date(date)).getFullYear();
         const codigoCliente = cliente?.numeroCadastro || 'SEM-COD';
         const codigoOrcamento = `${codigoCliente}-${numeroSeq}/${anoFull}`;
+        const total = Number(orc.total || 0);
+        const valorOrc = formatBRL(total);
+        const d = new Date(date);
+        const dateStr = d.toLocaleDateString('pt-BR');
         const nome = cliente ? cliente.nome : 'Cliente Excluído';
         const nomes = nome.split(' ');
-        const nomeAbreviado = nomes.length > 1 ? `${nomes[0]} ${nomes[1]}`: nomes[0];
+        const nomeAbreviado = nomes[0];
         const nomeParaExibir = isFullList ? nome : nomeAbreviado;
 
         const statusRaw = (orc.status === 'aprovado' || orc.aprovado === true) ? 'APROVADO' : 'PENDENTE';
@@ -1939,6 +1945,8 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
                     <div class="ml-3">
                       <p class="font-medium text-lg text-gray-800">${nomeParaExibir}</p>
                       <p class="text-sm text-gray-500">${codigoOrcamento}</p>
+                      <p class="text-sm text-gray-500">Data: ${dateStr}</p>
+                      <p class="text-sm font-semibold text-gray-700">${valorOrc}</p>
                     </div>
                   </label>
                   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusClass}">${statusRaw}</span>
@@ -1953,9 +1961,10 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
 
         return `
       <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center w-full">
-        <div class="flex-grow truncate mr-2">
-          <span class="font-medium text-base text-gray-800">${nome}</span>
-          <span class="text-sm text-gray-500 ml-2">${codigoOrcamento}</span>
+        <div class="flex-grow mr-2">
+          <p class="font-medium text-base text-gray-800 truncate">${nomeParaExibir}</p>
+          <p class="text-xs text-gray-500">${codigoOrcamento} • ${dateStr}</p>
+          <p class="text-sm font-semibold text-gray-700 mt-1">${valorOrc}</p>
         </div>
         <div class="flex items-center gap-2 flex-shrink-0">
           <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusClass}">${statusRaw}</span>
@@ -3157,11 +3166,98 @@ function gerarNovoNumeroCliente() {
       return (Number(valor || 0)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
+    
     function updateFinanceiroView() {
       const anoSel = document.getElementById('fat-ano')?.value || 'todos';
       const mesSel = document.getElementById('fat-mes')?.value || 'all';
+      const periodoSel = document.getElementById('chart-periodo')?.value || 'mensal';
 
-      const { bruto, liquido, aprovados, pendentes } = calcularFinanceiro(anoSel, mesSel);
+      // Mostrar ou esconder seletor de mês conforme o período
+      const labelMes = document.querySelector('label[for="fat-mes"]');
+      const mesWrapper = labelMes ? labelMes.parentElement : null;
+      if (mesWrapper) {
+        mesWrapper.style.display = (periodoSel === 'mensal') ? 'flex' : 'none';
+      }
+
+      let bruto = 0;
+      let liquido = 0;
+      let aprovados = 0;
+      let pendentes = 0;
+      let labels = [];
+      let datasets = [];
+
+      if (periodoSel === 'mensal') {
+        // Usa a função existente para cálculo detalhado do mês
+        const calc = calcularFinanceiro(anoSel, mesSel);
+        bruto = calc.bruto;
+        liquido = calc.liquido;
+        aprovados = calc.aprovados;
+        pendentes = calc.pendentes;
+
+        if (chartType === 'pie') {
+          labels = ['Bruto', 'Líquido'];
+          datasets = [{
+            label: 'Distribuição',
+            data: [bruto, liquido],
+            backgroundColor: ['#FACC15', '#22C55E', '#3B82F6', '#A855F7', '#EC4899']
+          }];
+        } else {
+          labels = ['Faturamento'];
+          datasets = [
+            {
+              label: 'Valor Bruto',
+              data: [bruto],
+              backgroundColor: '#FACC15'
+            },
+            {
+              label: 'Valor Líquido (aprovado)',
+              data: [liquido],
+              backgroundColor: '#22C55E'
+            }
+          ];
+        }
+      } else {
+        // Visão anual mês a mês
+        const orcs = filtrarOrcamentosPorMesAno(anoSel === 'todos' ? null : anoSel, 'all');
+        const brutoMes = Array(12).fill(0);
+        const liquidoMes = Array(12).fill(0);
+
+        orcs.forEach(orc => {
+          if (!orc.createdAt) return;
+          const d = new Date(orc.createdAt);
+          const mesIdx = d.getMonth();
+          const total = Number(orc.total || 0);
+          bruto += total;
+          brutoMes[mesIdx] += total;
+
+          const aprovado = (orc.status === 'aprovado' || orc.aprovado === true);
+          if (aprovado) {
+            liquido += total;
+            liquidoMes[mesIdx] += total;
+            aprovados += 1;
+          } else {
+            pendentes += 1;
+          }
+        });
+
+        const mesesLabels = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+        if (chartType === 'pie') {
+          labels = ['Bruto', 'Líquido'];
+          datasets = [{
+            label: 'Distribuição',
+            data: [bruto, liquido],
+            backgroundColor: ['#FACC15', '#22C55E', '#3B82F6', '#A855F7', '#EC4899']
+          }];
+        } else {
+          labels = mesesLabels;
+          datasets = [{
+            label: 'Bruto por mês',
+            data: brutoMes,
+            backgroundColor: '#3B82F6'
+          }];
+        }
+      }
 
       const brutoEl = document.getElementById('fat-bruto');
       const liquidoEl = document.getElementById('fat-liquido');
@@ -3181,36 +3277,34 @@ function gerarNovoNumeroCliente() {
       }
 
       financeChart = new Chart(ctx, {
-        type: 'bar',
+        type: chartType,
         data: {
-          labels: ['Faturamento'],
-          datasets: [
-            {
-              label: 'Valor Bruto',
-              data: [bruto],
-              backgroundColor: '#FACC15',
-            },
-            {
-              label: 'Valor Líquido (aprovado)',
-              data: [liquido],
-              backgroundColor: '#22C55E',
-            },
-          ],
+          labels,
+          datasets
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: { position: 'top' },
             tooltip: { enabled: true },
           },
-          scales: {
+          scales: chartType === 'pie' ? {} : {
             y: {
               beginAtZero: true,
+              ticks: {
+                callback: (value) => formatBRL(value),
+              },
             },
           },
         },
       });
     }
+
+    window.mudarTipoGrafico = (tipo) => {
+      chartType = tipo;
+      updateFinanceiroView();
+    };
 
     function exportarFinanceiro() {
       const inicioStr = document.getElementById('fat-data-inicio')?.value || '';
