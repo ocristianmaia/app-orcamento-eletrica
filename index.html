@@ -1902,11 +1902,12 @@ function renderOrcamentosList(isFullList = false) {
     const mesFiltro = document.getElementById('filtro-mes-orcamento')?.value || 'todos';
     const anoFiltro = document.getElementById('filtro-ano-orcamento')?.value || 'todos';
 
-    list = list.filter(orc => {
-      const status = (orc.status === 'aprovado' || orc.aprovado === true) ? 'aprovado' : 'pendente';
+        list = list.filter(orc => {
+      const status = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
       if (statusFiltro !== 'todos' && status !== statusFiltro) return false;
 
       if (!orc.createdAt) return true;
+
       const d = new Date(orc.createdAt);
       const mes = d.getMonth().toString();
       const ano = d.getFullYear().toString();
@@ -1951,13 +1952,38 @@ function renderOrcamentosList(isFullList = false) {
     const isMobile = window.innerWidth <= 640;
     const nomeParaExibir = isMobile ? nomeAbreviado : nome;
 
-    const statusRaw = (orc.status === 'aprovado' || orc.aprovado === true)
-      ? 'APROVADO'
-      : 'PENDENTE';
+        const statusValue = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
+    let statusRaw;
+    switch (statusValue) {
+      case 'aprovado':
+        statusRaw = 'APROVADO';
+        break;
+      case 'concluido':
+        statusRaw = 'CONCLUÍDO';
+        break;
+      case 'faturado':
+        statusRaw = 'FATURADO';
+        break;
+      default:
+        statusRaw = 'PENDENTE';
+        break;
+    }
 
-    const statusClass = statusRaw === 'APROVADO'
-      ? 'bg-green-100 text-green-800 border border-green-300'
-      : 'bg-yellow-100 text-yellow-800 border border-yellow-300';
+    let statusClass;
+    switch (statusValue) {
+      case 'aprovado':
+        statusClass = 'bg-green-100 text-green-800 border border-green-300';
+        break;
+      case 'faturado':
+        statusClass = 'bg-blue-100 text-blue-800 border border-blue-300';
+        break;
+      case 'concluido':
+        statusClass = 'bg-purple-100 text-purple-800 border border-purple-300';
+        break;
+      default:
+        statusClass = 'bg-yellow-100 text-yellow-800 border border-yellow-300';
+        break;
+    }
 
     // ======================
     // LISTA COMPLETA (ABA "ORÇAMENTOS")
@@ -1992,9 +2018,20 @@ function renderOrcamentosList(isFullList = false) {
 
           <!-- DIREITA: status + botão editar -->
           <div class="orcamento-actions flex flex-col items-end gap-2 flex-shrink-0">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">
-              ${statusRaw}
-            </span>
+            <div class="flex flex-col items-end gap-1 text-xs text-gray-700">
+              <span class="font-semibold">STATUS</span>
+              <select
+                data-id="${orc.id}"
+                onchange="window.changeOrcamentoStatus(this)"
+                class="mt-1 block w-32 rounded border border-gray-300 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="pendente" ${statusValue === 'pendente' ? 'selected' : ''}>PENDENTE</option>
+                <option value="aprovado" ${statusValue === 'aprovado' ? 'selected' : ''}>APROVADO</option>
+                <option value="concluido" ${statusValue === 'concluido' ? 'selected' : ''}>CONCLUÍDO</option>
+                <option value="faturado" ${statusValue === 'faturado' ? 'selected' : ''}>FATURADO</option>
+              </select>
+            </div>
+
             <button
               onclick="editOrcamento('${orc.id}')"
               class="flex items-center justify-center w-10 h-10 rounded-lg border border-yellow-500 bg-yellow-400 text-black shadow-sm hover:bg-yellow-500"
@@ -2051,6 +2088,63 @@ function renderOrcamentosList(isFullList = false) {
 window.toggleOrcamentoExclusao = (checkbox) => {
         const id = checkbox.dataset.id;
         console.log(`[DEBUG-CLICK] Checkbox clicado! ID lido do HTML (data-id):`, id);
+        
+        if (checkbox.checked) {
+            appState.orcamentosParaExcluir.add(id);
+        } else {
+            appState.orcamentosParaExcluir.delete(id);
+        }
+        updateDeleteButtonState();
+    };
+
+    window.changeOrcamentoStatus = async (selectEl) => {
+        try {
+            const id = selectEl.dataset.id;
+            const novoStatus = selectEl.value;
+            console.log('[STATUS] Alterando status do orçamento', id, 'para', novoStatus);
+
+            // 1. Atualiza em memória (Visual imediato)
+            const orc = appState.orcamentos.find(o => o.id === id);
+            if (orc) {
+                orc.status = novoStatus;
+                // Mantém campo booleano "aprovado" coerente com o status simples
+                orc.aprovado = (novoStatus === 'aprovado');
+            }
+
+            // 2. Atualiza no Firebase
+            if (!userId) return alert('Usuário não autenticado.');
+            
+            // Usando as funções importadas corretamente (doc, updateDoc, db)
+            const ref = doc(db, `users/${userId}/orcamentos/${id}`);
+            
+            // Usamos setDoc com merge ou updateDoc. Como updateDoc foi importado lá em cima:
+            // Precisamos importar updateDoc no topo se não estiver, mas setDoc com merge funciona sempre:
+            await setDoc(ref, { 
+                status: novoStatus,
+                aprovado: (novoStatus === 'aprovado')
+            }, { merge: true });
+
+            // 3. Recalcula financeiro e re-renderiza listas
+            renderOrcamentosList(true); // Atualiza lista completa
+            renderOrcamentosList(false); // Atualiza lista recente
+            updateFinanceiroView(); // Atualiza gráficos
+            
+        } catch (err) {
+            console.error('Erro ao alterar status do orçamento:', err);
+            alert('Não foi possível atualizar o status do orçamento. Verifique sua conexão.');
+        }
+    };
+
+            // Recalcula financeiro e re-renderiza listas
+            renderOrcamentosList(true);
+            renderOrcamentosList(false);
+            updateFinanceiroView();
+        } catch (err) {
+            console.error('Erro ao alterar status do orçamento:', err);
+            alert('Não foi possível atualizar o status do orçamento. Verifique sua conexão.');
+        }
+    };
+cado! ID lido do HTML (data-id):`, id);
         if (checkbox.checked) {
             appState.orcamentosParaExcluir.add(id);
         } else {
@@ -3216,26 +3310,42 @@ document.getElementById('btn-exportar-financeiro')?.addEventListener('click', (e
     function calcularFinanceiro(anoSel, mesSel) {
       const orcs = filtrarOrcamentosPorMesAno(anoSel, mesSel);
       let bruto = 0;
-      let liquido = 0;
-      let aprovados = 0;
+      let liquido = 0; // aqui será o valor FATURADO
+      let aprovados = 0; // contagem de orçamentos aprovados/faturados
       let pendentes = 0;
+      let aprovadoValor = 0; // soma apenas dos aprovados (não faturados)
+      let faturadoValor = 0; // soma dos faturados
 
       orcs.forEach(orc => {
         const total = Number(orc.total || 0);
         bruto += total;
-        const aprovado = (orc.status === 'aprovado' || orc.aprovado === true);
-        if (aprovado) {
-          liquido += total;
+
+        const status = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
+
+        if (status === 'aprovado') {
+          aprovadoValor += total;
           aprovados += 1;
-        } else {
+        } else if (status === 'faturado') {
+          faturadoValor += total;
+          aprovados += 1; // faturado já foi aprovado em algum momento
+        } else if (status === 'pendente') {
           pendentes += 1;
         }
       });
 
+      liquido = faturadoValor;
+
       return {
-        bruto, liquido, aprovados, pendentes, totalOrcamentos: orcs.length,
+        bruto,
+        liquido, // interpretado como FATURADO nas telas
+        aprovados,
+        pendentes,
+        aprovadoValor,
+        faturado: faturadoValor,
+        totalOrcamentos: orcs.length,
       };
     }
+
 
     function formatBRL(valor) {
       return (Number(valor || 0)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -3255,9 +3365,11 @@ document.getElementById('btn-exportar-financeiro')?.addEventListener('click', (e
       }
 
       let bruto = 0;
-      let liquido = 0;
+      let liquido = 0; // aqui representará o FATURADO
       let aprovados = 0;
       let pendentes = 0;
+      let aprovadoValor = 0;
+      let faturadoValor = 0;
       let labels = [];
       let datasets = [];
 
@@ -3265,16 +3377,18 @@ document.getElementById('btn-exportar-financeiro')?.addEventListener('click', (e
         // Usa a função existente para cálculo detalhado do mês
         const calc = calcularFinanceiro(anoSel, mesSel);
         bruto = calc.bruto;
-        liquido = calc.liquido;
+        liquido = calc.liquido; // FATURADO
         aprovados = calc.aprovados;
         pendentes = calc.pendentes;
+        aprovadoValor = calc.aprovadoValor || 0;
+        faturadoValor = calc.faturado || calc.liquido || 0;
 
         if (chartType === 'pie') {
-          labels = ['Bruto', 'Líquido'];
+          labels = ['Bruto', 'Aprovado', 'Faturado'];
           datasets = [{
             label: 'Distribuição',
-            data: [bruto, liquido],
-            backgroundColor: ['#FACC15', '#22C55E', '#3B82F6', '#A855F7', '#EC4899']
+            data: [bruto, aprovadoValor, faturadoValor],
+            backgroundColor: ['#FACC15', '#22C55E', '#3B82F6']
           }];
         } else {
           labels = ['Faturamento'];
@@ -3285,9 +3399,14 @@ document.getElementById('btn-exportar-financeiro')?.addEventListener('click', (e
               backgroundColor: '#FACC15'
             },
             {
-              label: 'Valor Líquido (aprovado)',
-              data: [liquido],
+              label: 'Valor Aprovado',
+              data: [aprovadoValor],
               backgroundColor: '#22C55E'
+            },
+            {
+              label: 'Valor Faturado (pago)',
+              data: [faturadoValor],
+              backgroundColor: '#3B82F6'
             }
           ];
         }
@@ -3295,7 +3414,8 @@ document.getElementById('btn-exportar-financeiro')?.addEventListener('click', (e
         // Visão anual mês a mês
         const orcs = filtrarOrcamentosPorMesAno(anoSel === 'todos' ? null : anoSel, 'all');
         const brutoMes = Array(12).fill(0);
-        const liquidoMes = Array(12).fill(0);
+        const aprovadoMes = Array(12).fill(0);
+        const liquidoMes = Array(12).fill(0); // aqui será FATURADO por mês
 
         orcs.forEach(orc => {
           if (!orc.createdAt) return;
@@ -3305,32 +3425,50 @@ document.getElementById('btn-exportar-financeiro')?.addEventListener('click', (e
           bruto += total;
           brutoMes[mesIdx] += total;
 
-          const aprovado = (orc.status === 'aprovado' || orc.aprovado === true);
-          if (aprovado) {
+          const status = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
+          if (status === 'aprovado') {
+            aprovadoMes[mesIdx] += total;
+            aprovados += 1;
+          } else if (status === 'faturado') {
             liquido += total;
             liquidoMes[mesIdx] += total;
             aprovados += 1;
-          } else {
+          } else if (status === 'pendente') {
             pendentes += 1;
           }
         });
 
         const mesesLabels = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+        const aprovadoTotal = aprovadoMes.reduce((acc, v) => acc + v, 0);
+        const faturadoTotal = liquidoMes.reduce((acc, v) => acc + v, 0);
+        faturadoValor = faturadoTotal;
 
         if (chartType === 'pie') {
-          labels = ['Bruto', 'Líquido'];
+          labels = ['Bruto', 'Aprovado', 'Faturado'];
           datasets = [{
             label: 'Distribuição',
-            data: [bruto, liquido],
-            backgroundColor: ['#FACC15', '#22C55E', '#3B82F6', '#A855F7', '#EC4899']
+            data: [bruto, aprovadoTotal, faturadoTotal],
+            backgroundColor: ['#FACC15', '#22C55E', '#3B82F6']
           }];
         } else {
           labels = mesesLabels;
-          datasets = [{
-            label: 'Bruto por mês',
-            data: brutoMes,
-            backgroundColor: '#3B82F6'
-          }];
+          datasets = [
+            {
+              label: 'Bruto por mês',
+              data: brutoMes,
+              backgroundColor: '#FACC15'
+            },
+            {
+              label: 'Aprovado por mês',
+              data: aprovadoMes,
+              backgroundColor: '#22C55E'
+            },
+            {
+              label: 'Faturado (pago) por mês',
+              data: liquidoMes,
+              backgroundColor: '#3B82F6'
+            }
+          ];
         }
       }
 
