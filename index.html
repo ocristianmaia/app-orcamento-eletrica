@@ -1887,6 +1887,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
             btn.disabled = appState.orcamentosParaExcluir.size === 0;
         }
     }
+// Substitua a função renderOrcamentosList inteira por esta:
 function renderOrcamentosList(isFullList = false) {
   const el = isFullList
     ? document.getElementById('all-orcamentos-list')
@@ -1903,8 +1904,11 @@ function renderOrcamentosList(isFullList = false) {
     const anoFiltro = document.getElementById('filtro-ano-orcamento')?.value || 'todos';
 
     list = list.filter(orc => {
-      const status = (orc.status === 'aprovado' || orc.aprovado === true) ? 'aprovado' : 'pendente';
-      if (statusFiltro !== 'todos' && status !== statusFiltro) return false;
+      // Normaliza o status para comparação
+      let st = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
+      
+      // Se o filtro não for todos, verifica se bate
+      if (statusFiltro !== 'todos' && st !== statusFiltro) return false;
 
       if (!orc.createdAt) return true;
       const d = new Date(orc.createdAt);
@@ -1924,7 +1928,7 @@ function renderOrcamentosList(isFullList = false) {
   if (!list.length) {
     el.innerHTML = `
       <div class="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center w-full">
-        <p class="text-sm text-gray-500">Nenhum orçamento salvo ainda.</p>
+        <p class="text-sm text-gray-500">Nenhum orçamento encontrado.</p>
       </div>
     `;
     if (isFullList) updateDeleteButtonState();
@@ -1939,50 +1943,33 @@ function renderOrcamentosList(isFullList = false) {
     const codigoCliente = cliente?.numeroCadastro || 'SEM-COD';
     const codigoOrcamento = `${codigoCliente}-${numeroSeq}/${anoFull}`;
     const total = Number(orc.total || 0);
-    const valorOrc = formatBRL(total);
+    const valorOrc = (total).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     const d = new Date(date);
     const dateStr = d.toLocaleDateString('pt-BR');
 
     const nome = cliente ? cliente.nome : 'Cliente Excluído';
     const partesNome = nome.split(' ');
     const nomeAbreviado = partesNome[0] || nome;
-
-    // MOBILE → só primeiro nome | DESKTOP → nome completo
     const isMobile = window.innerWidth <= 640;
     const nomeParaExibir = isMobile ? nomeAbreviado : nome;
 
-    const statusRaw = (orc.status === 'aprovado' || orc.aprovado === true)
-      ? 'APROVADO'
-      : 'PENDENTE';
-
-    const statusClass = statusRaw === 'APROVADO'
-      ? 'bg-green-100 text-green-800 border border-green-300'
-      : 'bg-yellow-100 text-yellow-800 border border-yellow-300';
-
-    // ======================
-    // LISTA COMPLETA (ABA "ORÇAMENTOS")
-    // ======================
+    // Define o Status atual para preencher o Select ou a Badge
+    let statusValue = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
+    
+    // --- MODO: LISTA COMPLETA (COM DROPDOWN) ---
     if (isFullList) {
       const isChecked = appState.orcamentosParaExcluir.has(orc.id);
 
       return `
-        <div class="bg-white p-4 rounded-lg shadow-sm flex justify-between items-start w-full">
-          <!-- ESQUERDA: checkbox + textos -->
-          <div class="flex items-start gap-3 flex-1">
+        <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-4 border border-gray-100">
+          <div class="flex items-start gap-3 flex-1 w-full">
             <label class="flex items-start cursor-pointer flex-1">
-              <input
-                type="checkbox"
-                data-id="${orc.id}"
-                ${isChecked ? 'checked' : ''}
-                onchange="toggleOrcamentoExclusao(this)"
-                class="h-5 w-5 mt-1 text-red-600 border-gray-300 rounded focus:ring-red-500"
-              >
+              <input type="checkbox" data-id="${orc.id}" ${isChecked ? 'checked' : ''} onchange="toggleOrcamentoExclusao(this)" class="h-5 w-5 mt-1 text-red-600 border-gray-300 rounded focus:ring-red-500 flex-shrink-0">
               <div class="ml-3 flex-1">
-                <p class="orcamento-nome font-medium text-lg text-gray-800">${nomeParaExibir}</p>
-                <p class="text-sm text-gray-500">${codigoOrcamento}</p>
-                <p class="text-sm text-gray-500">Data: ${dateStr}</p>
+                <p class="orcamento-nome font-bold text-lg text-gray-800">${nomeParaExibir}</p>
+                <p class="text-xs text-gray-500">${codigoOrcamento} • ${dateStr}</p>
                 <div class="mt-2">
-                  <span class="inline-block text-lg font-semibold text-gray-900 bg-yellow-50 border-2 border-dashed border-yellow-400 rounded px-4 py-1 tracking-wide">
+                  <span class="inline-block text-base font-bold text-gray-900 bg-yellow-50 border border-yellow-200 rounded px-3 py-1">
                     ${valorOrc}
                   </span>
                 </div>
@@ -1990,20 +1977,21 @@ function renderOrcamentosList(isFullList = false) {
             </label>
           </div>
 
-          <!-- DIREITA: status + botão editar -->
-          <div class="orcamento-actions flex flex-col items-end gap-2 flex-shrink-0">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">
-              ${statusRaw}
-            </span>
-            <button
-              onclick="editOrcamento('${orc.id}')"
-              class="flex items-center justify-center w-10 h-10 rounded-lg border border-yellow-500 bg-yellow-400 text-black shadow-sm hover:bg-yellow-500"
-              title="Editar orçamento"
-            >
-              <span class="sr-only">Editar orçamento</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l1.536-1.536a2 2 0 112.828 2.828L9 18H5v-4l10.232-8.768z" />
+          <div class="flex flex-row sm:flex-col items-center sm:items-end gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            
+            <div class="flex flex-col items-end">
+               <span class="text-[10px] font-bold text-gray-400 uppercase mb-1 hidden sm:block">STATUS ATUAL</span>
+               <select onchange="changeOrcamentoStatus(this)" data-id="${orc.id}" class="block w-36 rounded-md border-gray-300 bg-gray-50 py-1.5 text-xs font-semibold text-gray-700 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer border">
+                  <option value="pendente" ${statusValue === 'pendente' ? 'selected' : ''}>PENDENTE</option>
+                  <option value="aprovado" ${statusValue === 'aprovado' ? 'selected' : ''}>✅ APROVADO</option>
+                  <option value="concluido" ${statusValue === 'concluido' ? 'selected' : ''}>🏁 CONCLUÍDO</option>
+                  <option value="faturado" ${statusValue === 'faturado' ? 'selected' : ''}>💲 FATURADO</option>
+               </select>
+            </div>
+
+            <button onclick="editOrcamento('${orc.id}')" class="flex items-center justify-center w-10 h-10 rounded-lg bg-yellow-400 text-yellow-900 shadow-sm hover:bg-yellow-500 transition-colors" title="Editar orçamento">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l1.536-1.536a2 2 0 112.828 2.828L9 18H5v-4l10.232-8.768z" />
               </svg>
             </button>
           </div>
@@ -2011,32 +1999,30 @@ function renderOrcamentosList(isFullList = false) {
       `;
     }
 
-    // ======================
-    // TELA INICIAL (ÚLTIMOS 3 ORÇAMENTOS)
-    // ======================
+    // --- MODO: TELA INICIAL (SÓ BADGE, SEM DROPDOWN) ---
+    let statusClass = 'bg-gray-100 text-gray-800';
+    if (statusValue === 'aprovado') statusClass = 'bg-green-100 text-green-800 border-green-200';
+    else if (statusValue === 'concluido') statusClass = 'bg-blue-100 text-blue-800 border-blue-200';
+    else if (statusValue === 'faturado') statusClass = 'bg-purple-100 text-purple-800 border-purple-200';
+    else statusClass = 'bg-yellow-100 text-yellow-800 border-yellow-200';
+
     return `
-      <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center w-full">
+      <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center w-full border border-gray-100">
         <div class="flex-grow mr-2">
           <p class="orcamento-nome font-medium text-base text-gray-800 truncate">${nomeParaExibir}</p>
           <p class="text-xs text-gray-500">${codigoOrcamento} • ${dateStr}</p>
-          <div class="mt-2">
-            <span class="inline-block text-base font-semibold text-gray-900 bg-yellow-50 border-2 border-dashed border-yellow-400 rounded px-4 py-1 tracking-wide">
+          <div class="mt-1">
+            <span class="inline-block text-sm font-semibold text-gray-900">
               ${valorOrc}
             </span>
           </div>
         </div>
-        <div class="flex items-center gap-2 flex-shrink-0">
-          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">
-            ${statusRaw}
+        <div class="flex flex-col items-end gap-1 flex-shrink-0">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${statusClass}">
+            ${statusValue}
           </span>
-          <button
-            onclick="editOrcamento('${orc.id}')"
-            class="flex items-center justify-center w-9 h-9 rounded-lg border border-yellow-500 bg-yellow-400 text-black shadow-sm hover:bg-yellow-500"
-            title="Editar orçamento"
-          >
-            <span class="sr-only">Editar orçamento</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          <button onclick="editOrcamento('${orc.id}')" class="p-2 text-gray-400 hover:text-blue-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l1.536-1.536a2 2 0 112.828 2.828L9 18H5v-4l10.232-8.768z" />
             </svg>
           </button>
@@ -3240,139 +3226,163 @@ document.getElementById('btn-exportar-financeiro')?.addEventListener('click', (e
     function formatBRL(valor) {
       return (Number(valor || 0)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
-
-    
-    function updateFinanceiroView() {
+function updateFinanceiroView() {
       const anoSel = document.getElementById('fat-ano')?.value || 'todos';
       const mesSel = document.getElementById('fat-mes')?.value || 'all';
       const periodoSel = document.getElementById('chart-periodo')?.value || 'mensal';
 
-      // Mostrar ou esconder seletor de mês conforme o período
+      // Mostra/Esconde seletor de mês
       const labelMes = document.querySelector('label[for="fat-mes"]');
-      const mesWrapper = labelMes ? labelMes.parentElement : null;
-      if (mesWrapper) {
-        mesWrapper.style.display = (periodoSel === 'mensal') ? 'flex' : 'none';
+      if (labelMes && labelMes.parentElement) {
+        labelMes.parentElement.style.display = (periodoSel === 'mensal') ? 'flex' : 'none';
       }
 
       let bruto = 0;
-      let liquido = 0;
-      let aprovados = 0;
-      let pendentes = 0;
+      let aprovado = 0; // Soma de Aprovado + Concluido + Faturado
+      let faturado = 0; // Soma APENAS de Faturado (Dinheiro no bolso)
+      
       let labels = [];
       let datasets = [];
 
+      // Função auxiliar para somar os valores
+      const processarOrcamento = (orc) => {
+          const total = Number(orc.total || 0);
+          const st = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
+          
+          // 1. Bruto: Tudo que foi orçado
+          bruto += total;
+          
+          // 2. Aprovado: Pipeline Ganho (Cliente disse sim)
+          if (['aprovado', 'concluido', 'faturado'].includes(st)) {
+              aprovado += total;
+          }
+          
+          // 3. Faturado: Dinheiro confirmado/recebido
+          if (st === 'faturado') {
+              faturado += total;
+          }
+      };
+
       if (periodoSel === 'mensal') {
-        // Usa a função existente para cálculo detalhado do mês
-        const calc = calcularFinanceiro(anoSel, mesSel);
-        bruto = calc.bruto;
-        liquido = calc.liquido;
-        aprovados = calc.aprovados;
-        pendentes = calc.pendentes;
+        // Lógica Mensal
+        const orcs = filtrarOrcamentosPorMesAno(anoSel, mesSel);
+        orcs.forEach(processarOrcamento);
 
         if (chartType === 'pie') {
-          labels = ['Bruto', 'Líquido'];
+          labels = ['Bruto (Gerado)', 'Aprovado (Ganho)', 'Faturado (Caixa)'];
           datasets = [{
-            label: 'Distribuição',
-            data: [bruto, liquido],
-            backgroundColor: ['#FACC15', '#22C55E', '#3B82F6', '#A855F7', '#EC4899']
+            data: [bruto, aprovado, faturado],
+            backgroundColor: ['#FACC15', '#22C55E', '#3B82F6']
           }];
         } else {
-          labels = ['Faturamento'];
+          labels = ['Performance do Mês'];
           datasets = [
-            {
-              label: 'Valor Bruto',
-              data: [bruto],
-              backgroundColor: '#FACC15'
-            },
-            {
-              label: 'Valor Líquido (aprovado)',
-              data: [liquido],
-              backgroundColor: '#22C55E'
-            }
+            { label: 'Bruto (Gerado)', data: [bruto], backgroundColor: '#FACC15' },
+            { label: 'Aprovado (Ganho)', data: [aprovado], backgroundColor: '#22C55E' },
+            { label: 'Faturado (Caixa)', data: [faturado], backgroundColor: '#3B82F6' }
           ];
         }
+
       } else {
-        // Visão anual mês a mês
+        // Lógica Anual (Mês a Mês)
         const orcs = filtrarOrcamentosPorMesAno(anoSel === 'todos' ? null : anoSel, 'all');
         const brutoMes = Array(12).fill(0);
-        const liquidoMes = Array(12).fill(0);
+        const aprovadoMes = Array(12).fill(0);
+        const faturadoMes = Array(12).fill(0);
 
         orcs.forEach(orc => {
-          if (!orc.createdAt) return;
-          const d = new Date(orc.createdAt);
-          const mesIdx = d.getMonth();
-          const total = Number(orc.total || 0);
-          bruto += total;
-          brutoMes[mesIdx] += total;
+           if (!orc.createdAt) return;
+           const d = new Date(orc.createdAt);
+           const m = d.getMonth();
+           const total = Number(orc.total || 0);
+           const st = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
 
-          const aprovado = (orc.status === 'aprovado' || orc.aprovado === true);
-          if (aprovado) {
-            liquido += total;
-            liquidoMes[mesIdx] += total;
-            aprovados += 1;
-          } else {
-            pendentes += 1;
-          }
+           // Bruto Mês
+           bruto += total;
+           brutoMes[m] += total;
+
+           // Aprovado Mês
+           if (['aprovado', 'concluido', 'faturado'].includes(st)) {
+               aprovado += total;
+               aprovadoMes[m] += total;
+           }
+
+           // Faturado Mês
+           if (st === 'faturado') {
+               faturado += total;
+               faturadoMes[m] += total;
+           }
         });
 
         const mesesLabels = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-
+        
         if (chartType === 'pie') {
-          labels = ['Bruto', 'Líquido'];
-          datasets = [{
-            label: 'Distribuição',
-            data: [bruto, liquido],
-            backgroundColor: ['#FACC15', '#22C55E', '#3B82F6', '#A855F7', '#EC4899']
-          }];
+             labels = ['Bruto Total', 'Aprovado Total', 'Faturado Total'];
+             datasets = [{
+                data: [bruto, aprovado, faturado],
+                backgroundColor: ['#FACC15', '#22C55E', '#3B82F6']
+             }];
         } else {
-          labels = mesesLabels;
-          datasets = [{
-            label: 'Bruto por mês',
-            data: brutoMes,
-            backgroundColor: '#3B82F6'
-          }];
+             labels = mesesLabels;
+             datasets = [
+                { label: 'Bruto', data: brutoMes, backgroundColor: '#FACC15' },
+                { label: 'Aprovado', data: aprovadoMes, backgroundColor: '#22C55E' },
+                { label: 'Faturado', data: faturadoMes, backgroundColor: '#3B82F6' }
+             ];
         }
       }
 
-      const brutoEl = document.getElementById('fat-bruto');
-      const liquidoEl = document.getElementById('fat-liquido');
-      const contagemEl = document.getElementById('fat-contagem');
+      // Atualiza os Cards (Números grandes acima do gráfico)
+      const elBruto = document.getElementById('fat-bruto');
+      const elLiq = document.getElementById('fat-liquido'); // Usando o ID que já existe no seu HTML original
+      const elContagem = document.getElementById('fat-contagem');
 
-      if (brutoEl) brutoEl.textContent = formatBRL(bruto);
-      if (liquidoEl) liquidoEl.textContent = formatBRL(liquido);
-      if (contagemEl) contagemEl.textContent = `${aprovados} aprovados / ${pendentes} pendentes`;
+      const format = (v) => (v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+      if (elBruto) elBruto.textContent = format(bruto);
+      
+      // Aqui usamos o ID 'fat-liquido' para mostrar o Faturado (Real), pois é o mais importante
+      if (elLiq) {
+          elLiq.parentElement.querySelector('p').textContent = "Valor Faturado (Caixa)"; // Atualiza o título do card via JS
+          elLiq.textContent = format(faturado);
+          elLiq.classList.remove('text-green-800'); // Muda cor para azul para diferenciar
+          elLiq.classList.add('text-blue-800');
+      }
+      
+      if (elContagem) elContagem.textContent = `Aprovado: ${format(aprovado)}`;
+
+      // Renderiza o Gráfico
       const canvas = document.getElementById('finance-chart');
       if (!canvas || typeof Chart === 'undefined') return;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
       if (financeChart) {
-        try { financeChart.destroy(); } catch(e) { console.warn('Erro ao destruir gráfico antigo', e); }
+        try { financeChart.destroy(); } catch(e) {}
       }
 
       financeChart = new Chart(ctx, {
         type: chartType,
-        data: {
-          labels,
-          datasets
-        },
+        data: { labels, datasets },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'top' },
-            tooltip: { enabled: true },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) label += ': ';
+                        if (context.parsed.y !== null) label += format(context.parsed.y);
+                        return label;
+                    }
+                }
+            }
           },
           scales: chartType === 'pie' ? {} : {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                callback: (value) => formatBRL(value),
-              },
-            },
-          },
-        },
+            y: { beginAtZero: true, ticks: { callback: (v) => format(v) } }
+          }
+        }
       });
     }
 
@@ -3436,7 +3446,43 @@ document.getElementById('btn-exportar-financeiro')?.addEventListener('click', (e
       if (anoSel) anoSel.value = 'todos';
       renderOrcamentosList(true);
     });
+window.changeOrcamentoStatus = async (selectEl) => {
+        try {
+            const id = selectEl.dataset.id;
+            const novoStatus = selectEl.value;
+            console.log('[STATUS] Alterando orçamento', id, 'para', novoStatus);
 
+            // 1. Atualiza visualmente na memória (para não precisar recarregar tudo do banco)
+            const orc = appState.orcamentos.find(o => o.id === id);
+            if (orc) {
+                orc.status = novoStatus;
+                // Mantém a lógica de "Aprovado" para compatibilidade, 
+                // considerando Aprovado, Concluido e Faturado como "Sim"
+                orc.aprovado = (novoStatus === 'aprovado' || novoStatus === 'concluido' || novoStatus === 'faturado');
+            }
+
+            // 2. Salva no Firebase
+            if (!userId) return; 
+
+            // Usando a sintaxe correta do seu arquivo original (doc, db)
+            const ref = doc(db, `users/${userId}/orcamentos/${id}`);
+            
+            await setDoc(ref, { 
+                status: novoStatus,
+                aprovado: (novoStatus === 'aprovado' || novoStatus === 'concluido' || novoStatus === 'faturado')
+            }, { merge: true });
+
+            // 3. Atualiza SOMENTE o painel financeiro para refletir os novos valores
+            updateFinanceiroView();
+            // (Opcional) Re-renderiza a lista da Home para atualizar a badge lá também
+            renderOrcamentosList(false); 
+            
+        } catch (err) {
+            console.error('Erro ao mudar status:', err);
+            alert('Erro ao salvar o status. Verifique sua conexão.');
+        }
+    };
+    
 window.onload = initializeFirebase;
   </script>
 </body>
