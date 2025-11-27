@@ -2047,29 +2047,6 @@ function renderOrcamentosList(isFullList = false) {
 
   if (isFullList) updateDeleteButtonState();
 }
-    
-window.toggleOrcamentoExclusao = (checkbox) => {
-        const id = checkbox.dataset.id;
-        console.log(`[DEBUG-CLICK] Checkbox clicado! ID lido do HTML (data-id):`, id);
-        if (checkbox.checked) {
-            appState.orcamentosParaExcluir.add(id);
-        } else {
-            appState.orcamentosParaExcluir.delete(id);
-        }
-        updateDeleteButtonState();
-    };
-
-    window.confirmDeleteSelectedOrcamentos = () => {
-        const count = appState.orcamentosParaExcluir.size;
-        if (count === 0) {
-            alert('Nenhum orçamento selecionado para exclusão.');
-            return;
-        }
-        const modal = document.getElementById('delete-confirm-modal');
-        const messageEl = document.getElementById('delete-confirm-message');
-        messageEl.innerHTML = `ATENÇÃO! Você irá excluir **${count}** orçamento(s) selecionado(s). Esta ação é irreversível. Deseja continuar?`;
-        modal.classList.add('active');
-    };
 
     window.closeDeleteConfirmModal = (confirmAction) => {
         const modal = document.getElementById('delete-confirm-modal');
@@ -3436,7 +3413,73 @@ document.getElementById('btn-exportar-financeiro')?.addEventListener('click', (e
       if (anoSel) anoSel.value = 'todos';
       renderOrcamentosList(true);
     });
+// --- COLE ISTO NO FINAL DO ARQUIVO (ANTES DO window.onload) ---
 
+    window.toggleOrcamentoExclusao = (checkbox) => {
+        const id = checkbox.dataset.id;
+        // console.log removido para evitar erros
+        
+        if (!appState.orcamentosParaExcluir) {
+             appState.orcamentosParaExcluir = new Set();
+        }
+
+        if (checkbox.checked) {
+            appState.orcamentosParaExcluir.add(id);
+        } else {
+            appState.orcamentosParaExcluir.delete(id);
+        }
+        
+        // Verifica se a função existe antes de chamar
+        if (typeof updateDeleteButtonState === 'function') {
+            updateDeleteButtonState();
+        }
+    };
+
+    window.changeOrcamentoStatus = async (selectEl) => {
+        try {
+            const id = selectEl.dataset.id;
+            const novoStatus = selectEl.value;
+            console.log('[STATUS] Alterando status:', id, novoStatus);
+
+            const orc = appState.orcamentos.find(o => o.id === id);
+            if (orc) {
+                orc.status = novoStatus;
+                orc.aprovado = (novoStatus === 'aprovado');
+            }
+
+            if (!userId) return; 
+
+            const ref = doc(db, `users/${userId}/orcamentos/${id}`);
+            
+            await setDoc(ref, { 
+                status: novoStatus,
+                aprovado: (novoStatus === 'aprovado')
+            }, { merge: true });
+
+            renderOrcamentosList(true);
+            renderOrcamentosList(false);
+            updateFinanceiroView();
+            
+        } catch (err) {
+            console.error('Erro status:', err);
+        }
+    };
+
+    window.confirmDeleteSelectedOrcamentos = () => {
+        const count = appState.orcamentosParaExcluir ? appState.orcamentosParaExcluir.size : 0;
+        if (count === 0) {
+            alert('Nenhum orçamento selecionado.');
+            return;
+        }
+        const modal = document.getElementById('delete-confirm-modal');
+        const messageEl = document.getElementById('delete-confirm-message');
+        
+        if (messageEl) {
+            messageEl.innerHTML = `ATENÇÃO! Você excluirá **${count}** orçamento(s).`;
+        }
+        if (modal) modal.classList.add('active');
+    };
+    
 window.onload = initializeFirebase;
   </script>
 </body>
