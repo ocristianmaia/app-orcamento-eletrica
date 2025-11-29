@@ -27,16 +27,23 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     .tab.active { border-bottom: 2px solid #2563EB; color: #2563EB; font-weight: 600; }
-   .modal { 
-      display:none; 
-      position:fixed; 
-      inset:0; 
-      background: rgba(0,0,0,.5); 
+   /* SUBSTITUA O TRECHO DO .modal POR ESTE: */
+    .modal { 
+      display: none; 
+      position: fixed; 
+      inset: 0; 
+      background: rgba(0,0,0,0.6); /* Fundo um pouco mais escuro */
       z-index: 9999;
-      align-items:center; 
-      justify-content:center; 
+      
+      /* O Segredo da Centralização: */
+      align-items: center; 
+      justify-content: center; 
+      padding: 15px; /* Garante que não cole nas bordas do celular */
     }
-    .modal.active { display:flex; }
+    
+    .modal.active { 
+      display: flex; 
+    }
     /* Slim look for serviços */
     .servico-slim { font-size: 0.80rem; line-height: 1.1rem; font-weight: 300; }
     .servico-slim strong { font-weight: 500; }
