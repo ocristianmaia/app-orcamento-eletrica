@@ -924,15 +924,7 @@
                 placeholder="Ex.: Instalação de pontos de iluminação, troca de disjuntores, revisão geral do quadro, etc."
               ></textarea>
             </div>
-            <div class="mt-2">
-              <label class="inline-flex items-center">
-                <input id="orc-status-aprovado" type="checkbox" class="h-4 w-4 text-green-600 border-gray-300 rounded">
-                <span class="ml-2 text-sm text-gray-800">
-                  Marcar este orçamento como <span class="font-semibold text-green-700">APROVADO</span>
-                </span>
-              </label>
-            </div>
-          </div>
+          
           <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
             <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
             <div id="pdf-preview" class="flex-grow text-sm">
@@ -2173,11 +2165,11 @@ window.toggleOrcamentoExclusao = (checkbox) => {
         updateOrcamentoPreview();
     };
 
-    window.openOrcamentoModal = (orcamentoParaEditar = null) => {
+window.openOrcamentoModal = (orcamentoParaEditar = null) => {
       try {
         const modal = document.getElementById('orcamento-modal');
         const clienteSelect = document.getElementById('orc-cliente-select');
-        const statusCheckbox = orcStatusAprovadoEl;
+        
         modal.classList.add('active');
         populateClienteSelect();
         populateMateriaisOrcamento();
@@ -2187,7 +2179,7 @@ window.toggleOrcamentoExclusao = (checkbox) => {
           document.getElementById('modal-title').textContent = 'Editar Orçamento';
           const clone = JSON.parse(JSON.stringify(orcamentoParaEditar || {}));
           
-          // Define padrões para upgrades antigos
+          // Define padrões para evitar erros
           clone.modoCobranca = clone.modoCobranca || 'mao_de_obra';
           clone.usarMaterial = clone.usarMaterial || 'sim';
           clone.tipoObra = (clone.tipoObra === 'industrial' || clone.tipoObra === 'residencial') ? clone.tipoObra : 'residencial';
@@ -2196,7 +2188,6 @@ window.toggleOrcamentoExclusao = (checkbox) => {
           clone.items = Array.isArray(clone.items) ? clone.items : [];
           clone.tiposDeServico = Array.isArray(clone.tiposDeServico) ? clone.tiposDeServico : [];
           clone.status = clone.status || (clone.aprovado ? 'aprovado' : 'pendente');
-          if (statusCheckbox) statusCheckbox.checked = clone.status === 'aprovado';
           
           appState.currentOrcamento = clone;
 
@@ -2209,7 +2200,7 @@ window.toggleOrcamentoExclusao = (checkbox) => {
             clienteSelect.value = clone.cliente.id;
           } else { clienteSelect.value = ''; }
 
-          // NOVO: Preenche os seletores de modo
+          // Preenche os seletores de modo
           document.querySelector(`input[name="modo-cobranca"][value="${clone.modoCobranca}"]`).checked = true;
           document.querySelector(`input[name="usar-material"][value="${clone.usarMaterial}"]`).checked = true;
           
@@ -2247,13 +2238,13 @@ window.toggleOrcamentoExclusao = (checkbox) => {
             }
           }
           
-          // Dispara os toggles para mostrar/esconder seções corretas
+          // Dispara os toggles
           toggleModoDeCobranca(clone.modoCobranca);
           toggleUsarMaterial(clone.usarMaterial);
           
           clienteSelect.dispatchEvent(new Event('change'));
 
-          // Preenche os checkboxes de itens (após um pequeno delay para os toggles)
+          // Preenche os checkboxes de itens com delay
           setTimeout(() => {
             if (clone.usarMaterial === 'sim') {
                 (clone.items || []).forEach(item => {
@@ -2265,18 +2256,16 @@ window.toggleOrcamentoExclusao = (checkbox) => {
             }
             
            if (clone.modoCobranca === 'por_servico') {
-        (clone.tiposDeServico || []).forEach(service => {
-          const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
-          const qtyInput = document.querySelector(`#orc-tiposdeservico-list input[type="number"][data-id="${service.id}"]`);
-          
-          if(checkbox) checkbox.checked = true;
-          
-          if (qtyInput) {
-              qtyInput.disabled = false;
-              qtyInput.value = service.quantidade ?? 1; // Puxa a quantidade salva
-          }
-        });
-    }
+              (clone.tiposDeServico || []).forEach(service => {
+                const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
+                const qtyInput = document.querySelector(`#orc-tiposdeservico-list input[type="number"][data-id="${service.id}"]`);
+                if(checkbox) checkbox.checked = true;
+                if (qtyInput) {
+                    qtyInput.disabled = false;
+                    qtyInput.value = service.quantidade ?? 1;
+                }
+              });
+           }
             
             const tipoObraWrap = document.getElementById('orc-tipo-obra');
             if (tipoObraWrap) tipoObraWrap.dispatchEvent(new Event('change', { bubbles: true }));
@@ -2287,12 +2276,11 @@ window.toggleOrcamentoExclusao = (checkbox) => {
         } else { // Criando novo orçamento
           document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
           resetCurrentOrcamento();
-          if (statusCheckbox) statusCheckbox.checked = false;
           
           const descTextarea = document.getElementById('orc-descricao-servico');
           if (descTextarea) descTextarea.value = '';
           
-          // Reseta para os padrões
+          // Padrões
           document.querySelector(`input[name="modo-cobranca"][value="mao_de_obra"]`).checked = true;
           document.querySelector(`input[name="usar-material"][value="sim"]`).checked = true;
           document.querySelector(`input[name="tipo-obra"][value="residencial"]`).checked = true;
@@ -2300,7 +2288,6 @@ window.toggleOrcamentoExclusao = (checkbox) => {
           if (descontoTipoEl) descontoTipoEl.value = 'nenhum';
           if (descontoValorEl) { descontoValorEl.value = ''; descontoValorEl.disabled = true; }
 
-          // Dispara os toggles para o estado padrão
           toggleModoDeCobranca('mao_de_obra');
           toggleUsarMaterial('sim');
 
@@ -2316,20 +2303,10 @@ window.toggleOrcamentoExclusao = (checkbox) => {
 
     const descontoTipoEl = document.getElementById('orc-desconto-tipo');
     const descontoValorEl = document.getElementById('orc-desconto-valor');
-    const orcStatusAprovadoEl = document.getElementById('orc-status-aprovado');
-
-    if (orcStatusAprovadoEl) {
-      orcStatusAprovadoEl.addEventListener('change', (e) => {
-        if (!appState.currentOrcamento) return;
-        appState.currentOrcamento.status = e.target.checked ? 'aprovado' : 'pendente';
-      });
-    }
-
 
     window.closeOrcamentoModal = () => {
       document.getElementById('orcamento-modal').classList.remove('active');
       resetCurrentOrcamento();
-      if (orcStatusAprovadoEl) orcStatusAprovadoEl.checked = false;
       
       // Reseta todos os campos do modal para o estado inicial
       document.getElementById('orc-cliente-select').value = '';
@@ -2815,27 +2792,34 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
       // Copia o estado atual
       const data = { ...appState.currentOrcamento };
       
-      const statusCheckbox = orcStatusAprovadoEl;
-      const aprovadoMarcado = statusCheckbox ? !!statusCheckbox.checked : (data.status === 'aprovado' || data.aprovado === true);
-      data.status = aprovadoMarcado ? 'aprovado' : 'pendente';
-      data.aprovado = aprovadoMarcado;
+      // LÓGICA DE STATUS AUTOMÁTICA
+      // Se não tiver ID (é novo), define como pendente.
+      // Se já tiver ID (edição), mantém o status atual (não altera nada).
+      if (!data.id) {
+          data.status = 'pendente';
+          data.aprovado = false;
+      } else {
+          // Garante consistência se por acaso o campo estiver vazio
+          data.status = data.status || (data.aprovado ? 'aprovado' : 'pendente');
+      }
 
-      // NOVO: Limpa os dados com base nos seletores
+      // Limpa os dados com base nos seletores (Mão de Obra vs Serviço / Com vs Sem Material)
       if (data.modoCobranca === 'mao_de_obra') {
-          data.tiposDeServico = []; // Zera serviços
-      } else { // por_servico
-          data.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' }; // Zera mão de obra
+          data.tiposDeServico = []; 
+      } else { 
+          data.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
       }
       
       if (data.usarMaterial === 'nao') {
-          data.items = []; // Zera materiais
+          data.items = []; 
       }
       
       try {
         if (data.id) { // Editando
           data.versao = (data.versao || 1) + 1;
           const ref = doc(db, `users/${userId}/orcamentos/${data.id}`);
-          delete data.createdAt;
+          // Remove createdAt para não sobrescrever a data original
+          delete data.createdAt; 
           await setDoc(ref, data, { merge: true });
           alert('Orçamento atualizado!');
         } else { // Criando
@@ -2843,6 +2827,7 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
           data.numeroOrcamento = maxNumero + 1;
           data.versao = 1;
           data.createdAt = serverTimestamp();
+          
           const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), data);
           appState.currentOrcamento.id = ref.id;
           appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
