@@ -528,144 +528,214 @@
           </div>
 
           <div id="configuracoes" class="tab-content space-y-4">
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-              <h2 class="text-xl font-semibold mb-4">Configurações Gerais</h2>
-              <form id="form-config" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <div>
-                  <h3 class="text-lg font-medium mb-4 border-b pb-2">Seus Dados Profissionais</h3>
-                  <div class="space-y-4">
-                    <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md" required>
-                    <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md" required>
-                    <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md" required>
+    <div class="bg-white p-6 rounded-lg shadow-sm min-h-[500px]">
+        
+        <div id="config-menu-view">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Configurações</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button onclick="showConfigSection('section-empresa')" class="flex flex-col items-center justify-center p-6 border-2 border-gray-100 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all group">
+                    <div class="bg-blue-100 p-4 rounded-full mb-3 group-hover:bg-blue-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <span class="font-semibold text-gray-700 text-lg">Dados da Empresa</span>
+                    <span class="text-xs text-gray-500 mt-1">Nome, Endereço e Logo</span>
+                </button>
 
-                    <div class="grid grid-cols-3 gap-4">
-                      <div class="col-span-2">
-                        <label for="config-cep" class="block text-sm font-medium text-gray-700">CEP</label>
-                        <input type="text" id="config-cep" 
-                               onchange="buscarCEP(this.value, { logradouro: 'config-logradouro', bairro: 'config-bairro', cidade: 'config-cidade', uf: 'config-uf', numero: 'config-numero' })" 
-                               placeholder="00000-000" class="w-full p-2 border rounded-md mt-1">
-                      </div>
-                      <div>
-                        <label for="config-numero" class="block text-sm font-medium text-gray-700">Número</label>
+                <button onclick="showConfigSection('section-valores')" class="flex flex-col items-center justify-center p-6 border-2 border-gray-100 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all group">
+                    <div class="bg-green-100 p-4 rounded-full mb-3 group-hover:bg-green-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <span class="font-semibold text-gray-700 text-lg">Mão de Obra</span>
+                    <span class="text-xs text-gray-500 mt-1">Valores de serviços</span>
+                </button>
+
+                <button onclick="showConfigSection('section-pagamento')" class="flex flex-col items-center justify-center p-6 border-2 border-gray-100 rounded-xl hover:border-yellow-500 hover:bg-yellow-50 transition-all group">
+                    <div class="bg-yellow-100 p-4 rounded-full mb-3 group-hover:bg-yellow-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                    </div>
+                    <span class="font-semibold text-gray-700 text-lg">Formas de Pagamento</span>
+                    <span class="text-xs text-gray-500 mt-1">Pix, Cartão e Bancos</span>
+                </button>
+
+                <button onclick="showConfigSection('section-cores')" class="flex flex-col items-center justify-center p-6 border-2 border-gray-100 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all group">
+                    <div class="bg-purple-100 p-4 rounded-full mb-3 group-hover:bg-purple-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                        </svg>
+                    </div>
+                    <span class="font-semibold text-gray-700 text-lg">Padrão de Cores</span>
+                    <span class="text-xs text-gray-500 mt-1">Personalização do PDF</span>
+                </button>
+            </div>
+            <div class="mt-12 border-t pt-6 text-center">
+                <p id="user-info" class="text-gray-600 mb-4 text-sm"></p>
+                <button id="logout-button" class="text-red-500 hover:text-red-700 font-medium text-sm flex items-center justify-center mx-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                    Sair da Conta
+                </button>
+            </div>
+        </div>
+
+        <div id="section-empresa" class="config-section hidden">
+            <div class="flex items-center justify-between mb-6 border-b pb-4">
+                <h3 class="text-xl font-bold text-gray-800">Dados da Empresa</h3>
+                <button type="button" onclick="hideConfigSection()" class="text-gray-500 hover:text-blue-600 font-medium flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
+                    Voltar
+                </button>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="w-full p-2 border rounded-md">
+                <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="w-full p-2 border rounded-md">
+                <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="w-full p-2 border rounded-md">
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">CEP</label>
+                        <input type="text" id="config-cep" onchange="buscarCEP(this.value, { logradouro: 'config-logradouro', bairro: 'config-bairro', cidade: 'config-cidade', uf: 'config-uf', numero: 'config-numero' })" placeholder="00000-000" class="w-full p-2 border rounded-md mt-1">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Número</label>
                         <input type="text" id="config-numero" placeholder="Ex: 106" class="w-full p-2 border rounded-md mt-1">
-                      </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Rua / Logradouro</label>
+                    <input type="text" id="config-logradouro" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Bairro</label>
+                    <input type="text" id="config-bairro" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Cidade</label>
+                        <input type="text" id="config-cidade" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
                     </div>
                     <div>
-                      <label for="config-logradouro" class="block text-sm font-medium text-gray-700">Rua / Logradouro</label>
-                      <input type="text" id="config-logradouro" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
+                        <label class="block text-sm font-medium text-gray-700">UF</label>
+                        <input type="text" id="config-uf" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
                     </div>
-                    <div>
-                      <label for="config-bairro" class="block text-sm font-medium text-gray-700">Bairro</label>
-                      <input type="text" id="config-bairro" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
-                    </div>
-                    <div class="grid grid-cols-3 gap-4">
-                      <div class="col-span-2">
-                        <label for="config-cidade" class="block text-sm font-medium text-gray-700">Cidade</label>
-                        <input type="text" id="config-cidade" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
-                      </div>
-                      <div>
-                        <label for="config-uf" class="block text-sm font-medium text-gray-700">UF</label>
-                        <input type="text" id="config-uf" placeholder="UF" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
-                      </div>
-                    </div>
-
-                    <input type="hidden" id="config-logo">
-
-                    <div>
-                      <label for="config-logo-file" class="block text-sm font-medium text-gray-700">
-                        Logomarca (opcional)
-                      </label>
-                      <input
-                        type="file"
-                        id="config-logo-file"
-                        accept="image/*"
-                        class="mt-1 block w-full text-sm text-gray-700 border rounded-md p-2 bg-white"
-                      >
-                      <p class="text-xs text-gray-500 mt-1">
-                        Selecione uma imagem do seu celular ou computador. Ela será exibida no cabeçalho do PDF.
-                      </p>
-
-                      <div id="config-logo-preview-wrapper" class="mt-2 hidden">
+                </div>
+                <input type="hidden" id="config-logo">
+                <div class="pt-4 border-t mt-4">
+                    <label class="block text-sm font-medium text-gray-700">Logomarca (opcional)</label>
+                    <input type="file" id="config-logo-file" accept="image/*" class="mt-1 block w-full text-sm text-gray-700 border rounded-md p-2 bg-white">
+                    <div id="config-logo-preview-wrapper" class="mt-2 hidden">
                         <p class="text-xs text-gray-600 mb-1">Pré-visualização:</p>
                         <div class="flex items-center gap-3">
-                          <img
-                            id="config-logo-preview"
-                            src=""
-                            alt="Pré-visualização da logomarca"
-                            class="max-h-16 object-contain border rounded-md bg-white p-1"
-                          >
-                          <button
-                            type="button"
-                            id="config-logo-clear"
-                            class="text-xs text-red-600 hover:underline"
-                          >
-                            Remover logomarca
-                          </button>
+                            <img id="config-logo-preview" src="" alt="Logo" class="max-h-16 object-contain border rounded-md bg-white p-1">
+                            <button type="button" id="config-logo-clear" class="text-xs text-red-600 hover:underline">Remover</button>
                         </div>
-                      </div>
                     </div>
-                  </div>
                 </div>
-                <div>
-                  <div class="mb-6">
-                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Personalização do PDF</h3>
-                    <div class="flex gap-4">
-                        <label class="block flex-1">
-                            <span class="text-gray-700">Cor Primária (Títulos)</span>
-                            <input type="color" id="config-color-primary" class="w-full h-10 p-1 border rounded-md mt-1" value="#000000">
-                        </label>
-                        <label class="block flex-1">
-                            <span class="text-gray-700">Cor Secundária (Total)</span>
-                            <input type="color" id="config-color-secondary" class="w-full h-10 p-1 border rounded-md mt-1" value="#333333">
-                        </label>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Residencial/Predial</h3>
-                    <div class="space-y-4">
-                      <label class="block"><span class="text-gray-700">Valor por Empreitada (R$)</span><input type="number" step="0.01" id="config-residencial-empreitada" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
-                      <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-residencial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
-                      <label class="block"><span class="text-gray-700">Valor por Ponto (R$)</span><input type="number" step="0.01" id="config-residencial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
-                      <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-residencial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
-                    </div>
-                  </div>
-                  <div class="mt-6">
-                    <h3 class="text-lg font-medium mb-4 border-b pb-2">Valores Mão de Obra - Industrial</h3>
-                    <div class="space-y-4">
-                      <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-industrial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
-                      <label class="block"><span class="text-gray-700">Valor por Equipamento (R$)</span><input type="number" step="0.01" id="config-industrial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
-                      <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-industrial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
-                    </div>
-                  </div>
+            </div>
+            <div class="mt-6 text-right">
+                <button type="button" onclick="saveConfigData()" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors w-full sm:w-auto">Salvar Dados da Empresa</button>
+            </div>
+        </div>
+
+        <div id="section-valores" class="config-section hidden">
+            <div class="flex items-center justify-between mb-6 border-b pb-4">
+                <h3 class="text-xl font-bold text-gray-800">Valores de Mão de Obra</h3>
+                <button type="button" onclick="hideConfigSection()" class="text-gray-500 hover:text-blue-600 font-medium flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
+                    Voltar
+                </button>
+            </div>
+            <div>
+                <h4 class="text-md font-semibold text-blue-800 mb-4 bg-blue-50 p-2 rounded">Residencial / Predial</h4>
+                <div class="space-y-4">
+                    <label class="block"><span class="text-gray-700">Valor por Empreitada (R$)</span><input type="number" step="0.01" id="config-residencial-empreitada" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                    <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-residencial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                    <label class="block"><span class="text-gray-700">Valor por Ponto (R$)</span><input type="number" step="0.01" id="config-residencial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                    <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-residencial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
                 </div>
+            </div>
+            <div class="mt-8">
+                <h4 class="text-md font-semibold text-gray-800 mb-4 bg-gray-100 p-2 rounded">Industrial</h4>
+                <div class="space-y-4">
+                    <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-industrial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                    <label class="block"><span class="text-gray-700">Valor por Equipamento (R$)</span><input type="number" step="0.01" id="config-industrial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                    <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-industrial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                </div>
+            </div>
+            <div class="mt-6 text-right">
+                <button type="button" onclick="saveConfigData()" class="bg-green-600 text-white px-6 py-2 rounded-lg shadow hover:bg-green-700 transition-colors w-full sm:w-auto">Salvar Valores</button>
+            </div>
+        </div>
+
+        <div id="section-pagamento" class="config-section hidden">
+            <div class="flex items-center justify-between mb-6 border-b pb-4">
+                <h3 class="text-xl font-bold text-gray-800">Formas de Pagamento</h3>
+                <button type="button" onclick="hideConfigSection()" class="text-gray-500 hover:text-blue-600 font-medium flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
+                    Voltar
+                </button>
+            </div>
+            <div class="space-y-4">
+                <label class="block"><span class="text-gray-700">Chave PIX</span><input type="text" id="config-pix-chave" class="w-full p-2 border rounded-md mt-1" placeholder="Sua chave PIX"></label>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block"><span class="text-gray-700">Cartão (Parcelas)</span><input type="number" step="1" id="config-cartao-vezes" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: 12"></label>
+                    </div>
+                    <div>
+                        <label class="block"><span class="text-gray-700">Juros % a.m.</span><input type="number" step="0.01" id="config-cartao-juros" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: 1.99"></label>
+                    </div>
+                </div>
+                <label class="flex items-center mt-2 p-2 bg-gray-50 rounded border cursor-pointer">
+                    <input type="checkbox" id="config-pagamento-dinheiro" class="h-5 w-5 text-blue-600 border-gray-300 rounded mr-2">
+                    <span class="text-gray-800 font-medium">Aceita Dinheiro</span>
+                </label>
                 
-                <div>
-                  <h3 class="text-lg font-medium mb-4 border-b pb-2">Formas de Pagamento</h3>
-                  <div class="space-y-4">
-                    <label class="block"><span class="text-gray-700">Chave PIX</span><input type="text" id="config-pix-chave" class="w-full p-2 border rounded-md mt-1" placeholder="Sua chave PIX"></label>
-                    <label class="block"><span class="text-gray-700">Cartão (Nº de Parcelas)</span><input type="number" step="1" id="config-cartao-vezes" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: 12"></label>
-                    <label class="block"><span class="text-gray-700">Cartão (Juros % por parcela)</span><input type="number" step="0.01" id="config-cartao-juros" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: 1.99"></label>
-                    <label class="flex items-center"><input type="checkbox" id="config-pagamento-dinheiro" class="h-4 w-4 text-blue-600 border-gray-300 rounded mr-2"><span class="text-gray-700">Aceita Dinheiro</span></label>
-                    <h4 class="text-md font-medium pt-2 border-t mt-2">Dados para Depósito</h4>
+                <h4 class="text-md font-medium pt-4 border-t mt-4 text-gray-800">Dados para Depósito</h4>
+                <div class="space-y-3">
                     <label class="block"><span class="text-gray-700">Banco</span><input type="text" id="config-deposito-banco" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: Banco do Brasil"></label>
                     <label class="block"><span class="text-gray-700">Agência</span><input type="text" id="config-deposito-ag" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: 0001"></label>
                     <label class="block"><span class="text-gray-700">Conta</span><input type="text" id="config-deposito-conta" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: 12345-6"></label>
-                  </div>
                 </div>
-                <div class="md:col-span-2 text-right">
-                  <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
-                    <span id="save-config-text">Salvar Configurações</span>
-                    <span id="save-config-spinner" class="hidden">Salvando...</span>
-                  </button>
-                </div>
-              </form>
             </div>
+            <div class="mt-6 text-right">
+                <button type="button" onclick="saveConfigData()" class="bg-yellow-500 text-white px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition-colors w-full sm:w-auto">Salvar Pagamento</button>
+            </div>
+        </div>
 
-            <div class="mt-8 border-t pt-6 text-center">
-              <p id="user-info" class="text-gray-600 mb-4"></p>
-              <button id="logout-button" class="bg-red-500 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700 transition-colors">Sair da Conta</button>
+        <div id="section-cores" class="config-section hidden">
+            <div class="flex items-center justify-between mb-6 border-b pb-4">
+                <h3 class="text-xl font-bold text-gray-800">Padrão de Cores</h3>
+                <button type="button" onclick="hideConfigSection()" class="text-gray-500 hover:text-blue-600 font-medium flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
+                    Voltar
+                </button>
             </div>
-          </div>
+            <div class="flex flex-col gap-6">
+                <label class="block p-4 border rounded-lg bg-gray-50 cursor-pointer">
+                    <span class="text-lg font-medium text-gray-800 block mb-2">Cor Primária (Títulos)</span>
+                    <div class="flex items-center gap-4">
+                        <input type="color" id="config-color-primary" class="w-16 h-16 p-1 border rounded-md" value="#000000">
+                        <span class="text-gray-500 text-sm">Cor usada nos títulos principais do PDF.</span>
+                    </div>
+                </label>
+                <label class="block p-4 border rounded-lg bg-gray-50 cursor-pointer">
+                    <span class="text-lg font-medium text-gray-800 block mb-2">Cor Secundária (Total)</span>
+                    <div class="flex items-center gap-4">
+                        <input type="color" id="config-color-secondary" class="w-16 h-16 p-1 border rounded-md" value="#333333">
+                        <span class="text-gray-500 text-sm">Cor usada no valor total e detalhes.</span>
+                    </div>
+                </label>
+            </div>
+            <div class="mt-6 text-right">
+                <button type="button" onclick="saveConfigData()" class="bg-purple-600 text-white px-6 py-2 rounded-lg shadow hover:bg-purple-700 transition-colors w-full sm:w-auto">Salvar Cores</button>
+            </div>
+        </div>
+    </div>
+</div>
         </main>
       </div>
     </div>
@@ -1203,60 +1273,6 @@ function getVal(id) {
     const el = document.getElementById(id);
     return el ? el.value : '';
 }
-
-document.getElementById('form-config').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!userId) return alert('Faça login novamente.');
-      const btn = e.target.querySelector('button[type="submit"]');
-      const textSpan = document.getElementById('save-config-text');
-      const spinSpan = document.getElementById('save-config-spinner');
-      btn.disabled = true; textSpan.classList.add('hidden'); spinSpan.classList.remove('hidden');
-      
-      try {
-        const data = {
-          nome: getVal('config-nome'),
-          telefone: getVal('config-telefone').replace(/\D/g, ''), // Salva só números
-          doc: getVal('config-doc').replace(/\D/g, ''), // Salva só números
-          
-          // NOVO: Campos de endereço
-          cep: getVal('config-cep').replace(/\D/g, ''),
-          numero: getVal('config-numero'),
-          logradouro: getVal('config-logradouro'),
-          bairro: getVal('config-bairro'),
-          cidade: getVal('config-cidade'),
-          uf: getVal('config-uf'),
-          
-          logo: getVal('config-logo'),
-          
-          config_color_primary: getVal('config-color-primary'),
-          config_color_secondary: getVal('config-color-secondary'),
-
-          residencial_empreitada: parseFloat(getVal('config-residencial-empreitada')) || 0,
-          residencial_diaria: parseFloat(getVal('config-residencial-diaria')) || 0,
-          residencial_ponto: parseFloat(getVal('config-residencial-ponto')) || 0,
-          residencial_hora: parseFloat(getVal('config-residencial-hora')) || 0,
-          industrial_diaria: parseFloat(getVal('config-industrial-diaria')) || 0,
-          industrial_ponto: parseFloat(getVal('config-industrial-ponto')) || 0,
-          industrial_hora: parseFloat(getVal('config-industrial-hora')) || 0,
-
-          config_pix_chave: getVal('config-pix-chave'),
-          config_cartao_vezes: parseInt(getVal('config-cartao-vezes')) || 0,
-          config_cartao_juros: parseFloat(getVal('config-cartao-juros')) || 0,
-          config_pagamento_dinheiro: document.getElementById('config-pagamento-dinheiro').checked,
-          config_deposito_banco: getVal('config-deposito-banco'),
-          config_deposito_ag: getVal('config-deposito-ag'),
-          config_deposito_conta: getVal('config-deposito-conta'),
-        };
-        
-        // Remove 'endereco' e 'endereco_l2' antigos se existirem
-        delete data.endereco;
-        delete data.endereco_l2;
-
-        await setDoc(doc(db, `users/${userId}/config/main`), data);
-        alert('Configurações salvas!');
-      } catch(e) { console.error(e); alert('Erro ao salvar.'); }
-      finally { btn.disabled=false; textSpan.classList.remove('hidden'); spinSpan.classList.add('hidden'); }
-    });
 
     // ===== Clientes =====
     document.getElementById('form-cliente').addEventListener('submit', async (e) => {
@@ -3475,7 +3491,79 @@ window.changeOrcamentoStatus = async (selectEl) => {
             alert('Erro ao salvar o status. Verifique sua conexão.');
         }
     };
+    // --- LÓGICA DO MENU DE CONFIGURAÇÕES ---
+
+// Função para mostrar uma seção específica e esconder o menu
+window.showConfigSection = (sectionId) => {
+    document.getElementById('config-menu-view').classList.add('hidden');
+    document.querySelectorAll('.config-section').forEach(el => el.classList.add('hidden'));
+    document.getElementById(sectionId).classList.remove('hidden');
+};
+
+// Função para voltar ao menu principal
+window.hideConfigSection = () => {
+    document.querySelectorAll('.config-section').forEach(el => el.classList.add('hidden'));
+    document.getElementById('config-menu-view').classList.remove('hidden');
+};
+
+// Função unificada para salvar configurações (substitui o submit do form antigo)
+window.saveConfigData = async () => {
+    if (!userId) return alert('Faça login novamente.');
     
+    // Feedback visual (opcional: mudar texto do botão clicado, mas alert resolve)
+    try {
+        const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+        
+        const data = {
+          // Dados da Empresa
+          nome: getVal('config-nome'),
+          telefone: getVal('config-telefone').replace(/\D/g, ''),
+          doc: getVal('config-doc').replace(/\D/g, ''),
+          cep: getVal('config-cep').replace(/\D/g, ''),
+          numero: getVal('config-numero'),
+          logradouro: getVal('config-logradouro'),
+          bairro: getVal('config-bairro'),
+          cidade: getVal('config-cidade'),
+          uf: getVal('config-uf'),
+          logo: getVal('config-logo'),
+
+          // Cores
+          config_color_primary: getVal('config-color-primary'),
+          config_color_secondary: getVal('config-color-secondary'),
+
+          // Valores
+          residencial_empreitada: parseFloat(getVal('config-residencial-empreitada')) || 0,
+          residencial_diaria: parseFloat(getVal('config-residencial-diaria')) || 0,
+          residencial_ponto: parseFloat(getVal('config-residencial-ponto')) || 0,
+          residencial_hora: parseFloat(getVal('config-residencial-hora')) || 0,
+          industrial_diaria: parseFloat(getVal('config-industrial-diaria')) || 0,
+          industrial_ponto: parseFloat(getVal('config-industrial-ponto')) || 0,
+          industrial_hora: parseFloat(getVal('config-industrial-hora')) || 0,
+
+          // Pagamento
+          config_pix_chave: getVal('config-pix-chave'),
+          config_cartao_vezes: parseInt(getVal('config-cartao-vezes')) || 0,
+          config_cartao_juros: parseFloat(getVal('config-cartao-juros')) || 0,
+          config_pagamento_dinheiro: document.getElementById('config-pagamento-dinheiro').checked,
+          config_deposito_banco: getVal('config-deposito-banco'),
+          config_deposito_ag: getVal('config-deposito-ag'),
+          config_deposito_conta: getVal('config-deposito-conta'),
+        };
+
+        // Remove 'endereco' antigo se existir (limpeza)
+        delete data.endereco;
+
+        // Salva no Firebase
+        await setDoc(doc(db, `users/${userId}/config/main`), data);
+        
+        alert('Configurações salvas com sucesso!');
+        hideConfigSection(); // Volta pro menu automaticamente após salvar (opcional)
+        
+    } catch(e) {
+        console.error(e);
+        alert('Erro ao salvar as configurações.');
+    }
+};
 window.onload = initializeFirebase;
   </script>
 </body>
