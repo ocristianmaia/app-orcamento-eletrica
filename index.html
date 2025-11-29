@@ -28,21 +28,27 @@
     .tab-content.active { display: block; }
     .tab.active { border-bottom: 2px solid #2563EB; color: #2563EB; font-weight: 600; }
    /* SUBSTITUA O TRECHO DO .modal POR ESTE: */
-    .modal { 
+  /* SUBSTITUA O CSS DO MODAL POR ESTE BLOCO: */
+   .modal { 
       display: none; 
       position: fixed; 
       inset: 0; 
-      background: rgba(0,0,0,0.6); /* Fundo um pouco mais escuro */
+      background: rgba(0,0,0,0.6); 
       z-index: 9999;
-      
-      /* O Segredo da Centralização: */
       align-items: center; 
       justify-content: center; 
-      padding: 15px; /* Garante que não cole nas bordas do celular */
+      padding: 10px; /* Garante espaço nas bordas do celular */
     }
-    
-    .modal.active { 
-      display: flex; 
+    .modal.active { display: flex; }
+
+    /* ESTA É A REGRA QUE CONSERTA O "ENCOLHIMENTO" */
+    .modal > div {
+        width: 95% !important;
+        max-width: 960px;
+        margin: auto;
+        max-height: 90vh; /* Evita que o modal fique maior que a tela */
+        overflow-y: auto; /* Permite rolar se for muito grande */
+    }
     }
     /* Slim look for serviços */
     .servico-slim { font-size: 0.80rem; line-height: 1.1rem; font-weight: 300; }
