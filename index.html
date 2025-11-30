@@ -924,14 +924,7 @@
                 placeholder="Ex.: Instalação de pontos de iluminação, troca de disjuntores, revisão geral do quadro, etc."
               ></textarea>
             </div>
-            <div class="mt-2">
-              <label class="inline-flex items-center">
-                <input id="orc-status-aprovado" type="checkbox" class="h-4 w-4 text-green-600 border-gray-300 rounded">
-                <span class="ml-2 text-sm text-gray-800">
-                  Marcar este orçamento como <span class="font-semibold text-green-700">APROVADO</span>
-                </span>
-              </label>
-            </div>
+            
           </div>
           <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
             <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
@@ -2177,7 +2170,7 @@ window.toggleOrcamentoExclusao = (checkbox) => {
       try {
         const modal = document.getElementById('orcamento-modal');
         const clienteSelect = document.getElementById('orc-cliente-select');
-        const statusCheckbox = orcStatusAprovadoEl;
+        
         modal.classList.add('active');
         populateClienteSelect();
         populateMateriaisOrcamento();
@@ -2185,124 +2178,94 @@ window.toggleOrcamentoExclusao = (checkbox) => {
 
         if (orcamentoParaEditar) {
           document.getElementById('modal-title').textContent = 'Editar Orçamento';
+          // Deep copy
           const clone = JSON.parse(JSON.stringify(orcamentoParaEditar || {}));
           
-          // Define padrões para upgrades antigos
+          // Padrões
           clone.modoCobranca = clone.modoCobranca || 'mao_de_obra';
           clone.usarMaterial = clone.usarMaterial || 'sim';
-          clone.tipoObra = (clone.tipoObra === 'industrial' || clone.tipoObra === 'residencial') ? clone.tipoObra : 'residencial';
+          clone.tipoObra = clone.tipoObra || 'residencial';
           clone.maoDeObra = clone.maoDeObra || { tipo: '', valor: 0, label: '', raw_value: '' };
           clone.desconto = clone.desconto || { tipo: 'nenhum', valor: 0 };
-          clone.items = Array.isArray(clone.items) ? clone.items : [];
-          clone.tiposDeServico = Array.isArray(clone.tiposDeServico) ? clone.tiposDeServico : [];
-          clone.status = clone.status || (clone.aprovado ? 'aprovado' : 'pendente');
-          if (statusCheckbox) statusCheckbox.checked = clone.status === 'aprovado';
           
           appState.currentOrcamento = clone;
 
-          // Preenche descrição
           const descTextarea = document.getElementById('orc-descricao-servico');
           if (descTextarea) descTextarea.value = clone.descricaoServico || '';
 
-          // Preenche cliente
-          if (clone.cliente?.id && Array.from(clienteSelect.options).some(o => o.value === clone.cliente.id)) {
-            clienteSelect.value = clone.cliente.id;
-          } else { clienteSelect.value = ''; }
+          if (clone.cliente?.id) clienteSelect.value = clone.cliente.id;
+          else clienteSelect.value = '';
 
-          // NOVO: Preenche os seletores de modo
-          document.querySelector(`input[name="modo-cobranca"][value="${clone.modoCobranca}"]`).checked = true;
-          document.querySelector(`input[name="usar-material"][value="${clone.usarMaterial}"]`).checked = true;
+          // Preenche Radio Buttons
+          const setRadio = (name, val) => {
+              const r = document.querySelector(`input[name="${name}"][value="${val}"]`);
+              if(r) r.checked = true;
+          };
+          setRadio('modo-cobranca', clone.modoCobranca);
+          setRadio('usar-material', clone.usarMaterial);
           
-          // Preenche Mão de Obra (se aplicável)
           if (clone.modoCobranca === 'mao_de_obra') {
-              const obraRadio = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
-              if (obraRadio) obraRadio.checked = true;
-
-              const mao = clone.maoDeObra;
-              if (mao && mao.tipo) {
-                const tipoServicoRadio = document.querySelector(`input[name="tipo-servico"][value="${mao.tipo}"]`);
-                if (tipoServicoRadio) {
-                  tipoServicoRadio.checked = true;
-                  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
-                  set('empreitada-valor', mao.tipo === 'empreitada' ? mao.raw_value : '');
-                  set('diaria-qtd',       mao.tipo === 'diaria'    ? mao.raw_value : '');
-                  set('ponto-qtd',        mao.tipo === 'ponto'     ? mao.raw_value : '');
-                  set('hora-qtd',         mao.tipo === 'hora'      ? mao.raw_value : '');
-                }
+              setRadio('tipo-obra', clone.tipoObra);
+              if (clone.maoDeObra?.tipo) {
+                  setRadio('tipo-servico', clone.maoDeObra.tipo);
+                  // Preenche valores manuais
+                  const map = { 'empreitada':'empreitada-valor', 'diaria':'diaria-qtd', 'ponto':'ponto-qtd', 'hora':'hora-qtd' };
+                  const fieldId = map[clone.maoDeObra.tipo];
+                  if(fieldId) document.getElementById(fieldId).value = clone.maoDeObra.raw_value || '';
               }
           }
           
-          // Preenche Desconto
+          // Desconto
           if (clone.desconto && clone.desconto.tipo !== 'nenhum') {
             if (descontoTipoEl) descontoTipoEl.value = clone.desconto.tipo;
-            if (descontoValorEl) {
-              descontoValorEl.value = clone.desconto.valor || 0;
-              descontoValorEl.disabled = false;
-            }
+            if (descontoValorEl) { descontoValorEl.value = clone.desconto.valor || 0; descontoValorEl.disabled = false; }
           } else {
             if (descontoTipoEl) descontoTipoEl.value = 'nenhum';
-            if (descontoValorEl) {
-              descontoValorEl.value = '';
-              descontoValorEl.disabled = true;
-            }
+            if (descontoValorEl) { descontoValorEl.value = ''; descontoValorEl.disabled = true; }
           }
           
-          // Dispara os toggles para mostrar/esconder seções corretas
-          toggleModoDeCobranca(clone.modoCobranca);
-          toggleUsarMaterial(clone.usarMaterial);
+          if (typeof toggleModoDeCobranca === 'function') toggleModoDeCobranca(clone.modoCobranca);
+          if (typeof toggleUsarMaterial === 'function') toggleUsarMaterial(clone.usarMaterial);
           
           clienteSelect.dispatchEvent(new Event('change'));
 
-          // Preenche os checkboxes de itens (após um pequeno delay para os toggles)
+          // Delay para preencher itens
           setTimeout(() => {
             if (clone.usarMaterial === 'sim') {
                 (clone.items || []).forEach(item => {
-                  const cb  = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
+                  const cb = document.querySelector(`#orc-materiais-list input[data-id="${item.id}"]`);
                   const qty = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
                   if (cb) cb.checked = true;
                   if (qty) { qty.disabled = false; qty.value = item.quantidade ?? 1; }
                 });
             }
-            
-           if (clone.modoCobranca === 'por_servico') {
-        (clone.tiposDeServico || []).forEach(service => {
-          const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
-          const qtyInput = document.querySelector(`#orc-tiposdeservico-list input[type="number"][data-id="${service.id}"]`);
-          
-          if(checkbox) checkbox.checked = true;
-          
-          if (qtyInput) {
-              qtyInput.disabled = false;
-              qtyInput.value = service.quantidade ?? 1; // Puxa a quantidade salva
-          }
-        });
-    }
-            
-            const tipoObraWrap = document.getElementById('orc-tipo-obra');
-            if (tipoObraWrap) tipoObraWrap.dispatchEvent(new Event('change', { bubbles: true }));
+            if (clone.modoCobranca === 'por_servico') {
+                (clone.tiposDeServico || []).forEach(item => {
+                  const cb = document.querySelector(`#orc-tiposdeservico-list input[data-id="${item.id}"]`);
+                  const qty = document.querySelector(`#orc-tiposdeservico-list input[type="number"][data-id="${item.id}"]`);
+                  if (cb) cb.checked = true;
+                  if (qty) { qty.disabled = false; qty.value = item.quantidade ?? 1; }
+                });
+            }
             calculateMaoDeObra();
             updateOrcamentoPreview();
           }, 300);
 
-        } else { // Criando novo orçamento
+        } else { // Novo
           document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
           resetCurrentOrcamento();
-          if (statusCheckbox) statusCheckbox.checked = false;
           
           const descTextarea = document.getElementById('orc-descricao-servico');
           if (descTextarea) descTextarea.value = '';
           
-          // Reseta para os padrões
-          document.querySelector(`input[name="modo-cobranca"][value="mao_de_obra"]`).checked = true;
-          document.querySelector(`input[name="usar-material"][value="sim"]`).checked = true;
-          document.querySelector(`input[name="tipo-obra"][value="residencial"]`).checked = true;
+          document.querySelector('input[name="modo-cobranca"][value="mao_de_obra"]').checked = true;
+          document.querySelector('input[name="usar-material"][value="sim"]').checked = true;
           
           if (descontoTipoEl) descontoTipoEl.value = 'nenhum';
           if (descontoValorEl) { descontoValorEl.value = ''; descontoValorEl.disabled = true; }
 
-          // Dispara os toggles para o estado padrão
-          toggleModoDeCobranca('mao_de_obra');
-          toggleUsarMaterial('sim');
+          if (typeof toggleModoDeCobranca === 'function') toggleModoDeCobranca('mao_de_obra');
+          if (typeof toggleUsarMaterial === 'function') toggleUsarMaterial('sim');
 
           clienteSelect.value = '';
           clienteSelect.dispatchEvent(new Event('change'));
@@ -2310,62 +2273,50 @@ window.toggleOrcamentoExclusao = (checkbox) => {
         }
       } catch (err) {
         console.error("[openOrcamentoModal] Erro:", err);
-        alert("Ocorreu um erro ao abrir o modal. Veja o console para detalhes.");
       }
     };
 
     const descontoTipoEl = document.getElementById('orc-desconto-tipo');
     const descontoValorEl = document.getElementById('orc-desconto-valor');
-    const orcStatusAprovadoEl = document.getElementById('orc-status-aprovado');
-
-    if (orcStatusAprovadoEl) {
-      orcStatusAprovadoEl.addEventListener('change', (e) => {
-        if (!appState.currentOrcamento) return;
-        appState.currentOrcamento.status = e.target.checked ? 'aprovado' : 'pendente';
-      });
-    }
-
-
+   
     window.closeOrcamentoModal = () => {
       document.getElementById('orcamento-modal').classList.remove('active');
       resetCurrentOrcamento();
-      if (orcStatusAprovadoEl) orcStatusAprovadoEl.checked = false;
       
-      // Reseta todos os campos do modal para o estado inicial
       document.getElementById('orc-cliente-select').value = '';
       
-      const materiaisList = document.querySelector('#orc-materiais-list');
-      if (materiaisList) {
-        materiaisList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-        materiaisList.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
+      // Limpa listas
+      const matList = document.querySelector('#orc-materiais-list');
+      if (matList) {
+        matList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        matList.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
       }
       
-      const tiposServicoList = document.querySelector('#orc-tiposdeservico-list');
-      if (tiposServicoList) {
-        tiposServicoList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-        tiposServicoList.querySelectorAll('input[type="number"]').forEach(inp => {
-          inp.value = '1';
-          inp.disabled = true;
-        });
+      const servList = document.querySelector('#orc-tiposdeservico-list');
+      if (servList) {
+        servList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        servList.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; });
       }
       
-      const descTextarea = document.getElementById('orc-descricao-servico');
-      if (descTextarea) descTextarea.value = '';
+      const desc = document.getElementById('orc-descricao-servico');
+      if (desc) desc.value = '';
       
       document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
       document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
       
-      // Reseta os toggles para o padrão
+      // Reseta toggles
       document.querySelector('input[name="modo-cobranca"][value="mao_de_obra"]').checked = true;
       document.querySelector('input[name="usar-material"][value="sim"]').checked = true;
       document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
-      toggleModoDeCobranca('mao_de_obra');
-      toggleUsarMaterial('sim');
+      
+      // Funções que ainda existem no v4.9
+      if (typeof toggleModoDeCobranca === 'function') toggleModoDeCobranca('mao_de_obra');
+      if (typeof toggleUsarMaterial === 'function') toggleUsarMaterial('sim');
 
       if (descontoTipoEl) descontoTipoEl.value = 'nenhum';
       if (descontoValorEl) { descontoValorEl.value = ''; descontoValorEl.disabled = true; }
     };
-
+    
     function populateClienteSelect() {
       const selectEl = document.getElementById('orc-cliente-select');
       selectEl.innerHTML = '<option value="">Selecione um cliente</option>';
@@ -2809,33 +2760,33 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
         </div>`;
     }
 
-    window.saveOrcamento = async () => {
+   window.saveOrcamento = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
       
-      // Copia o estado atual
       const data = { ...appState.currentOrcamento };
       
-      const statusCheckbox = orcStatusAprovadoEl;
-      const aprovadoMarcado = statusCheckbox ? !!statusCheckbox.checked : (data.status === 'aprovado' || data.aprovado === true);
-      data.status = aprovadoMarcado ? 'aprovado' : 'pendente';
-      data.aprovado = aprovadoMarcado;
+      // LÓGICA NOVA (SEM CHECKBOX)
+      // Se não tem ID (é novo), nasce como pendente.
+      // Se tem ID (edição), mantém o status que já estava.
+      if (!data.id) {
+          data.status = 'pendente';
+          data.aprovado = false;
+      } else {
+          // Garante consistência
+          data.status = data.status || (data.aprovado ? 'aprovado' : 'pendente');
+      }
 
-      // NOVO: Limpa os dados com base nos seletores
-      if (data.modoCobranca === 'mao_de_obra') {
-          data.tiposDeServico = []; // Zera serviços
-      } else { // por_servico
-          data.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' }; // Zera mão de obra
-      }
+      // Limpezas padrão
+      if (data.modoCobranca === 'mao_de_obra') data.tiposDeServico = []; 
+      else data.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
       
-      if (data.usarMaterial === 'nao') {
-          data.items = []; // Zera materiais
-      }
+      if (data.usarMaterial === 'nao') data.items = []; 
       
       try {
         if (data.id) { // Editando
           data.versao = (data.versao || 1) + 1;
           const ref = doc(db, `users/${userId}/orcamentos/${data.id}`);
-          delete data.createdAt;
+          delete data.createdAt; 
           await setDoc(ref, data, { merge: true });
           alert('Orçamento atualizado!');
         } else { // Criando
@@ -2843,10 +2794,11 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
           data.numeroOrcamento = maxNumero + 1;
           data.versao = 1;
           data.createdAt = serverTimestamp();
+          
           const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), data);
           appState.currentOrcamento.id = ref.id;
           appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
-          alert('Orçamento salvo! Você já pode gerar o PDF.');
+          alert('Orçamento salvo!');
         }
         closeOrcamentoModal();
       } catch(e) {
