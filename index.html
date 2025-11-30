@@ -27,29 +27,16 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     .tab.active { border-bottom: 2px solid #2563EB; color: #2563EB; font-weight: 600; }
-   /* SUBSTITUA O TRECHO DO .modal POR ESTE: */
-  /* SUBSTITUA O CSS DO MODAL POR ESTE BLOCO: */
    .modal { 
-      display: none; 
-      position: fixed; 
-      inset: 0; 
-      background: rgba(0,0,0,0.6); 
+      display:none; 
+      position:fixed; 
+      inset:0; 
+      background: rgba(0,0,0,.5); 
       z-index: 9999;
-      align-items: center; 
-      justify-content: center; 
-      padding: 10px; /* Garante espaço nas bordas do celular */
+      align-items:center; 
+      justify-content:center; 
     }
-    .modal.active { display: flex; }
-
-    /* ESTA É A REGRA QUE CONSERTA O "ENCOLHIMENTO" */
-    .modal > div {
-        width: 95% !important;
-        max-width: 960px;
-        margin: auto;
-        max-height: 90vh; /* Evita que o modal fique maior que a tela */
-        overflow-y: auto; /* Permite rolar se for muito grande */
-    }
-    }
+    .modal.active { display:flex; }
     /* Slim look for serviços */
     .servico-slim { font-size: 0.80rem; line-height: 1.1rem; font-weight: 300; }
     .servico-slim strong { font-weight: 500; }
@@ -813,7 +800,7 @@
       </div>
     </div>
     <div id="orcamento-modal" class="modal">
-     <div class="bg-white rounded-lg p-6 shadow-xl">
+      <div class="bg-white rounded-lg p-6 w-[95%] max-w-[960px] max-height-[90vh] max-h-[90vh] overflow-y-auto shadow-xl">
         <div class="flex justify-between items-center mb-6">
           <h2 id="modal-title" class="text-2xl font-bold">Criar Novo Orçamento</h2>
           <button onclick="closeOrcamentoModal()" class="text-gray-500 text-2xl font-bold">&times;</button>
@@ -937,7 +924,15 @@
                 placeholder="Ex.: Instalação de pontos de iluminação, troca de disjuntores, revisão geral do quadro, etc."
               ></textarea>
             </div>
-          
+            <div class="mt-2">
+              <label class="inline-flex items-center">
+                <input id="orc-status-aprovado" type="checkbox" class="h-4 w-4 text-green-600 border-gray-300 rounded">
+                <span class="ml-2 text-sm text-gray-800">
+                  Marcar este orçamento como <span class="font-semibold text-green-700">APROVADO</span>
+                </span>
+              </label>
+            </div>
+          </div>
           <div class="bg-gray-50 p-4 rounded-lg border h-full flex flex-col">
             <h3 class="text-lg font-semibold mb-4 text-center">Pré-visualização do Orçamento</h3>
             <div id="pdf-preview" class="flex-grow text-sm">
@@ -2178,11 +2173,11 @@ window.toggleOrcamentoExclusao = (checkbox) => {
         updateOrcamentoPreview();
     };
 
-window.openOrcamentoModal = (orcamentoParaEditar = null) => {
+    window.openOrcamentoModal = (orcamentoParaEditar = null) => {
       try {
         const modal = document.getElementById('orcamento-modal');
         const clienteSelect = document.getElementById('orc-cliente-select');
-        
+        const statusCheckbox = orcStatusAprovadoEl;
         modal.classList.add('active');
         populateClienteSelect();
         populateMateriaisOrcamento();
@@ -2192,7 +2187,7 @@ window.openOrcamentoModal = (orcamentoParaEditar = null) => {
           document.getElementById('modal-title').textContent = 'Editar Orçamento';
           const clone = JSON.parse(JSON.stringify(orcamentoParaEditar || {}));
           
-          // Define padrões para evitar erros
+          // Define padrões para upgrades antigos
           clone.modoCobranca = clone.modoCobranca || 'mao_de_obra';
           clone.usarMaterial = clone.usarMaterial || 'sim';
           clone.tipoObra = (clone.tipoObra === 'industrial' || clone.tipoObra === 'residencial') ? clone.tipoObra : 'residencial';
@@ -2201,6 +2196,7 @@ window.openOrcamentoModal = (orcamentoParaEditar = null) => {
           clone.items = Array.isArray(clone.items) ? clone.items : [];
           clone.tiposDeServico = Array.isArray(clone.tiposDeServico) ? clone.tiposDeServico : [];
           clone.status = clone.status || (clone.aprovado ? 'aprovado' : 'pendente');
+          if (statusCheckbox) statusCheckbox.checked = clone.status === 'aprovado';
           
           appState.currentOrcamento = clone;
 
@@ -2213,7 +2209,7 @@ window.openOrcamentoModal = (orcamentoParaEditar = null) => {
             clienteSelect.value = clone.cliente.id;
           } else { clienteSelect.value = ''; }
 
-          // Preenche os seletores de modo
+          // NOVO: Preenche os seletores de modo
           document.querySelector(`input[name="modo-cobranca"][value="${clone.modoCobranca}"]`).checked = true;
           document.querySelector(`input[name="usar-material"][value="${clone.usarMaterial}"]`).checked = true;
           
@@ -2251,13 +2247,13 @@ window.openOrcamentoModal = (orcamentoParaEditar = null) => {
             }
           }
           
-          // Dispara os toggles
+          // Dispara os toggles para mostrar/esconder seções corretas
           toggleModoDeCobranca(clone.modoCobranca);
           toggleUsarMaterial(clone.usarMaterial);
           
           clienteSelect.dispatchEvent(new Event('change'));
 
-          // Preenche os checkboxes de itens com delay
+          // Preenche os checkboxes de itens (após um pequeno delay para os toggles)
           setTimeout(() => {
             if (clone.usarMaterial === 'sim') {
                 (clone.items || []).forEach(item => {
@@ -2269,16 +2265,18 @@ window.openOrcamentoModal = (orcamentoParaEditar = null) => {
             }
             
            if (clone.modoCobranca === 'por_servico') {
-              (clone.tiposDeServico || []).forEach(service => {
-                const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
-                const qtyInput = document.querySelector(`#orc-tiposdeservico-list input[type="number"][data-id="${service.id}"]`);
-                if(checkbox) checkbox.checked = true;
-                if (qtyInput) {
-                    qtyInput.disabled = false;
-                    qtyInput.value = service.quantidade ?? 1;
-                }
-              });
-           }
+        (clone.tiposDeServico || []).forEach(service => {
+          const checkbox = document.querySelector(`#orc-tiposdeservico-list input[data-id="${service.id}"]`);
+          const qtyInput = document.querySelector(`#orc-tiposdeservico-list input[type="number"][data-id="${service.id}"]`);
+          
+          if(checkbox) checkbox.checked = true;
+          
+          if (qtyInput) {
+              qtyInput.disabled = false;
+              qtyInput.value = service.quantidade ?? 1; // Puxa a quantidade salva
+          }
+        });
+    }
             
             const tipoObraWrap = document.getElementById('orc-tipo-obra');
             if (tipoObraWrap) tipoObraWrap.dispatchEvent(new Event('change', { bubbles: true }));
@@ -2289,11 +2287,12 @@ window.openOrcamentoModal = (orcamentoParaEditar = null) => {
         } else { // Criando novo orçamento
           document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
           resetCurrentOrcamento();
+          if (statusCheckbox) statusCheckbox.checked = false;
           
           const descTextarea = document.getElementById('orc-descricao-servico');
           if (descTextarea) descTextarea.value = '';
           
-          // Padrões
+          // Reseta para os padrões
           document.querySelector(`input[name="modo-cobranca"][value="mao_de_obra"]`).checked = true;
           document.querySelector(`input[name="usar-material"][value="sim"]`).checked = true;
           document.querySelector(`input[name="tipo-obra"][value="residencial"]`).checked = true;
@@ -2301,6 +2300,7 @@ window.openOrcamentoModal = (orcamentoParaEditar = null) => {
           if (descontoTipoEl) descontoTipoEl.value = 'nenhum';
           if (descontoValorEl) { descontoValorEl.value = ''; descontoValorEl.disabled = true; }
 
+          // Dispara os toggles para o estado padrão
           toggleModoDeCobranca('mao_de_obra');
           toggleUsarMaterial('sim');
 
@@ -2316,10 +2316,20 @@ window.openOrcamentoModal = (orcamentoParaEditar = null) => {
 
     const descontoTipoEl = document.getElementById('orc-desconto-tipo');
     const descontoValorEl = document.getElementById('orc-desconto-valor');
+    const orcStatusAprovadoEl = document.getElementById('orc-status-aprovado');
+
+    if (orcStatusAprovadoEl) {
+      orcStatusAprovadoEl.addEventListener('change', (e) => {
+        if (!appState.currentOrcamento) return;
+        appState.currentOrcamento.status = e.target.checked ? 'aprovado' : 'pendente';
+      });
+    }
+
 
     window.closeOrcamentoModal = () => {
       document.getElementById('orcamento-modal').classList.remove('active');
       resetCurrentOrcamento();
+      if (orcStatusAprovadoEl) orcStatusAprovadoEl.checked = false;
       
       // Reseta todos os campos do modal para o estado inicial
       document.getElementById('orc-cliente-select').value = '';
@@ -2805,34 +2815,27 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
       // Copia o estado atual
       const data = { ...appState.currentOrcamento };
       
-      // LÓGICA DE STATUS AUTOMÁTICA
-      // Se não tiver ID (é novo), define como pendente.
-      // Se já tiver ID (edição), mantém o status atual (não altera nada).
-      if (!data.id) {
-          data.status = 'pendente';
-          data.aprovado = false;
-      } else {
-          // Garante consistência se por acaso o campo estiver vazio
-          data.status = data.status || (data.aprovado ? 'aprovado' : 'pendente');
-      }
+      const statusCheckbox = orcStatusAprovadoEl;
+      const aprovadoMarcado = statusCheckbox ? !!statusCheckbox.checked : (data.status === 'aprovado' || data.aprovado === true);
+      data.status = aprovadoMarcado ? 'aprovado' : 'pendente';
+      data.aprovado = aprovadoMarcado;
 
-      // Limpa os dados com base nos seletores (Mão de Obra vs Serviço / Com vs Sem Material)
+      // NOVO: Limpa os dados com base nos seletores
       if (data.modoCobranca === 'mao_de_obra') {
-          data.tiposDeServico = []; 
-      } else { 
-          data.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
+          data.tiposDeServico = []; // Zera serviços
+      } else { // por_servico
+          data.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' }; // Zera mão de obra
       }
       
       if (data.usarMaterial === 'nao') {
-          data.items = []; 
+          data.items = []; // Zera materiais
       }
       
       try {
         if (data.id) { // Editando
           data.versao = (data.versao || 1) + 1;
           const ref = doc(db, `users/${userId}/orcamentos/${data.id}`);
-          // Remove createdAt para não sobrescrever a data original
-          delete data.createdAt; 
+          delete data.createdAt;
           await setDoc(ref, data, { merge: true });
           alert('Orçamento atualizado!');
         } else { // Criando
@@ -2840,7 +2843,6 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
           data.numeroOrcamento = maxNumero + 1;
           data.versao = 1;
           data.createdAt = serverTimestamp();
-          
           const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), data);
           appState.currentOrcamento.id = ref.id;
           appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
