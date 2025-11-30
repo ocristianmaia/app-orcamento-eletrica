@@ -2760,23 +2760,20 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
         </div>`;
     }
 
-   window.saveOrcamento = async () => {
+  window.saveOrcamento = async (fecharModal = true) => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
       
       const data = { ...appState.currentOrcamento };
       
-      // LÓGICA NOVA (SEM CHECKBOX)
-      // Se não tem ID (é novo), nasce como pendente.
-      // Se tem ID (edição), mantém o status que já estava.
+      // Define status se for novo
       if (!data.id) {
           data.status = 'pendente';
           data.aprovado = false;
       } else {
-          // Garante consistência
           data.status = data.status || (data.aprovado ? 'aprovado' : 'pendente');
       }
 
-      // Limpezas padrão
+      // Limpeza de dados
       if (data.modoCobranca === 'mao_de_obra') data.tiposDeServico = []; 
       else data.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
       
@@ -2788,7 +2785,6 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
           const ref = doc(db, `users/${userId}/orcamentos/${data.id}`);
           delete data.createdAt; 
           await setDoc(ref, data, { merge: true });
-          alert('Orçamento atualizado!');
         } else { // Criando
           const maxNumero = appState.orcamentos.reduce((max, o) => Math.max(max, o.numeroOrcamento || 0), 0);
           data.numeroOrcamento = maxNumero + 1;
@@ -2798,16 +2794,33 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
           const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), data);
           appState.currentOrcamento.id = ref.id;
           appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
-          alert('Orçamento salvo!');
         }
-        closeOrcamentoModal();
+        
+        // Só fecha o modal se o parâmetro for true (comportamento padrão do botão Salvar)
+        if (fecharModal) {
+            alert('Orçamento salvo com sucesso!');
+            closeOrcamentoModal();
+        } else {
+            // Se for envio automático, não mostra alert intrusivo, ou mostra um aviso rápido no console
+            console.log("Autosalvo antes do envio.");
+        }
+        
       } catch(e) {
-        console.error(e); alert('Erro ao salvar.');
+        console.error(e); 
+        alert('Erro ao salvar.');
+        throw e; // Interrompe o processo se der erro ao salvar
       }
     };
 
    window.shareOrViewPDF = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+      
+      // SALVA AUTOMATICAMENTE ANTES DE GERAR (false = não fechar modal)
+      try {
+          await saveOrcamento(false);
+      } catch (error) {
+          return; // Se der erro ao salvar, para tudo e não gera o PDF
+      }
       
       // 1. Cria o elemento temporário para o PDF
       const element = document.createElement('div');
@@ -2818,23 +2831,17 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
       element.style.fontFamily = 'Inter, sans-serif';
       element.style.backgroundColor = '#ffffff';
       
-      // Configurações da biblioteca html2pdf
       const opt = {
-        // Margens padrão A4
         margin:       [10, 10, 10, 10],
         filename:     `pedido-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 4, useCORS: true, letterRendering: true, scrollY: 0 }, 
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        // Quebra de página guiada por CSS, sem 'avoid-all' que cortava o rodapé
         pagebreak:    { mode: ['css', 'legacy'] }
       };
 
-      // 2. Gera e Salva/Compartilha
       try {
-        // Tenta usar o compartilhamento nativo do celular se disponível
         if (navigator.share && navigator.canShare) {
-            // Gera o BLOB (arquivo na memória)
             const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
             const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
             
@@ -2844,26 +2851,35 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
                     text: 'Segue o orçamento em anexo.',
                     files: [file]
                 });
-                return; // Se compartilhou, para por aqui
+                return; 
             }
         }
-        
-        // Se for Desktop ou o celular não aceitar share de arquivos, baixa direto
         html2pdf().set(opt).from(element).save();
         
       } catch (e) {
         console.error("Erro ao gerar PDF:", e);
-        alert('Erro ao gerar o PDF. Verifique se o bloqueador de popups está ativo.');
+        alert('Erro ao gerar o PDF.');
       }
     };
 
-    window.sendWhatsAppText = () => {
+    window.sendWhatsAppText = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
+      
+      // SALVA AUTOMATICAMENTE ANTES DE ENVIAR
+      try {
+          await saveOrcamento(false);
+      } catch (error) {
+          return; // Para se der erro no salvamento
+      }
+
       const fullClient = appState.currentOrcamento.cliente;
       if (!fullClient) return alert('Cliente não encontrado.');
+      
       const telefone = (fullClient.telefone || '').replace(/\D/g, '');
       const nomeProfissional = appState.config.nome || 'nós';
+      // Agora o total está garantido atualizado
       const mensagem = `Olá ${fullClient.nome}! Segue o orçamento que você solicitou com ${nomeProfissional}, no valor total de R$ ${appState.currentOrcamento.total.toFixed(2)}. O arquivo PDF com os detalhes será enviado em seguida. Qualquer dúvida, estou à disposição!`;
+      
       const whatsappUrl = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
       window.open(whatsappUrl, '_blank');
     };
