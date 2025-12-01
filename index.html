@@ -3349,33 +3349,32 @@ function updateFinanceiroView() {
       }
 
       let bruto = 0;
-      let aprovado = 0; // Soma de Aprovado + Concluido + Faturado
-      let faturado = 0; // Soma APENAS de Faturado (Dinheiro no bolso)
+      let aprovado = 0; 
+      let faturado = 0; 
       
       let labels = [];
       let datasets = [];
+
+      // Helper local de formatação
+      const format = (v) => (Number(v)||0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
       // Função auxiliar para somar os valores
       const processarOrcamento = (orc) => {
           const total = Number(orc.total || 0);
           const st = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
           
-          // 1. Bruto: Tudo que foi orçado
           bruto += total;
           
-          // 2. Aprovado: Pipeline Ganho (Cliente disse sim)
           if (['aprovado', 'concluido', 'faturado'].includes(st)) {
               aprovado += total;
           }
           
-          // 3. Faturado: Dinheiro confirmado/recebido
           if (st === 'faturado') {
               faturado += total;
           }
       };
 
       if (periodoSel === 'mensal') {
-        // Lógica Mensal
         const orcs = filtrarOrcamentosPorMesAno(anoSel, mesSel);
         orcs.forEach(processarOrcamento);
 
@@ -3383,7 +3382,8 @@ function updateFinanceiroView() {
           labels = ['Bruto (Gerado)', 'Aprovado (Ganho)', 'Faturado (Caixa)'];
           datasets = [{
             data: [bruto, aprovado, faturado],
-            backgroundColor: ['#FACC15', '#22C55E', '#3B82F6']
+            backgroundColor: ['#FACC15', '#22C55E', '#3B82F6'],
+            borderWidth: 1
           }];
         } else {
           labels = ['Performance do Mês'];
@@ -3395,7 +3395,7 @@ function updateFinanceiroView() {
         }
 
       } else {
-        // Lógica Anual (Mês a Mês)
+        // Anual
         const orcs = filtrarOrcamentosPorMesAno(anoSel === 'todos' ? null : anoSel, 'all');
         const brutoMes = Array(12).fill(0);
         const aprovadoMes = Array(12).fill(0);
@@ -3408,17 +3408,14 @@ function updateFinanceiroView() {
            const total = Number(orc.total || 0);
            const st = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
 
-           // Bruto Mês
            bruto += total;
            brutoMes[m] += total;
 
-           // Aprovado Mês
            if (['aprovado', 'concluido', 'faturado'].includes(st)) {
                aprovado += total;
                aprovadoMes[m] += total;
            }
 
-           // Faturado Mês
            if (st === 'faturado') {
                faturado += total;
                faturadoMes[m] += total;
@@ -3431,7 +3428,8 @@ function updateFinanceiroView() {
              labels = ['Bruto Total', 'Aprovado Total', 'Faturado Total'];
              datasets = [{
                 data: [bruto, aprovado, faturado],
-                backgroundColor: ['#FACC15', '#22C55E', '#3B82F6']
+                backgroundColor: ['#FACC15', '#22C55E', '#3B82F6'],
+                borderWidth: 1
              }];
         } else {
              labels = mesesLabels;
@@ -3443,26 +3441,23 @@ function updateFinanceiroView() {
         }
       }
 
-      // Atualiza os Cards (Números grandes acima do gráfico)
+      // Atualiza Cards
       const elBruto = document.getElementById('fat-bruto');
-      const elLiq = document.getElementById('fat-liquido'); // Usando o ID que já existe no seu HTML original
+      const elLiq = document.getElementById('fat-liquido'); 
       const elContagem = document.getElementById('fat-contagem');
-
-      const format = (v) => (v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
       if (elBruto) elBruto.textContent = format(bruto);
       
-      // Aqui usamos o ID 'fat-liquido' para mostrar o Faturado (Real), pois é o mais importante
       if (elLiq) {
-          elLiq.parentElement.querySelector('p').textContent = "Valor Faturado (Caixa)"; // Atualiza o título do card via JS
+          const tituloCard = elLiq.parentElement.querySelector('p');
+          if(tituloCard) tituloCard.textContent = "Valor Faturado (Caixa)";
           elLiq.textContent = format(faturado);
-          elLiq.classList.remove('text-green-800'); // Muda cor para azul para diferenciar
-          elLiq.classList.add('text-blue-800');
+          elLiq.className = "text-xl font-bold text-blue-800"; 
       }
       
       if (elContagem) elContagem.textContent = `Aprovado: ${format(aprovado)}`;
 
-      // Renderiza o Gráfico
+      // Renderiza Gráfico
       const canvas = document.getElementById('finance-chart');
       if (!canvas || typeof Chart === 'undefined') return;
       const ctx = canvas.getContext('2d');
@@ -3478,19 +3473,42 @@ function updateFinanceiroView() {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
           plugins: {
             tooltip: {
                 callbacks: {
                     label: function(context) {
+                        // LÓGICA CORRIGIDA AQUI
                         let label = context.dataset.label || '';
+
+                        // Se for pizza, o nome da fatia está em context.label, não no dataset
+                        if (chartType === 'pie') {
+                            label = context.label || '';
+                        }
+
                         if (label) label += ': ';
-                        if (context.parsed.y !== null) label += format(context.parsed.y);
+                        
+                        // Pega o valor independente do tipo de gráfico
+                        let valor = context.parsed.y;
+                        if (valor === undefined || valor === null) {
+                             valor = context.raw;
+                        }
+                        
+                        if (valor !== null) {
+                            label += format(valor);
+                        }
                         return label;
                     }
                 }
             }
           },
-          scales: chartType === 'pie' ? {} : {
+          scales: chartType === 'pie' ? {
+             x: { display: false },
+             y: { display: false }
+          } : {
             y: { beginAtZero: true, ticks: { callback: (v) => format(v) } }
           }
         }
