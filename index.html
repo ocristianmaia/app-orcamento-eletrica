@@ -2786,29 +2786,32 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
           delete data.createdAt; 
           await setDoc(ref, data, { merge: true });
         } else { // Criando
+          // 1. Calcula o novo número
           const maxNumero = appState.orcamentos.reduce((max, o) => Math.max(max, o.numeroOrcamento || 0), 0);
           data.numeroOrcamento = maxNumero + 1;
           data.versao = 1;
           data.createdAt = serverTimestamp();
           
+          // 2. Salva no banco
           const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), data);
+          
+          // 3. Atualiza o estado local com o ID e o NÚMERO NOVO
           appState.currentOrcamento.id = ref.id;
           appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
         }
-        
-        // Só fecha o modal se o parâmetro for true (comportamento padrão do botão Salvar)
+        updateOrcamentoPreview(); 
+      
         if (fecharModal) {
             alert('Orçamento salvo com sucesso!');
             closeOrcamentoModal();
         } else {
-            // Se for envio automático, não mostra alert intrusivo, ou mostra um aviso rápido no console
-            console.log("Autosalvo antes do envio.");
+            console.log("Autosalvo com sucesso (Número gerado).");
         }
         
       } catch(e) {
         console.error(e); 
         alert('Erro ao salvar.');
-        throw e; // Interrompe o processo se der erro ao salvar
+        throw e; 
       }
     };
 
