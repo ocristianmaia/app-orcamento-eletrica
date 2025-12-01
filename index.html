@@ -2829,7 +2829,7 @@ function updateOrcamentoPreview() {
       
       currentOrcamento.total = subtotal - valorDesconto;
       
-      // 6. Renderização Final (Com Logo e Cabeçalho Completo da V5.2)
+     // 6. Renderização Final (Com a correção da quebra de página)
       previewEl.innerHTML = `
         <div style="padding: 10px 30px 20px 20px;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding: 0 10px;">
@@ -2872,9 +2872,9 @@ function updateOrcamentoPreview() {
             <span>TOTAL: R$ ${currentOrcamento.total.toFixed(2)}</span>
           </div>
           
-          <div style="page-break-inside: avoid; margin-top: 10px;">
+          <div class="no-break" style="margin-top: 10px;">
             ${pagamentoHtml}
-            <div style="font-size: 0.9em; margin-top: 5px; text-align: center; font-weight: bold; background-color: #FFFFCC; padding: 5px 0;">
+            <div style="font-size: 0.9em; margin-top: 5px; text-align: center; font-weight: bold; background-color: #FFFFCC; padding: 5px 0; border: 1px solid #eee;">
               Orçamento válido por 15 dias.
             </div>
           </div>
@@ -2939,29 +2939,29 @@ function updateOrcamentoPreview() {
    window.shareOrViewPDF = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
       
-      // SALVA AUTOMATICAMENTE ANTES DE GERAR (false = não fechar modal)
       try {
           await saveOrcamento(false);
       } catch (error) {
-          return; // Se der erro ao salvar, para tudo e não gera o PDF
+          return; 
       }
       
-      // 1. Cria o elemento temporário para o PDF
       const element = document.createElement('div');
       element.innerHTML = document.getElementById('pdf-preview').innerHTML;
       element.style.width = '700px';
-      element.style.padding = '10px 10px 10px 10px';
+      element.style.padding = '10px';
       element.style.fontSize = '12px'; 
       element.style.fontFamily = 'Inter, sans-serif';
       element.style.backgroundColor = '#ffffff';
       
+      // AQUI ESTÁ O SEGREDO: Configuração 'pagebreak' aprimorada
       const opt = {
-        margin:       [10, 10, 10, 10],
+        margin:       [10, 10, 10, 10], // Margens (Top, Left, Bottom, Right)
         filename:     `pedido-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 4, useCORS: true, letterRendering: true, scrollY: 0 }, 
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['css', 'legacy'] }
+        // Essa configuração obriga o PDF a não cortar elementos com a classe 'no-break'
+        pagebreak:    { mode: ['css', 'legacy'], avoid: '.no-break' }
       };
 
       try {
