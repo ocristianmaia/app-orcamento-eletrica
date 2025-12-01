@@ -3130,6 +3130,16 @@ function updateOrcamentoPreview() {
      */
     function handleSearchCliente(event) {
         const query = event.target.value.toLowerCase().trim();
+        
+        // --- NOVO: Auto-expandir a lista ao digitar ---
+        const listaEl = document.getElementById('clientes-list');
+        // Se o usuário digitou algo, forçamos a abertura do <details> pai
+        if (listaEl && query.length > 0) {
+            const details = listaEl.closest('details'); // Encontra o elemento 'details' que envolve a lista
+            if (details) {
+                details.open = true;
+            }
+        }
         const clientes = document.querySelectorAll('#clientes-list > div');
         
         if (!clientes.length) return;
