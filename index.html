@@ -254,169 +254,161 @@
           </div>
 
          <div id="clientes" class="tab-content space-y-4">
-            
             <div class="bg-white p-6 rounded-lg shadow-sm">
-              
-              <h2 class="text-xl font-semibold mb-4">Importar / Cadastrar</h2>
-              <div class="mb-6 p-4 border rounded-lg bg-gray-50">
-                <p class="text-sm text-gray-600 mb-2">Importar planilha (.xlsx) com as colunas: <br><strong>Nome, Telefone, Documento, CEP, Numero, Logradouro, Bairro, Cidade, UF</strong>.</p>
-                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                  <input type="file" id="clientes-xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm text-gray-700 flex-1">
-                  <button id="btn-import-clientes-xlsx" class="whitespace-nowrap bg-emerald-600 text-white px-4 py-2 rounded-lg shadow hover:bg-emerald-700 transition">Importar Clientes</button>
-                  <button id="btn-clear-clientes" class="whitespace-nowrap bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">Limpar Clientes</button>
-                </div>
-                <p id="clientes-xlsx-status" class="text-xs text-gray-500 mt-2"></p>
-              </div>
-              
-              <details class="border rounded-lg">
-                <summary class="cursor-pointer bg-gray-100 hover:bg-gray-200 p-4 font-medium text-lg rounded-t-lg">
-  Cadastrar Novo Cliente
-</summary>
-                <div class="p-6">
+              <h2 class="text-xl font-semibold mb-4">Gerenciar Clientes</h2>
+
+              <details class="group border rounded-lg mb-6">
+                <summary class="flex items-center justify-between p-4 cursor-pointer bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-gray-700">
+                    <span>➕ Cadastrar Novo Cliente</span>
+                    <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </summary>
+                <div class="p-6 border-t bg-gray-50">
                   <form id="form-cliente" class="space-y-4">
                     <input type="text" id="cliente-nome" placeholder="Nome do Cliente" class="w-full p-2 border rounded-md" required>
                     <input type="tel" id="cliente-telefone" placeholder="Telefone (com DDD)" class="w-full p-2 border rounded-md" required>
-
                     <div class="grid grid-cols-3 gap-4">
-                      <div class="col-span-2">
-                        <label for="cliente-cep" class="block text-sm font-medium text-gray-700">CEP</label>
-                        <input type="text" id="cliente-cep" 
-                               onchange="buscarCEP(this.value, { logradouro: 'cliente-logradouro', bairro: 'cliente-bairro', cidade: 'cliente-cidade', uf: 'cliente-uf', numero: 'cliente-numero' })" 
-                               placeholder="00000-000" class="w-full p-2 border rounded-md mt-1">
-                      </div>
-                      <div>
-                        <label for="cliente-numero" class="block text-sm font-medium text-gray-700">Número</label>
-                        <input type="text" id="cliente-numero" placeholder="Ex: 106" class="w-full p-2 border rounded-md mt-1" required>
-                      </div>
+                      <div class="col-span-2"><input type="text" id="cliente-cep" onchange="buscarCEP(this.value, { logradouro: 'cliente-logradouro', bairro: 'cliente-bairro', cidade: 'cliente-cidade', uf: 'cliente-uf', numero: 'cliente-numero' })" placeholder="CEP" class="w-full p-2 border rounded-md"></div>
+                      <div><input type="text" id="cliente-numero" placeholder="Nº" class="w-full p-2 border rounded-md" required></div>
                     </div>
-                    <div>
-                      <label for="cliente-logradouro" class="block text-sm font-medium text-gray-700">Rua / Logradouro</label>
-                      <input type="text" id="cliente-logradouro" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
-                    </div>
-                    <div>
-                      <label for="cliente-bairro" class="block text-sm font-medium text-gray-700">Bairro</label>
-                      <input type="text" id="cliente-bairro" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
-                    </div>
+                    <input type="text" id="cliente-logradouro" placeholder="Rua" class="w-full p-2 border bg-gray-50" readonly>
+                    <input type="text" id="cliente-bairro" placeholder="Bairro" class="w-full p-2 border bg-gray-50" readonly>
                     <div class="grid grid-cols-3 gap-4">
-                      <div class="col-span-2">
-                        <label for="cliente-cidade" class="block text-sm font-medium text-gray-700">Cidade</label>
-                        <input type="text" id="cliente-cidade" placeholder="Preenchido pelo CEP" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
-                      </div>
-                      <div>
-                        <label for="cliente-uf" class="block text-sm font-medium text-gray-700">UF</label>
-                        <input type="text" id="cliente-uf" placeholder="UF" class="w-full p-2 border rounded-md mt-1 bg-gray-50" readonly>
-                      </div>
+                      <div class="col-span-2"><input type="text" id="cliente-cidade" placeholder="Cidade" class="w-full p-2 border bg-gray-50" readonly></div>
+                      <div><input type="text" id="cliente-uf" placeholder="UF" class="w-full p-2 border bg-gray-50" readonly></div>
                     </div>
-                    <input type="text" id="cliente-documento" placeholder="CPF ou CNPJ do Cliente" class="w-full p-2 border rounded-md">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar Cliente</button>
+                    <input type="text" id="cliente-documento" placeholder="CPF ou CNPJ" class="w-full p-2 border rounded-md">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg w-full sm:w-auto shadow hover:bg-blue-700 transition-colors">Salvar Cliente</button>
                   </form>
                 </div>
               </details>
-            </div>
-            
-            <div class="bg-white p-6 rounded-lg shadow-sm">
               
-             <div class="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
-   <h2 class="text-xl font-semibold">Clientes Cadastrados</h2>
-   <input type="text" id="search-cliente" placeholder="🔎 Pesquisar por nome..." class="w-full sm:max-w-xs p-2 border rounded-md text-sm">
-</div>
-
-              <div class="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-md mb-4" role="alert">
-                <p class="text-sm font-medium">Para editar um cliente, clique sobre o nome dele. Para excluir, clique no &times;.</p>
+              <div class="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
+                 <h3 class="font-semibold text-gray-700">Lista de Clientes</h3>
+                 <input type="text" id="search-cliente" placeholder="🔎 Pesquisar..." class="w-full sm:max-w-xs p-2 border rounded-md text-sm">
               </div>
-              <div id="clientes-list" class="space-y-2"><p class="text-gray-500">Nenhum cliente cadastrado.</p></div>
+              <div id="clientes-list" class="space-y-2 border-t pt-2"></div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h3 class="font-semibold mb-2">Importar Clientes</h3>
+                <div class="mb-4 text-xs text-gray-500">Planilha (.xlsx) com: Nome, Telefone, Documento, CEP, Numero, Logradouro, Bairro, Cidade, UF.</div>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input type="file" id="clientes-xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm border p-1 rounded">
+                  <button id="btn-import-clientes-xlsx" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">Importar</button>
+                  <button id="btn-clear-clientes" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">Limpar Tudo</button>
+                </div>
+                <p id="clientes-xlsx-status" class="text-xs text-gray-500 mt-1"></p>
             </div>
           </div>
 
           <div id="materiais" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
-              <h2 class="text-xl font-semibold mb-4">Cadastrar Novo Material</h2>
-              <form id="form-material" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
-                <div class="flex-grow">
-                  <label class="block text-sm font-medium text-gray-700">Descrição</label>
-                  <input type="text" id="material-nome" class="w-full p-2 border rounded-md mt-1" placeholder="Ex: Tomada Dupla 10A" required>
-                </div>
-                <div class="sm:w-32">
-                  <label class="block text-sm font-medium text-gray-700">Unidade</label>
-                  <select id="material-unidade" class="w-full p-2 border rounded-md mt-1 h-10">
-                    <option>UNID</option><option>Pç</option><option>m</option><option>cx</option><option>kit</option>
-                  </select>
-                </div>
-                <div class="sm:w-40">
-                  <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
-                  <input type="number" step="0.01" id="material-valor" class="w-full p-2 border rounded-md mt-1" placeholder="25.50" required>
-                </div>
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors h-10 w-full sm:w-auto">Salvar Item</button>
-              </form>
+              
+              <details class="group border rounded-lg mb-4">
+                  <summary class="flex items-center justify-between p-4 cursor-pointer bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-gray-700">
+                      <span>➕ Cadastrar Material</span>
+                      <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                  </summary>
+                  <form id="form-material" class="flex flex-col gap-4 p-4 border-t bg-gray-50">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <input type="text" id="material-nome" class="flex-grow p-2 border rounded-md" placeholder="Descrição do Item" required>
+                        <select id="material-unidade" class="w-24 p-2 border rounded-md"><option>UNID</option><option>Pç</option><option>m</option><option>cx</option><option>kit</option></select>
+                        <input type="number" step="0.01" id="material-valor" class="w-32 p-2 border rounded-md" placeholder="Valor R$" required>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="material-is-estoque" class="h-5 w-5 text-blue-600 rounded">
+                        <label for="material-is-estoque" class="text-sm font-medium text-gray-700 cursor-pointer">Cadastrar como <strong>Material de Estoque</strong> (Sobressalente)</label>
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">Salvar Item</button>
+                  </form>
+              </details>
+
+              <details class="group border rounded-lg mb-2" open>
+                  <summary class="flex items-center justify-between p-4 cursor-pointer bg-white hover:bg-gray-50 rounded-t-lg border-b">
+                      <span class="font-bold text-gray-700">📋 Lista de Compras (Padrão)</span>
+                      <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                  </summary>
+                  <div id="materiais-list-padrao" class="p-4 space-y-2 bg-white">
+                      <p class="text-gray-500 text-sm">Nenhum item cadastrado.</p>
+                  </div>
+              </details>
+
+              <details class="group border rounded-lg">
+                  <summary class="flex items-center justify-between p-4 cursor-pointer bg-blue-50 hover:bg-blue-100 rounded-t-lg border-b border-blue-100">
+                      <span class="font-bold text-blue-800">📦 Material de Estoque (Disponível)</span>
+                      <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                  </summary>
+                  <div id="materiais-list-estoque" class="p-4 space-y-2 bg-white">
+                      <p class="text-gray-500 text-sm">Nenhum item em estoque.</p>
+                  </div>
+              </details>
             </div>
             
             <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h2 class="text-xl font-semibold mb-4">Importar Materiais</h2>
-                <div class="mb-6 p-4 border rounded-lg bg-gray-50">
-                    <p class="text-sm text-gray-600 mb-2">Importar planilha (.xlsx) com as colunas <strong>Descrição</strong>, <strong>Unidade</strong> e <strong>Valor</strong>.</p>
-                    <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                      <input type="file" id="materiais-xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm text-gray-700 flex-1">
-                      <button id="btn-import-materiais-xlsx" class="whitespace-nowrap bg-emerald-600 text-white px-4 py-2 rounded-lg shadow hover:bg-emerald-700 transition">Importar Materiais</button>
-                      <button id="btn-clear-materiais" class="whitespace-nowrap bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">Limpar Materiais</button>
-                    </div>
-                    <p id="materiais-xlsx-status" class="text-xs text-gray-500 mt-2"></p>
+                <h3 class="font-semibold mb-2">Importar via Excel</h3>
+                
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4 text-sm text-blue-800">
+                    <p class="font-bold">Dica para Estoque:</p>
+                    <p>Adicione uma coluna chamada <strong>"Estoque"</strong> na sua planilha.</p>
+                    <p>Se você escrever <strong>"SIM"</strong> ou <strong>"ESTOQUE"</strong> nessa coluna, o item vai automaticamente para a lista azul.</p>
                 </div>
-            </div>
 
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-              <h2 class="text-xl font-semibold mb-4">Itens Cadastrados</h2>
-              <div class="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-md mb-4" role="alert">
-                <p class="text-sm font-medium">Para editar um item, clique sobre o nome dele. Para excluir, clique no &times;.</p>
-              </div>
-              <div id="materiais-list" class="space-y-2"><p class="text-gray-500">Nenhum material cadastrado.</p></div>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="file" id="materiais-xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm border p-1 rounded">
+                    <button id="btn-import-materiais-xlsx" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">Importar</button>
+                    <button id="btn-clear-materiais" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">Limpar Tudo</button>
+                </div>
+                <p id="materiais-xlsx-status" class="text-xs text-gray-500 mt-1"></p>
             </div>
           </div>
 
           <div id="servicos" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
-              <h2 class="text-xl font-semibold mb-4">Tipos de Serviço</h2>
+              <h2 class="text-xl font-semibold mb-4">Gerenciar Serviços</h2>
 
-              <div class="mb-6 p-4 border rounded-lg bg-gray-50">
-                <p class="text-sm text-gray-600 mb-2">Importar planilha (.xlsx) com as colunas <strong>Categoria</strong>, <strong>Descrição</strong> e <strong>Valor</strong>.</p>
-                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                  <input type="file" id="xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm text-gray-700 flex-1">
-                  <button id="btn-import-xlsx" class="whitespace-nowrap bg-emerald-600 text-white px-4 py-2 rounded-lg shadow hover:bg-emerald-700 transition">Importar</button>
-                  <button id="btn-clear-tiposervico" class="whitespace-nowrap bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">Limpar Tudo</button>
+              <details class="group border rounded-lg mb-4">
+                  <summary class="flex items-center justify-between p-4 cursor-pointer bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-gray-700">
+                      <span>➕ Cadastrar Serviço</span>
+                      <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                  </summary>
+                  <form id="form-tiposervico" class="space-y-4 p-6 border-t bg-gray-50">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">Categoria</label>
+                        <select id="tiposervico-categoria-select" class="w-full p-2 border rounded-md mt-1"><option value="">Selecionar...</option><option value="new_category">+ Nova</option></select>
+                        <input type="text" id="tiposervico-categoria-new" placeholder="Nome da Categoria" class="w-full p-2 border rounded-md mt-2 hidden">
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                        <input type="text" id="tiposervico-descricao" placeholder="Ex: Instalação" class="w-full p-2 border rounded-md mt-1" required>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                        <input type="number" step="0.01" id="tiposervico-valor" placeholder="0.00" class="w-full p-2 border rounded-md mt-1" required>
+                      </div>
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors w-full sm:w-auto">Salvar Serviço</button>
+                  </form>
+              </details>
+
+              <details class="group border rounded-lg" open>
+                  <summary class="flex items-center justify-between p-4 cursor-pointer bg-white hover:bg-gray-50 rounded-t-lg border-b">
+                      <span class="font-bold text-gray-700">📋 Lista de Serviços Cadastrados</span>
+                      <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                  </summary>
+                  <div id="tiposdeservico-list" class="p-4 space-y-2 bg-white"></div>
+              </details>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h3 class="font-semibold mb-2">Importar Serviços</h3>
+                <div class="mb-4 text-xs text-gray-500">Planilha (.xlsx) com as colunas: Categoria, Descrição e Valor.</div>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input type="file" id="xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm border p-1 rounded">
+                  <button id="btn-import-xlsx" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">Importar</button>
+                  <button id="btn-clear-tiposervico" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">Limpar Tudo</button>
                 </div>
-                <p id="xlsx-status" class="text-xs text-gray-500 mt-2"></p>
-              </div>
-
-              <div class="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-md mb-4" role="alert">
-                <p class="text-sm font-medium">Para editar um serviço, clique sobre o nome dele. Para excluir, clique no &times;.</p>
-                <p class="text-sm mt-1">Adicione um novo serviço escolhendo uma das categorias, ou adicione uma nova categoria.</p>
-              </div>
-              <form id="form-tiposervico" class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">Categoria</label>
-                    <select id="tiposervico-categoria-select" class="w-full p-2 border rounded-md mt-1">
-                      <option value="">Selecionar existente</option>
-                      <option value="new_category">+ Nova Categoria</option>
-                    </select>
-                    <input type="text" id="tiposervico-categoria-new" placeholder="Nome da Nova Categoria" class="w-full p-2 border rounded-md mt-2 hidden">
-                  </div>
-                  
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">Descrição</label>
-                    <input type="text" id="tiposervico-descricao" placeholder="Ex: Instalação de Padrão" class="w-full p-2 border rounded-md mt-1" required>
-                  </div>
-                  
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
-                    <input type="number" step="0.01" id="tiposervico-valor" placeholder="150.00" class="w-full p-2 border rounded-md mt-1" required>
-                  </div>
-                </div>
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">Salvar</button>
-              </form>
-
-              <div id="tiposdeservico-list" class="space-y-2 mt-6">
-                <p class="text-gray-500">Nenhum tipo de serviço cadastrado.</p>
-              </div>
+                <p id="xlsx-status" class="text-xs text-gray-500 mt-1"></p>
             </div>
           </div>
 
@@ -894,11 +886,12 @@
               </div>
             </div>
             
-            <div id="orc-cobranca-material-wrapper" class="space-y-6">
-              <div>
-                <h4 class="text-md font-medium text-gray-800 mb-2">Lista de Materiais</h4>
-                <div id="orc-materiais-list" class="h-48 overflow-y-auto border rounded-md p-2 space-y-2 bg-gray-50"></div>
-              </div>
+           <div id="orc-cobranca-material-wrapper">
+                <div class="flex gap-2 mb-2 border-b pb-2">
+                    <button id="tab-mat-compra" onclick="filtrarMateriaisModal('padrao')" class="text-xs font-bold px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-blue-700">📋 Compras</button>
+                    <button id="tab-mat-estoque" onclick="filtrarMateriaisModal('estoque')" class="text-xs font-bold px-3 py-1 bg-white border rounded hover:bg-gray-100 text-gray-600">📦 Estoque</button>
+                </div>
+                <div id="orc-materiais-list" class="h-40 overflow-y-auto border p-2 bg-gray-50 rounded"></div>
             </div>
             
             <div>
@@ -1435,19 +1428,25 @@ function getVal(id) {
     };
 
     // ===== Materiais =====
-    document.getElementById('form-material').addEventListener('submit', async (e) => {
+document.getElementById('form-material').addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!userId) return alert('Faça login novamente.');
+      if (!userId) return alert('Faça login.');
       const btn = e.target.querySelector('button[type="submit"]');
-      btn.disabled = true; btn.textContent='Salvando...';
+      btn.disabled = true; 
       try {
         const nome = document.getElementById('material-nome').value;
         const valor = parseFloat(document.getElementById('material-valor').value);
         const unidade = document.getElementById('material-unidade').value;
-        await addDoc(collection(db, `users/${userId}/materiais`), { nome, valor, unidade });
+        // Verifica se é estoque
+        const isEstoque = document.getElementById('material-is-estoque').checked;
+        
+        await addDoc(collection(db, `users/${userId}/materiais`), { 
+            nome, valor, unidade, 
+            tipo: isEstoque ? 'estoque' : 'padrao' // Salva o tipo
+        });
         e.target.reset();
       } catch(e) { console.error(e); alert('Erro ao salvar item.'); }
-      finally { btn.disabled=false; btn.textContent='Salvar Item'; }
+      finally { btn.disabled=false; }
     });
 
     document.getElementById('form-edit-material').addEventListener('submit', async (e) => {
@@ -1470,16 +1469,33 @@ function getVal(id) {
       finally { btn.disabled=false; btn.textContent='Salvar Alterações'; }
     });
 
-    function renderMateriaisList() {
-      const el = document.getElementById('materiais-list');
-      if (!appState.materiais.length) { el.innerHTML = '<p class="text-gray-500">Nenhum material cadastrado.</p>'; return; }
-      el.innerHTML = appState.materiais.map(m => `
-        <div class="flex justify-between items-center p-2 border rounded-md">
-          <div class="flex-grow cursor-pointer" onclick="openEditMaterialModal('${m.id}')">
-            <p class="servico-slim"><strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${m.valor.toFixed(2)}</p>
-          </div>
-          <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 text-2xl ml-3 flex-shrink-0">&times;</button>
-        </div>`).join('');
+  function renderMateriaisList() {
+      const elPadrao = document.getElementById('materiais-list-padrao');
+      const elEstoque = document.getElementById('materiais-list-estoque');
+      
+      if (!elPadrao || !elEstoque) return; // Segurança
+
+      const lista = appState.materiais || [];
+      
+      const padraoItems = lista.filter(m => m.tipo !== 'estoque');
+      const estoqueItems = lista.filter(m => m.tipo === 'estoque');
+
+      const criarHTML = (itens) => {
+          if(!itens.length) return '<p class="text-gray-500 text-xs p-2">Vazio.</p>';
+          return itens.map(m => `
+            <div class="flex justify-between items-center p-2 border-b last:border-0 hover:bg-gray-50">
+              <div class="flex-grow cursor-pointer" onclick="openEditMaterialModal('${m.id}')">
+                <p class="servico-slim text-sm">
+                    ${m.tipo === 'estoque' ? '<span class="text-blue-600 font-bold">#</span> ' : ''}
+                    <strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${m.valor.toFixed(2)}
+                </p>
+              </div>
+              <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 font-bold px-2">&times;</button>
+            </div>`).join('');
+      };
+
+      elPadrao.innerHTML = criarHTML(padraoItems);
+      elEstoque.innerHTML = criarHTML(estoqueItems);
     }
 
     window.deleteMaterial = async (id) => {
@@ -1700,34 +1716,80 @@ function getVal(id) {
     document.getElementById('btn-clear-tiposervico').addEventListener('click', clearAllTiposDeServico);
 
     // ADICIONADO: Seção de Importar/Limpar Materiais
+    // IMPORTAÇÃO DE MATERIAIS COM COLUNA DE ESTOQUE
     document.getElementById('btn-import-materiais-xlsx').addEventListener('click', async () => {
         const inp = document.getElementById('materiais-xlsx-input');
         const status = document.getElementById('materiais-xlsx-status');
         if (!inp.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx para materiais.'); return; }
+        
         const f = inp.files[0];
         try {
-            status.textContent = 'Lendo planilha de materiais...';
-            const buf = await f.arrayBuffer(); const wb = XLSX.read(buf, { type:'array' }); const ws = wb.Sheets[wb.SheetNames[0]];
+            status.textContent = 'Lendo planilha...';
+            const buf = await f.arrayBuffer(); 
+            const wb = XLSX.read(buf, { type:'array' }); 
+            const ws = wb.Sheets[wb.SheetNames[0]];
             const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+            
             const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
-            const headerMapCandidates = { nome: ['descricao','descrição','material','item'], unidade: ['unidade','unid','und'], valor: ['valor','preco','preço','price'] };
+            
+            // MAPA DE COLUNAS (Adicionado 'estoque')
+            const headerMapCandidates = { 
+                nome: ['descricao','descrição','material','item'], 
+                unidade: ['unidade','unid','und'], 
+                valor: ['valor','preco','preço','price'],
+                estoque: ['estoque', 'tipo', 'categoria'] // Procura por estas palavras no cabeçalho
+            };
+            
             const keys = rows.length ? Object.keys(rows[0]) : [];
-            const colMap = { nome: null, unidade: null, valor: null };
-            keys.forEach(k => { const nk = norm(k); for (const fld of Object.keys(headerMapCandidates)) { if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k; } });
-            if (!colMap.nome || !colMap.valor) throw new Error('Não encontrei colunas suficientes. Garanta que a planilha tenha pelo menos: Descrição e Valor. A coluna Unidade é opcional (padrão UNID).');
-            const prefix = `users/${userId}`; const batch = writeBatch(db); let count = 0;
+            const colMap = { nome: null, unidade: null, valor: null, estoque: null };
+            
+            keys.forEach(k => { 
+                const nk = norm(k); 
+                for (const fld of Object.keys(headerMapCandidates)) { 
+                    if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k; 
+                } 
+            });
+            
+            if (!colMap.nome || !colMap.valor) throw new Error('Colunas obrigatórias não encontradas: Descrição e Valor.');
+            
+            const prefix = `users/${userId}`; 
+            const batch = writeBatch(db); 
+            let count = 0;
+            
             rows.forEach(r => {
                 const nome = String(r[colMap.nome]||'').trim();
                 const unidade = String(r[colMap.unidade]||'').trim().toUpperCase() || 'UNID';
                 const rawValor = (r[colMap.valor] ?? '').toString().replace(',', '.').replace(/\s/g,'');
                 const valor = parseFloat(rawValor) || 0;
+                
+                // LÓGICA DE ESTOQUE
+                let tipo = 'padrao';
+                if (colMap.estoque) {
+                    const valEstoque = String(r[colMap.estoque]||'').toUpperCase().trim();
+                    // Se estiver escrito SIM, S, ESTOQUE ou YES, vira estoque
+                    if (['SIM', 'S', 'ESTOQUE', 'YES', 'X'].includes(valEstoque)) {
+                        tipo = 'estoque';
+                    }
+                }
+
                 if (!nome || isNaN(valor) || valor <= 0) return;
-                const ref = doc(collection(db, `${prefix}/materiais`)); batch.set(ref, { nome, unidade, valor }); count++;
+                
+                const ref = doc(collection(db, `${prefix}/materiais`)); 
+                batch.set(ref, { nome, unidade, valor, tipo }); 
+                count++;
             });
-            if (!count) { alert('Nenhuma linha válida encontrada na planilha de materiais.'); return; }
-            status.textContent = 'Enviando materiais para o banco...'; await batch.commit();
-            status.textContent = `Importação de materiais concluída: ${count} itens adicionados.`; inp.value = '';
-        } catch(e) { console.error(e); alert('Erro ao importar planilha de materiais: ' + e.message); status.textContent = 'Falha na importação de materiais.'; }
+            
+            if (!count) { alert('Nenhuma linha válida encontrada.'); return; }
+            status.textContent = 'Enviando...'; 
+            await batch.commit();
+            status.textContent = `Sucesso! ${count} itens importados.`; 
+            inp.value = '';
+            
+        } catch(e) { 
+            console.error(e); 
+            alert('Erro na importação: ' + e.message); 
+            status.textContent = 'Falha.'; 
+        }
     });
     
     async function clearAllMateriais() {
@@ -2326,17 +2388,51 @@ window.toggleOrcamentoExclusao = (checkbox) => {
       });
     }
 
-    function populateMateriaisOrcamento() {
+    // Função nova para filtrar no modal
+    window.filtrarMateriaisModal = (tipoAlvo) => {
+        // Atualiza visual dos botões
+        const btnCompra = document.getElementById('tab-mat-compra');
+        const btnEstoque = document.getElementById('tab-mat-estoque');
+        
+        if (tipoAlvo === 'padrao') {
+            btnCompra.className = "text-xs font-bold px-3 py-1 bg-gray-200 rounded text-blue-700 border border-blue-200";
+            btnEstoque.className = "text-xs font-bold px-3 py-1 bg-white border rounded text-gray-500 hover:bg-gray-100";
+        } else {
+            btnCompra.className = "text-xs font-bold px-3 py-1 bg-white border rounded text-gray-500 hover:bg-gray-100";
+            btnEstoque.className = "text-xs font-bold px-3 py-1 bg-gray-200 rounded text-blue-700 border border-blue-200";
+        }
+        populateMateriaisOrcamento(tipoAlvo);
+    };
+
+    function populateMateriaisOrcamento(filtroTipo = 'padrao') {
       const listEl = document.getElementById('orc-materiais-list');
-      if (!appState.materiais.length) { listEl.innerHTML = '<p class="text-gray-500 p-2">Nenhum material cadastrado.</p>'; return; }
-      listEl.innerHTML = appState.materiais.map(m => `
-        <div class="flex items-center justify-between p-2 rounded-md hover:bg-gray-100">
-          <label class="flex items-center flex-grow cursor-pointer">
-            <input type="checkbox" data-id="${m.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-            <span class="ml-3 text-xs">${m.nome} (${m.unidade || 'UNID'}) - R$ ${m.valor.toFixed(2)}</span>
-          </label>
-          <input type="number" min="1" value="1" data-id="${m.id}" class="w-20 p-1 border rounded-md text-sm ml-2" disabled>
-        </div>`).join('');
+      // Filtra a lista global
+      const filtrados = appState.materiais.filter(m => {
+          if (filtroTipo === 'estoque') return m.tipo === 'estoque';
+          return m.tipo !== 'estoque'; // Padrão
+      });
+
+      if (!filtrados.length) { listEl.innerHTML = '<p class="text-gray-500 p-2 text-xs">Nenhum item nesta categoria.</p>'; return; }
+      
+      listEl.innerHTML = filtrados.map(m => {
+          // Verifica se já está selecionado no orçamento atual para marcar o checkbox
+          const jaSelecionado = appState.currentOrcamento?.items?.find(i => i.id === m.id);
+          const qtd = jaSelecionado ? jaSelecionado.quantidade : 1;
+          const checked = jaSelecionado ? 'checked' : '';
+          const disabled = jaSelecionado ? '' : 'disabled';
+          
+          // Adiciona # visualmente se for estoque
+          const prefix = m.tipo === 'estoque' ? '<span class="text-blue-600 font-bold">#</span> ' : '';
+
+          return `
+            <div class="flex items-center justify-between p-2 rounded-md hover:bg-white border-b border-gray-100 last:border-0">
+              <label class="flex items-center flex-grow cursor-pointer">
+                <input type="checkbox" data-id="${m.id}" ${checked} class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                <span class="ml-2 text-xs text-gray-700">${prefix}${m.nome} - R$ ${m.valor.toFixed(2)}</span>
+              </label>
+              <input type="number" min="1" value="${qtd}" data-id="${m.id}" class="w-14 p-1 border rounded-md text-xs ml-2 text-center" ${disabled}>
+            </div>`;
+      }).join('');
     }
 
         function populateTiposDeServicoOrcamento() {
@@ -2561,6 +2657,7 @@ document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
 
 function updateOrcamentoPreview() {
       const { config, currentOrcamento } = appState;
+      // Cores configuradas
       const corPrimaria = config.config_color_primary || '#000000';
       const corTotal = config.config_color_secondary || '#333333';
 
@@ -2569,20 +2666,30 @@ function updateOrcamentoPreview() {
         previewEl.innerHTML = '<p class="text-gray-500 text-center mt-8">Selecione um cliente para começar.</p>';
         return;
       }
+      
+      // Dados do Cliente e Profissional
       const fullClient = currentOrcamento.cliente;
-
       const numeroSeq = String(currentOrcamento.numeroOrcamento || '').padStart(3, '0');
-const dateRef = currentOrcamento.createdAt ? new Date(currentOrcamento.createdAt) : new Date();
-const anoFull = dateRef.getFullYear();
-const codigoCliente = fullClient.numeroCadastro || 'SEM-COD';
-const codigoOrcamento = `${codigoCliente}-${numeroSeq}/${anoFull}`;
+      const dateRef = currentOrcamento.createdAt ? new Date(currentOrcamento.createdAt) : new Date();
+      const anoFull = dateRef.getFullYear();
+      const codigoCliente = fullClient.numeroCadastro || 'SEM-COD';
+      const codigoOrcamento = `${codigoCliente}-${numeroSeq}/${anoFull}`;
+      
+      const dia = dateRef.getDate().toString().padStart(2, '0');
+      const mes = (dateRef.getMonth() + 1).toString().padStart(2, '0');
+      const ano = dateRef.getFullYear();
+      const dataFormatada = `${dia}/${mes}/${ano}`;
 
-// 👉 AGORA A DATA VEM DA MESMA dateRef (data de criação do orçamento)
-const dia = dateRef.getDate().toString().padStart(2, '0');
-const mes = (dateRef.getMonth() + 1).toString().padStart(2, '0');
-const ano = dateRef.getFullYear();
-const dataFormatada = `${dia}/${mes}/${ano}`;
+      // Dados do Profissional (Cabeçalho)
+      const { label: profDocLabel, valor: profDocValor } = getLabelEValorDoc(config.doc);
+      const profEnderecoLinha1 = `${config.logradouro || ''}, ${config.numero || 's/n'}`;
+      const profEnderecoLinha2 = `${config.bairro || ''} - ${config.cidade || ''}/${config.uf || ''}`;
+      
+      // Dados do Cliente (Cabeçalho)
+      const { label: clientDocLabel, valor: clientDocValor } = getLabelEValorDoc(fullClient.documento);
+      const clientEndereco = formatarEnderecoCompleto(fullClient);
 
+      // Variáveis de Cálculo
       let tiposDeServicoHtml = '';
       let subtotalServicos = 0;
       let maoDeObraHtml = '';
@@ -2590,9 +2697,8 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
       let materiaisHtml = '';
       let subtotalMateriais = 0;
 
-      // NOVO: Lógica condicional
-      const modoCobranca = appState.currentOrcamento.modoCobranca || 'mao_de_obra';
-      const usarMaterial = appState.currentOrcamento.usarMaterial || 'sim';
+      const modoCobranca = currentOrcamento.modoCobranca || 'mao_de_obra';
+      const usarMaterial = currentOrcamento.usarMaterial || 'sim';
 
       // 1. Processa Serviços (se 'por_servico')
       if (modoCobranca === 'por_servico' && Array.isArray(currentOrcamento.tiposDeServico) && currentOrcamento.tiposDeServico.length > 0) {
@@ -2609,6 +2715,7 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
               <td style="padding: 4px 2px; text-align: right;">R$ ${totalLinha.toFixed(2)}</td>
             </tr>`;
         }).join('');
+        
         tiposDeServicoHtml = `
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: ${corPrimaria};">
             DESCRIÇÃO DOS SERVIÇOS:
@@ -2623,18 +2730,25 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
       if (modoCobranca === 'mao_de_obra') {
         totalMaoDeObra = currentOrcamento.maoDeObra.valor || 0;
         const maoDeObraLabel = currentOrcamento.maoDeObra.label || 'Não definida';
-        maoDeObraHtml = `
-          <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px; color: ${corPrimaria};">MÃO DE OBRA:</h4>
-          <div style="text-align: right;"><span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>`;
+        
+        if (totalMaoDeObra > 0 || maoDeObraLabel !== 'Não definida') {
+            maoDeObraHtml = `
+              <h4 style="font-size: 1.1em; font-weight: bold; margin-top: 15px; margin-bottom: 5px; color: ${corPrimaria};">MÃO DE OBRA:</h4>
+              <div style="text-align: right;"><span>${maoDeObraLabel}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>`;
+        }
       }
       
       // 3. Processa Materiais (se 'sim')
       if (usarMaterial === 'sim') {
           const itemsHtml = currentOrcamento.items.map(item => {
             const itemTotal = item.valor * (item.quantidade || 1);
-            subtotalMateriais += itemTotal; // Soma ao subtotal
+            subtotalMateriais += itemTotal;
+            
+            // LÓGICA DO ESTOQUE (#) INSERIDA AQUI
+            const nomeExibicao = (item.tipo === 'estoque' ? '# ' : '') + item.nome;
+
             return `<tr>
-              <td style="padding: 4px 2px; text-align: left;">${item.nome}</td>
+              <td style="padding: 4px 2px; text-align: left;">${nomeExibicao}</td>
               <td style="padding: 4px 2px; text-align: center;">${item.quantidade || 1} ${item.unidade || 'UNID'}</td>
               <td style="padding: 4px 2px; text-align: right;">R$ ${item.valor.toFixed(2)}</td>
               <td style="padding: 4px 2px; text-align: right;">R$ ${itemTotal.toFixed(2)}</td>
@@ -2646,10 +2760,11 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
             <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
               ${currentOrcamento.items.length > 0 ? `<thead><tr><th style="text-align: left; padding: 4px 2px; border-bottom: 1px solid #ccc;">Descrição</th><th style="text-align: center; padding: 4px 2px; border-bottom: 1px solid #ccc;">Qtd.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Unit.</th><th style="text-align: right; padding: 4px 2px; border-bottom: 1px solid #ccc;">V. Total</th></tr></thead><tbody>${itemsHtml}</tbody>` : '<tbody><tr><td colspan="4" style="padding: 10px 0; color: #888;">Nenhum material adicionado.</td></tr></tbody>'}
             </table>
-            ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}`;
+            ${currentOrcamento.items.length > 0 ? `<div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ccc;"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>` : ''}
+            <div style="font-size: 0.7em; color: #666; margin-top: 2px;">* Itens marcados com # são de estoque imediato.</div>`;
       }
       
-      // 4. Lógica de Pagamento (sempre visível)
+      // 4. Formas de Pagamento (Lógica da V5.2)
       let pagamentoHtml = '';
       if (config.config_pix_chave || config.config_cartao_vezes || config.config_pagamento_dinheiro || config.config_deposito_banco) {
         pagamentoHtml += '<div style="border: 2px dotted #888; padding: 10px; margin-top: 20px;">';
@@ -2702,15 +2817,7 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
       
       currentOrcamento.total = subtotal - valorDesconto;
       
-      // 6. Formatação de Cabeçalho e Rodapé
-      const { label: profDocLabel, valor: profDocValor } = getLabelEValorDoc(config.doc);
-      const { label: clientDocLabel, valor: clientDocValor } = getLabelEValorDoc(fullClient.documento);
-      
-      const profEnderecoLinha1 = `${config.logradouro || ''}, ${config.numero || 's/n'}`;
-      const profEnderecoLinha2 = `${config.bairro || ''} - ${config.cidade || ''}/${config.uf || ''}`;
-      const clientEndereco = formatarEnderecoCompleto(fullClient);
-      
-      // 7. Renderização Final
+      // 6. Renderização Final (Com Logo e Cabeçalho Completo da V5.2)
       previewEl.innerHTML = `
         <div style="padding: 10px 30px 20px 20px;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding: 0 10px;">
@@ -2722,6 +2829,7 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
             </div>
             ${config.logo ? `<div style="text-align: right; flex-shrink: 0; margin-left: 20px;"><img src="${config.logo}" alt="Logomarca" style="max-width: 150px; max-height: 80px;"></div>` : ''}
           </div>
+          
           <hr style="margin: 15px 0;">
           
           <h4 style="font-size: 1.1em; font-weight: bold; margin-bottom: 6px; color: ${corPrimaria};">Pedido Nº: ${codigoOrcamento}</h4>
@@ -2730,6 +2838,7 @@ const dataFormatada = `${dia}/${mes}/${ano}`;
           <span style="display: block;">${clientEndereco}</span>
           ${fullClient.documento ? `<span style="display: block;">${clientDocLabel} ${clientDocValor}</span>` : ''}
           <span style="display: block;">Telefone: ${formatarTelefone(fullClient.telefone)}</span>
+          
           <hr style="margin: 15px 0;">
           
           ${
