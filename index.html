@@ -1405,19 +1405,36 @@ function getVal(id) {
       if (!appState.clientes.length) { el.innerHTML = '<p class="text-gray-500">Nenhum cliente cadastrado.</p>'; return; }
       
       el.innerHTML = appState.clientes.map(c => {
-        // NOVO: Usa a função helper de endereço
         const enderecoFormatado = formatarEnderecoCompleto(c);
         const { label: docLabel, valor: docValor } = getLabelEValorDoc(c.documento);
 
         return `
-        <div class="flex justify-between items-center p-2 border rounded-md">
-          <div class="flex-grow cursor-pointer" onclick="openEditClienteModal('${c.id}')">
-            <p class="font-medium">${c.nome} <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">${c.numeroCadastro||''}</span></p>
-            <p class="text-sm text-gray-600">${formatarTelefone(c.telefone)} | ${enderecoFormatado}</p>
-            ${c.documento ? `<p class="text-xs text-gray-500">${docLabel} ${docValor}</p>` : ''}
+        <div class="flex justify-between items-start p-3 border rounded-md hover:bg-gray-50 transition-colors">
+          <div class="flex-grow cursor-pointer pt-1" onclick="openEditClienteModal('${c.id}')">
+            <p class="font-bold text-gray-800 text-base flex items-center gap-2">
+                ${c.nome} 
+                <span class="text-[10px] font-normal text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">${c.numeroCadastro||''}</span>
+            </p>
+            <p class="text-sm text-gray-600 mt-1">📞 ${formatarTelefone(c.telefone)}</p>
+            <p class="text-sm text-gray-500 break-words w-full pr-2">📍 ${enderecoFormatado}</p>
+            ${c.documento ? `<p class="text-xs text-gray-400 mt-1">${docLabel} ${docValor}</p>` : ''}
           </div>
-          <button onclick="deleteCliente('${c.id}')" class="text-red-500 hover:text-red-700 text-2xl ml-3 flex-shrink-0">&times;</button>
-        </div>`
+
+          <div class="flex flex-col gap-3 ml-2 items-center border-l pl-3 self-stretch justify-center">
+              
+              <button onclick="deleteCliente('${c.id}')" class="text-red-400 hover:text-red-600 p-1" title="Excluir Cliente">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <button onclick="shareCliente('${c.id}')" class="text-blue-500 hover:text-blue-700 p-1" title="Compartilhar Endereço">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+              </button>
+          </div>
+        </div>`;
       }).join('');
     }
 
@@ -3731,6 +3748,46 @@ window.saveConfigData = async () => {
         alert('Erro ao salvar as configurações.');
     }
 };
+
+    // --- FUNÇÃO DE COMPARTILHAR CLIENTE ---
+    window.shareCliente = async (id) => {
+        const cliente = appState.clientes.find(c => c.id === id);
+        if (!cliente) return;
+
+        // Monta o endereço para texto e para o link do Google Maps
+        const enderecoTexto = formatarEnderecoCompleto(cliente);
+        const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoTexto)}`;
+        
+        // Texto da mensagem
+        const mensagem = `
+👤 *DADOS DO CLIENTE*
+*Nome:* ${cliente.nome}
+*Tel:* ${formatarTelefone(cliente.telefone)}
+
+📍 *ENDEREÇO:*
+${enderecoTexto}
+
+🗺️ *Abrir no Mapa:*
+${mapsLink}
+`.trim();
+
+        // Tenta usar o compartilhamento nativo do celular (Android/iOS)
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `Cliente: ${cliente.nome}`,
+                    text: mensagem
+                });
+            } catch (err) {
+                console.log('Compartilhamento cancelado ou erro:', err);
+            }
+        } else {
+            // Fallback: Se estiver no PC ou navegador sem suporte, abre o WhatsApp Web
+            const zapLink = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+            window.open(zapLink, '_blank');
+        }
+    };
+    
 window.onload = initializeFirebase;
   </script>
 </body>
