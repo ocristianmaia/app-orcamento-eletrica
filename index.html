@@ -330,48 +330,60 @@
 
           <div id="materiais" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
-              <h2 class="text-xl font-semibold mb-4">Gerenciar Itens</h2>
               
-              <form id="form-material" class="flex flex-col gap-4 mb-6 bg-gray-50 p-4 rounded border">
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <input type="text" id="material-nome" class="flex-grow p-2 border rounded-md" placeholder="Descrição do Item" required>
-                    <select id="material-unidade" class="w-24 p-2 border rounded-md"><option>UNID</option><option>Pç</option><option>m</option><option>cx</option><option>kit</option></select>
-                    <input type="number" step="0.01" id="material-valor" class="w-32 p-2 border rounded-md" placeholder="Valor R$" required>
-                </div>
-                <div class="flex items-center gap-2">
-                    <input type="checkbox" id="material-is-estoque" class="h-5 w-5 text-blue-600 rounded">
-                    <label for="material-is-estoque" class="text-sm font-medium text-gray-700 cursor-pointer">Cadastrar como <strong>Material de Estoque</strong> (Sobressalente)</label>
-                </div>
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">Salvar Item</button>
-              </form>
+              <details class="group border rounded-lg mb-4">
+                  <summary class="flex items-center justify-between p-4 cursor-pointer bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-gray-700">
+                      <span>➕ Cadastrar Material</span>
+                      <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                  </summary>
+                  <form id="form-material" class="flex flex-col gap-4 p-4 border-t bg-gray-50">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <input type="text" id="material-nome" class="flex-grow p-2 border rounded-md" placeholder="Descrição do Item" required>
+                        <select id="material-unidade" class="w-24 p-2 border rounded-md"><option>UNID</option><option>Pç</option><option>m</option><option>cx</option><option>kit</option></select>
+                        <input type="number" step="0.01" id="material-valor" class="w-32 p-2 border rounded-md" placeholder="Valor R$" required>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="material-is-estoque" class="h-5 w-5 text-blue-600 rounded">
+                        <label for="material-is-estoque" class="text-sm font-medium text-gray-700 cursor-pointer">Cadastrar como <strong>Material de Estoque</strong> (Sobressalente)</label>
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">Salvar Item</button>
+                  </form>
+              </details>
 
               <details class="group border rounded-lg mb-2" open>
-                  <summary class="flex items-center justify-between p-4 cursor-pointer bg-gray-100 hover:bg-gray-200 rounded-t-lg">
+                  <summary class="flex items-center justify-between p-4 cursor-pointer bg-white hover:bg-gray-50 rounded-t-lg border-b">
                       <span class="font-bold text-gray-700">📋 Lista de Compras (Padrão)</span>
                       <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                   </summary>
-                  <div id="materiais-list-padrao" class="p-4 space-y-2 bg-white border-t">
+                  <div id="materiais-list-padrao" class="p-4 space-y-2 bg-white">
                       <p class="text-gray-500 text-sm">Nenhum item cadastrado.</p>
                   </div>
               </details>
 
               <details class="group border rounded-lg">
-                  <summary class="flex items-center justify-between p-4 cursor-pointer bg-blue-50 hover:bg-blue-100 rounded-t-lg">
+                  <summary class="flex items-center justify-between p-4 cursor-pointer bg-blue-50 hover:bg-blue-100 rounded-t-lg border-b border-blue-100">
                       <span class="font-bold text-blue-800">📦 Material de Estoque (Disponível)</span>
                       <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                   </summary>
-                  <div id="materiais-list-estoque" class="p-4 space-y-2 bg-white border-t">
+                  <div id="materiais-list-estoque" class="p-4 space-y-2 bg-white">
                       <p class="text-gray-500 text-sm">Nenhum item em estoque.</p>
                   </div>
               </details>
             </div>
             
             <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="font-semibold mb-2">Importar/Limpar</h3>
+                <h3 class="font-semibold mb-2">Importar via Excel</h3>
+                
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4 text-sm text-blue-800">
+                    <p class="font-bold">Dica para Estoque:</p>
+                    <p>Adicione uma coluna chamada <strong>"Estoque"</strong> na sua planilha.</p>
+                    <p>Se você escrever <strong>"SIM"</strong> ou <strong>"ESTOQUE"</strong> nessa coluna, o item vai automaticamente para a lista azul.</p>
+                </div>
+
                 <div class="flex flex-col sm:flex-row gap-2">
                     <input type="file" id="materiais-xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm border p-1 rounded">
-                    <button id="btn-import-materiais-xlsx" class="bg-green-600 text-white px-3 py-1 rounded text-sm">Importar</button>
-                    <button id="btn-clear-materiais" class="bg-red-600 text-white px-3 py-1 rounded text-sm">Limpar Tudo</button>
+                    <button id="btn-import-materiais-xlsx" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">Importar</button>
+                    <button id="btn-clear-materiais" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">Limpar Tudo</button>
                 </div>
                 <p id="materiais-xlsx-status" class="text-xs text-gray-500 mt-1"></p>
             </div>
@@ -1729,34 +1741,80 @@ document.getElementById('form-material').addEventListener('submit', async (e) =>
     document.getElementById('btn-clear-tiposervico').addEventListener('click', clearAllTiposDeServico);
 
     // ADICIONADO: Seção de Importar/Limpar Materiais
+    // IMPORTAÇÃO DE MATERIAIS COM COLUNA DE ESTOQUE
     document.getElementById('btn-import-materiais-xlsx').addEventListener('click', async () => {
         const inp = document.getElementById('materiais-xlsx-input');
         const status = document.getElementById('materiais-xlsx-status');
         if (!inp.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx para materiais.'); return; }
+        
         const f = inp.files[0];
         try {
-            status.textContent = 'Lendo planilha de materiais...';
-            const buf = await f.arrayBuffer(); const wb = XLSX.read(buf, { type:'array' }); const ws = wb.Sheets[wb.SheetNames[0]];
+            status.textContent = 'Lendo planilha...';
+            const buf = await f.arrayBuffer(); 
+            const wb = XLSX.read(buf, { type:'array' }); 
+            const ws = wb.Sheets[wb.SheetNames[0]];
             const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+            
             const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
-            const headerMapCandidates = { nome: ['descricao','descrição','material','item'], unidade: ['unidade','unid','und'], valor: ['valor','preco','preço','price'] };
+            
+            // MAPA DE COLUNAS (Adicionado 'estoque')
+            const headerMapCandidates = { 
+                nome: ['descricao','descrição','material','item'], 
+                unidade: ['unidade','unid','und'], 
+                valor: ['valor','preco','preço','price'],
+                estoque: ['estoque', 'tipo', 'categoria'] // Procura por estas palavras no cabeçalho
+            };
+            
             const keys = rows.length ? Object.keys(rows[0]) : [];
-            const colMap = { nome: null, unidade: null, valor: null };
-            keys.forEach(k => { const nk = norm(k); for (const fld of Object.keys(headerMapCandidates)) { if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k; } });
-            if (!colMap.nome || !colMap.valor) throw new Error('Não encontrei colunas suficientes. Garanta que a planilha tenha pelo menos: Descrição e Valor. A coluna Unidade é opcional (padrão UNID).');
-            const prefix = `users/${userId}`; const batch = writeBatch(db); let count = 0;
+            const colMap = { nome: null, unidade: null, valor: null, estoque: null };
+            
+            keys.forEach(k => { 
+                const nk = norm(k); 
+                for (const fld of Object.keys(headerMapCandidates)) { 
+                    if (headerMapCandidates[fld].some(alias => nk.includes(alias))) colMap[fld] = k; 
+                } 
+            });
+            
+            if (!colMap.nome || !colMap.valor) throw new Error('Colunas obrigatórias não encontradas: Descrição e Valor.');
+            
+            const prefix = `users/${userId}`; 
+            const batch = writeBatch(db); 
+            let count = 0;
+            
             rows.forEach(r => {
                 const nome = String(r[colMap.nome]||'').trim();
                 const unidade = String(r[colMap.unidade]||'').trim().toUpperCase() || 'UNID';
                 const rawValor = (r[colMap.valor] ?? '').toString().replace(',', '.').replace(/\s/g,'');
                 const valor = parseFloat(rawValor) || 0;
+                
+                // LÓGICA DE ESTOQUE
+                let tipo = 'padrao';
+                if (colMap.estoque) {
+                    const valEstoque = String(r[colMap.estoque]||'').toUpperCase().trim();
+                    // Se estiver escrito SIM, S, ESTOQUE ou YES, vira estoque
+                    if (['SIM', 'S', 'ESTOQUE', 'YES', 'X'].includes(valEstoque)) {
+                        tipo = 'estoque';
+                    }
+                }
+
                 if (!nome || isNaN(valor) || valor <= 0) return;
-                const ref = doc(collection(db, `${prefix}/materiais`)); batch.set(ref, { nome, unidade, valor }); count++;
+                
+                const ref = doc(collection(db, `${prefix}/materiais`)); 
+                batch.set(ref, { nome, unidade, valor, tipo }); 
+                count++;
             });
-            if (!count) { alert('Nenhuma linha válida encontrada na planilha de materiais.'); return; }
-            status.textContent = 'Enviando materiais para o banco...'; await batch.commit();
-            status.textContent = `Importação de materiais concluída: ${count} itens adicionados.`; inp.value = '';
-        } catch(e) { console.error(e); alert('Erro ao importar planilha de materiais: ' + e.message); status.textContent = 'Falha na importação de materiais.'; }
+            
+            if (!count) { alert('Nenhuma linha válida encontrada.'); return; }
+            status.textContent = 'Enviando...'; 
+            await batch.commit();
+            status.textContent = `Sucesso! ${count} itens importados.`; 
+            inp.value = '';
+            
+        } catch(e) { 
+            console.error(e); 
+            alert('Erro na importação: ' + e.message); 
+            status.textContent = 'Falha.'; 
+        }
     });
     
     async function clearAllMateriais() {
