@@ -2936,7 +2936,7 @@ function updateOrcamentoPreview() {
       }
     };
 
-   window.shareOrViewPDF = async () => {
+  window.shareOrViewPDF = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
       
       // 1. Salva automaticamente antes de gerar
@@ -2945,32 +2945,35 @@ function updateOrcamentoPreview() {
       } catch (error) {
           return; 
       }
+
+      // === CORREÇÃO DE TIMING ===
+      // Força uma atualização visual e espera 500ms para o navegador "respirar"
+      updateOrcamentoPreview();
+      await new Promise(resolve => setTimeout(resolve, 500)); 
+      // ==========================
       
-      // 2. Cria o clone para o PDF
+      // 2. Cria o elemento temporário para o PDF
       const element = document.createElement('div');
       element.innerHTML = document.getElementById('pdf-preview').innerHTML;
       
-      // --- CORREÇÃO DO CORTE LATERAL ---
-      // Reduzi de 700px para 670px. 
-      // Motivo: A4 (210mm) - Margens (20mm) = ~190mm (~718px).
-      // 670px + 20px de padding = 690px (Cabe com folga e não corta!)
+      // Configuração segura de largura para A4
       element.style.width = '670px'; 
       element.style.padding = '10px';
-      element.style.fontSize = '11px'; // Leve ajuste para garantir que tudo caiba bem
+      element.style.fontSize = '11px'; 
       element.style.fontFamily = 'Inter, sans-serif';
       element.style.backgroundColor = '#ffffff';
       
       const opt = {
-        margin:       [10, 10, 10, 10], // Margens do PDF
+        margin:       [10, 10, 10, 10], 
         filename:     `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 4, useCORS: true, letterRendering: true, scrollY: 0 }, 
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['css', 'legacy'] } // Evita quebras bruscas
+        // Essa configuração protege o rodapé de ser cortado
+        pagebreak:    { mode: ['css', 'legacy'], avoid: '.no-break' } 
       };
 
       try {
-        // Tenta compartilhar (Mobile) ou Baixar (PC)
         if (navigator.share && navigator.canShare) {
             const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
             const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
