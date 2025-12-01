@@ -364,9 +364,9 @@
 
           <div id="servicos" class="tab-content space-y-4">
             <div class="bg-white p-6 rounded-lg shadow-sm">
-              <h2 class="text-xl font-semibold mb-4">Tipos de Serviço</h2>
+              <h2 class="text-xl font-semibold mb-4">Gerenciar Serviços</h2>
 
-              <details class="group border rounded-lg mb-6">
+              <details class="group border rounded-lg mb-4">
                   <summary class="flex items-center justify-between p-4 cursor-pointer bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-gray-700">
                       <span>➕ Cadastrar Serviço</span>
                       <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
@@ -391,8 +391,13 @@
                   </form>
               </details>
 
-              <h3 class="font-semibold text-gray-700 mb-2">Lista de Serviços</h3>
-              <div id="tiposdeservico-list" class="space-y-2 border-t pt-2"></div>
+              <details class="group border rounded-lg" open>
+                  <summary class="flex items-center justify-between p-4 cursor-pointer bg-white hover:bg-gray-50 rounded-t-lg border-b">
+                      <span class="font-bold text-gray-700">📋 Lista de Serviços Cadastrados</span>
+                      <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                  </summary>
+                  <div id="tiposdeservico-list" class="p-4 space-y-2 bg-white"></div>
+              </details>
             </div>
 
             <div class="bg-white p-6 rounded-lg shadow-sm">
