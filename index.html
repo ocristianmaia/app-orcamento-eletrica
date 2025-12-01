@@ -231,31 +231,37 @@
           </nav>
         </div>
 
-        <div class="sm:hidden mb-6">
+        <div class="sm:hidden mb-8">
             
-            <div class="highlight-banner -mx-4 px-4 mb-4 shadow-sm">
+            <div class="highlight-banner -mx-4 px-4 mb-6 shadow-sm py-4 text-base">
                 Crie, gerencie e envie orçamentos de forma rápida.
             </div>
 
-            <div class="grid grid-cols-3 gap-2">
-                <button class="mobile-tab active bg-gray-900 text-white p-3 rounded-lg shadow text-xs font-bold flex flex-col items-center justify-center hover:bg-gray-800 transition-colors" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">
+            <div class="grid grid-cols-3 gap-3 mb-4">
+                <button class="mobile-tab active bg-gray-900 text-white py-4 px-2 rounded-xl shadow text-sm font-bold flex flex-col items-center justify-center hover:bg-gray-800 transition-colors h-24" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">
+                    <span class="text-2xl mb-1">🏠</span>
                     Início
                 </button>
-                <button class="mobile-tab bg-blue-500 text-white p-3 rounded-lg shadow text-xs font-bold flex flex-col items-center justify-center hover:bg-blue-600 transition-colors" data-tab="clientes" onclick="changeTab(event, 'clientes')">
+                <button class="mobile-tab bg-blue-500 text-white py-4 px-2 rounded-xl shadow text-sm font-bold flex flex-col items-center justify-center hover:bg-blue-600 transition-colors h-24" data-tab="clientes" onclick="changeTab(event, 'clientes')">
+                    <span class="text-2xl mb-1">👥</span>
                     Clientes
                 </button>
-                <button class="mobile-tab bg-blue-700 text-white p-3 rounded-lg shadow text-xs font-bold flex flex-col items-center justify-center hover:bg-blue-800 transition-colors" data-tab="materiais" onclick="changeTab(event, 'materiais')">
+                <button class="mobile-tab bg-blue-700 text-white py-4 px-2 rounded-xl shadow text-sm font-bold flex flex-col items-center justify-center hover:bg-blue-800 transition-colors h-24" data-tab="materiais" onclick="changeTab(event, 'materiais')">
+                    <span class="text-2xl mb-1">📦</span>
                     Materiais
                 </button>
 
-                <button class="mobile-tab bg-orange-500 text-white p-3 rounded-lg shadow text-xs font-bold flex flex-col items-center justify-center hover:bg-orange-600 transition-colors" data-tab="servicos" onclick="changeTab(event, 'servicos')">
+                <button class="mobile-tab bg-orange-500 text-white py-4 px-2 rounded-xl shadow text-sm font-bold flex flex-col items-center justify-center hover:bg-orange-600 transition-colors h-24" data-tab="servicos" onclick="changeTab(event, 'servicos')">
+                    <span class="text-2xl mb-1">🛠️</span>
                     Serviços
                 </button>
-                <button class="mobile-tab bg-red-600 text-white p-3 rounded-lg shadow text-xs font-bold flex flex-col items-center justify-center hover:bg-red-700 transition-colors" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">
-                    ⚙️ Config
+                <button class="mobile-tab bg-red-600 text-white py-4 px-2 rounded-xl shadow text-sm font-bold flex flex-col items-center justify-center hover:bg-red-700 transition-colors h-24" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">
+                    <span class="text-2xl mb-1">⚙️</span>
+                    Config
                 </button>
-                <button class="mobile-tab bg-green-600 text-white p-3 rounded-lg shadow text-xs font-bold flex flex-col items-center justify-center hover:bg-green-700 transition-colors" data-tab="financeiro" onclick="changeTab(event, 'financeiro')">
-                    Financeiro
+                <button class="mobile-tab bg-green-600 text-white py-4 px-2 rounded-xl shadow text-sm font-bold flex flex-col items-center justify-center hover:bg-green-700 transition-colors h-24" data-tab="financeiro" onclick="changeTab(event, 'financeiro')">
+                    <span class="text-2xl mb-1">💲</span>
+                    Finanças
                 </button>
             </div>
         </div>
