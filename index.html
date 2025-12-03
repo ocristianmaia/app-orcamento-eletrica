@@ -395,10 +395,13 @@
             <div class="bg-white p-6 rounded-lg shadow-sm">
                 <h3 class="font-semibold mb-2">Importar via Excel</h3>
                 
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4 text-sm text-blue-800">
-                    <p class="font-bold">Dica para Estoque:</p>
-                    <p>Adicione uma coluna chamada <strong>"Estoque"</strong> na sua planilha.</p>
-                    <p>Se você escrever <strong>"SIM"</strong> ou <strong>"ESTOQUE"</strong> nessa coluna, o item vai automaticamente para a lista azul.</p>
+               <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4 text-sm text-blue-800">
+                    <p class="font-bold">Como importar Estoque:</p>
+                    <ul class="list-disc pl-5 mt-1 space-y-1">
+                        <li>Crie uma coluna <strong>"Estoque"</strong>: Escreva "SIM" para itens de estoque.</li>
+                        <li>Crie uma coluna <strong>"Qtd"</strong>: Coloque a quantidade inicial (Ex: 10, 50).</li>
+                        <li>Se não preencher "Estoque", o item vai para a lista de compras comum.</li>
+                    </ul>
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-2">
@@ -1791,10 +1794,11 @@ document.getElementById('form-material').addEventListener('submit', async (e) =>
 
     // ADICIONADO: Seção de Importar/Limpar Materiais
     // IMPORTAÇÃO DE MATERIAIS COM COLUNA DE ESTOQUE
+    // IMPORTAÇÃO DE MATERIAIS (COM ESTOQUE E QUANTIDADE)
     document.getElementById('btn-import-materiais-xlsx').addEventListener('click', async () => {
         const inp = document.getElementById('materiais-xlsx-input');
         const status = document.getElementById('materiais-xlsx-status');
-        if (!inp.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx para materiais.'); return; }
+        if (!inp.files || !inp.files[0]) { alert('Selecione um arquivo .xlsx'); return; }
         
         const f = inp.files[0];
         try {
@@ -1806,16 +1810,17 @@ document.getElementById('form-material').addEventListener('submit', async (e) =>
             
             const norm = (s) => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
             
-            // MAPA DE COLUNAS (Adicionado 'estoque')
+            // MAPA DE COLUNAS (Agora com Quantidade)
             const headerMapCandidates = { 
                 nome: ['descricao','descrição','material','item'], 
                 unidade: ['unidade','unid','und'], 
                 valor: ['valor','preco','preço','price'],
-                estoque: ['estoque', 'tipo', 'categoria'] // Procura por estas palavras no cabeçalho
+                estoque: ['estoque', 'tipo', 'categoria'], // Flag SIM/NÃO
+                quantidade: ['qtd', 'quantidade', 'saldo', 'quant', 'estoque_atual'] // Nova coluna
             };
             
             const keys = rows.length ? Object.keys(rows[0]) : [];
-            const colMap = { nome: null, unidade: null, valor: null, estoque: null };
+            const colMap = { nome: null, unidade: null, valor: null, estoque: null, quantidade: null };
             
             keys.forEach(k => { 
                 const nk = norm(k); 
@@ -1824,7 +1829,7 @@ document.getElementById('form-material').addEventListener('submit', async (e) =>
                 } 
             });
             
-            if (!colMap.nome || !colMap.valor) throw new Error('Colunas obrigatórias não encontradas: Descrição e Valor.');
+            if (!colMap.nome || !colMap.valor) throw new Error('Colunas obrigatórias: Descrição e Valor.');
             
             const prefix = `users/${userId}`; 
             const batch = writeBatch(db); 
@@ -1836,24 +1841,31 @@ document.getElementById('form-material').addEventListener('submit', async (e) =>
                 const rawValor = (r[colMap.valor] ?? '').toString().replace(',', '.').replace(/\s/g,'');
                 const valor = parseFloat(rawValor) || 0;
                 
-                // LÓGICA DE ESTOQUE
                 let tipo = 'padrao';
+                let qtdEstoque = 0;
+
+                // Verifica se é item de estoque
                 if (colMap.estoque) {
                     const valEstoque = String(r[colMap.estoque]||'').toUpperCase().trim();
-                    // Se estiver escrito SIM, S, ESTOQUE ou YES, vira estoque
                     if (['SIM', 'S', 'ESTOQUE', 'YES', 'X'].includes(valEstoque)) {
                         tipo = 'estoque';
+                        
+                        // Se for estoque, tenta ler a quantidade
+                        if (colMap.quantidade) {
+                            const rawQtd = (r[colMap.quantidade] ?? '').toString().replace(',', '.');
+                            qtdEstoque = parseFloat(rawQtd) || 0;
+                        }
                     }
                 }
 
                 if (!nome || isNaN(valor) || valor <= 0) return;
                 
                 const ref = doc(collection(db, `${prefix}/materiais`)); 
-                batch.set(ref, { nome, unidade, valor, tipo }); 
+                batch.set(ref, { nome, unidade, valor, tipo, qtdEstoque }); 
                 count++;
             });
             
-            if (!count) { alert('Nenhuma linha válida encontrada.'); return; }
+            if (!count) { alert('Nenhuma linha válida.'); return; }
             status.textContent = 'Enviando...'; 
             await batch.commit();
             status.textContent = `Sucesso! ${count} itens importados.`; 
