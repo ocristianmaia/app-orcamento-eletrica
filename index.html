@@ -354,10 +354,19 @@
                         <select id="material-unidade" class="w-24 p-2 border rounded-md"><option>UNID</option><option>Pç</option><option>m</option><option>cx</option><option>kit</option></select>
                         <input type="number" step="0.01" id="material-valor" class="w-32 p-2 border rounded-md" placeholder="Valor R$" required>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <input type="checkbox" id="material-is-estoque" class="h-5 w-5 text-blue-600 rounded">
-                        <label for="material-is-estoque" class="text-sm font-medium text-gray-700 cursor-pointer">Cadastrar como <strong>Material de Estoque</strong> (Sobressalente)</label>
+                    
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="material-is-estoque" class="h-5 w-5 text-blue-600 rounded" onchange="toggleQtdEstoque(this)">
+                            <label for="material-is-estoque" class="text-sm font-medium text-gray-700 cursor-pointer">Material de Estoque</label>
+                        </div>
+                        
+                        <div id="div-qtd-estoque" class="hidden flex items-center gap-2">
+                            <label class="text-sm font-bold text-blue-800">Qtd. Atual:</label>
+                            <input type="number" id="material-qtd-inicial" class="w-24 p-2 border border-blue-300 rounded-md text-blue-900 font-bold" placeholder="0">
+                        </div>
                     </div>
+
                     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">Salvar Item</button>
                   </form>
               </details>
@@ -1022,6 +1031,12 @@
 
     let chartType = 'bar';
 
+    window.toggleQtdEstoque = (checkbox) => {
+    const div = document.getElementById('div-qtd-estoque');
+    if (checkbox.checked) div.classList.remove('hidden');
+    else div.classList.add('hidden');
+};
+
     function resetCurrentOrcamento() {
       appState.currentOrcamento = {
         id: null, cliente: null, 
@@ -1485,25 +1500,29 @@ function getVal(id) {
 
     // ===== Materiais =====
 document.getElementById('form-material').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!userId) return alert('Faça login.');
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.disabled = true; 
-      try {
-        const nome = document.getElementById('material-nome').value;
-        const valor = parseFloat(document.getElementById('material-valor').value);
-        const unidade = document.getElementById('material-unidade').value;
-        // Verifica se é estoque
-        const isEstoque = document.getElementById('material-is-estoque').checked;
-        
-        await addDoc(collection(db, `users/${userId}/materiais`), { 
-            nome, valor, unidade, 
-            tipo: isEstoque ? 'estoque' : 'padrao' // Salva o tipo
-        });
-        e.target.reset();
-      } catch(e) { console.error(e); alert('Erro ao salvar item.'); }
-      finally { btn.disabled=false; }
+  e.preventDefault();
+  if (!userId) return alert('Faça login.');
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; 
+  try {
+    const nome = document.getElementById('material-nome').value;
+    const valor = parseFloat(document.getElementById('material-valor').value);
+    const unidade = document.getElementById('material-unidade').value;
+    const isEstoque = document.getElementById('material-is-estoque').checked;
+
+    // Captura a quantidade se for estoque
+    const qtdEstoque = isEstoque ? (parseFloat(document.getElementById('material-qtd-inicial').value) || 0) : 0;
+
+    await addDoc(collection(db, `users/${userId}/materiais`), { 
+        nome, valor, unidade, 
+        tipo: isEstoque ? 'estoque' : 'padrao',
+        qtdEstoque: qtdEstoque // Salva no banco
     });
+    e.target.reset();
+    document.getElementById('div-qtd-estoque').classList.add('hidden'); // Esconde de novo
+  } catch(e) { console.error(e); alert('Erro ao salvar item.'); }
+  finally { btn.disabled=false; }
+});
 
     document.getElementById('form-edit-material').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1526,33 +1545,32 @@ document.getElementById('form-material').addEventListener('submit', async (e) =>
     });
 
   function renderMateriaisList() {
-      const elPadrao = document.getElementById('materiais-list-padrao');
-      const elEstoque = document.getElementById('materiais-list-estoque');
-      
-      if (!elPadrao || !elEstoque) return; // Segurança
+  const elPadrao = document.getElementById('materiais-list-padrao');
+  const elEstoque = document.getElementById('materiais-list-estoque');
+  if (!elPadrao || !elEstoque) return;
 
-      const lista = appState.materiais || [];
-      
-      const padraoItems = lista.filter(m => m.tipo !== 'estoque');
-      const estoqueItems = lista.filter(m => m.tipo === 'estoque');
+  const lista = appState.materiais || [];
+  const padraoItems = lista.filter(m => m.tipo !== 'estoque');
+  const estoqueItems = lista.filter(m => m.tipo === 'estoque');
 
-      const criarHTML = (itens) => {
-          if(!itens.length) return '<p class="text-gray-500 text-xs p-2">Vazio.</p>';
-          return itens.map(m => `
-            <div class="flex justify-between items-center p-2 border-b last:border-0 hover:bg-gray-50">
-              <div class="flex-grow cursor-pointer" onclick="openEditMaterialModal('${m.id}')">
-                <p class="servico-slim text-sm">
-                    ${m.tipo === 'estoque' ? '<span class="text-blue-600 font-bold">#</span> ' : ''}
-                    <strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${m.valor.toFixed(2)}
-                </p>
-              </div>
-              <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 font-bold px-2">&times;</button>
-            </div>`).join('');
-      };
+  const criarHTML = (itens, ehEstoque) => {
+      if(!itens.length) return '<p class="text-gray-500 text-xs p-2">Vazio.</p>';
+      return itens.map(m => `
+        <div class="flex justify-between items-center p-2 border-b last:border-0 hover:bg-gray-50">
+          <div class="flex-grow cursor-pointer" onclick="openEditMaterialModal('${m.id}')">
+            <p class="servico-slim text-sm">
+                ${ehEstoque ? '<span class="text-blue-600 font-bold">#</span> ' : ''}
+                <strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${m.valor.toFixed(2)}
+                ${ehEstoque ? `<br><span class="text-xs font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded">Estoque: ${m.qtdEstoque || 0}</span>` : ''}
+            </p>
+          </div>
+          <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 font-bold px-2">&times;</button>
+        </div>`).join('');
+  };
 
-      elPadrao.innerHTML = criarHTML(padraoItems);
-      elEstoque.innerHTML = criarHTML(estoqueItems);
-    }
+  elPadrao.innerHTML = criarHTML(padraoItems, false);
+  elEstoque.innerHTML = criarHTML(estoqueItems, true);
+}
 
     window.deleteMaterial = async (id) => {
       if (confirm('Excluir este item?')) { await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); }
@@ -3639,40 +3657,85 @@ function updateFinanceiroView() {
       if (anoSel) anoSel.value = 'todos';
       renderOrcamentosList(true);
     });
-window.changeOrcamentoStatus = async (selectEl) => {
+// FUNÇÃO INTELIGENTE DE STATUS E ESTOQUE
+    window.changeOrcamentoStatus = async (selectEl) => {
         try {
             const id = selectEl.dataset.id;
             const novoStatus = selectEl.value;
-            console.log('[STATUS] Alterando orçamento', id, 'para', novoStatus);
+            
+            // 1. Pega o orçamento ANTES da mudança (para saber como estava)
+            const orcAtual = appState.orcamentos.find(o => o.id === id);
+            if (!orcAtual) return;
 
-            // 1. Atualiza visualmente na memória (para não precisar recarregar tudo do banco)
-            const orc = appState.orcamentos.find(o => o.id === id);
-            if (orc) {
-                orc.status = novoStatus;
-                // Mantém a lógica de "Aprovado" para compatibilidade, 
-                // considerando Aprovado, Concluido e Faturado como "Sim"
-                orc.aprovado = (novoStatus === 'aprovado' || novoStatus === 'concluido' || novoStatus === 'faturado');
+            const statusAntigo = (orcAtual.status || 'pendente').toLowerCase();
+            
+            // Verifica se é status de aprovação (Aprovado, Concluido, Faturado contam como "Aprovado" para o estoque)
+            const isAprovadoAntigo = ['aprovado', 'concluido', 'faturado'].includes(statusAntigo);
+            const isAprovadoNovo = ['aprovado', 'concluido', 'faturado'].includes(novoStatus);
+
+            if (!userId) return;
+            const batch = writeBatch(db); // Usamos lote para garantir segurança
+
+            // A) LÓGICA DE DAR BAIXA (Virou Aprovado)
+            if (!isAprovadoAntigo && isAprovadoNovo) {
+                if (confirm(`Confirmar aprovação?\nIsso dará BAIXA automática no estoque dos itens usados.`)) {
+                    // Percorre itens para descontar
+                    if (orcAtual.items && orcAtual.items.length > 0) {
+                        orcAtual.items.forEach(item => {
+                            if (item.tipo === 'estoque') {
+                                // Acha o material original no banco para pegar o saldo real
+                                const materialRef = doc(db, `users/${userId}/materiais/${item.id}`);
+                                // Como não temos o saldo em tempo real aqui dentro do loop, vamos confiar no appState ou fazer uma lógica otimista
+                                // Para simplificar e funcionar rápido: Pegamos do appState.materiais
+                                const matNoBanco = appState.materiais.find(m => m.id === item.id);
+                                if (matNoBanco) {
+                                    const novaQtd = (matNoBanco.qtdEstoque || 0) - (item.quantidade || 1);
+                                    batch.update(materialRef, { qtdEstoque: novaQtd });
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    // Se cancelar, volta o select para o que estava
+                    selectEl.value = statusAntigo;
+                    return;
+                }
             }
 
-            // 2. Salva no Firebase
-            if (!userId) return; 
+            // B) LÓGICA DE DEVOLUÇÃO (Deixou de ser Aprovado -> Voltou para Pendente)
+            if (isAprovadoAntigo && !isAprovadoNovo) {
+                if (confirm(`Atenção: O orçamento voltou para PENDENTE.\nDeseja DEVOLVER os itens ao estoque?`)) {
+                     if (orcAtual.items && orcAtual.items.length > 0) {
+                        orcAtual.items.forEach(item => {
+                            if (item.tipo === 'estoque') {
+                                const materialRef = doc(db, `users/${userId}/materiais/${item.id}`);
+                                const matNoBanco = appState.materiais.find(m => m.id === item.id);
+                                if (matNoBanco) {
+                                    const novaQtd = (matNoBanco.qtdEstoque || 0) + (item.quantidade || 1);
+                                    batch.update(materialRef, { qtdEstoque: novaQtd });
+                                }
+                            }
+                        });
+                    }
+                }
+            }
 
-            // Usando a sintaxe correta do seu arquivo original (doc, db)
-            const ref = doc(db, `users/${userId}/orcamentos/${id}`);
-            
-            await setDoc(ref, { 
+            // Atualiza o status do orçamento
+            const orcRef = doc(db, `users/${userId}/orcamentos/${id}`);
+            batch.set(orcRef, { 
                 status: novoStatus,
-                aprovado: (novoStatus === 'aprovado' || novoStatus === 'concluido' || novoStatus === 'faturado')
+                aprovado: isAprovadoNovo
             }, { merge: true });
 
-            // 3. Atualiza SOMENTE o painel financeiro para refletir os novos valores
+            await batch.commit(); // Executa tudo (status + estoque) de uma vez
+            
+            // Atualiza a tela
             updateFinanceiroView();
-            // (Opcional) Re-renderiza a lista da Home para atualizar a badge lá também
             renderOrcamentosList(false); 
             
         } catch (err) {
             console.error('Erro ao mudar status:', err);
-            alert('Erro ao salvar o status. Verifique sua conexão.');
+            alert('Erro ao atualizar. Tente novamente.');
         }
     };
     // --- LÓGICA DO MENU DE CONFIGURAÇÕES ---
