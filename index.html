@@ -3431,107 +3431,130 @@ document.getElementById('btn-exportar-financeiro')?.addEventListener('click', (e
     function formatBRL(valor) {
       return (Number(valor || 0)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
-function updateFinanceiroView() {
+// FUNÇÃO FINANCEIRA INTELIGENTE (CAIXA vs COMPETÊNCIA)
+    function updateFinanceiroView() {
       const anoSel = document.getElementById('fat-ano')?.value || 'todos';
       const mesSel = document.getElementById('fat-mes')?.value || 'all';
       const periodoSel = document.getElementById('chart-periodo')?.value || 'mensal';
 
-      // Mostra/Esconde seletor de mês
       const labelMes = document.querySelector('label[for="fat-mes"]');
       if (labelMes && labelMes.parentElement) {
         labelMes.parentElement.style.display = (periodoSel === 'mensal') ? 'flex' : 'none';
       }
 
-      let bruto = 0;
-      let aprovado = 0; 
-      let faturado = 0; 
+      let bruto = 0, aprovado = 0, faturado = 0;
+      let labels = [], datasets = [];
       
-      let labels = [];
-      let datasets = [];
-
-      // Helper local de formatação
       const format = (v) => (Number(v)||0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-      // Função auxiliar para somar os valores
-      const processarOrcamento = (orc) => {
-          const total = Number(orc.total || 0);
-          const st = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
+      // LÓGICA ANUAL (Mês a Mês)
+      if (periodoSel === 'anual') {
+          const mesesLabels = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+          const brutoMes = Array(12).fill(0);
+          const aprovadoMes = Array(12).fill(0);
+          const faturadoMes = Array(12).fill(0);
+
+          appState.orcamentos.forEach(orc => {
+             const total = Number(orc.total || 0);
+             const st = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
+             
+             // 1. Bruto e Aprovado: Usam Data de CRIAÇÃO
+             if (orc.createdAt) {
+                 const d = new Date(orc.createdAt);
+                 const ano = d.getFullYear().toString();
+                 const mes = d.getMonth();
+
+                 if (anoSel === 'todos' || ano === anoSel) {
+                     bruto += total;
+                     brutoMes[mes] += total;
+                     
+                     if (['aprovado', 'concluido', 'faturado'].includes(st)) {
+                         aprovado += total;
+                         aprovadoMes[mes] += total;
+                     }
+                 }
+             }
+
+             // 2. Faturado: Usa Data do PAGAMENTO (dataFaturamento)
+             // Se não tiver dataFaturamento (antigos), usa createdAt como fallback
+             if (st === 'faturado') {
+                 // Converte timestamp do Firestore para Date JS se necessário
+                 let dFat = orc.dataFaturamento ? (orc.dataFaturamento.toDate ? orc.dataFaturamento.toDate() : new Date(orc.dataFaturamento)) : (orc.createdAt ? new Date(orc.createdAt) : null);
+                 
+                 if (dFat) {
+                     const anoFat = dFat.getFullYear().toString();
+                     const mesFat = dFat.getMonth();
+
+                     if (anoSel === 'todos' || anoFat === anoSel) {
+                         faturado += total;
+                         faturadoMes[mesFat] += total;
+                     }
+                 }
+             }
+          });
+
+          labels = mesesLabels;
+          // Configuração para barras mais finas se for Anual
+          const barConfig = { barPercentage: 0.7, categoryPercentage: 0.8, borderRadius: 4 };
           
-          bruto += total;
-          
-          if (['aprovado', 'concluido', 'faturado'].includes(st)) {
-              aprovado += total;
+          if (chartType === 'pie') {
+               datasets = [{ data: [bruto, aprovado, faturado], backgroundColor: ['#FACC15', '#22C55E', '#3B82F6'], borderWidth: 2, borderColor: '#ffffff' }];
+               labels = ['Bruto', 'Aprovado', 'Faturado'];
+          } else {
+               datasets = [
+                  { label: 'Bruto', data: brutoMes, backgroundColor: '#FACC15', ...barConfig },
+                  { label: 'Aprovado', data: aprovadoMes, backgroundColor: '#22C55E', ...barConfig },
+                  { label: 'Faturado', data: faturadoMes, backgroundColor: '#3B82F6', ...barConfig }
+               ];
           }
-          
-          if (st === 'faturado') {
-              faturado += total;
-          }
-      };
 
-      if (periodoSel === 'mensal') {
-        const orcs = filtrarOrcamentosPorMesAno(anoSel, mesSel);
-        orcs.forEach(processarOrcamento);
+      } else { 
+        // LÓGICA MENSAL (Detalhado)
+        appState.orcamentos.forEach(orc => {
+            const total = Number(orc.total || 0);
+            const st = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
 
-        if (chartType === 'pie') {
-          labels = ['Bruto (Gerado)', 'Aprovado (Ganho)', 'Faturado (Caixa)'];
-          datasets = [{
-            data: [bruto, aprovado, faturado],
-            backgroundColor: ['#FACC15', '#22C55E', '#3B82F6'],
-            borderWidth: 1
-          }];
-        } else {
-          labels = ['Performance do Mês'];
-          datasets = [
-            { label: 'Bruto (Gerado)', data: [bruto], backgroundColor: '#FACC15' },
-            { label: 'Aprovado (Ganho)', data: [aprovado], backgroundColor: '#22C55E' },
-            { label: 'Faturado (Caixa)', data: [faturado], backgroundColor: '#3B82F6' }
-          ];
-        }
+            // 1. Bruto e Aprovado (Data de Criação)
+            if (orc.createdAt) {
+                const d = new Date(orc.createdAt);
+                const ano = d.getFullYear().toString();
+                const mes = d.getMonth().toString();
 
-      } else {
-        // Anual
-        const orcs = filtrarOrcamentosPorMesAno(anoSel === 'todos' ? null : anoSel, 'all');
-        const brutoMes = Array(12).fill(0);
-        const aprovadoMes = Array(12).fill(0);
-        const faturadoMes = Array(12).fill(0);
+                // Só soma se bater com o filtro selecionado
+                if ((anoSel === 'todos' || ano === anoSel) && (mesSel === 'all' || mes === mesSel)) {
+                    bruto += total;
+                    if (['aprovado', 'concluido', 'faturado'].includes(st)) aprovado += total;
+                }
+            }
 
-        orcs.forEach(orc => {
-           if (!orc.createdAt) return;
-           const d = new Date(orc.createdAt);
-           const m = d.getMonth();
-           const total = Number(orc.total || 0);
-           const st = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
+            // 2. Faturado (Data do Pagamento)
+            if (st === 'faturado') {
+                 let dFat = orc.dataFaturamento ? (orc.dataFaturamento.toDate ? orc.dataFaturamento.toDate() : new Date(orc.dataFaturamento)) : (orc.createdAt ? new Date(orc.createdAt) : null);
+                 
+                 if (dFat) {
+                     const anoFat = dFat.getFullYear().toString();
+                     const mesFat = dFat.getMonth().toString();
 
-           bruto += total;
-           brutoMes[m] += total;
-
-           if (['aprovado', 'concluido', 'faturado'].includes(st)) {
-               aprovado += total;
-               aprovadoMes[m] += total;
-           }
-
-           if (st === 'faturado') {
-               faturado += total;
-               faturadoMes[m] += total;
-           }
+                     // AQUI É O PULO DO GATO:
+                     // O item só entra na conta "Faturado" se a DATA DO PAGAMENTO bater com o filtro
+                     if ((anoSel === 'todos' || anoFat === anoSel) && (mesSel === 'all' || mesFat === mesSel)) {
+                         faturado += total;
+                     }
+                 }
+            }
         });
 
-        const mesesLabels = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-        
         if (chartType === 'pie') {
-             labels = ['Bruto Total', 'Aprovado Total', 'Faturado Total'];
-             datasets = [{
-                data: [bruto, aprovado, faturado],
-                backgroundColor: ['#FACC15', '#22C55E', '#3B82F6'],
-                borderWidth: 1
-             }];
+          labels = ['Bruto', 'Aprovado', 'Faturado'];
+          datasets = [{ data: [bruto, aprovado, faturado], backgroundColor: ['#FACC15', '#22C55E', '#3B82F6'], borderWidth: 2, borderColor: '#ffffff' }];
         } else {
-             labels = mesesLabels;
-             datasets = [
-                { label: 'Bruto', data: brutoMes, backgroundColor: '#FACC15' },
-                { label: 'Aprovado', data: aprovadoMes, backgroundColor: '#22C55E' },
-                { label: 'Faturado', data: faturadoMes, backgroundColor: '#3B82F6' }
-             ];
+          labels = ['Total do Mês'];
+          const barConfig = { barPercentage: 0.6, maxBarThickness: 80, borderRadius: 4 };
+          datasets = [
+            { label: 'Bruto', data: [bruto], backgroundColor: '#FACC15', ...barConfig },
+            { label: 'Aprovado', data: [aprovado], backgroundColor: '#22C55E', ...barConfig },
+            { label: 'Faturado', data: [faturado], backgroundColor: '#3B82F6', ...barConfig }
+          ];
         }
       }
 
@@ -3541,14 +3564,12 @@ function updateFinanceiroView() {
       const elContagem = document.getElementById('fat-contagem');
 
       if (elBruto) elBruto.textContent = format(bruto);
-      
       if (elLiq) {
           const tituloCard = elLiq.parentElement.querySelector('p');
           if(tituloCard) tituloCard.textContent = "Valor Faturado (Caixa)";
           elLiq.textContent = format(faturado);
           elLiq.className = "text-xl font-bold text-blue-800"; 
       }
-      
       if (elContagem) elContagem.textContent = `Aprovado: ${format(aprovado)}`;
 
       // Renderiza Gráfico
@@ -3557,9 +3578,7 @@ function updateFinanceiroView() {
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      if (financeChart) {
-        try { financeChart.destroy(); } catch(e) {}
-      }
+      if (financeChart) { try { financeChart.destroy(); } catch(e) {} }
 
       financeChart = new Chart(ctx, {
         type: chartType,
@@ -3567,43 +3586,27 @@ function updateFinanceiroView() {
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
+          layout: { padding: 20 },
           plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, padding: 15 } },
             tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, cornerRadius: 8,
                 callbacks: {
                     label: function(context) {
-                        // LÓGICA CORRIGIDA AQUI
                         let label = context.dataset.label || '';
-
-                        // Se for pizza, o nome da fatia está em context.label, não no dataset
-                        if (chartType === 'pie') {
-                            label = context.label || '';
-                        }
-
+                        if (chartType === 'pie') label = context.label || ''; 
                         if (label) label += ': ';
-                        
-                        // Pega o valor independente do tipo de gráfico
                         let valor = context.parsed.y;
-                        if (valor === undefined || valor === null) {
-                             valor = context.raw;
-                        }
-                        
-                        if (valor !== null) {
-                            label += format(valor);
-                        }
+                        if (valor === undefined || valor === null) valor = context.raw; 
+                        if (valor !== null) label += format(valor);
                         return label;
                     }
                 }
             }
           },
-          scales: chartType === 'pie' ? {
-             x: { display: false },
-             y: { display: false }
-          } : {
-            y: { beginAtZero: true, ticks: { callback: (v) => format(v) } }
+          scales: chartType === 'pie' ? { x: { display: false }, y: { display: false } } : {
+            y: { beginAtZero: true, ticks: { callback: (v) => format(v) } },
+            x: { grid: { display: false } } 
           }
         }
       });
@@ -3670,35 +3673,30 @@ function updateFinanceiroView() {
       renderOrcamentosList(true);
     });
 // FUNÇÃO INTELIGENTE DE STATUS E ESTOQUE
+    // FUNÇÃO INTELIGENTE DE STATUS E ESTOQUE (COM DATA DE FATURAMENTO)
     window.changeOrcamentoStatus = async (selectEl) => {
         try {
             const id = selectEl.dataset.id;
             const novoStatus = selectEl.value;
             
-            // 1. Pega o orçamento ANTES da mudança (para saber como estava)
+            // 1. Pega o orçamento ANTES da mudança
             const orcAtual = appState.orcamentos.find(o => o.id === id);
             if (!orcAtual) return;
 
             const statusAntigo = (orcAtual.status || 'pendente').toLowerCase();
-            
-            // Verifica se é status de aprovação (Aprovado, Concluido, Faturado contam como "Aprovado" para o estoque)
             const isAprovadoAntigo = ['aprovado', 'concluido', 'faturado'].includes(statusAntigo);
             const isAprovadoNovo = ['aprovado', 'concluido', 'faturado'].includes(novoStatus);
 
             if (!userId) return;
-            const batch = writeBatch(db); // Usamos lote para garantir segurança
+            const batch = writeBatch(db);
 
-            // A) LÓGICA DE DAR BAIXA (Virou Aprovado)
+            // A) LÓGICA DE ESTOQUE (BAIXA)
             if (!isAprovadoAntigo && isAprovadoNovo) {
-                if (confirm(`Confirmar aprovação?\nIsso dará BAIXA automática no estoque dos itens usados.`)) {
-                    // Percorre itens para descontar
+                if (confirm(`Confirmar aprovação?\nIsso dará BAIXA automática no estoque.`)) {
                     if (orcAtual.items && orcAtual.items.length > 0) {
                         orcAtual.items.forEach(item => {
                             if (item.tipo === 'estoque') {
-                                // Acha o material original no banco para pegar o saldo real
                                 const materialRef = doc(db, `users/${userId}/materiais/${item.id}`);
-                                // Como não temos o saldo em tempo real aqui dentro do loop, vamos confiar no appState ou fazer uma lógica otimista
-                                // Para simplificar e funcionar rápido: Pegamos do appState.materiais
                                 const matNoBanco = appState.materiais.find(m => m.id === item.id);
                                 if (matNoBanco) {
                                     const novaQtd = (matNoBanco.qtdEstoque || 0) - (item.quantidade || 1);
@@ -3708,15 +3706,14 @@ function updateFinanceiroView() {
                         });
                     }
                 } else {
-                    // Se cancelar, volta o select para o que estava
                     selectEl.value = statusAntigo;
                     return;
                 }
             }
 
-            // B) LÓGICA DE DEVOLUÇÃO (Deixou de ser Aprovado -> Voltou para Pendente)
+            // B) LÓGICA DE ESTOQUE (DEVOLUÇÃO)
             if (isAprovadoAntigo && !isAprovadoNovo) {
-                if (confirm(`Atenção: O orçamento voltou para PENDENTE.\nDeseja DEVOLVER os itens ao estoque?`)) {
+                if (confirm(`Orçamento voltou para PENDENTE.\nDeseja DEVOLVER os itens ao estoque?`)) {
                      if (orcAtual.items && orcAtual.items.length > 0) {
                         orcAtual.items.forEach(item => {
                             if (item.tipo === 'estoque') {
@@ -3732,18 +3729,30 @@ function updateFinanceiroView() {
                 }
             }
 
-            // Atualiza o status do orçamento
+            // C) PREPARAÇÃO DOS DADOS PARA SALVAR
             const orcRef = doc(db, `users/${userId}/orcamentos/${id}`);
-            batch.set(orcRef, { 
+            const updateData = { 
                 status: novoStatus,
                 aprovado: isAprovadoNovo
-            }, { merge: true });
+            };
 
-            await batch.commit(); // Executa tudo (status + estoque) de uma vez
+            // --- AQUI ESTÁ A MÁGICA DA DATA ---
+            // Se virou FATURADO, grava a data de hoje. 
+            // Se saiu de Faturado, remove a data (null).
+            if (novoStatus === 'faturado') {
+                updateData.dataFaturamento = serverTimestamp();
+            } else if (statusAntigo === 'faturado' && novoStatus !== 'faturado') {
+                updateData.dataFaturamento = null; 
+            }
+            // ----------------------------------
+
+            batch.set(orcRef, updateData, { merge: true });
+
+            await batch.commit();
             
-            // Atualiza a tela
+            // Atualiza visualmente na hora (sem esperar o Firebase)
+            // Isso garante que o gráfico mude instantaneamente
             updateFinanceiroView();
-            renderOrcamentosList(false); 
             
         } catch (err) {
             console.error('Erro ao mudar status:', err);
