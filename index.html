@@ -2037,8 +2037,6 @@ document.getElementById('form-material').addEventListener('submit', async (e) =>
     // ==========================================================
     // FIM DO NOVO BLOCO
     // ==========================================================
-
-
     // ===== Orçamentos (lista / modal etc.) =====
     function updateDeleteButtonState() {
         const btn = document.getElementById('btn-delete-selected-orcamentos');
@@ -2052,7 +2050,7 @@ window.renderOrcamentosList = (isFullList) => {
 
         let list = [...appState.orcamentos];
 
-        // Filtros (mantidos para a lista completa)
+        // Filtros (Lista Completa)
         if (isFullList) {
             const statusFiltro = document.getElementById('filtro-status-orcamento')?.value || 'todos';
             const mesFiltro = document.getElementById('filtro-mes-orcamento')?.value || 'todos';
@@ -2060,12 +2058,32 @@ window.renderOrcamentosList = (isFullList) => {
 
             list = list.filter(orc => {
                 let st = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
+                
+                // 1. Filtro de Status
                 if (statusFiltro !== 'todos' && st !== statusFiltro) return false;
 
-                if (!orc.createdAt) return true;
-                const d = new Date(orc.createdAt);
-                const mes = d.getMonth().toString();
-                const ano = d.getFullYear().toString();
+                // 2. Filtro de Data (Inteligente: Caixa vs Competência)
+                // Se for FATURADO, usa a data que virou faturado. Se não, usa a data de criação.
+                let dataRef = null;
+
+                if (st === 'faturado') {
+                    // Tenta usar a data de faturamento. Se for antigo e não tiver, usa a criação como fallback.
+                    if (orc.dataFaturamento) {
+                        dataRef = orc.dataFaturamento.toDate ? orc.dataFaturamento.toDate() : new Date(orc.dataFaturamento);
+                    } else if (orc.createdAt) {
+                        dataRef = orc.createdAt.toDate ? orc.createdAt.toDate() : new Date(orc.createdAt);
+                    }
+                } else {
+                    // Outros status: usa data de criação
+                    if (orc.createdAt) {
+                        dataRef = orc.createdAt.toDate ? orc.createdAt.toDate() : new Date(orc.createdAt);
+                    }
+                }
+
+                if (!dataRef) return true; // Segurança
+
+                const mes = dataRef.getMonth().toString();
+                const ano = dataRef.getFullYear().toString();
 
                 if (mesFiltro !== 'todos' && mes !== mesFiltro) return false;
                 if (anoFiltro !== 'todos' && ano !== anoFiltro) return false;
@@ -2092,45 +2110,39 @@ window.renderOrcamentosList = (isFullList) => {
             const codigoCliente = cliente?.numeroCadastro || 'SEM-COD';
             const codigoOrcamento = `${codigoCliente}-${numeroSeq}/${anoFull}`;
             const total = (Number(orc.total)||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            
+            // Data visual: Se for faturado, mostra a data de pgto para facilitar conferência?
+            // Por padrão mantemos a de criação no visual, mas o filtro obedece a de pagamento.
             const dateStr = date.toLocaleDateString('pt-BR');
             
             let statusValue = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
             if (!['pendente','aprovado','concluido','faturado'].includes(statusValue)) statusValue = 'pendente';
 
-            // --- LÓGICA DE CORES (DEFINIÇÃO VISUAL) ---
+            // Cores
             let statusColorClass = '';
             let statusLabel = statusValue.toUpperCase();
             let borderClass = '';
 
-            // --- NOVA PALETA DE CORES (MAIS CONTRASTE) ---
             switch(statusValue) {
                 case 'aprovado':
-                    // Verde (Sinal Verde - Início)
                     statusColorClass = 'bg-green-100 text-green-800 border border-green-200';
                     statusLabel = '✅ APROVADO';
                     break;
                 case 'concluido':
-                    // Azul (Frio - Finalizado tecnicamente)
                     statusColorClass = 'bg-blue-100 text-blue-800 border border-blue-200';
                     statusLabel = '🏁 CONCLUÍDO';
                     break;
                 case 'faturado':
-                    // Laranja/Dourado (Destaque - Dinheiro no Caixa)
-                    // Mudamos de Roxo para Laranja para não confundir com o Azul
                     statusColorClass = 'bg-orange-100 text-orange-800 border border-orange-200';
                     statusLabel = '💲 FATURADO';
                     break;
-                default: // pendente
-                    // Amarelo (Alerta - Aguardando)
+                default: 
                     statusColorClass = 'bg-yellow-50 text-yellow-800 border border-yellow-200';
                     statusLabel = '⏳ PENDENTE';
             }
 
-            // --- RENDERIZAÇÃO LISTA COMPLETA (COM DROPDOWN) ---
             if (isFullList) {
                 const isChecked = appState.orcamentosParaExcluir.has(orc.id);
-                
-                // No modo completo, aplicamos a cor ao redor do select para dar destaque
                 return `
                 <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-4 border hover:shadow-md transition-shadow ${borderClass}">
                     <div class="flex items-start gap-3 flex-1 w-full">
@@ -2147,7 +2159,6 @@ window.renderOrcamentosList = (isFullList) => {
                             </div>
                         </label>
                     </div>
-
                     <div class="flex flex-row sm:flex-col items-center sm:items-end gap-3 w-full sm:w-auto justify-between sm:justify-end">
                         <div class="flex flex-col items-end">
                            <span class="text-[10px] font-bold text-gray-400 uppercase mb-1 hidden sm:block">STATUS</span>
@@ -2159,7 +2170,6 @@ window.renderOrcamentosList = (isFullList) => {
                               <option value="faturado" ${statusValue === 'faturado' ? 'selected' : ''}>💲 FATURADO</option>
                            </select>
                         </div>
-
                         <button onclick="editOrcamento('${orc.id}')" class="group flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all" title="Editar orçamento">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -2169,7 +2179,7 @@ window.renderOrcamentosList = (isFullList) => {
                 </div>`;
             }
 
-            // --- RENDERIZAÇÃO TELA INICIAL (SÓ LABEL COLORIDA) ---
+            // Renderização simplificada da Home
             return `
             <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center w-full border hover:border-blue-200 transition-colors ${borderClass}">
                 <div class="flex-grow mr-2 min-w-0">
