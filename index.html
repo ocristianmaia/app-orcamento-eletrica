@@ -1405,49 +1405,56 @@ document.getElementById('form-cliente').addEventListener('submit', async (e) => 
 }); 
 // --- FIM DO BLOCO: CADASTRO DE NOVO CLIENTE ---
     
-    document.getElementById('form-edit-cliente').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!userId) return alert('Faça login novamente.');
+    // --- INICIO: SALVAR AS ALTERAÇÕES DO CLIENTE (EDITAR) ---
+document.getElementById('form-edit-cliente').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  if (!userId) return alert('Faça login novamente.');
 
-      const clienteId = getVal('edit-cliente-id');
-      if (!clienteId) return alert('Erro: ID do cliente não encontrado.');
+  const clienteId = document.getElementById('edit-cliente-id').value;
+  if (!clienteId) return alert('Erro: ID do cliente não encontrado.');
 
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.disabled = true; btn.textContent='Salvando...';
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; 
+  btn.textContent = 'Salvando...';
 
-      try {
-        const data = {
-          nome: getVal('edit-cliente-nome'),
-          numeroCadastro: getVal('edit-cliente-numerocadastro'),
-          telefone: getVal('edit-cliente-telefone').replace(/\D/g, ''),
-          documento: getVal('edit-cliente-documento').replace(/\D/g, ''),
-          
-          // NOVO: Campos de endereço
-          cep: getVal('edit-cliente-cep').replace(/\D/g, ''),
-          numero: getVal('edit-cliente-numero'),
-          logradouro: getVal('edit-cliente-logradouro'),
-          bairro: getVal('edit-cliente-bairro'),
-          cidade: getVal('edit-cliente-cidade'),
-          uf: getVal('edit-cliente-uf'),
-        };
+  try {
+    // Monta o objeto com os dados corrigidos
+    const data = {
+      nome: document.getElementById('edit-cliente-nome').value,
+      numeroCadastro: document.getElementById('edit-cliente-numerocadastro').value,
+      
+      // Limpa formatação (remove parenteses, traços, pontos) antes de salvar
+      telefone: document.getElementById('edit-cliente-telefone').value.replace(/\D/g, ''),
+      documento: document.getElementById('edit-cliente-documento').value.replace(/\D/g, ''),
+      cep: document.getElementById('edit-cliente-cep').value.replace(/\D/g, ''),
+      
+      // Endereço
+      numero: document.getElementById('edit-cliente-numero').value,
+      logradouro: document.getElementById('edit-cliente-logradouro').value,
+      bairro: document.getElementById('edit-cliente-bairro').value,
+      cidade: document.getElementById('edit-cliente-cidade').value,
+      uf: document.getElementById('edit-cliente-uf').value,
+    };
 
-        const originalCliente = appState.clientes.find(c => c.id === clienteId);
-        
-        // Remove 'endereco' antigo
-        delete data.endereco;
+    // Remove campo antigo para limpar o banco
+    delete data.endereco;
 
-        await setDoc(doc(db, `users/${userId}/clientes/${clienteId}`), data);
+    // Atualiza no Firebase
+    await setDoc(doc(db, `users/${userId}/clientes/${clienteId}`), data);
 
-        alert('Cliente atualizado com sucesso!');
-        closeEditClienteModal();
-      } catch(e) {
-        console.error(e); 
-        alert('Erro ao atualizar cliente.'); 
-      } finally { 
-        btn.disabled=false; 
-        btn.textContent='Salvar Alterações'; 
-      }
-    });
+    alert('Cliente atualizado com sucesso!');
+    closeEditClienteModal();
+
+  } catch(e) {
+    console.error(e); 
+    alert('Erro ao atualizar cliente.'); 
+  } finally { 
+    btn.disabled = false; 
+    btn.textContent = 'Salvar Alterações'; 
+  }
+
+});
     
     // NOVO: Helper para formatar endereço completo
     function formatarEnderecoCompleto(cliente) {
@@ -1545,41 +1552,52 @@ document.getElementById('form-cliente').addEventListener('submit', async (e) => 
       if (confirm('Excluir este cliente?')) { await deleteDoc(doc(db, `users/${userId}/clientes/${id}`)); }
     };
 
-    window.openEditClienteModal = (id) => {
-      try {
-        const cliente = appState.clientes.find(c => c.id === id);
-        if (!cliente) throw new Error('Cliente não encontrado no appState.');
+    // --- INICIO: FUNÇÃO PARA ABRIR O MODAL DE EDIÇÃO ---
+window.openEditClienteModal = (id) => {
+  try {
+    // Busca o cliente na lista carregada
+    const cliente = appState.clientes.find(c => c.id === id);
+    if (!cliente) throw new Error('Cliente não encontrado.');
 
-        const modalEl = document.getElementById('edit-cliente-modal');
-        if (!modalEl) throw new Error("Elemento 'edit-cliente-modal' não foi encontrado!");
-
-        // Helper para preencher
-        const setVal = (elId, valor, formatFunc = null) => {
-            const el = document.getElementById(elId);
-            if (el) el.value = formatFunc ? formatFunc(valor || '') : (valor || '');
-        };
-
-        setVal('edit-cliente-id', cliente.id);
-        setVal('edit-cliente-nome', cliente.nome);
-        setVal('edit-cliente-numerocadastro', cliente.numeroCadastro);
-        setVal('edit-cliente-telefone', cliente.telefone, formatarTelefone);
-        setVal('edit-cliente-documento', cliente.documento, formatarCPFCNPJ);
-        
-        // NOVO: Preenche campos de endereço
-        setVal('edit-cliente-cep', cliente.cep, formatarCEP);
-        setVal('edit-cliente-numero', cliente.numero);
-        setVal('edit-cliente-logradouro', cliente.logradouro);
-        setVal('edit-cliente-bairro', cliente.bairro);
-        setVal('edit-cliente-cidade', cliente.cidade);
-        setVal('edit-cliente-uf', cliente.uf);
-        
-        modalEl.classList.add('active');
-
-      } catch (e) {
-        console.error("[ERRO CRÍTICO] Falha ao abrir o modal de edição:", e.message);
-        alert("Ocorreu um erro ao tentar abrir a edição. Verifique o console (F12).");
-      }
+    const modalEl = document.getElementById('edit-cliente-modal');
+    
+    // Funçãozinha auxiliar para preencher os campos sem dar erro se estiver vazio
+    const setVal = (elId, valor) => {
+        const el = document.getElementById(elId);
+        if (el) el.value = valor || '';
     };
+
+    // Preenche o ID oculto (chave do banco)
+    setVal('edit-cliente-id', cliente.id);
+    
+    // === AQUI ESTAVA O PROBLEMA ANTES ===
+    // Agora garantimos: Nome vai no campo Nome, ID vai no campo ID
+    setVal('edit-cliente-nome', cliente.nome); 
+    setVal('edit-cliente-numerocadastro', cliente.numeroCadastro); 
+    // ====================================
+
+    // Preenche o restante formatado
+    setVal('edit-cliente-telefone', formatarTelefone(cliente.telefone));
+    setVal('edit-cliente-documento', formatarCPFCNPJ(cliente.documento));
+    
+    // Endereço
+    setVal('edit-cliente-cep', formatarCEP(cliente.cep));
+    setVal('edit-cliente-numero', cliente.numero);
+    setVal('edit-cliente-logradouro', cliente.logradouro);
+    setVal('edit-cliente-bairro', cliente.bairro);
+    setVal('edit-cliente-cidade', cliente.cidade);
+    setVal('edit-cliente-uf', cliente.uf);
+    
+    // Mostra o modal na tela
+    modalEl.classList.add('active');
+
+  } catch (e) { 
+    console.error("Erro modal:", e); 
+    alert("Erro ao abrir edição."); 
+  }
+
+};
+// --- FIM: FUNÇÃO ABRIR MODAL ---
 
     window.closeEditClienteModal = () => {
       document.getElementById('edit-cliente-modal').classList.remove('active');
