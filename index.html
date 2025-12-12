@@ -1341,17 +1341,26 @@ function getVal(id) {
     document.getElementById('form-cliente').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login novamente.');
+      
+      // VALIDAÇÃO: Garante que o nome existe
+      const nomeInput = getVal('cliente-nome');
+      if (!nomeInput || nomeInput.trim() === "") {
+          return alert("Por favor, preencha o Nome do Cliente.");
+      }
+
       const btn = e.target.querySelector('button[type="submit"]');
       btn.disabled = true; btn.textContent='Salvando...';
       
       try {
+        const novoID = gerarNovoNumeroCliente(); // Usa a nova função
+        
         const data = {
-            nome: getVal('cliente-nome'),
+            nome: nomeInput.trim().toUpperCase(), // Força Maiúsculo para padronizar
             telefone: getVal('cliente-telefone').replace(/\D/g, ''),
             documento: getVal('cliente-documento').replace(/\D/g, ''),
-            numeroCadastro: gerarNovoNumeroCliente(),
+            numeroCadastro: novoID, // Garante o ID
             
-            // NOVO: Campos de endereço
+            // Campos de endereço
             cep: getVal('cliente-cep').replace(/\D/g, ''),
             numero: getVal('cliente-numero'),
             logradouro: getVal('cliente-logradouro'),
@@ -1360,8 +1369,7 @@ function getVal(id) {
             uf: getVal('cliente-uf'),
         };
         
-        // Remove 'endereco' antigo se existir
-        delete data.endereco;
+        delete data.endereco; // Limpeza legado
         
         await addDoc(collection(db, `users/${userId}/clientes`), data);
         e.target.reset();
@@ -1371,6 +1379,8 @@ function getVal(id) {
         document.getElementById('cliente-bairro').value = '';
         document.getElementById('cliente-cidade').value = '';
         document.getElementById('cliente-uf').value = '';
+
+        alert(`Cliente ${data.nome} cadastrado com sucesso!`);
 
       } catch(e) { console.error(e); alert('Erro ao salvar cliente.'); }
       finally { btn.disabled=false; btn.textContent='Salvar Cliente'; }
@@ -1438,60 +1448,65 @@ function getVal(id) {
         return `${rua}, ${num} - ${bairro} - ${cidade}/${uf}`;
     }
     
-    function renderClientesList() {
+   function renderClientesList() {
       const el = document.getElementById('clientes-list');
       if (!appState.clientes.length) { el.innerHTML = '<p class="text-gray-500 text-center py-4">Nenhum cliente cadastrado.</p>'; return; }
       
-      el.innerHTML = appState.clientes.map(c => {
+      // Ordena por nome
+      const clientesOrdenados = [...appState.clientes].sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+
+      el.innerHTML = clientesOrdenados.map(c => {
         const enderecoFormatado = formatarEnderecoCompleto(c);
         const { label: docLabel, valor: docValor } = getLabelEValorDoc(c.documento);
         
-        // Lógica para pegar "Nome + Sobrenome" (Ex: "João da Silva" -> "João Silva")
-        const nomes = c.nome.trim().split(/\s+/);
-        const nomeCurto = nomes.length > 1 
-            ? `${nomes[0]} ${nomes[nomes.length - 1]}` 
-            : nomes[0];
+        // Garante que o nome não quebre o layout
+        const nomeExibicao = c.nome || "Sem Nome";
+        const idExibicao = c.numeroCadastro || "Sem ID";
 
         return `
-        <div class="sm:hidden bg-white border rounded-lg mb-2 shadow-sm transition-all overflow-hidden">
+        <div class="sm:hidden bg-white border rounded-lg mb-3 shadow-sm transition-all overflow-hidden">
             <div class="flex items-center justify-between p-3">
                 
                 <div class="flex-grow min-w-0 mr-2"> 
                     <details class="group w-full">
                         <summary class="list-none cursor-pointer focus:outline-none flex flex-col">
                             
-                            <span class="font-bold text-gray-800 text-sm truncate leading-tight">
-                                ${nomeCurto}
+                            <span class="font-bold text-gray-900 text-base leading-tight uppercase">
+                                ${nomeExibicao}
                             </span>
 
-                            <span class="text-[10px] font-normal text-gray-400 mt-1">
-                                ${c.numeroCadastro || 'ID'}
-                            </span>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                                    ${idExibicao}
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    ${formatarTelefone(c.telefone)}
+                                </span>
+                            </div>
 
                         </summary>
 
-                        <div class="mt-2 pt-2 border-t border-gray-100 text-xs text-gray-600 animate-fadeIn">
-                             <p class="font-bold text-gray-800 mb-1">${c.nome}</p> <p class="mb-1">📞 ${formatarTelefone(c.telefone)}</p>
+                        <div class="mt-2 pt-2 border-t border-gray-100 text-sm text-gray-600 animate-fadeIn">
                              <p class="mb-1">📍 ${enderecoFormatado}</p>
                              ${c.documento ? `<p>📄 ${docLabel} ${docValor}</p>` : ''}
                         </div>
                     </details>
                 </div>
 
-                <div class="flex items-center gap-4 flex-shrink-0 border-l pl-3 ml-1">
-                    <button onclick="openEditClienteModal('${c.id}')" class="text-gray-400 hover:text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
-                    <button onclick="shareCliente('${c.id}')" class="text-blue-500 hover:text-blue-700"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg></button>
-                    <button onclick="deleteCliente('${c.id}')" class="text-red-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                <div class="flex items-center gap-3 flex-shrink-0 border-l pl-3 ml-1">
+                    <button onclick="openEditClienteModal('${c.id}')" class="text-gray-400 hover:text-blue-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
+                    <button onclick="shareCliente('${c.id}')" class="text-blue-500 hover:text-blue-700 p-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg></button>
+                    <button onclick="deleteCliente('${c.id}')" class="text-red-400 hover:text-red-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
 
             </div>
         </div>
 
-        <div class="hidden sm:flex justify-between items-start p-3 border rounded-md hover:bg-gray-50 transition-colors mb-2">
+        <div class="hidden sm:flex justify-between items-start p-3 border rounded-md hover:bg-gray-50 transition-colors mb-2 bg-white shadow-sm">
           <div class="flex-grow cursor-pointer pt-1" onclick="openEditClienteModal('${c.id}')">
-            <p class="font-bold text-gray-800 text-base flex items-center gap-2">
-                ${c.nome} 
-                <span class="text-[10px] font-normal text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">${c.numeroCadastro||''}</span>
+            <p class="font-bold text-gray-800 text-base flex items-center gap-2 uppercase">
+                ${nomeExibicao} 
+                <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">${idExibicao}</span>
             </p>
             <p class="text-sm text-gray-600 mt-1">📞 ${formatarTelefone(c.telefone)}</p>
             <p class="text-sm text-gray-500 mt-1">📍 ${enderecoFormatado}</p>
@@ -3388,50 +3403,32 @@ function updateOrcamentoPreview() {
  * Gera um novo ID de cliente no formato CL[NNN][MM][YY]
  * @returns {string} - O novo ID do cliente
  */
+// Função Corrigida e Blindada para Gerar ID
 function gerarNovoNumeroCliente() {
-    // 1. Pega o próximo número sequencial (NNN)
-    // Filtra IDs que começam com CL e têm o formato novo ou antigo
-    const clientesComID = appState.clientes
-        .map(c => c.numeroCadastro)
-        .filter(id => id && id.startsWith('CL'));
-
-    let maxSeq = 0;
-    
-    clientesComID.forEach(id => {
-        let seqNum = 0;
-        // Remove o 'CL'
-        const numPart = id.substring(2); 
-        
-        // Tenta identificar o formato novo (ex: 0011125)
-        if (numPart.length === 7) { // CL[NNN][MM][YY]
-            seqNum = parseInt(numPart.substring(0, 3), 10);
-        } 
-        // Tenta identificar o formato antigo (ex: 0001)
-        else if (numPart.length === 4) { // CL[NNNN]
-            seqNum = parseInt(numPart, 10);
-        }
-        // Tenta identificar IDs manuais antigos (ex: CL011125)
-        else if (numPart.length === 6) { // CL[NN][MM][YY]
-             seqNum = parseInt(numPart.substring(0, 2), 10);
-        }
-
-        if (!isNaN(seqNum) && seqNum > maxSeq) {
-            maxSeq = seqNum;
-        }
-    });
-
-    const proximoSeq = (maxSeq + 1).toString().padStart(3, '0'); // Garante 3 dígitos (NNN)
-
-    // 2. Pega a data atual (MMYY)
     const agora = new Date();
-    const mes = (agora.getMonth() + 1).toString().padStart(2, '0'); // MM
-    const ano = agora.getFullYear().toString().slice(-2); // YY
+    const mes = (agora.getMonth() + 1).toString().padStart(2, '0');
+    const ano = agora.getFullYear().toString().slice(-2);
 
-    // 3. Monta o ID
-    const novoID = `CL${proximoSeq}${mes}${ano}`;
+    // Tenta calcular o sequencial
+    let maxSeq = 0;
+    if (appState.clientes && appState.clientes.length > 0) {
+        appState.clientes.forEach(c => {
+            if (c.numeroCadastro && c.numeroCadastro.startsWith('CL')) {
+                // Tenta extrair apenas os números do meio (ex: CL0051225 -> 005)
+                const partes = c.numeroCadastro.replace('CL', '');
+                // Pega os primeiros 3 dígitos se for formato longo, ou tudo se for curto
+                const numStr = partes.length >= 3 ? partes.substring(0, 3) : partes;
+                const num = parseInt(numStr, 10);
+                if (!isNaN(num) && num > maxSeq) maxSeq = num;
+            }
+        });
+    }
+
+    // Incrementa
+    const proximoSeq = (maxSeq + 1).toString().padStart(3, '0');
     
-    console.log(`Gerado novo ID de Cliente: ${novoID} (Sequência: ${proximoSeq})`);
-    return novoID;
+    // Gera ID Final (Ex: CL0011225)
+    return `CL${proximoSeq}${mes}${ano}`;
 }
 // ==========================================================
 // FIM DO NOVO BLOCO
