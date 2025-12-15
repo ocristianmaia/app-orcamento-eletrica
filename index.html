@@ -3137,108 +3137,100 @@ function updateOrcamentoPreview() {
       }
     };
 
-  // --- FUNÇÃO DE PDF DEFINITIVA (CLONAGEM + CORREÇÃO DE RODAPÉ) ---
+  // --- FUNÇÃO DE PDF CORRIGIDA (SEM TELA BRANCA) ---
     window.shareOrViewPDF = async () => {
-      // Validação inicial
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
       
       const btnEnviar = document.querySelector('button[onclick="shareOrViewPDF()"]');
       const textoOriginal = btnEnviar ? btnEnviar.textContent : 'Enviar PDF';
       
       try {
-          // 1. Feedback visual para o usuário
           if(btnEnviar) {
               btnEnviar.disabled = true;
               btnEnviar.textContent = 'Gerando PDF... Aguarde';
           }
 
-          // 2. Salva automaticamente para garantir que os dados estejam frescos
+          // 1. Salva e Atualiza
           await saveOrcamento(false);
-          
-          // 3. Força atualização visual dos dados
           updateOrcamentoPreview();
 
-          // === O TRUQUE MÁGICO AQUI ===
-          // Em vez de usar o elemento original (que pode ter scroll), criamos um clone
+          // 2. Clona o elemento
           const sourceElement = document.getElementById('pdf-preview');
           const clone = sourceElement.cloneNode(true);
           
-          // Configura o clone para ser uma "folha de papel" perfeita no fundo do site
-          clone.style.width = '750px'; // Largura fixa A4
+          // === A CORREÇÃO DA BARBARIDADE AQUI ===
+          // Configura o clone para ficar EXATAMENTE atrás do site, mas na posição certa
+          clone.style.width = '750px'; 
           clone.style.padding = '20px';
           clone.style.background = 'white';
           
-          // Posiciona ele fora da tela (invisível para o usuário) mas DENTRO do site
           clone.style.position = 'absolute';
-          clone.style.left = '-9999px';
-          clone.style.top = '0';
-          clone.style.zIndex = '-1';
+          clone.style.left = '0px'; // Traz de volta para a tela
+          clone.style.top = '0px';  // Topo da tela
+          clone.style.zIndex = '-9999'; // Joga para trás de tudo (escondido)
           
-          // O SEGREDO DO RODAPÉ: Remove qualquer limite de altura ou barra de rolagem
+          // Garante que o conteúdo apareça todo
           clone.style.height = 'auto'; 
           clone.style.maxHeight = 'none';
-          clone.style.overflow = 'visible'; // Mostra tudo, não corta nada!
+          clone.style.overflow = 'visible'; 
 
-          // Adiciona o clone ao corpo do site para o navegador "desenhar" ele completo
           document.body.appendChild(clone);
 
-          // 4. Configuração Otimizada do Gerador
+          // 3. Configuração do PDF
           const nomeArquivo = `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
           
           const opt = {
             margin:       [10, 10, 10, 10],
             filename:     nomeArquivo,
-            image:        { type: 'jpeg', quality: 0.98 }, // Qualidade máxima
+            image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { 
-                scale: 2, // Melhora a nitidez das letras
+                scale: 2, 
                 useCORS: true, 
-                scrollY: 0, // Garante que o topo não seja cortado
+                scrollY: 0,
+                // Importante: Diz para o renderizador focar exatamente no clone
                 windowWidth: 800 
             },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak:    { mode: ['css', 'legacy'], avoid: '.no-break' } // Evita quebrar o rodapé no meio
+            pagebreak:    { mode: ['css', 'legacy'], avoid: '.no-break' }
           };
 
-          // Pequeno delay para o navegador respirar e renderizar o clone
-          await new Promise(resolve => setTimeout(resolve, 800));
+          // Delay vital para o navegador desenhar o clone
+          await new Promise(resolve => setTimeout(resolve, 500));
 
-          // 5. Gera o PDF usando o CLONE PERFEITO
+          // 4. Gera
           if (navigator.share && navigator.canShare && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
-              // Mobile: Gera Blob e Compartilha
               const pdfBlob = await html2pdf().set(opt).from(clone).output('blob');
               const file = new File([pdfBlob], nomeArquivo, { type: 'application/pdf' });
               
               if (navigator.canShare({ files: [file] })) {
                   await navigator.share({
                       title: `Orçamento`,
-                      text: `Olá! Segue o orçamento solicitado.`,
+                      text: `Olá! Segue o orçamento.`,
                       files: [file]
                   });
               } else {
                   html2pdf().set(opt).from(clone).save();
               }
           } else {
-              // PC: Baixa direto
               await html2pdf().set(opt).from(clone).save();
           }
 
-          // 6. Limpeza: Remove o clone da memória
+          // 5. Limpa a bagunça
           document.body.removeChild(clone);
 
       } catch (e) {
-        console.error("Erro ao gerar PDF:", e);
-        alert('Ocorreu um erro ao gerar o PDF. Tente novamente.');
-        // Se der erro, tenta remover o clone para não travar
-        const cloneRemanescente = document.querySelector('body > div[style*="left: -9999px"]');
-        if(cloneRemanescente) document.body.removeChild(cloneRemanescente);
+        console.error("Erro PDF:", e);
+        alert('Erro ao gerar o PDF. Tente novamente.');
+        // Limpeza de emergência
+        const lixo = document.querySelectorAll('body > div[style*="z-index: -9999"]');
+        lixo.forEach(el => el.remove());
       } finally {
-          // Restaura o botão
           if(btnEnviar) {
               btnEnviar.disabled = false;
               btnEnviar.textContent = textoOriginal;
           }
       }
-    };
+    };  
 
     window.sendWhatsAppText = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
