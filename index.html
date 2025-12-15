@@ -3137,62 +3137,106 @@ function updateOrcamentoPreview() {
       }
     };
 
-  window.shareOrViewPDF = async () => {
+  // --- FUNÇÃO DE PDF DEFINITIVA (CLONAGEM + CORREÇÃO DE RODAPÉ) ---
+    window.shareOrViewPDF = async () => {
+      // Validação inicial
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
       
-      // 1. Salva automaticamente antes de gerar
+      const btnEnviar = document.querySelector('button[onclick="shareOrViewPDF()"]');
+      const textoOriginal = btnEnviar ? btnEnviar.textContent : 'Enviar PDF';
+      
       try {
+          // 1. Feedback visual para o usuário
+          if(btnEnviar) {
+              btnEnviar.disabled = true;
+              btnEnviar.textContent = 'Gerando PDF... Aguarde';
+          }
+
+          // 2. Salva automaticamente para garantir que os dados estejam frescos
           await saveOrcamento(false);
-      } catch (error) {
-          return; 
-      }
+          
+          // 3. Força atualização visual dos dados
+          updateOrcamentoPreview();
 
-      // === CORREÇÃO DE TIMING ===
-      // Força uma atualização visual e espera 500ms para o navegador "respirar"
-      updateOrcamentoPreview();
-      await new Promise(resolve => setTimeout(resolve, 500)); 
-      // ==========================
-      
-      // 2. Cria o elemento temporário para o PDF
-      const element = document.createElement('div');
-      element.innerHTML = document.getElementById('pdf-preview').innerHTML;
-      
-      // Configuração segura de largura para A4
-      element.style.width = '670px'; 
-      element.style.padding = '10px';
-      element.style.fontSize = '11px'; 
-      element.style.fontFamily = 'Inter, sans-serif';
-      element.style.backgroundColor = '#ffffff';
-      
-      const opt = {
-        margin:       [10, 10, 10, 10], 
-        filename:     `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 4, useCORS: true, letterRendering: true, scrollY: 0 }, 
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        // Essa configuração protege o rodapé de ser cortado
-        pagebreak:    { mode: ['css', 'legacy'], avoid: '.no-break' } 
-      };
+          // === O TRUQUE MÁGICO AQUI ===
+          // Em vez de usar o elemento original (que pode ter scroll), criamos um clone
+          const sourceElement = document.getElementById('pdf-preview');
+          const clone = sourceElement.cloneNode(true);
+          
+          // Configura o clone para ser uma "folha de papel" perfeita no fundo do site
+          clone.style.width = '750px'; // Largura fixa A4
+          clone.style.padding = '20px';
+          clone.style.background = 'white';
+          
+          // Posiciona ele fora da tela (invisível para o usuário) mas DENTRO do site
+          clone.style.position = 'absolute';
+          clone.style.left = '-9999px';
+          clone.style.top = '0';
+          clone.style.zIndex = '-1';
+          
+          // O SEGREDO DO RODAPÉ: Remove qualquer limite de altura ou barra de rolagem
+          clone.style.height = 'auto'; 
+          clone.style.maxHeight = 'none';
+          clone.style.overflow = 'visible'; // Mostra tudo, não corta nada!
 
-      try {
-        if (navigator.share && navigator.canShare) {
-            const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
-            const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
-            
-            if (navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    title: `Orçamento - ${appState.currentOrcamento.cliente.nome}`,
-                    text: 'Segue o orçamento em anexo.',
-                    files: [file]
-                });
-                return; 
-            }
-        }
-        html2pdf().set(opt).from(element).save();
-        
+          // Adiciona o clone ao corpo do site para o navegador "desenhar" ele completo
+          document.body.appendChild(clone);
+
+          // 4. Configuração Otimizada do Gerador
+          const nomeArquivo = `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
+          
+          const opt = {
+            margin:       [10, 10, 10, 10],
+            filename:     nomeArquivo,
+            image:        { type: 'jpeg', quality: 0.98 }, // Qualidade máxima
+            html2canvas:  { 
+                scale: 2, // Melhora a nitidez das letras
+                useCORS: true, 
+                scrollY: 0, // Garante que o topo não seja cortado
+                windowWidth: 800 
+            },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak:    { mode: ['css', 'legacy'], avoid: '.no-break' } // Evita quebrar o rodapé no meio
+          };
+
+          // Pequeno delay para o navegador respirar e renderizar o clone
+          await new Promise(resolve => setTimeout(resolve, 800));
+
+          // 5. Gera o PDF usando o CLONE PERFEITO
+          if (navigator.share && navigator.canShare && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
+              // Mobile: Gera Blob e Compartilha
+              const pdfBlob = await html2pdf().set(opt).from(clone).output('blob');
+              const file = new File([pdfBlob], nomeArquivo, { type: 'application/pdf' });
+              
+              if (navigator.canShare({ files: [file] })) {
+                  await navigator.share({
+                      title: `Orçamento`,
+                      text: `Olá! Segue o orçamento solicitado.`,
+                      files: [file]
+                  });
+              } else {
+                  html2pdf().set(opt).from(clone).save();
+              }
+          } else {
+              // PC: Baixa direto
+              await html2pdf().set(opt).from(clone).save();
+          }
+
+          // 6. Limpeza: Remove o clone da memória
+          document.body.removeChild(clone);
+
       } catch (e) {
         console.error("Erro ao gerar PDF:", e);
-        alert('Erro ao gerar o PDF. Tente novamente.');
+        alert('Ocorreu um erro ao gerar o PDF. Tente novamente.');
+        // Se der erro, tenta remover o clone para não travar
+        const cloneRemanescente = document.querySelector('body > div[style*="left: -9999px"]');
+        if(cloneRemanescente) document.body.removeChild(cloneRemanescente);
+      } finally {
+          // Restaura o botão
+          if(btnEnviar) {
+              btnEnviar.disabled = false;
+              btnEnviar.textContent = textoOriginal;
+          }
       }
     };
 
