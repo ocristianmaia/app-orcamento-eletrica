@@ -3137,13 +3137,16 @@ function updateOrcamentoPreview() {
       }
     };
 
- // --- FUNÇÃO PDF "FORÇA BRUTA" (NA FRENTE DE TUDO) ---
+// --- FUNÇÃO DE PDF "TRAVA DE SEGURANÇA" (SÓ REMOVE AO TERMINAR) ---
     window.shareOrViewPDF = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
       
       const btnEnviar = document.querySelector('button[onclick="shareOrViewPDF()"]');
       const textoOriginal = btnEnviar ? btnEnviar.textContent : 'Enviar PDF';
       
+      // Variável para guardar o clone e remover depois
+      let cloneParaRemover = null;
+
       try {
           if(btnEnviar) {
               btnEnviar.disabled = true;
@@ -3154,35 +3157,32 @@ function updateOrcamentoPreview() {
           await saveOrcamento(false);
           updateOrcamentoPreview();
 
-          // 2. Prepara o terreno (rola a tela para o topo para evitar cortes)
+          // 2. Rola para o topo (ajuda o renderizador)
           window.scrollTo(0, 0);
 
-          // 3. Clona o elemento
+          // 3. Prepara o Clone
           const sourceElement = document.getElementById('pdf-preview');
           const clone = sourceElement.cloneNode(true);
+          cloneParaRemover = clone; // Guarda referência para remover depois
           
-          // === A MUDANÇA: JOGA NA CARA DO GOL (NA FRENTE) ===
-          clone.style.width = '790px'; // Largura A4 otimizada
+          // ESTILO "FIXED" - Garante que ele fique pregado na tela, impossível de ignorar
+          clone.style.width = '794px'; // Largura exata A4 (em pixels a 96dpi)
           clone.style.padding = '20px';
-          clone.style.backgroundColor = '#ffffff'; // Fundo branco sólido
+          clone.style.backgroundColor = '#ffffff';
+          clone.style.color = '#000000'; // Força texto preto
           
-          // Posicionamento ABSOLUTO no topo da página
-          clone.style.position = 'absolute';
+          clone.style.position = 'fixed'; // FIXED em vez de Absolute (trava na tela)
           clone.style.left = '0';
           clone.style.top = '0';
-          
-          // Z-INDEX ALTO: Fica na frente do modal, do menu, de tudo.
           clone.style.zIndex = '999999'; 
           
-          // Garante altura total sem cortes
           clone.style.height = 'auto'; 
           clone.style.minHeight = '100vh';
           clone.style.overflow = 'visible'; 
 
-          // Adiciona ao corpo
           document.body.appendChild(clone);
 
-          // 4. Configuração do PDF
+          // 4. Configuração
           const nomeArquivo = `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
           
           const opt = {
@@ -3192,50 +3192,56 @@ function updateOrcamentoPreview() {
             html2canvas:  { 
                 scale: 2, 
                 useCORS: true, 
-                scrollY: 0, // Garante captura desde o topo
-                windowWidth: 800
+                scrollY: 0,
+                windowWidth: 800,
+                x: 0,
+                y: 0
             },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak:    { mode: ['css', 'legacy'], avoid: '.no-break' }
           };
 
-          // Delay essencial para o navegador renderizar o que acabou de aparecer
-          await new Promise(resolve => setTimeout(resolve, 800));
+          // Delay de respiro (necessário para o navegador pintar o Fixed)
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Aumentei para 1s por segurança
 
-          // 5. Gera o PDF
+          // 5. Gera o PDF e SÓ REMOVE DEPOIS
+          const worker = html2pdf().set(opt).from(clone);
+
           if (navigator.share && navigator.canShare && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
-              const pdfBlob = await html2pdf().set(opt).from(clone).output('blob');
-              const file = new File([pdfBlob], nomeArquivo, { type: 'application/pdf' });
-              
-              if (navigator.canShare({ files: [file] })) {
-                  await navigator.share({
-                      title: `Orçamento`,
-                      text: `Segue o orçamento em anexo.`,
-                      files: [file]
-                  });
-              } else {
-                  html2pdf().set(opt).from(clone).save();
-              }
+              // Mobile
+              await worker.output('blob').then(async (pdfBlob) => {
+                  const file = new File([pdfBlob], nomeArquivo, { type: 'application/pdf' });
+                  if (navigator.canShare({ files: [file] })) {
+                      await navigator.share({
+                          title: `Orçamento`,
+                          text: `Segue o orçamento em anexo.`,
+                          files: [file]
+                      });
+                  } else {
+                      // Fallback se não der para compartilhar, salva
+                      worker.save(); 
+                  }
+              });
           } else {
-              await html2pdf().set(opt).from(clone).save();
+              // Desktop - O .save() é uma promessa, esperamos ela acabar
+              await worker.save();
           }
-
-          // 6. Remove o clone (A tela volta ao normal)
-          document.body.removeChild(clone);
 
       } catch (e) {
         console.error("Erro PDF:", e);
         alert('Erro ao gerar. Tente novamente.');
-        // Remove clone se der erro para não travar a tela branca
-        const lixo = document.querySelector('body > div[style*="z-index: 999999"]');
-        if(lixo) document.body.removeChild(lixo);
       } finally {
+          // 6. LIMPEZA SEGURA (Executa sempre, dando certo ou errado)
+          if (cloneParaRemover && document.body.contains(cloneParaRemover)) {
+              document.body.removeChild(cloneParaRemover);
+          }
+          
           if(btnEnviar) {
               btnEnviar.disabled = false;
               btnEnviar.textContent = textoOriginal;
           }
       }
-    };    
+    };   
 
     window.sendWhatsAppText = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
