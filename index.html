@@ -3137,52 +3137,51 @@ function updateOrcamentoPreview() {
       }
     };
 
-// --- FUNÇÃO DE PDF "TRAVA DE SEGURANÇA" (SÓ REMOVE AO TERMINAR) ---
+// --- FUNÇÃO DE PDF "OPERAÇÃO DE GUERRA" (MOVE O ORIGINAL) ---
     window.shareOrViewPDF = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
       
       const btnEnviar = document.querySelector('button[onclick="shareOrViewPDF()"]');
       const textoOriginal = btnEnviar ? btnEnviar.textContent : 'Enviar PDF';
       
-      // Variável para guardar o clone e remover depois
-      let cloneParaRemover = null;
+      // Referências para mover o elemento de lugar e devolver depois
+      const element = document.getElementById('pdf-preview');
+      const parentOriginal = element.parentNode;
+      const proximoElemento = element.nextSibling;
+      const estiloOriginal = element.getAttribute('style'); // Salva estilo original
 
       try {
           if(btnEnviar) {
               btnEnviar.disabled = true;
-              btnEnviar.textContent = 'Gerando...';
+              btnEnviar.textContent = 'Processando...';
           }
 
-          // 1. Garante dados salvos
+          // 1. Salva e Atualiza
           await saveOrcamento(false);
           updateOrcamentoPreview();
 
-          // 2. Rola para o topo (ajuda o renderizador)
+          // 2. MOVER O ELEMENTO ORIGINAL PARA O CORPO (SEM CLONES)
+          // Isso garante que estamos imprimindo O QUE EXISTE de verdade
+          document.body.appendChild(element);
+
+          // 3. Aplica estilo de "Folha A4" diretamente no elemento original
+          element.style.width = '794px'; 
+          element.style.padding = '20px';
+          element.style.backgroundColor = '#ffffff';
+          element.style.color = '#000000';
+          
+          // Posiciona fixo no topo, visível
+          element.style.position = 'fixed';
+          element.style.left = '0';
+          element.style.top = '0';
+          element.style.zIndex = '9999999'; // Acima de tudo
+          element.style.height = 'auto'; 
+          element.style.overflow = 'visible';
+          
+          // Rola para o topo para garantir captura
           window.scrollTo(0, 0);
 
-          // 3. Prepara o Clone
-          const sourceElement = document.getElementById('pdf-preview');
-          const clone = sourceElement.cloneNode(true);
-          cloneParaRemover = clone; // Guarda referência para remover depois
-          
-          // ESTILO "FIXED" - Garante que ele fique pregado na tela, impossível de ignorar
-          clone.style.width = '794px'; // Largura exata A4 (em pixels a 96dpi)
-          clone.style.padding = '20px';
-          clone.style.backgroundColor = '#ffffff';
-          clone.style.color = '#000000'; // Força texto preto
-          
-          clone.style.position = 'fixed'; // FIXED em vez de Absolute (trava na tela)
-          clone.style.left = '0';
-          clone.style.top = '0';
-          clone.style.zIndex = '999999'; 
-          
-          clone.style.height = 'auto'; 
-          clone.style.minHeight = '100vh';
-          clone.style.overflow = 'visible'; 
-
-          document.body.appendChild(clone);
-
-          // 4. Configuração
+          // 4. Configuração do PDF
           const nomeArquivo = `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
           
           const opt = {
@@ -3191,57 +3190,70 @@ function updateOrcamentoPreview() {
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { 
                 scale: 2, 
-                useCORS: true, 
+                useCORS: true, // Tenta carregar imagens externas
+                allowTaint: true, // Permite "sujar" o canvas se necessário
                 scrollY: 0,
-                windowWidth: 800,
-                x: 0,
-                y: 0
+                windowWidth: 800
             },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak:    { mode: ['css', 'legacy'], avoid: '.no-break' }
           };
 
-          // Delay de respiro (necessário para o navegador pintar o Fixed)
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Aumentei para 1s por segurança
+          // Delay visual (1.5s) para garantir renderização das fontes/imagens
+          await new Promise(resolve => setTimeout(resolve, 1500));
 
-          // 5. Gera o PDF e SÓ REMOVE DEPOIS
-          const worker = html2pdf().set(opt).from(clone);
+          // 5. Gera o PDF
+          const worker = html2pdf().set(opt).from(element);
 
           if (navigator.share && navigator.canShare && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
               // Mobile
-              await worker.output('blob').then(async (pdfBlob) => {
+              await worker.output('blob').then((pdfBlob) => {
                   const file = new File([pdfBlob], nomeArquivo, { type: 'application/pdf' });
                   if (navigator.canShare({ files: [file] })) {
-                      await navigator.share({
+                      navigator.share({
                           title: `Orçamento`,
-                          text: `Segue o orçamento em anexo.`,
+                          text: `Segue anexo.`,
                           files: [file]
-                      });
+                      }).catch(err => console.log('Compartilhamento cancelado'));
                   } else {
-                      // Fallback se não der para compartilhar, salva
                       worker.save(); 
                   }
               });
           } else {
-              // Desktop - O .save() é uma promessa, esperamos ela acabar
+              // Desktop
               await worker.save();
           }
 
+          // Delay pequeno para garantir que o save iniciou antes de devolver o elemento
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
       } catch (e) {
         console.error("Erro PDF:", e);
-        alert('Erro ao gerar. Tente novamente.');
+        alert('Erro ao gerar. Se tiver Logomarca, tente remover e gerar novamente.');
       } finally {
-          // 6. LIMPEZA SEGURA (Executa sempre, dando certo ou errado)
-          if (cloneParaRemover && document.body.contains(cloneParaRemover)) {
-              document.body.removeChild(cloneParaRemover);
+          // 6. DEVOLVE O ELEMENTO PARA O MODAL (RESTAURAÇÃO)
+          if (parentOriginal) {
+              // Restaura estilo original (remove width fixa, position fixed, etc)
+              if (estiloOriginal) {
+                  element.setAttribute('style', estiloOriginal);
+              } else {
+                  element.removeAttribute('style');
+              }
+              
+              // Insere de volta no lugar certo
+              parentOriginal.insertBefore(element, proximoElemento);
+          } else {
+              // Fallback de emergência se perdeu o pai
+              document.body.appendChild(element); 
+              alert('Erro visual: Recarregue a página.');
           }
-          
+
           if(btnEnviar) {
               btnEnviar.disabled = false;
               btnEnviar.textContent = textoOriginal;
           }
       }
-    };   
+    }; 
 
     window.sendWhatsAppText = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
