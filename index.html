@@ -3137,76 +3137,83 @@ function updateOrcamentoPreview() {
       }
     };
 
-// --- FUNÇÃO DE PDF "OPERAÇÃO DE GUERRA" (MOVE O ORIGINAL) ---
+// --- FUNÇÃO PDF "NUCLEAR" (ISOLAMENTO TOTAL) ---
     window.shareOrViewPDF = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
       
       const btnEnviar = document.querySelector('button[onclick="shareOrViewPDF()"]');
       const textoOriginal = btnEnviar ? btnEnviar.textContent : 'Enviar PDF';
       
-      // Referências para mover o elemento de lugar e devolver depois
-      const element = document.getElementById('pdf-preview');
-      const parentOriginal = element.parentNode;
-      const proximoElemento = element.nextSibling;
-      const estiloOriginal = element.getAttribute('style'); // Salva estilo original
+      // Elementos principais para manipular
+      const appContainer = document.getElementById('app-view');
+      const modalContainer = document.getElementById('orcamento-modal');
+      const sourceElement = document.getElementById('pdf-preview');
+      let clone = null;
 
       try {
           if(btnEnviar) {
               btnEnviar.disabled = true;
-              btnEnviar.textContent = 'Processando...';
+              btnEnviar.textContent = 'Gerando...';
           }
 
-          // 1. Salva e Atualiza
+          // 1. Salva dados
           await saveOrcamento(false);
           updateOrcamentoPreview();
 
-          // 2. MOVER O ELEMENTO ORIGINAL PARA O CORPO (SEM CLONES)
-          // Isso garante que estamos imprimindo O QUE EXISTE de verdade
-          document.body.appendChild(element);
+          // 2. Clona o orçamento
+          clone = sourceElement.cloneNode(true);
+          
+          // Estiliza o clone para ser uma folha A4 perfeita
+          clone.style.width = '794px'; // Largura A4 pixel perfect (96dpi)
+          clone.style.minHeight = '1123px'; // Altura mínima A4
+          clone.style.padding = '20px';
+          clone.style.backgroundColor = '#ffffff';
+          clone.style.color = '#000000';
+          clone.style.margin = '0 auto'; // Centraliza
+          clone.style.position = 'relative'; // Fluxo normal
+          clone.style.overflow = 'visible';
+          clone.id = 'pdf-print-zone';
 
-          // 3. Aplica estilo de "Folha A4" diretamente no elemento original
-          element.style.width = '794px'; 
-          element.style.padding = '20px';
-          element.style.backgroundColor = '#ffffff';
-          element.style.color = '#000000';
-          
-          // Posiciona fixo no topo, visível
-          element.style.position = 'fixed';
-          element.style.left = '0';
-          element.style.top = '0';
-          element.style.zIndex = '9999999'; // Acima de tudo
-          element.style.height = 'auto'; 
-          element.style.overflow = 'visible';
-          
-          // Rola para o topo para garantir captura
+          // 3. O GRANDE TRUQUE: ESCONDE O SITE, MOSTRA SÓ O PDF
+          // Salva o display original para restaurar depois
+          const appDisplayOriginal = appContainer.style.display;
+          const modalDisplayOriginal = modalContainer.style.display;
+
+          appContainer.classList.add('hidden'); // Esconde o app
+          modalContainer.classList.remove('active'); // Esconde o modal visualmente (se usar classe)
+          modalContainer.style.display = 'none'; // Garante que sumiu
+
+          document.body.appendChild(clone);
+          document.body.style.backgroundColor = '#555'; // Fundo cinza para destacar a folha (visual)
+
+          // Rola para o topo para garantir que o html2canvas pegue o começo
           window.scrollTo(0, 0);
 
           // 4. Configuração do PDF
           const nomeArquivo = `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
           
           const opt = {
-            margin:       [10, 10, 10, 10],
+            margin:       0, // Margem zero porque o clone já tem padding
             filename:     nomeArquivo,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { 
                 scale: 2, 
-                useCORS: true, // Tenta carregar imagens externas
-                allowTaint: true, // Permite "sujar" o canvas se necessário
+                useCORS: true, 
                 scrollY: 0,
-                windowWidth: 800
+                scrollX: 0,
+                windowWidth: 800 // Força largura de desktop
             },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak:    { mode: ['css', 'legacy'], avoid: '.no-break' }
           };
 
-          // Delay visual (1.5s) para garantir renderização das fontes/imagens
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          // Delay para renderização (o usuário vai ver a folha na tela preta)
+          await new Promise(resolve => setTimeout(resolve, 1000));
 
           // 5. Gera o PDF
-          const worker = html2pdf().set(opt).from(element);
+          const worker = html2pdf().set(opt).from(clone);
 
           if (navigator.share && navigator.canShare && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
-              // Mobile
               await worker.output('blob').then((pdfBlob) => {
                   const file = new File([pdfBlob], nomeArquivo, { type: 'application/pdf' });
                   if (navigator.canShare({ files: [file] })) {
@@ -3214,46 +3221,41 @@ function updateOrcamentoPreview() {
                           title: `Orçamento`,
                           text: `Segue anexo.`,
                           files: [file]
-                      }).catch(err => console.log('Compartilhamento cancelado'));
+                      }).catch(e => console.log('Share cancelado'));
                   } else {
-                      worker.save(); 
+                      worker.save();
                   }
               });
           } else {
-              // Desktop
               await worker.save();
           }
 
-          // Delay pequeno para garantir que o save iniciou antes de devolver o elemento
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // 6. Restaura o Site (Só depois de terminar)
+          appContainer.classList.remove('hidden');
+          modalContainer.style.display = ''; // Remove o inline style 'none'
+          modalContainer.classList.add('active'); // Traz o modal de volta
+          document.body.style.backgroundColor = ''; // Restaura fundo do body
 
       } catch (e) {
         console.error("Erro PDF:", e);
-        alert('Erro ao gerar. Se tiver Logomarca, tente remover e gerar novamente.');
+        alert('Erro crítico ao gerar PDF.');
+        // Restaura em caso de erro
+        if(appContainer) appContainer.classList.remove('hidden');
+        if(modalContainer) {
+            modalContainer.style.display = '';
+            modalContainer.classList.add('active');
+        }
       } finally {
-          // 6. DEVOLVE O ELEMENTO PARA O MODAL (RESTAURAÇÃO)
-          if (parentOriginal) {
-              // Restaura estilo original (remove width fixa, position fixed, etc)
-              if (estiloOriginal) {
-                  element.setAttribute('style', estiloOriginal);
-              } else {
-                  element.removeAttribute('style');
-              }
-              
-              // Insere de volta no lugar certo
-              parentOriginal.insertBefore(element, proximoElemento);
-          } else {
-              // Fallback de emergência se perdeu o pai
-              document.body.appendChild(element); 
-              alert('Erro visual: Recarregue a página.');
+          // Remove o clone
+          if (clone && document.body.contains(clone)) {
+              document.body.removeChild(clone);
           }
-
           if(btnEnviar) {
               btnEnviar.disabled = false;
               btnEnviar.textContent = textoOriginal;
           }
       }
-    }; 
+    };
 
     window.sendWhatsAppText = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
