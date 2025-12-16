@@ -3137,7 +3137,7 @@ function updateOrcamentoPreview() {
       }
     };
 
-// --- FUNÇÃO PDF: ALINHAMENTO FORÇADO (CORREÇÃO DO CORTE) ---
+// --- VERSÃO FINAL: SEU DESIGN ORIGINAL + ALINHAMENTO CORRIGIDO ---
 window.shareOrViewPDF = async () => {
   if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
   
@@ -3148,120 +3148,81 @@ window.shareOrViewPDF = async () => {
   try {
       if(btnEnviar) {
           btnEnviar.disabled = true;
-          btnEnviar.textContent = 'Gerando...';
+          btnEnviar.textContent = 'Preparando Design...';
       }
 
-      // 1. DADOS
-      const orcamento = appState.currentOrcamento;
-      const cliente = orcamento.cliente;
-      const itens = orcamento.itens || [];
-      const total = orcamento.total || 0;
-      const dataHoje = new Date().toLocaleDateString('pt-BR');
+      // 1. GARANTE QUE OS DADOS ESTÃO ATUALIZADOS NA TELA
+      await saveOrcamento(false);
+      updateOrcamentoPreview(); // Isso desenha seu layout bonito (Logo, pontilhados, etc)
 
-      // 2. CONSTRÓI O HTML
-      const conteudoPDF = `
-        <div id="folha-a4" style="width: 794px; min-height: 1123px; background-color: white; color: black; font-family: Helvetica, Arial, sans-serif; padding: 40px; box-sizing: border-box; position: relative;">
-            
-            <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
-                <h1 style="margin: 0; font-size: 24px; text-transform: uppercase; color: #000;">Orçamento</h1>
-                <p style="margin: 5px 0 0; color: #444;">Data: ${dataHoje}</p>
-                <div style="margin-top: 10px; font-size: 14px;">
-                    <strong>Masch Manutenção Industrial</strong><br>
-                    Serviços Elétricos e Comandos
-                </div>
-            </div>
+      // 2. CLONA O SEU DESIGN ORIGINAL (Nada de HTML genérico)
+      const sourceElement = document.getElementById('pdf-preview');
+      const clone = sourceElement.cloneNode(true);
 
-            <div style="background-color: #f0f0f0; border: 1px solid #ccc; padding: 15px; margin-bottom: 20px;">
-                <h3 style="margin: 0 0 10px 0; font-size: 16px; border-bottom: 1px solid #999; padding-bottom: 5px;">Cliente</h3>
-                <p style="margin: 3px 0; font-size: 14px;"><strong>Nome:</strong> ${cliente.nome || ''}</p>
-                <p style="margin: 3px 0; font-size: 14px;"><strong>Telefone:</strong> ${cliente.telefone ? formatarTelefone(cliente.telefone) : ''}</p>
-                <p style="margin: 3px 0; font-size: 14px;"><strong>Endereço:</strong> ${formatarEnderecoCompleto(cliente)}</p>
-                <p style="margin: 3px 0; font-size: 14px;"><strong>Documento:</strong> ${cliente.documento || ''}</p>
-                 <p style="margin: 3px 0; font-size: 14px;"><strong>ID:</strong> ${cliente.numeroCadastro || ''}</p>
-            </div>
+      // 3. AJUSTA O CLONE PARA FICAR PERFEITO NA FOLHA A4
+      // Forçamos o visual de Desktop (largo) mesmo no celular
+      clone.style.width = '794px'; // Largura fixa A4
+      clone.style.minHeight = '1123px';
+      clone.style.padding = '20px';
+      clone.style.backgroundColor = 'white';
+      clone.style.margin = '0'; // Zera margens para não confundir o PDF
+      clone.style.position = 'relative';
+      clone.style.display = 'block'; // Garante que não fique oculto
 
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
-                <thead>
-                    <tr style="background-color: #333; color: white;">
-                        <th style="padding: 8px; border: 1px solid #000; text-align: left;">Descrição</th>
-                        <th style="padding: 8px; border: 1px solid #000; width: 50px; text-align: center;">Qtd</th>
-                        <th style="padding: 8px; border: 1px solid #000; width: 100px; text-align: right;">Unit.</th>
-                        <th style="padding: 8px; border: 1px solid #000; width: 100px; text-align: right;">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${itens.map(item => `
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ccc; color: black;">${item.descricao || '-'}</td>
-                        <td style="padding: 8px; border: 1px solid #ccc; text-align: center; color: black;">${item.quantidade}</td>
-                        <td style="padding: 8px; border: 1px solid #ccc; text-align: right; color: black;">${parseFloat(item.valorUnitario || 0).toFixed(2)}</td>
-                        <td style="padding: 8px; border: 1px solid #ccc; text-align: right; font-weight: bold; color: black;">${parseFloat(item.total || 0).toFixed(2)}</td>
-                    </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+      // Remove classes que podem esconder coisas no mobile (Tailwind)
+      clone.classList.remove('hidden', 'sm:hidden', 'md:hidden');
 
-            <div style="text-align: right; font-size: 20px; font-weight: bold; margin-top: 20px; color: #000;">
-                Total Geral: R$ ${parseFloat(total).toFixed(2)}
-            </div>
-            
-            <div style="margin-top: 50px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #ccc; padding-top: 10px;">
-                Documento gerado eletronicamente por Masch Manutenção Industrial
-            </div>
-        </div>
-      `;
-
-      // 3. CRIA O OVERLAY
+      // 4. CRIA O OVERLAY DE CAPTURA (Igual ao que funcionou antes)
       const overlay = document.createElement('div');
-      overlay.id = 'pdf-preview-overlay';
-      // Configuração Flexbox para centralizar VISUALMENTE para você ver
-      overlay.style.display = 'flex';
-      overlay.style.justifyContent = 'center'; // Centraliza horizontal
-      overlay.style.alignItems = 'flex-start'; // Alinha no topo
+      overlay.id = 'pdf-capture-zone';
       
+      // Configurações para garantir que o clone apareça inteiro
       overlay.style.position = 'fixed';
       overlay.style.top = '0';
       overlay.style.left = '0';
-      overlay.style.width = '100vw';
+      overlay.style.width = '100vw'; // Ocupa a tela toda
       overlay.style.height = '100vh';
-      overlay.style.backgroundColor = 'rgba(50, 50, 50, 0.95)'; // Fundo escuro
+      overlay.style.backgroundColor = '#333'; // Fundo escuro para contraste
       overlay.style.zIndex = '99999999';
-      overlay.style.overflow = 'auto';
-      overlay.style.padding = '20px';
-      
-      overlay.innerHTML = conteudoPDF;
+      overlay.style.overflow = 'auto'; // Permite rolar se precisar
+      overlay.style.margin = '0';
+      overlay.style.padding = '0';
+
+      // IMPORTANTE: Força o conteúdo interno a ser largo, para o celular não espremer o texto
+      overlay.style.minWidth = '800px'; 
+
+      // Coloca o clone dentro do overlay
+      overlay.appendChild(clone);
       document.body.appendChild(overlay);
       overlayParaRemover = overlay;
 
-      // 4. PREPARAÇÃO PARA O CLICK (A MÁGICA)
-      const elementoAlvo = document.getElementById('folha-a4');
-      
-      // Remove margens que podem confundir o gerador
-      elementoAlvo.style.margin = '0'; 
-      
-      const nomeArquivo = `orcamento-${(cliente.nome || 'cliente').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
+      // 5. ROLA PARA O CANTO SUPERIOR ESQUERDO (A MÁGICA DO ALINHAMENTO)
+      window.scrollTo(0, 0);
+      if (overlay.scrollTo) overlay.scrollTo(0, 0);
+
+      const nomeArquivo = `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
       
       const opt = {
-        margin:       0,
+        margin:       0, // Margem zero porque seu design já tem padding
         filename:     nomeArquivo,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { 
-            scale: 2, 
-            useCORS: true, 
+            scale: 2, // Resolução boa
+            useCORS: true, // Permite carregar sua Logo
             scrollY: 0,
             scrollX: 0,
-            // Força a captura começar no pixel 0,0 do elemento
-            x: 0,
+            x: 0, // Começa do pixel 0
             y: 0,
-            windowWidth: 800 
+            windowWidth: 1200 // Diz pro sistema: "Finja que sou um PC grande" (Arruma as colunas)
         },
         jsPDF:        { unit: 'px', format: [794, 1123], orientation: 'portrait' }
       };
 
-      // Delay visual de 1.5s (para você conferir se a folha apareceu)
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Delay visual para carregar a Logo e as Fontes
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      const worker = html2pdf().set(opt).from(elementoAlvo);
+      // 6. GERA O PDF
+      const worker = html2pdf().set(opt).from(clone);
 
       if (navigator.share && navigator.canShare && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
           await worker.output('blob').then((pdfBlob) => {
@@ -3278,8 +3239,9 @@ window.shareOrViewPDF = async () => {
 
   } catch (e) {
     console.error("Erro PDF:", e);
-    alert('Erro ao gerar PDF.');
+    alert('Erro ao gerar PDF. Tente novamente.');
   } finally {
+      // 7. LIMPEZA
       if (overlayParaRemover && document.body.contains(overlayParaRemover)) {
           document.body.removeChild(overlayParaRemover);
       }
