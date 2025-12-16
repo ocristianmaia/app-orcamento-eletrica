@@ -3137,86 +3137,74 @@ function updateOrcamentoPreview() {
       }
     };
 
-// --- FUNÇÃO PDF: ALTA DEFINIÇÃO + ALINHAMENTO DESKTOP ---
+// --- ÚLTIMA TENTATIVA: MODO HD FORÇADO ---
     window.shareOrViewPDF = async () => {
-      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
       
       const btnEnviar = document.querySelector('button[onclick="shareOrViewPDF()"]');
       const textoOriginal = btnEnviar ? btnEnviar.textContent : 'Enviar PDF';
       
-      // Referência do conteúdo original
-      const sourceElement = document.getElementById('pdf-preview');
       let clone = null;
 
       try {
           if(btnEnviar) {
               btnEnviar.disabled = true;
-              btnEnviar.textContent = 'Renderizando HD...';
+              btnEnviar.textContent = 'Gerando HD...';
           }
 
-          // 1. Salva e Atualiza
+          // 1. Salva dados atuais
           await saveOrcamento(false);
           updateOrcamentoPreview();
 
-          // 2. CRIA O CLONE "PERFEITO"
+          // 2. Clona o elemento original
+          const sourceElement = document.getElementById('pdf-preview');
           clone = sourceElement.cloneNode(true);
-          
-          // --- CONFIGURAÇÃO VISUAL DA FOLHA ---
-          // Define largura fixa de A4 (794px = 210mm a 96dpi)
-          // Isso impede que o texto fique "dançando" na tela
-          clone.style.width = '794px'; 
-          clone.style.minHeight = '1123px'; // Altura mínima A4
-          clone.style.padding = '40px'; // Margem interna confortável
+
+          // 3. PREPARA O PALCO (Modo Desktop Artificial)
+          // Define estilos fixos para evitar que o CSS do celular interfira
+          clone.style.width = '800px'; // Largura fixa (padrão A4 web)
+          clone.style.minHeight = '1130px';
+          clone.style.padding = '20px';
           clone.style.backgroundColor = '#ffffff';
           clone.style.color = '#000000';
+          clone.style.fontSize = '12px'; // Reduz um pouco a fonte para caber melhor
           
-          // Força fontes legíveis e pretas
-          clone.style.fontFamily = 'Arial, sans-serif'; 
-          clone.style.fontSize = '14px'; // Tamanho base bom para leitura
-          clone.style.lineHeight = '1.5';
-
-          // --- TRUQUE DE ALINHAMENTO ---
-          // Força o clone a se comportar como Desktop, não Mobile
-          // Removemos classes que possam estar forçando colunas empilhadas (ex: flex-col)
-          // Mas como usamos Tailwind, o "windowWidth" lá embaixo vai resolver 90% disso.
-
-          // Posiciona o clone FLUTUANDO SOBRE A TELA (Z-Index Máximo)
+          // Posiciona o clone na frente de tudo (para renderizar corretamente)
           clone.style.position = 'fixed';
-          clone.style.left = '50%';
+          clone.style.left = '0';
           clone.style.top = '0';
-          // Centraliza ele na tela para o "Print" pegar direito
-          clone.style.transform = 'translateX(-50%)'; 
-          clone.style.zIndex = '9999999'; 
-          clone.style.boxShadow = '0 0 0 1000px rgba(0,0,0,0.8)'; // Escurece o fundo para focar
-
+          clone.style.zIndex = '999999';
+          clone.style.margin = '0';
+          
+          // Adiciona ao corpo
           document.body.appendChild(clone);
-
-          // Rola para o topo
+          
+          // Rola para o topo (essencial para capturar o cabeçalho)
           window.scrollTo(0, 0);
 
-          // 3. CONFIGURAÇÃO DO MOTOR GRÁFICO (A MÁGICA)
+          // 4. CONFIGURAÇÃO TURBINADA
           const nomeArquivo = `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
           
           const opt = {
-            margin:       0, // Margem zero (já demos padding no clone)
+            margin:       0, 
             filename:     nomeArquivo,
-            image:        { type: 'jpeg', quality: 1.0 }, // Qualidade MÁXIMA (100%)
+            image:        { type: 'jpeg', quality: 1.0 }, // Qualidade Máxima
             html2canvas:  { 
-                scale: 3, // Aumenta a resolução (3x mais nítido que o padrão)
-                useCORS: true, // Permite baixar imagens externas (Logos)
+                scale: 4, // 4x mais definição (Resolve o borrão)
+                useCORS: true, 
                 scrollY: 0,
-                // --- O SEGREDO DO ALINHAMENTO ---
-                windowWidth: 1200, // Diz pro sistema: "Finja que a tela tem 1200px de largura"
-                // Isso obriga o layout a ficar lado-a-lado (Desktop) e não empilhado (Mobile)
+                // O SEGREDO DO ALINHAMENTO:
+                windowWidth: 1600, // Diz: "Eu sou uma tela gigante de 1600px"
+                width: 800 // Captura exatamente 800px de largura
             },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak:    { mode: ['css', 'legacy'], avoid: '.no-break' }
+            jsPDF:        { unit: 'px', format: [800, 1150], orientation: 'portrait' }, // Formato customizado para casar com o HTML
+            pagebreak:    { mode: ['css', 'legacy'] }
           };
 
-          // Pequeno delay para carregar imagens/logos
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          // Delay de 2 segundos para garantir que o layout desktop se acomode
+          await new Promise(resolve => setTimeout(resolve, 2000));
 
-          // 4. GERAÇÃO
+          // 5. Gera o PDF
           const worker = html2pdf().set(opt).from(clone);
 
           if (navigator.share && navigator.canShare && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
@@ -3225,9 +3213,8 @@ function updateOrcamentoPreview() {
                   if (navigator.canShare({ files: [file] })) {
                       navigator.share({
                           title: `Orçamento`,
-                          text: `Segue orçamento em PDF.`,
                           files: [file]
-                      }).catch(e => console.log('Share cancelado'));
+                      }).catch(e => console.log('Cancelado'));
                   } else {
                       worker.save();
                   }
@@ -3238,9 +3225,9 @@ function updateOrcamentoPreview() {
 
       } catch (e) {
         console.error("Erro PDF:", e);
-        alert('Erro ao gerar PDF. Verifique a conexão.');
+        alert('Erro ao gerar PDF.');
       } finally {
-          // 5. LIMPEZA
+          // Remove o clone
           if (clone && document.body.contains(clone)) {
               document.body.removeChild(clone);
           }
