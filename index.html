@@ -3137,64 +3137,131 @@ function updateOrcamentoPreview() {
       }
     };
 
-  window.shareOrViewPDF = async () => {
-      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
-      
-      // 1. Salva automaticamente antes de gerar
-      try {
-          await saveOrcamento(false);
-      } catch (error) {
-          return; 
+ // --- VERSÃO FINAL: PDF WIDESCREEN (FORÇA MODO DESKTOP) ---
+window.shareOrViewPDF = async () => {
+  if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
+  
+  const btnEnviar = document.querySelector('button[onclick="shareOrViewPDF()"]');
+  const textoOriginal = btnEnviar ? btnEnviar.textContent : 'Enviar PDF';
+  let overlayParaRemover = null;
+
+  try {
+      if(btnEnviar) {
+          btnEnviar.disabled = true;
+          btnEnviar.textContent = 'Gerando Layout Desktop...';
       }
 
-      // === CORREÇÃO DE TIMING ===
-      // Força uma atualização visual e espera 500ms para o navegador "respirar"
+      // 1. ATUALIZA DADOS
+      await saveOrcamento(false);
       updateOrcamentoPreview();
-      await new Promise(resolve => setTimeout(resolve, 500)); 
-      // ==========================
+
+      // 2. CLONA O DESIGN ORIGINAL
+      const sourceElement = document.getElementById('pdf-preview');
+      const clone = sourceElement.cloneNode(true);
+
+      // 3. CONFIGURA O CLONE COM LARGURA DE COMPUTADOR
+      // O Pulo do Gato: 1120px obriga o site a mostrar 4 colunas
+      const larguraDesktop = 1120; 
+      const alturaProporcional = larguraDesktop * 1.414; // Proporção A4
+
+      clone.style.width = `${larguraDesktop}px`; 
+      clone.style.minHeight = `${alturaProporcional}px`;
+      clone.style.padding = '40px'; // Mais espaço interno
+      clone.style.backgroundColor = 'white';
+      clone.style.position = 'relative';
+      clone.style.display = 'block';
+      clone.style.margin = '0';
       
-      // 2. Cria o elemento temporário para o PDF
-      const element = document.createElement('div');
-      element.innerHTML = document.getElementById('pdf-preview').innerHTML;
+      // Remove classes de ocultação do Tailwind/Bootstrap
+      const escondidos = clone.querySelectorAll('.hidden, .sm\\:hidden, .md\\:hidden, .lg\\:hidden');
+      escondidos.forEach(el => el.classList.remove('hidden', 'sm:hidden', 'md:hidden', 'lg:hidden'));
+
+      // 4. CRIA O CONTAINER (OVERLAY)
+      const overlay = document.createElement('div');
+      overlay.id = 'pdf-capture-zone';
+      overlay.style.position = 'fixed';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      // Importante: O overlay precisa ser maior que a tela do celular para caber o clone gigante
+      overlay.style.width = '1200px'; 
+      overlay.style.height = '100vh';
+      overlay.style.backgroundColor = '#333';
+      overlay.style.zIndex = '99999999';
+      overlay.style.overflow = 'hidden'; // Esconde barra de rolagem
+      overlay.style.margin = '0';
+      overlay.style.padding = '0';
+
+      // Container interno
+      const wrapper = document.createElement('div');
+      wrapper.style.width = `${larguraDesktop}px`;
+      wrapper.style.margin = '0';
+      wrapper.appendChild(clone);
       
-      // Configuração segura de largura para A4
-      element.style.width = '670px'; 
-      element.style.padding = '10px';
-      element.style.fontSize = '11px'; 
-      element.style.fontFamily = 'Inter, sans-serif';
-      element.style.backgroundColor = '#ffffff';
+      overlay.appendChild(wrapper);
+      document.body.appendChild(overlay);
+      overlayParaRemover = overlay;
+
+      // 5. ROLA PARA O INÍCIO (Garante foto do topo)
+      window.scrollTo(0, 0);
+
+      const nomeArquivo = `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
       
+      // 6. CONFIGURAÇÃO CUSTOMIZADA (Tamanho Personalizado)
       const opt = {
-        margin:       [10, 10, 10, 10], 
-        filename:     `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`,
+        margin:       0,
+        filename:     nomeArquivo,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 4, useCORS: true, letterRendering: true, scrollY: 0 }, 
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        // Essa configuração protege o rodapé de ser cortado
-        pagebreak:    { mode: ['css', 'legacy'], avoid: '.no-break' } 
+        html2canvas:  { 
+            scale: 2, // Resolução 2x (já fica ótimo pois a base é grande)
+            useCORS: true, 
+            scrollY: 0,
+            scrollX: 0,
+            x: 0, 
+            y: 0,
+            width: larguraDesktop, // Captura a largura total
+            windowWidth: 1200 // Reforça para o CSS que é Desktop
+        },
+        // AQUI ESTÁ O SEGREDO: Definimos o PDF com o tamanho exato em PIXELS do nosso clone
+        jsPDF: { 
+            unit: 'px', 
+            format: [larguraDesktop, alturaProporcional], 
+            orientation: 'portrait',
+            hotfixes: ['px_scaling'] 
+        }
       };
 
-      try {
-        if (navigator.share && navigator.canShare) {
-            const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
-            const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
-            
-            if (navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    title: `Orçamento - ${appState.currentOrcamento.cliente.nome}`,
-                    text: 'Segue o orçamento em anexo.',
-                    files: [file]
-                });
-                return; 
-            }
-        }
-        html2pdf().set(opt).from(element).save();
-        
-      } catch (e) {
-        console.error("Erro ao gerar PDF:", e);
-        alert('Erro ao gerar o PDF. Tente novamente.');
+      // Delay de segurança
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // 7. GERAÇÃO
+      const worker = html2pdf().set(opt).from(clone);
+
+      if (navigator.share && navigator.canShare && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
+          await worker.output('blob').then((pdfBlob) => {
+              const file = new File([pdfBlob], nomeArquivo, { type: 'application/pdf' });
+              if (navigator.canShare({ files: [file] })) {
+                  navigator.share({ title: `Orçamento`, files: [file] }).catch(e => console.log('Cancelado'));
+              } else {
+                  worker.save();
+              }
+          });
+      } else {
+          await worker.save();
       }
-    };
+
+  } catch (e) {
+    console.error("Erro PDF:", e);
+    alert('Erro ao gerar PDF.');
+  } finally {
+      if (overlayParaRemover && document.body.contains(overlayParaRemover)) {
+          document.body.removeChild(overlayParaRemover);
+      }
+      if(btnEnviar) {
+          btnEnviar.disabled = false;
+          btnEnviar.textContent = textoOriginal;
+      }
+  }
+};
 
     window.sendWhatsAppText = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
