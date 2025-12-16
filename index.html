@@ -3137,148 +3137,64 @@ function updateOrcamentoPreview() {
       }
     };
 
-// --- VERSÃO FINAL: FORÇAR MODO TABELA DESKTOP + ALTA RESOLUÇÃO ---
-window.shareOrViewPDF = async () => {
-  if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
-  
-  const btnEnviar = document.querySelector('button[onclick="shareOrViewPDF()"]');
-  const textoOriginal = btnEnviar ? btnEnviar.textContent : 'Enviar PDF';
-  let overlayParaRemover = null;
-
-  try {
-      if(btnEnviar) {
-          btnEnviar.disabled = true;
-          btnEnviar.textContent = 'Renderizando Tabela...';
+  window.shareOrViewPDF = async () => {
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente para gerar o PDF.');
+      
+      // 1. Salva automaticamente antes de gerar
+      try {
+          await saveOrcamento(false);
+      } catch (error) {
+          return; 
       }
 
-      // 1. ATUALIZA DADOS
-      await saveOrcamento(false);
+      // === CORREÇÃO DE TIMING ===
+      // Força uma atualização visual e espera 500ms para o navegador "respirar"
       updateOrcamentoPreview();
-
-      // 2. CLONA O DESIGN ORIGINAL
-      const sourceElement = document.getElementById('pdf-preview');
-      const clone = sourceElement.cloneNode(true);
-
-      // 3. CONFIGURA O CLONE (FORÇA LARGURA A4)
-      clone.style.width = '794px'; // Largura fixa
-      clone.style.minHeight = '1123px';
-      clone.style.padding = '20px';
-      clone.style.backgroundColor = 'white';
-      clone.style.position = 'relative';
-      clone.style.display = 'block';
-      clone.style.margin = '0';
+      await new Promise(resolve => setTimeout(resolve, 500)); 
+      // ==========================
       
-      // Remove classes que escondem coisas no mobile
-      // Se você usa Tailwind, isso remove 'hidden' e 'sm:hidden' de todos os elementos dentro do clone
-      const escondidos = clone.querySelectorAll('.hidden, .sm\\:hidden, .md\\:hidden, .lg\\:hidden');
-      escondidos.forEach(el => {
-          el.classList.remove('hidden', 'sm:hidden', 'md:hidden', 'lg:hidden');
-      });
-
-      // 4. A VACINA ANTI-MOBILE (O SEGREDO DO SUCESSO)
-      // Injetamos um CSS que obriga a tabela a se comportar como tabela de PC
-      const styleTag = document.createElement('style');
-      styleTag.innerHTML = `
-        /* Força layout de tabela clássico */
-        table, thead, tbody, tfoot, tr, th, td {
-            display: table-cell !important; /* Garante células lado a lado */
-            width: auto !important;
-            float: none !important;
-        }
-        table { display: table !important; width: 100% !important; }
-        thead { display: table-header-group !important; }
-        tbody { display: table-row-group !important; }
-        tr { display: table-row !important; }
-        
-        /* Ajuste de fontes para caber na folha */
-        * { font-size: 12px !important; }
-        h1 { font-size: 18px !important; }
-        h2, h3 { font-size: 14px !important; }
-        
-        /* Garante que nada fique oculto */
-        .hidden { display: block !important; }
-      `;
-      clone.appendChild(styleTag);
-
-      // 5. CRIA O CONTAINER (OVERLAY)
-      const overlay = document.createElement('div');
-      overlay.id = 'pdf-capture-zone';
-      overlay.style.position = 'fixed';
-      overlay.style.top = '0';
-      overlay.style.left = '0';
-      overlay.style.width = '100vw'; 
-      overlay.style.height = '100vh';
-      overlay.style.backgroundColor = '#333';
-      overlay.style.zIndex = '99999999';
-      overlay.style.overflow = 'auto'; // Importante para permitir scroll interno
-      overlay.style.margin = '0';
-      overlay.style.padding = '0';
-
-      // Container interno para segurar a largura fixa
-      const wrapper = document.createElement('div');
-      wrapper.style.width = '794px';
-      wrapper.style.margin = '0';
-      wrapper.appendChild(clone);
+      // 2. Cria o elemento temporário para o PDF
+      const element = document.createElement('div');
+      element.innerHTML = document.getElementById('pdf-preview').innerHTML;
       
-      overlay.appendChild(wrapper);
-      document.body.appendChild(overlay);
-      overlayParaRemover = overlay;
-
-      // 6. ROLA PARA O INÍCIO
-      window.scrollTo(0, 0);
-      overlay.scrollTo(0, 0);
-
-      const nomeArquivo = `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
+      // Configuração segura de largura para A4
+      element.style.width = '670px'; 
+      element.style.padding = '10px';
+      element.style.fontSize = '11px'; 
+      element.style.fontFamily = 'Inter, sans-serif';
+      element.style.backgroundColor = '#ffffff';
       
-      // 7. CONFIGURAÇÃO DE ALTA RESOLUÇÃO
       const opt = {
-        margin:       0,
-        filename:     nomeArquivo,
-        image:        { type: 'jpeg', quality: 0.98 }, // JPG Alta qualidade
-        html2canvas:  { 
-            scale: 4, // 4x de Zoom (Resolve o problema da resolução baixa)
-            useCORS: true, 
-            scrollY: 0,
-            scrollX: 0,
-            x: 0, 
-            y: 0,
-            windowWidth: 1200 // Instrui o renderizador a simular uma tela larga
-        },
-        jsPDF:        { unit: 'px', format: [794, 1123], orientation: 'portrait' }
+        margin:       [10, 10, 10, 10], 
+        filename:     `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/\s+/g, '-')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 4, useCORS: true, letterRendering: true, scrollY: 0 }, 
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        // Essa configuração protege o rodapé de ser cortado
+        pagebreak:    { mode: ['css', 'legacy'], avoid: '.no-break' } 
       };
 
-      // Delay de 2s para garantir carregamento da logo e fontes
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // 8. GERAÇÃO
-      const worker = html2pdf().set(opt).from(clone);
-
-      if (navigator.share && navigator.canShare && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
-          await worker.output('blob').then((pdfBlob) => {
-              const file = new File([pdfBlob], nomeArquivo, { type: 'application/pdf' });
-              if (navigator.canShare({ files: [file] })) {
-                  navigator.share({ title: `Orçamento`, files: [file] }).catch(e => console.log('Cancelado'));
-              } else {
-                  worker.save();
-              }
-          });
-      } else {
-          await worker.save();
+      try {
+        if (navigator.share && navigator.canShare) {
+            const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+            const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+            
+            if (navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: `Orçamento - ${appState.currentOrcamento.cliente.nome}`,
+                    text: 'Segue o orçamento em anexo.',
+                    files: [file]
+                });
+                return; 
+            }
+        }
+        html2pdf().set(opt).from(element).save();
+        
+      } catch (e) {
+        console.error("Erro ao gerar PDF:", e);
+        alert('Erro ao gerar o PDF. Tente novamente.');
       }
-
-  } catch (e) {
-    console.error("Erro PDF:", e);
-    alert('Erro ao gerar PDF.');
-  } finally {
-      if (overlayParaRemover && document.body.contains(overlayParaRemover)) {
-          document.body.removeChild(overlayParaRemover);
-      }
-      if(btnEnviar) {
-          btnEnviar.disabled = false;
-          btnEnviar.textContent = textoOriginal;
-      }
-  }
-};
+    };
 
     window.sendWhatsAppText = async () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
