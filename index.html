@@ -3137,7 +3137,7 @@ function updateOrcamentoPreview() {
       }
     };
 
-// --- VERSÃO FINAL: SEU DESIGN ORIGINAL + ALINHAMENTO CORRIGIDO ---
+// --- VERSÃO FINAL: FORÇAR MODO TABELA DESKTOP + ALTA RESOLUÇÃO ---
 window.shareOrViewPDF = async () => {
   if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
   
@@ -3148,80 +3148,109 @@ window.shareOrViewPDF = async () => {
   try {
       if(btnEnviar) {
           btnEnviar.disabled = true;
-          btnEnviar.textContent = 'Preparando Design...';
+          btnEnviar.textContent = 'Renderizando Tabela...';
       }
 
-      // 1. GARANTE QUE OS DADOS ESTÃO ATUALIZADOS NA TELA
+      // 1. ATUALIZA DADOS
       await saveOrcamento(false);
-      updateOrcamentoPreview(); // Isso desenha seu layout bonito (Logo, pontilhados, etc)
+      updateOrcamentoPreview();
 
-      // 2. CLONA O SEU DESIGN ORIGINAL (Nada de HTML genérico)
+      // 2. CLONA O DESIGN ORIGINAL
       const sourceElement = document.getElementById('pdf-preview');
       const clone = sourceElement.cloneNode(true);
 
-      // 3. AJUSTA O CLONE PARA FICAR PERFEITO NA FOLHA A4
-      // Forçamos o visual de Desktop (largo) mesmo no celular
-      clone.style.width = '794px'; // Largura fixa A4
+      // 3. CONFIGURA O CLONE (FORÇA LARGURA A4)
+      clone.style.width = '794px'; // Largura fixa
       clone.style.minHeight = '1123px';
       clone.style.padding = '20px';
       clone.style.backgroundColor = 'white';
-      clone.style.margin = '0'; // Zera margens para não confundir o PDF
       clone.style.position = 'relative';
-      clone.style.display = 'block'; // Garante que não fique oculto
+      clone.style.display = 'block';
+      clone.style.margin = '0';
+      
+      // Remove classes que escondem coisas no mobile
+      // Se você usa Tailwind, isso remove 'hidden' e 'sm:hidden' de todos os elementos dentro do clone
+      const escondidos = clone.querySelectorAll('.hidden, .sm\\:hidden, .md\\:hidden, .lg\\:hidden');
+      escondidos.forEach(el => {
+          el.classList.remove('hidden', 'sm:hidden', 'md:hidden', 'lg:hidden');
+      });
 
-      // Remove classes que podem esconder coisas no mobile (Tailwind)
-      clone.classList.remove('hidden', 'sm:hidden', 'md:hidden');
+      // 4. A VACINA ANTI-MOBILE (O SEGREDO DO SUCESSO)
+      // Injetamos um CSS que obriga a tabela a se comportar como tabela de PC
+      const styleTag = document.createElement('style');
+      styleTag.innerHTML = `
+        /* Força layout de tabela clássico */
+        table, thead, tbody, tfoot, tr, th, td {
+            display: table-cell !important; /* Garante células lado a lado */
+            width: auto !important;
+            float: none !important;
+        }
+        table { display: table !important; width: 100% !important; }
+        thead { display: table-header-group !important; }
+        tbody { display: table-row-group !important; }
+        tr { display: table-row !important; }
+        
+        /* Ajuste de fontes para caber na folha */
+        * { font-size: 12px !important; }
+        h1 { font-size: 18px !important; }
+        h2, h3 { font-size: 14px !important; }
+        
+        /* Garante que nada fique oculto */
+        .hidden { display: block !important; }
+      `;
+      clone.appendChild(styleTag);
 
-      // 4. CRIA O OVERLAY DE CAPTURA (Igual ao que funcionou antes)
+      // 5. CRIA O CONTAINER (OVERLAY)
       const overlay = document.createElement('div');
       overlay.id = 'pdf-capture-zone';
-      
-      // Configurações para garantir que o clone apareça inteiro
       overlay.style.position = 'fixed';
       overlay.style.top = '0';
       overlay.style.left = '0';
-      overlay.style.width = '100vw'; // Ocupa a tela toda
+      overlay.style.width = '100vw'; 
       overlay.style.height = '100vh';
-      overlay.style.backgroundColor = '#333'; // Fundo escuro para contraste
+      overlay.style.backgroundColor = '#333';
       overlay.style.zIndex = '99999999';
-      overlay.style.overflow = 'auto'; // Permite rolar se precisar
+      overlay.style.overflow = 'auto'; // Importante para permitir scroll interno
       overlay.style.margin = '0';
       overlay.style.padding = '0';
 
-      // IMPORTANTE: Força o conteúdo interno a ser largo, para o celular não espremer o texto
-      overlay.style.minWidth = '800px'; 
-
-      // Coloca o clone dentro do overlay
-      overlay.appendChild(clone);
+      // Container interno para segurar a largura fixa
+      const wrapper = document.createElement('div');
+      wrapper.style.width = '794px';
+      wrapper.style.margin = '0';
+      wrapper.appendChild(clone);
+      
+      overlay.appendChild(wrapper);
       document.body.appendChild(overlay);
       overlayParaRemover = overlay;
 
-      // 5. ROLA PARA O CANTO SUPERIOR ESQUERDO (A MÁGICA DO ALINHAMENTO)
+      // 6. ROLA PARA O INÍCIO
       window.scrollTo(0, 0);
-      if (overlay.scrollTo) overlay.scrollTo(0, 0);
+      overlay.scrollTo(0, 0);
 
       const nomeArquivo = `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
       
+      // 7. CONFIGURAÇÃO DE ALTA RESOLUÇÃO
       const opt = {
-        margin:       0, // Margem zero porque seu design já tem padding
+        margin:       0,
         filename:     nomeArquivo,
-        image:        { type: 'jpeg', quality: 0.98 },
+        image:        { type: 'jpeg', quality: 0.98 }, // JPG Alta qualidade
         html2canvas:  { 
-            scale: 2, // Resolução boa
-            useCORS: true, // Permite carregar sua Logo
+            scale: 4, // 4x de Zoom (Resolve o problema da resolução baixa)
+            useCORS: true, 
             scrollY: 0,
             scrollX: 0,
-            x: 0, // Começa do pixel 0
+            x: 0, 
             y: 0,
-            windowWidth: 1200 // Diz pro sistema: "Finja que sou um PC grande" (Arruma as colunas)
+            windowWidth: 1200 // Instrui o renderizador a simular uma tela larga
         },
         jsPDF:        { unit: 'px', format: [794, 1123], orientation: 'portrait' }
       };
 
-      // Delay visual para carregar a Logo e as Fontes
+      // Delay de 2s para garantir carregamento da logo e fontes
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // 6. GERA O PDF
+      // 8. GERAÇÃO
       const worker = html2pdf().set(opt).from(clone);
 
       if (navigator.share && navigator.canShare && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
@@ -3239,9 +3268,8 @@ window.shareOrViewPDF = async () => {
 
   } catch (e) {
     console.error("Erro PDF:", e);
-    alert('Erro ao gerar PDF. Tente novamente.');
+    alert('Erro ao gerar PDF.');
   } finally {
-      // 7. LIMPEZA
       if (overlayParaRemover && document.body.contains(overlayParaRemover)) {
           document.body.removeChild(overlayParaRemover);
       }
