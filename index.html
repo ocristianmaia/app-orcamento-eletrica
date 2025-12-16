@@ -3136,8 +3136,8 @@ function updateOrcamentoPreview() {
         throw e; 
       }
     };
-
- // --- VERSÃO FINAL: PDF WIDESCREEN (FORÇA MODO DESKTOP) ---
+    
+// --- VERSÃO FINAL: LAYOUT DESKTOP + CORREÇÃO DE PÁGINA EXTRA ---
 window.shareOrViewPDF = async () => {
   if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
   
@@ -3148,89 +3148,90 @@ window.shareOrViewPDF = async () => {
   try {
       if(btnEnviar) {
           btnEnviar.disabled = true;
-          btnEnviar.textContent = 'Gerando Layout Desktop...';
+          btnEnviar.textContent = 'Gerando PDF Único...';
       }
 
       // 1. ATUALIZA DADOS
       await saveOrcamento(false);
       updateOrcamentoPreview();
 
-      // 2. CLONA O DESIGN ORIGINAL
+      // 2. CLONA O DESIGN
       const sourceElement = document.getElementById('pdf-preview');
       const clone = sourceElement.cloneNode(true);
 
-      // 3. CONFIGURA O CLONE COM LARGURA DE COMPUTADOR
-      // O Pulo do Gato: 1120px obriga o site a mostrar 4 colunas
+      // 3. DIMENSÕES DE COMPUTADOR (1120px)
       const larguraDesktop = 1120; 
-      const alturaProporcional = larguraDesktop * 1.414; // Proporção A4
+      const alturaProporcional = larguraDesktop * 1.414; // Altura padrão A4
+
+      // === O AJUSTE FINO AQUI ===
+      // Definimos a altura do clone para ser um pouquinho MENOR que a folha
+      // Isso evita que o navegador empurre 1px para a segunda página
+      const alturaSegura = alturaProporcional - 5; // Tira 5px por segurança
 
       clone.style.width = `${larguraDesktop}px`; 
-      clone.style.minHeight = `${alturaProporcional}px`;
-      clone.style.padding = '40px'; // Mais espaço interno
+      clone.style.minHeight = `${alturaSegura}px`; // Altura segura
+      clone.style.padding = '40px'; 
       clone.style.backgroundColor = 'white';
       clone.style.position = 'relative';
       clone.style.display = 'block';
       clone.style.margin = '0';
       
-      // Remove classes de ocultação do Tailwind/Bootstrap
+      // Limpa ocultações do mobile
       const escondidos = clone.querySelectorAll('.hidden, .sm\\:hidden, .md\\:hidden, .lg\\:hidden');
       escondidos.forEach(el => el.classList.remove('hidden', 'sm:hidden', 'md:hidden', 'lg:hidden'));
 
-      // 4. CRIA O CONTAINER (OVERLAY)
+      // 4. OVERLAY (Zona de Captura)
       const overlay = document.createElement('div');
       overlay.id = 'pdf-capture-zone';
       overlay.style.position = 'fixed';
       overlay.style.top = '0';
       overlay.style.left = '0';
-      // Importante: O overlay precisa ser maior que a tela do celular para caber o clone gigante
       overlay.style.width = '1200px'; 
       overlay.style.height = '100vh';
       overlay.style.backgroundColor = '#333';
       overlay.style.zIndex = '99999999';
-      overlay.style.overflow = 'hidden'; // Esconde barra de rolagem
+      overlay.style.overflow = 'hidden';
       overlay.style.margin = '0';
       overlay.style.padding = '0';
 
-      // Container interno
       const wrapper = document.createElement('div');
       wrapper.style.width = `${larguraDesktop}px`;
-      wrapper.style.margin = '0';
       wrapper.appendChild(clone);
       
       overlay.appendChild(wrapper);
       document.body.appendChild(overlay);
       overlayParaRemover = overlay;
 
-      // 5. ROLA PARA O INÍCIO (Garante foto do topo)
+      // 5. INÍCIO
       window.scrollTo(0, 0);
 
       const nomeArquivo = `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
       
-      // 6. CONFIGURAÇÃO CUSTOMIZADA (Tamanho Personalizado)
+      // 6. CONFIGURAÇÃO
       const opt = {
         margin:       0,
         filename:     nomeArquivo,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { 
-            scale: 2, // Resolução 2x (já fica ótimo pois a base é grande)
+            scale: 2, 
             useCORS: true, 
             scrollY: 0,
             scrollX: 0,
             x: 0, 
             y: 0,
-            width: larguraDesktop, // Captura a largura total
-            windowWidth: 1200 // Reforça para o CSS que é Desktop
+            width: larguraDesktop,
+            windowWidth: 1200
         },
-        // AQUI ESTÁ O SEGREDO: Definimos o PDF com o tamanho exato em PIXELS do nosso clone
         jsPDF: { 
             unit: 'px', 
+            // Aqui mantemos o tamanho da folha PDF ORIGINAL
+            // Como o conteúdo HTML é 5px menor, ele cabe com folga!
             format: [larguraDesktop, alturaProporcional], 
             orientation: 'portrait',
             hotfixes: ['px_scaling'] 
         }
       };
 
-      // Delay de segurança
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       // 7. GERAÇÃO
