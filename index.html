@@ -2708,7 +2708,8 @@ window.toggleOrcamentoExclusao = (checkbox) => {
         populateMateriaisOrcamento(); // Redesenha a lista
     };
 
-    function populateMateriaisOrcamento() {
+   // --- VERSÃO CORRIGIDA: Agora acessível pelo HTML (window.) ---
+    window.populateMateriaisOrcamento = function() {
       const listEl = document.getElementById('orc-materiais-list');
       const searchInput = document.getElementById('orc-search-material-modal');
       
@@ -2716,6 +2717,7 @@ window.toggleOrcamentoExclusao = (checkbox) => {
       const termoBusca = searchInput ? searchInput.value.toLowerCase() : '';
 
       // 1. Filtra pelo TIPO (respeitando a aba selecionada)
+      // Nota: currentMaterialTab precisa estar acessível aqui. 
       let filtrados = appState.materiais.filter(m => {
           if (currentMaterialTab === 'estoque') return m.tipo === 'estoque';
           return m.tipo !== 'estoque'; // Padrão
@@ -2760,7 +2762,7 @@ window.toggleOrcamentoExclusao = (checkbox) => {
               <input type="number" min="1" value="${qtd}" data-id="${m.id}" class="w-14 p-1 border rounded-md text-xs ml-2 text-center" ${disabled}>
             </div>`;
       }).join('');
-    }
+    };
 
         function populateTiposDeServicoOrcamento() {
       const listEl = document.getElementById('orc-tiposdeservico-list');
