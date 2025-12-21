@@ -1130,8 +1130,38 @@
         db = getFirestore(app);
         auth = getAuth(app);
 
-        onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => { // Note o 'async' aqui!
           if (user) {
+            // --- INÍCIO DA TRAVA DE SEGURANÇA ---
+            try {
+                // 1. Define quem é o ADM (Coloque SEU email aqui para nunca ser bloqueado)
+                const emailAdmin = "seu.email.aqui@gmail.com"; 
+                
+                // 2. Verifica se é você ou se está na lista de permitidos
+                // Vamos usar uma coleção global chamada 'acesso_permitido'
+                const docRef = doc(db, "acesso_permitido", user.email);
+                const docSnap = await getDoc(docRef);
+
+                // Se não for o Admin E não estiver na lista de permitidos
+                if (user.email !== emailAdmin && !docSnap.exists()) {
+                    console.warn("Usuário não autorizado tentou entrar:", user.email);
+                    await signOut(auth); // Chuta o usuário para fora
+                    alert("⛔ ACESSO RESTRITO\n\nEste usuário não possui uma licença ativa.\nEntre em contato com a Masch Manutenção para adquirir seu acesso.");
+                    return; // Para tudo aqui
+                }
+                
+                // Se chegou aqui, o acesso está liberado!
+                
+            } catch (error) {
+                console.error("Erro ao verificar permissão:", error);
+                // Por segurança, em caso de erro de rede, não libera
+                alert("Erro de conexão ao verificar licença.");
+                await signOut(auth);
+                return;
+            }
+            // --- FIM DA TRAVA DE SEGURANÇA ---
+
+            // Se passou da trava, carrega o app normal:
             userId = user.uid;
             userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
             loadingOverlay.querySelector('p').textContent = 'Carregando seus dados...';
@@ -1141,22 +1171,17 @@
             appView.classList.remove('hidden');
             loadingOverlay.style.display = 'none';
 
-            // ===== Aplicar Máscaras CPF/CNPJ =====
+            // ... (Mantenha aqui os listeners de máscaras que já existem no seu código) ...
             document.getElementById('config-doc')?.addEventListener('input', handleDocMask);
             document.getElementById('cliente-documento')?.addEventListener('input', handleDocMask);
             document.getElementById('edit-cliente-documento')?.addEventListener('input', handleDocMask);
-            
-            // ===== Aplicar Máscaras de Telefone =====
             document.getElementById('config-telefone')?.addEventListener('input', handleTelefoneMask);
             document.getElementById('cliente-telefone')?.addEventListener('input', handleTelefoneMask);
             document.getElementById('edit-cliente-telefone')?.addEventListener('input', handleTelefoneMask);
-            
-            // ===== Aplicar Máscaras de CEP =====
             document.getElementById('config-cep')?.addEventListener('input', handleCEPMask);
             document.getElementById('cliente-cep')?.addEventListener('input', handleCEPMask);
             document.getElementById('edit-cliente-cep')?.addEventListener('input', handleCEPMask);
             document.getElementById('search-cliente')?.addEventListener('input', handleSearchCliente);
-            // ===============================================
 
           } else {
             userId = null;
@@ -1165,6 +1190,7 @@
             loadingOverlay.style.display = 'none';
           }
         });
+        
       } catch (e) {
         console.error('Erro ao inicializar Firebase:', e);
         loadingOverlay.innerHTML = '<p class="text-red-600">Erro crítico ao conectar. Verifique as chaves do Firebase.</p>';
