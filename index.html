@@ -992,7 +992,13 @@
                     <button id="tab-mat-compra" onclick="filtrarMateriaisModal('padrao')" class="text-xs font-bold px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-blue-700">📋 Compras</button>
                     <button id="tab-mat-estoque" onclick="filtrarMateriaisModal('estoque')" class="text-xs font-bold px-3 py-1 bg-white border rounded hover:bg-gray-100 text-gray-600">📦 Estoque</button>
                 </div>
+
+<div class="mb-2 mt-2">
+    <input type="text" id="orc-search-material-modal" placeholder="🔍 Buscar item..." class="w-full p-2 border rounded-md text-sm" oninput="populateMateriaisOrcamento()">
+</div>
+             
                 <div id="orc-materiais-list" class="h-40 overflow-y-auto border p-2 bg-gray-50 rounded"></div>
+             
             </div>
             
             <div>
@@ -2667,9 +2673,15 @@ window.toggleOrcamentoExclusao = (checkbox) => {
       });
     }
 
-    // Função nova para filtrar no modal
+// --- LÓGICA DE MATERIAIS NO MODAL (ATUALIZADA COM BUSCA) ---
+    
+    // Variável global para lembrar qual aba está aberta (Compras ou Estoque)
+    let currentMaterialTab = 'padrao';
+
     window.filtrarMateriaisModal = (tipoAlvo) => {
-        // Atualiza visual dos botões
+        currentMaterialTab = tipoAlvo; // Salva a aba que foi clicada
+
+        // Atualiza o visual dos botões (Azul para ativo, Branco para inativo)
         const btnCompra = document.getElementById('tab-mat-compra');
         const btnEstoque = document.getElementById('tab-mat-estoque');
         
@@ -2680,34 +2692,62 @@ window.toggleOrcamentoExclusao = (checkbox) => {
             btnCompra.className = "text-xs font-bold px-3 py-1 bg-white border rounded text-gray-500 hover:bg-gray-100";
             btnEstoque.className = "text-xs font-bold px-3 py-1 bg-gray-200 rounded text-blue-700 border border-blue-200";
         }
-        populateMateriaisOrcamento(tipoAlvo);
+        
+        // (Opcional) Limpa o campo de busca ao trocar de aba
+        const searchInput = document.getElementById('orc-search-material-modal');
+        if(searchInput) searchInput.value = '';
+
+        populateMateriaisOrcamento(); // Redesenha a lista
     };
 
-    function populateMateriaisOrcamento(filtroTipo = 'padrao') {
+    function populateMateriaisOrcamento() {
       const listEl = document.getElementById('orc-materiais-list');
-      // Filtra a lista global
-      const filtrados = appState.materiais.filter(m => {
-          if (filtroTipo === 'estoque') return m.tipo === 'estoque';
+      const searchInput = document.getElementById('orc-search-material-modal');
+      
+      // Pega o texto que foi digitado (se houver)
+      const termoBusca = searchInput ? searchInput.value.toLowerCase() : '';
+
+      // 1. Filtra pelo TIPO (respeitando a aba selecionada)
+      let filtrados = appState.materiais.filter(m => {
+          if (currentMaterialTab === 'estoque') return m.tipo === 'estoque';
           return m.tipo !== 'estoque'; // Padrão
       });
 
-      if (!filtrados.length) { listEl.innerHTML = '<p class="text-gray-500 p-2 text-xs">Nenhum item nesta categoria.</p>'; return; }
+      // 2. Filtra pelo NOME (se tiver algo escrito na busca)
+      if (termoBusca) {
+          filtrados = filtrados.filter(m => (m.nome || '').toLowerCase().includes(termoBusca));
+      }
       
+      // 3. Ordena A-Z para ficar organizado
+      filtrados.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+
+      // Se não sobrou nada, avisa o usuário
+      if (!filtrados.length) { 
+          listEl.innerHTML = termoBusca 
+            ? '<p class="text-gray-500 p-2 text-xs text-center">Item não encontrado na busca.</p>'
+            : '<p class="text-gray-500 p-2 text-xs">Nenhum item nesta categoria.</p>'; 
+          return; 
+      }
+      
+      // Desenha a lista
       listEl.innerHTML = filtrados.map(m => {
-          // Verifica se já está selecionado no orçamento atual para marcar o checkbox
+          // Verifica se o item já estava marcado antes
           const jaSelecionado = appState.currentOrcamento?.items?.find(i => i.id === m.id);
           const qtd = jaSelecionado ? jaSelecionado.quantidade : 1;
           const checked = jaSelecionado ? 'checked' : '';
           const disabled = jaSelecionado ? '' : 'disabled';
           
-          // Adiciona # visualmente se for estoque
+          // Coloca um # azul se for estoque
           const prefix = m.tipo === 'estoque' ? '<span class="text-blue-600 font-bold">#</span> ' : '';
 
           return `
             <div class="flex items-center justify-between p-2 rounded-md hover:bg-white border-b border-gray-100 last:border-0">
               <label class="flex items-center flex-grow cursor-pointer">
-                <input type="checkbox" data-id="${m.id}" ${checked} class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                <span class="ml-2 text-xs text-gray-700">${prefix}${m.nome} - R$ ${m.valor.toFixed(2)}</span>
+                <input type="checkbox" data-id="${m.id}" ${checked} class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 flex-shrink-0">
+                <span class="ml-2 text-xs text-gray-700 leading-tight">
+                    ${prefix}${m.nome} <br>
+                    <span class="text-gray-400 font-normal">R$ ${parseFloat(m.valor).toFixed(2)} / ${m.unidade || 'un'}</span>
+                </span>
               </label>
               <input type="number" min="1" value="${qtd}" data-id="${m.id}" class="w-14 p-1 border rounded-md text-xs ml-2 text-center" ${disabled}>
             </div>`;
