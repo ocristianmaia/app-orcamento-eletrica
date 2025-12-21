@@ -3137,7 +3137,7 @@ function updateOrcamentoPreview() {
       }
     };
     
-// --- VERSÃO FINAL: LAYOUT DESKTOP + CORREÇÃO DE PÁGINA EXTRA ---
+// --- VERSÃO FINAL: ESTÁVEL + RESOLUÇÃO ULTRA (4X) ---
 window.shareOrViewPDF = async () => {
   if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
   
@@ -3148,7 +3148,7 @@ window.shareOrViewPDF = async () => {
   try {
       if(btnEnviar) {
           btnEnviar.disabled = true;
-          btnEnviar.textContent = 'Gerando PDF Único...';
+          btnEnviar.textContent = 'Gerando Alta Definição...';
       }
 
       // 1. ATUALIZA DADOS
@@ -3159,28 +3159,26 @@ window.shareOrViewPDF = async () => {
       const sourceElement = document.getElementById('pdf-preview');
       const clone = sourceElement.cloneNode(true);
 
-      // 3. DIMENSÕES DE COMPUTADOR (1120px)
+      // 3. DIMENSÕES DE COMPUTADOR (Mantém o que já funcionou)
       const larguraDesktop = 1120; 
-      const alturaProporcional = larguraDesktop * 1.414; // Altura padrão A4
+      const alturaProporcional = larguraDesktop * 1.414; 
 
-      // === O AJUSTE FINO AQUI ===
-      // Definimos a altura do clone para ser um pouquinho MENOR que a folha
-      // Isso evita que o navegador empurre 1px para a segunda página
-      const alturaSegura = alturaProporcional - 5; // Tira 5px por segurança
+      // Ajuste de segurança para não gerar página em branco extra
+      const alturaSegura = alturaProporcional - 5; 
 
       clone.style.width = `${larguraDesktop}px`; 
-      clone.style.minHeight = `${alturaSegura}px`; // Altura segura
+      clone.style.minHeight = `${alturaSegura}px`; 
       clone.style.padding = '40px'; 
       clone.style.backgroundColor = 'white';
       clone.style.position = 'relative';
       clone.style.display = 'block';
       clone.style.margin = '0';
       
-      // Limpa ocultações do mobile
+      // Limpa classes que escondem elementos
       const escondidos = clone.querySelectorAll('.hidden, .sm\\:hidden, .md\\:hidden, .lg\\:hidden');
       escondidos.forEach(el => el.classList.remove('hidden', 'sm:hidden', 'md:hidden', 'lg:hidden'));
 
-      // 4. OVERLAY (Zona de Captura)
+      // 4. OVERLAY
       const overlay = document.createElement('div');
       overlay.id = 'pdf-capture-zone';
       overlay.style.position = 'fixed';
@@ -3207,32 +3205,33 @@ window.shareOrViewPDF = async () => {
 
       const nomeArquivo = `orcamento-${(appState.currentOrcamento.cliente.nome || 'cliente').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
       
-      // 6. CONFIGURAÇÃO
+      // 6. CONFIGURAÇÃO TURBINADA
       const opt = {
         margin:       0,
         filename:     nomeArquivo,
-        image:        { type: 'jpeg', quality: 0.98 },
+        // QUALIDADE MÁXIMA
+        image:        { type: 'jpeg', quality: 1.0 }, // Era 0.98, agora é 100%
         html2canvas:  { 
-            scale: 2, 
+            scale: 4, // AQUI É O PULO DO GATO: 4x mais nitidez
             useCORS: true, 
             scrollY: 0,
             scrollX: 0,
             x: 0, 
             y: 0,
             width: larguraDesktop,
-            windowWidth: 1200
+            windowWidth: 1200,
+            letterRendering: true // Melhora renderização de fontes
         },
         jsPDF: { 
             unit: 'px', 
-            // Aqui mantemos o tamanho da folha PDF ORIGINAL
-            // Como o conteúdo HTML é 5px menor, ele cabe com folga!
             format: [larguraDesktop, alturaProporcional], 
             orientation: 'portrait',
             hotfixes: ['px_scaling'] 
         }
       };
 
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Delay um pouquinho maior para garantir renderização da imagem gigante
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // 7. GERAÇÃO
       const worker = html2pdf().set(opt).from(clone);
@@ -3252,7 +3251,7 @@ window.shareOrViewPDF = async () => {
 
   } catch (e) {
     console.error("Erro PDF:", e);
-    alert('Erro ao gerar PDF.');
+    alert('Erro ao gerar PDF de alta resolução. Tente novamente.');
   } finally {
       if (overlayParaRemover && document.body.contains(overlayParaRemover)) {
           document.body.removeChild(overlayParaRemover);
