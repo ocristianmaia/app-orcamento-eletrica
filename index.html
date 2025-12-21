@@ -3441,38 +3441,40 @@ window.shareOrViewPDF = async () => {
     function handleCEPMask(event) {
         event.target.value = formatarCEP(event.target.value);
     }
-    /**
-     * NOVO: Filtra a lista de clientes com base na busca
-     * @param {Event} event - O evento de input
+
+/**
+     * CORRIGIDO: Filtra a lista de clientes buscando em TODO o conteúdo do cartão
+     * (Nome, Telefone, ID, Endereço)
      */
     function handleSearchCliente(event) {
         const query = event.target.value.toLowerCase().trim();
-        
-        // --- NOVO: Auto-expandir a lista ao digitar ---
         const listaEl = document.getElementById('clientes-list');
-        // Se o usuário digitou algo, forçamos a abertura do <details> pai
+        
+        // Auto-expandir a lista ao digitar
         if (listaEl && query.length > 0) {
-            const details = listaEl.closest('details'); // Encontra o elemento 'details' que envolve a lista
-            if (details) {
-                details.open = true;
-            }
+            const details = listaEl.closest('details');
+            if (details) details.open = true;
         }
+
         const clientes = document.querySelectorAll('#clientes-list > div');
         
         if (!clientes.length) return;
 
         clientes.forEach(clienteDiv => {
-            const nomeEl = clienteDiv.querySelector('p.font-medium');
-            if (nomeEl) {
-                const nome = nomeEl.textContent.toLowerCase();
-                if (nome.includes(query)) {
-                    clienteDiv.style.display = 'flex';
-                } else {
-                    clienteDiv.style.display = 'none';
-                }
+            // Pega TODO o texto dentro do cartão do cliente (Nome, Tel, Endereço, ID...)
+            const textoCompleto = clienteDiv.textContent.toLowerCase();
+            
+            if (textoCompleto.includes(query)) {
+                // Remove o estilo inline para que as classes CSS (flex/hidden) voltem a funcionar
+                // Isso garante que o item Mobile apareça no Mobile e o Desktop no Desktop
+                clienteDiv.style.display = ''; 
+            } else {
+                // Esconde o item se não bater com a busca
+                clienteDiv.style.display = 'none';
             }
         });
     }
+    
     /**
      * Busca o CEP na API e preenche os campos do formulário
      * @param {string} cep - O CEP para buscar
