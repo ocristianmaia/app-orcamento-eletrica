@@ -1671,7 +1671,7 @@ document.getElementById('form-material').addEventListener('submit', async (e) =>
     });
 
   // --- FUNÇÃO ATUALIZADA: LISTA DE MATERIAIS COM BUSCA E ORDEM A-Z ---
-function renderMateriaisList() {
+window.renderMateriaisList = function() {
   const elPadrao = document.getElementById('materiais-list-padrao');
   const elEstoque = document.getElementById('materiais-list-estoque');
   // 1. Pega o texto da busca (convertendo para minúsculo para facilitar)
