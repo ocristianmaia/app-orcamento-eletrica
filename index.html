@@ -402,6 +402,23 @@
                   </form>
               </details>
 
+              <div class="mt-6 mb-4">
+    <div class="relative">
+        <input 
+            type="text" 
+            id="input-busca-material" 
+            placeholder="🔍 Buscar material pelo nome..." 
+            class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+            oninput="renderMateriaisList()"
+        >
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
               <details class="group border rounded-lg mb-2" open>
                   <summary class="flex items-center justify-between p-4 cursor-pointer bg-white hover:bg-gray-50 rounded-t-lg border-b">
                       <span class="font-bold text-gray-700">📋 Lista de Compras (Padrão)</span>
@@ -1653,30 +1670,53 @@ document.getElementById('form-material').addEventListener('submit', async (e) =>
       finally { btn.disabled=false; btn.textContent='Salvar Alterações'; }
     });
 
-  function renderMateriaisList() {
+  // --- FUNÇÃO ATUALIZADA: LISTA DE MATERIAIS COM BUSCA E ORDEM A-Z ---
+function renderMateriaisList() {
   const elPadrao = document.getElementById('materiais-list-padrao');
   const elEstoque = document.getElementById('materiais-list-estoque');
+  // 1. Pega o texto da busca (convertendo para minúsculo para facilitar)
+  const termoBusca = document.getElementById('input-busca-material')?.value.toLowerCase() || '';
+
   if (!elPadrao || !elEstoque) return;
 
-  const lista = appState.materiais || [];
-  const padraoItems = lista.filter(m => m.tipo !== 'estoque');
-  const estoqueItems = lista.filter(m => m.tipo === 'estoque');
+  // 2. Pega a lista original e aplica Filtro + Ordenação
+  let listaProcessada = (appState.materiais || [])
+    .filter(m => {
+        // Filtra: Se não digitou nada, mostra tudo. Se digitou, verifica se o nome contém o texto.
+        return !termoBusca || (m.nome || '').toLowerCase().includes(termoBusca);
+    })
+    .sort((a, b) => {
+        // Ordena: A-Z
+        return (a.nome || '').localeCompare(b.nome || '');
+    });
 
+  // 3. Separa as listas novamente (Padrão vs Estoque)
+  const padraoItems = listaProcessada.filter(m => m.tipo !== 'estoque');
+  const estoqueItems = listaProcessada.filter(m => m.tipo === 'estoque');
+
+  // Função interna para desenhar o HTML de cada item
   const criarHTML = (itens, ehEstoque) => {
-      if(!itens.length) return '<p class="text-gray-500 text-xs p-2">Vazio.</p>';
+      if(!itens.length) {
+          // Mensagem personalizada dependendo se tem busca ou não
+          return termoBusca 
+            ? '<p class="text-gray-500 text-xs p-2 text-center">Nenhum item encontrado na busca.</p>' 
+            : '<p class="text-gray-500 text-xs p-2">Vazio.</p>';
+      }
+      
       return itens.map(m => `
         <div class="flex justify-between items-center p-2 border-b last:border-0 hover:bg-gray-50">
           <div class="flex-grow cursor-pointer" onclick="openEditMaterialModal('${m.id}')">
             <p class="servico-slim text-sm">
                 ${ehEstoque ? '<span class="text-blue-600 font-bold">#</span> ' : ''}
-                <strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${m.valor.toFixed(2)}
+                <strong>${m.nome}</strong> (${m.unidade || 'UNID'}) — R$ ${parseFloat(m.valor).toFixed(2)}
                 ${ehEstoque ? `<br><span class="text-xs font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded">Estoque: ${m.qtdEstoque || 0}</span>` : ''}
             </p>
           </div>
-          <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 font-bold px-2">&times;</button>
+          <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 font-bold px-2" title="Excluir">×</button>
         </div>`).join('');
   };
 
+  // 4. Desenha na tela
   elPadrao.innerHTML = criarHTML(padraoItems, false);
   elEstoque.innerHTML = criarHTML(estoqueItems, true);
 }
