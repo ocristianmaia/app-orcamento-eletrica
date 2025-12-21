@@ -755,6 +755,8 @@
                     <label class="block"><span class="text-gray-700">Valor da Diária (R$)</span><input type="number" step="0.01" id="config-residencial-diaria" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
                     <label class="block"><span class="text-gray-700">Valor por Ponto (R$)</span><input type="number" step="0.01" id="config-residencial-ponto" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
                     <label class="block"><span class="text-gray-700">Valor por Hora (R$)</span><input type="number" step="0.01" id="config-residencial-hora" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
+                    
+                    <label class="block"><span class="text-gray-700">Valor por m² (R$)</span><input type="number" step="0.01" id="config-residencial-metro" class="w-full p-2 border rounded-md mt-1" placeholder="0.00"></label>
                 </div>
             </div>
             <div class="mt-8">
@@ -948,7 +950,8 @@
 
               <div>
                 <h4 class="text-md font-medium text-gray-800 mb-2">Mão de Obra</h4>
-                <div id="orc-mao-de-obra" class="space-y-2">
+
+<div id="orc-mao-de-obra" class="space-y-2">
                   <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
                     <input type="radio" name="tipo-servico" value="empreitada" class="h-4 w-4 text-blue-600 border-gray-300">
                     <span class="ml-3 text-sm font-medium text-gray-900">Empreitada</span>
@@ -969,7 +972,14 @@
                     <span class="ml-3 text-sm font-medium text-gray-900">Por Hora</span>
                     <input type="number" step="0.5" id="hora-qtd" placeholder="Qtd. horas" class="ml-auto w-32 p-1 border rounded-md text-sm">
                   </label>
+                  
+                  <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400">
+                    <input type="radio" name="tipo-servico" value="metro" class="h-4 w-4 text-blue-600 border-gray-300">
+                    <span class="ml-3 text-sm font-medium text-gray-900">Por m²</span>
+                    <input type="number" step="0.5" id="metro-qtd" placeholder="Qtd. m²" class="ml-auto w-32 p-1 border rounded-md text-sm">
+                  </label>
                 </div>
+                
               </div>
             </div>
             
@@ -1336,6 +1346,7 @@ onAuthStateChanged(auth, async (user) => { // Note o 'async' aqui!
       el('config-residencial-diaria').value = c.residencial_diaria || '';
       el('config-residencial-ponto').value = c.residencial_ponto || '';
       el('config-residencial-hora').value = c.residencial_hora || '';
+      el('config-residencial-metro').value = c.residencial_metro || '';
       el('config-industrial-diaria').value = c.industrial_diaria || '';
       el('config-industrial-ponto').value = c.industrial_ponto || '';
       el('config-industrial-hora').value = c.industrial_hora || '';
@@ -2564,7 +2575,13 @@ window.toggleOrcamentoExclusao = (checkbox) => {
               if (clone.maoDeObra?.tipo) {
                   setRadio('tipo-servico', clone.maoDeObra.tipo);
                   // Preenche valores manuais
-                  const map = { 'empreitada':'empreitada-valor', 'diaria':'diaria-qtd', 'ponto':'ponto-qtd', 'hora':'hora-qtd' };
+                  const map = { 
+                    'empreitada':'empreitada-valor', 
+                      'diaria':'diaria-qtd', 
+                      'ponto':'ponto-qtd', 
+                      'hora':'hora-qtd',
+                      'metro': 'metro-qtd' // <--- NOVO 
+                  };
                   const fieldId = map[clone.maoDeObra.tipo];
                   if(fieldId) document.getElementById(fieldId).value = clone.maoDeObra.raw_value || '';
               }
@@ -2946,6 +2963,7 @@ document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
         diaria: (tipoObra === 'industrial' ? appState.config.industrial_diaria : appState.config.residencial_diaria) || 0,
         ponto: (tipoObra === 'industrial' ? appState.config.industrial_ponto : appState.config.residencial_ponto) || 0,
         hora: (tipoObra === 'industrial' ? appState.config.industrial_hora : appState.config.residencial_hora) || 0,
+        metro: appState.config.residencial_metro || 0
       };
       
       switch(tipo) {
@@ -2969,6 +2987,11 @@ document.getElementById('orc-tipo-obra').addEventListener('change', (e) => {
         case 'hora':
           raw_value = parseFloat(document.getElementById('hora-qtd').value) || 0;
           valor = raw_value * rates.hora; label = `${raw_value} hora(s)`; break;
+          case 'metro':
+          raw_value = parseFloat(document.getElementById('metro-qtd').value) || 0;
+          valor = raw_value * rates.metro; 
+          label = `${raw_value} m²`; 
+          break;
       }
       appState.currentOrcamento.maoDeObra = { tipo, valor, label, raw_value };
     }
@@ -4097,6 +4120,7 @@ window.saveConfigData = async () => {
           residencial_diaria: parseFloat(getVal('config-residencial-diaria')) || 0,
           residencial_ponto: parseFloat(getVal('config-residencial-ponto')) || 0,
           residencial_hora: parseFloat(getVal('config-residencial-hora')) || 0,
+          residencial_metro: parseFloat(getVal('config-residencial-metro')) || 0,
           industrial_diaria: parseFloat(getVal('config-industrial-diaria')) || 0,
           industrial_ponto: parseFloat(getVal('config-industrial-ponto')) || 0,
           industrial_hora: parseFloat(getVal('config-industrial-hora')) || 0,
