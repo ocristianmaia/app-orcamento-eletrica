@@ -10,59 +10,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
   <style>
 
-/* --- ESTILOS DE PDF PROFISSIONAL --- */
-    
-    /* Área do PDF (Reset para garantir que saia igual em qualquer tela) */
-    .pdf-content {
-        background-color: white;
-        color: #333;
-        font-family: 'Helvetica', 'Arial', sans-serif;
-    }
-
-    /* TEMA CLÁSSICO (Técnico/B&P) */
-    .tema-classico .pdf-header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-    .tema-classico .pdf-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    .tema-classico .pdf-table th { border: 1px solid #000; background-color: #eee; color: #000; padding: 5px; font-size: 0.8rem; }
-    .tema-classico .pdf-table td { border: 1px solid #000; padding: 5px; font-size: 0.85rem; }
-    .tema-classico .pdf-total { border: 2px solid #000; padding: 10px; margin-top: 20px; text-align: right; font-weight: bold; }
-    .tema-classico .pdf-footer { border-top: 1px solid #000; margin-top: 30px; padding-top: 10px; font-size: 0.7rem; text-align: center; }
-
-    /* TEMA MODERNO (Azul/Clean) */
-    .tema-moderno .pdf-header { 
-        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); 
-        color: white; 
-        padding: 25px; 
-        border-radius: 0 0 0 40px; 
-        margin: -40px -40px 30px -40px; /* Expande para cobrir margens */
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    .tema-moderno .pdf-header h1, .tema-moderno .pdf-header h2, .tema-moderno .pdf-header strong, .tema-moderno .pdf-header span { 
-        color: white !important; text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-    .tema-moderno .pdf-section-title {
-        color: #1e3a8a !important; border-left: 4px solid #3b82f6; padding-left: 10px; margin-top: 20px;
-    }
-    .tema-moderno .pdf-table { width: 100%; border-collapse: collapse; margin-top: 10px; border: none; }
-    .tema-moderno .pdf-table th { 
-        background-color: #eff6ff; color: #1e3a8a; padding: 10px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid #bfdbfe; border-top: none; border-left: none; border-right: none;
-    }
-    .tema-moderno .pdf-table td { border-bottom: 1px solid #f3f4f6; padding: 8px; font-size: 0.85rem; color: #4b5563; }
-    .tema-moderno .pdf-table tr:last-child td { border-bottom: none; }
-    
-    .tema-moderno .pdf-total { 
-        background-color: #1e3a8a; color: white; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: right; font-size: 1.2rem;
-    }
-    .tema-moderno .pdf-total span { color: white !important; }
-    
-    /* Área do PIX no PDF */
-    .pix-box {
-        display: flex; align-items: center; gap: 15px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; margin-top: 15px; page-break-inside: avoid;
-    }
-    .pix-qrcode-img { width: 80px; height: 80px; mix-blend-mode: multiply; }
-    
     /* Adicione isto dentro da sua tag <style> */
     html, body {
         overflow-x: hidden; /* Trava rolagem lateral */
@@ -1116,88 +1065,8 @@
         <a href="https://wa.me/5551999600889" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md inline-block">Enviar Mensagem</a>
       </div>
     </footer>
-
-    <div id="modal-pdf-template" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-[99999]">
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 animate-fade-in-up transform transition-all scale-100">
-        <div class="text-center mb-6">
-            <h3 class="text-2xl font-bold text-gray-800">Estilo do Orçamento</h3>
-            <p class="text-gray-500 text-sm">Como você quer apresentar este documento?</p>
-        </div>
-
-        <div class="space-y-3">
-            <div onclick="selectTemplate('classico')" id="card-classico" class="cursor-pointer border-2 border-gray-200 rounded-lg p-4 flex items-center gap-4 hover:border-gray-400 transition-all">
-                <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 font-bold">1</div>
-                <div>
-                    <h4 class="font-bold text-gray-800">Clássico / Técnico</h4>
-                    <p class="text-xs text-gray-500">Preto e branco, econômico, ideal para impressão.</p>
-                </div>
-            </div>
-
-            <div onclick="selectTemplate('moderno')" id="card-moderno" class="cursor-pointer border-2 border-blue-500 bg-blue-50 rounded-lg p-4 flex items-center gap-4 transition-all ring-2 ring-blue-200">
-                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">2</div>
-                <div>
-                    <h4 class="font-bold text-gray-800">Moderno / Digital</h4>
-                    <p class="text-xs text-gray-500">Colorido, elegante e com QR Code Pix.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="mt-8 flex gap-3">
-            <button onclick="document.getElementById('modal-pdf-template').classList.add('hidden')" class="w-1/3 py-3 bg-gray-100 text-gray-600 rounded-lg font-medium">Voltar</button>
-            <button onclick="gerarPDFFinal()" class="w-2/3 py-3 bg-blue-600 text-white rounded-lg font-bold shadow-lg hover:bg-blue-700 flex justify-center items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                Baixar PDF
-            </button>
-        </div>
-    </div>
-</div>
       
   </div> <script type="module">
-
-    // --- GERADOR DE PAYLOAD PIX (PADRÃO EMV QRCPS MPM) ---
-    function generatePixPayload(chave, valor, beneficiario, cidade, txid = '***') {
-        if (!chave || !valor) return null;
-        
-        const valorStr = valor.toFixed(2);
-        
-        // Funções auxiliares para montar os campos TLV (Tag-Length-Value)
-        const f = (id, val) => {
-            const len = val.length.toString().padStart(2, '0');
-            return `${id}${len}${val}`;
-        };
-
-        // Montagem do payload
-        let payload = 
-            f('00', '01') + // Payload Format Indicator
-            f('26', // Merchant Account Information
-                f('00', 'br.gov.bcb.pix') + 
-                f('01', chave)
-            ) +
-            f('52', '0000') + // Merchant Category Code
-            f('53', '986') + // Transaction Currency (BRL)
-            f('54', valorStr) + // Transaction Amount
-            f('58', 'BR') + // Country Code
-            f('59', beneficiario.substring(0, 25)) + // Merchant Name
-            f('60', cidade.substring(0, 15)) + // Merchant City
-            f('62', // Additional Data Field Template
-                f('05', txid) // Reference Label (TxID)
-            ) + 
-            '6304'; // CRC16 ID + Length
-
-        // Cálculo do CRC16 (Polinômio 0x1021)
-        const poly = 0x1021;
-        let crc = 0xFFFF;
-        for (let i = 0; i < payload.length; i++) {
-            crc ^= (payload.charCodeAt(i) << 8);
-            for (let j = 0; j < 8; j++) {
-                if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ poly;
-                else crc = crc << 1;
-            }
-        }
-        const crcHex = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-        
-        return payload + crcHex;
-    }
 
     console.log("VERSÃO 6.0 (Modo de Cobrança) CARREGADA"); 
     // ===== Firebase config (preservado do seu arquivo) =====
@@ -3406,29 +3275,6 @@ function updateOrcamentoPreview() {
         throw e; 
       }
     };
-
-    let templatePDFSelecionado = 'moderno'; // Padrão
-
-    window.shareOrViewPDF = () => {
-        // Agora, em vez de gerar direto, abre o modal
-        if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
-        document.getElementById('modal-pdf-template').classList.remove('hidden');
-        selectTemplate('moderno'); // Reseta para moderno ao abrir
-    };
-
-    window.selectTemplate = (tipo) => {
-        templatePDFSelecionado = tipo;
-        const cClassico = document.getElementById('card-classico');
-        const cModerno = document.getElementById('card-moderno');
-
-        if (tipo === 'classico') {
-            cClassico.className = "cursor-pointer border-2 border-green-500 bg-green-50 rounded-lg p-4 flex items-center gap-4 transition-all shadow-md";
-            cModerno.className = "cursor-pointer border-2 border-gray-200 rounded-lg p-4 flex items-center gap-4 hover:border-gray-400 transition-all opacity-60";
-        } else {
-            cModerno.className = "cursor-pointer border-2 border-blue-500 bg-blue-50 rounded-lg p-4 flex items-center gap-4 transition-all shadow-md";
-            cClassico.className = "cursor-pointer border-2 border-gray-200 rounded-lg p-4 flex items-center gap-4 hover:border-gray-400 transition-all opacity-60";
-        }
-    };
     
 // --- VERSÃO FINAL: ESTÁVEL + RESOLUÇÃO ULTRA (4X) ---
 window.shareOrViewPDF = async () => {
@@ -4342,134 +4188,8 @@ ${mapsLink}
             window.open(zapLink, '_blank');
         }
     };
-
-    // ---------------------------------------------------------
-    // PARTE C: A LÓGICA DO PDF E QR CODE (Cole antes do window.onload)
-    // ---------------------------------------------------------
-
-    // ---------------------------------------------------------
-    // PARTE C: A LÓGICA DO PDF E QR CODE (Versão COMPLETA)
-    // ---------------------------------------------------------
-
-    window.gerarPDFFinal = async () => {
-        // 1. Fecha o modal
-        document.getElementById('modal-pdf-template').classList.add('hidden');
-        
-        // Garante que salvou e atualiza visual
-        try { await saveOrcamento(false); } catch (e) {}
-        updateOrcamentoPreview();
-
-        // 2. Clona o elemento 'pdf-preview' para manipular sem estragar a tela
-        const sourceElement = document.getElementById('pdf-preview');
-        const clone = sourceElement.cloneNode(true);
-        
-        // 3. Aplica o TEMA escolhido no CLONE
-        // Remove as classes antigas e põe a nova
-        clone.classList.remove('tema-classico', 'tema-moderno');
-        clone.classList.add(`tema-${templatePDFSelecionado}`);
-        
-        // Adiciona classes para o CSS (para garantir que o estilo pegue)
-        const header = clone.querySelector('div > div:first-child'); 
-        if(header) header.classList.add('pdf-header');
-        
-        const titulos = clone.querySelectorAll('h4');
-        titulos.forEach(t => t.classList.add('pdf-section-title'));
-
-        const tabelas = clone.querySelectorAll('table');
-        tabelas.forEach(t => t.classList.add('pdf-table'));
-
-        // Tenta achar a caixa de total pelo fundo cinza (gambiarra técnica segura)
-        const totalBox = clone.querySelector('div[style*="background-color: #EEEEEE"]');
-        if(totalBox) {
-            totalBox.classList.add('pdf-total');
-            totalBox.style.backgroundColor = ''; // Limpa estilo inline para o CSS mandar
-            totalBox.style.borderTop = '';
-            totalBox.style.color = '';
-        }
-
-        // 4. LÓGICA DO PIX (Só gera se for Moderno + Tiver Chave + Valor > 0)
-        const chavePix = appState.config.config_pix_chave;
-        const valorTotal = appState.currentOrcamento.total;
-        
-        if (templatePDFSelecionado === 'moderno' && chavePix && valorTotal > 0) {
-            // Chama a função da Parte A (generatePixPayload)
-            const payload = generatePixPayload(
-                chavePix, 
-                valorTotal, 
-                appState.config.nome || 'Prestador', 
-                appState.config.cidade || 'Geral',
-                appState.currentOrcamento.numeroOrcamento ? `ORC${appState.currentOrcamento.numeroOrcamento}` : '***'
-            );
-
-            if (payload) {
-                // Cria a caixinha do Pix
-                const pixDiv = document.createElement('div');
-                pixDiv.className = 'pix-box';
-                pixDiv.innerHTML = `
-                    <canvas id="qr-canvas-render"></canvas>
-                    <div>
-                        <strong style="color: #1e3a8a; display:block; font-size: 0.9rem;">Pague com Pix</strong>
-                        <span style="font-size: 0.7em; color: #666;">Leia o QR Code no app do seu banco.</span>
-                        <div style="font-size: 0.6em; color: #999; margin-top: 2px; word-break: break-all;">Chave: ${chavePix}</div>
-                    </div>
-                `;
-                
-                // Tenta inserir antes do rodapé ou no final
-                const footerMsg = clone.querySelector('.no-break');
-                if(footerMsg) {
-                    footerMsg.prepend(pixDiv);
-                } else {
-                    clone.appendChild(pixDiv);
-                }
-                
-                // Gera o desenho do QR Code (biblioteca QRious)
-                setTimeout(() => {
-                    new QRious({
-                        element: pixDiv.querySelector('#qr-canvas-render'),
-                        value: payload,
-                        size: 100 // Tamanho do QR Code
-                    });
-                }, 0);
-            }
-        }
-
-        // 5. Configuração da Folha A4 para o PDF
-        const larguraA4 = 794; // Largura padrão A4 em pixels (96dpi)
-        
-        clone.style.width = `${larguraA4}px`;
-        clone.style.padding = '40px';
-        clone.style.margin = '0 auto';
-        clone.style.backgroundColor = 'white';
-        
-        // Cria um container invisível fora da tela
-        const overlay = document.createElement('div');
-        overlay.style.position = 'fixed'; 
-        overlay.style.left = '-9999px'; // Joga pra fora da tela
-        overlay.style.top = '0';
-        overlay.appendChild(clone);
-        document.body.appendChild(overlay);
-
-        // 6. GERAÇÃO FINAL (html2pdf)
-        const nomeCliente = (appState.currentOrcamento.cliente?.nome || 'cliente').split(' ')[0];
-        const nomeArquivo = `Orcamento_${nomeCliente}_${templatePDFSelecionado}.pdf`;
-
-        const opt = {
-            margin: 0,
-            filename: nomeArquivo,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, letterRendering: true }, // Scale 2 deixa nítido
-            jsPDF: { unit: 'px', format: [larguraA4, 1123], orientation: 'portrait' } 
-        };
-
-        // Pequeno delay para o QR Code renderizar antes do print
-        await new Promise(r => setTimeout(r, 500));
-
-        html2pdf().set(opt).from(clone).save().then(() => {
-            document.body.removeChild(overlay); // Limpa a bagunça depois de baixar
-        });
-    };
-
-    window.onload = initializeFirebase;
+    
+window.onload = initializeFirebase;
   </script>
 </body>
 </html>
