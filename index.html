@@ -4347,6 +4347,10 @@ ${mapsLink}
     // PARTE C: A LÓGICA DO PDF E QR CODE (Cole antes do window.onload)
     // ---------------------------------------------------------
 
+    // ---------------------------------------------------------
+    // PARTE C: A LÓGICA DO PDF E QR CODE (Versão COMPLETA)
+    // ---------------------------------------------------------
+
     window.gerarPDFFinal = async () => {
         // 1. Fecha o modal
         document.getElementById('modal-pdf-template').classList.add('hidden');
@@ -4446,7 +4450,7 @@ ${mapsLink}
         document.body.appendChild(overlay);
 
         // 6. GERAÇÃO FINAL (html2pdf)
-        const nomeCliente = (appState.currentOrcamento.cliente.nome || 'cliente').split(' ')[0];
+        const nomeCliente = (appState.currentOrcamento.cliente?.nome || 'cliente').split(' ')[0];
         const nomeArquivo = `Orcamento_${nomeCliente}_${templatePDFSelecionado}.pdf`;
 
         const opt = {
@@ -4464,8 +4468,8 @@ ${mapsLink}
             document.body.removeChild(overlay); // Limpa a bagunça depois de baixar
         });
     };
-    
-window.onload = initializeFirebase;
+
+    window.onload = initializeFirebase;
   </script>
 </body>
 </html>
