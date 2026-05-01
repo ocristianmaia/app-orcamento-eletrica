@@ -1412,7 +1412,7 @@
 
   <script type="module">
 
-    // ===== Firebase Config =====
+    // ===== Firebase Config (Preservado) =====
     const firebaseConfig = {
       apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
       authDomain: "app-orcamentos-eletrica.firebaseapp.com",
@@ -1424,7 +1424,7 @@
 
     import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // ===== Estado Global =====
     let app, db, auth, userId;
@@ -3056,10 +3056,13 @@ Qualquer dúvida estou à disposição!`;
       });
       document.getElementById('btn-clear-tiposervico')?.addEventListener('click', async () => {
         if (!confirm('Limpar todos os tipos de serviço?') || !userId) return;
-        const snap = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js").then(m => m.getDocs(collection(db, `users/${userId}/tiposdeservico`)));
-        const batch = writeBatch(db);
-        snap.forEach(d => batch.delete(d.ref));
-        await batch.commit();
+        try {
+          const snap = await getDocs(collection(db, `users/${userId}/tiposdeservico`));
+          const batch = writeBatch(db);
+          snap.forEach(d => batch.delete(d.ref));
+          await batch.commit();
+          alert('Todos os tipos de serviço foram excluídos.');
+        } catch (e) { console.error(e); alert('Erro ao excluir.'); }
       });
 
       // Materiais
@@ -3087,11 +3090,13 @@ Qualquer dúvida estou à disposição!`;
       });
       document.getElementById('btn-clear-materiais')?.addEventListener('click', async () => {
         if (!confirm('Limpar todos os materiais?') || !userId) return;
-        const { getDocs } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-        const snap = await getDocs(collection(db, `users/${userId}/materiais`));
-        const batch = writeBatch(db);
-        snap.forEach(d => batch.delete(d.ref));
-        await batch.commit();
+        try {
+          const snap = await getDocs(collection(db, `users/${userId}/materiais`));
+          const batch = writeBatch(db);
+          snap.forEach(d => batch.delete(d.ref));
+          await batch.commit();
+          alert('Todos os materiais foram excluídos.');
+        } catch (e) { console.error(e); alert('Erro ao excluir.'); }
       });
 
       // Clientes
@@ -3120,11 +3125,13 @@ Qualquer dúvida estou à disposição!`;
       });
       document.getElementById('btn-clear-clientes')?.addEventListener('click', async () => {
         if (!confirm('Limpar todos os clientes?') || !userId) return;
-        const { getDocs } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-        const snap = await getDocs(collection(db, `users/${userId}/clientes`));
-        const batch = writeBatch(db);
-        snap.forEach(d => batch.delete(d.ref));
-        await batch.commit();
+        try {
+          const snap = await getDocs(collection(db, `users/${userId}/clientes`));
+          const batch = writeBatch(db);
+          snap.forEach(d => batch.delete(d.ref));
+          await batch.commit();
+          alert('Todos os clientes foram excluídos.');
+        } catch (e) { console.error(e); alert('Erro ao excluir.'); }
       });
     }
 
