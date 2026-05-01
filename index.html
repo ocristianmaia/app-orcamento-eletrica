@@ -362,10 +362,21 @@
         <h3 class="text-xl font-bold text-gray-900">QR Code de Pagamento</h3>
         <button onclick="closeQRCodeModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">&times;</button>
       </div>
-      <p class="text-sm text-gray-500 mb-4">Escaneie para pagar via PIX</p>
-      <div id="qrcode-container" class="flex justify-center mb-4"></div>
+      <p class="text-sm text-gray-500 mb-2">Escaneie para pagar via PIX</p>
+      <div id="qrcode-container" class="flex justify-center mb-3"></div>
       <div id="qrcode-valor" class="text-2xl font-bold text-gray-900 mb-2"></div>
-      <div id="qrcode-chave" class="text-sm text-gray-500 mb-4 bg-gray-50 rounded-lg p-2 break-all"></div>
+      <div id="qrcode-chave" class="text-xs text-gray-500 mb-3 bg-gray-50 rounded-lg p-2 break-all"></div>
+      <!-- Código PIX Copia e Cola -->
+      <div id="pix-copia-cola-wrapper" class="hidden mb-3">
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Código PIX Copia e Cola</p>
+        <div class="flex gap-2">
+          <input id="pix-copia-cola-input" type="text" readonly class="input-field text-xs flex-1 bg-gray-50 font-mono" value="">
+          <button onclick="copiarPixCopiaCola()" class="px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition-colors flex-shrink-0">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          </button>
+        </div>
+        <p id="pix-copiado-msg" class="text-xs text-green-600 font-semibold mt-1 hidden">✅ Código copiado!</p>
+      </div>
       <button onclick="closeQRCodeModal()" class="w-full btn-primary">Fechar</button>
     </div>
   </div>
@@ -1381,7 +1392,7 @@
             <div class="mt-4 pt-4 border-t border-gray-200 flex flex-col gap-2">
               <div class="grid grid-cols-2 gap-2">
                 <button onclick="saveOrcamento()" id="btn-salvar-orcamento" class="btn-primary text-sm py-2.5">Salvar Orçamento</button>
-                <button onclick="openPdfFormatModal()" class="btn-success text-sm py-2.5">Enviar PDF</button>
+                <button onclick="enviarPDFComFormato()" id="btn-enviar-pdf" class="btn-success text-sm py-2.5">Enviar PDF</button>
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <button onclick="openQRCodeModal()" class="py-2.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5">
@@ -1412,7 +1423,7 @@
 
   <script type="module">
 
-    // ===== Firebase Config (Preservado) =====
+    // ===== Firebase Config =====
     const firebaseConfig = {
       apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
       authDomain: "app-orcamentos-eletrica.firebaseapp.com",
@@ -1424,7 +1435,7 @@
 
     import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // ===== Estado Global =====
     let app, db, auth, userId;
@@ -1633,32 +1644,101 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
     };
 
 
+    // ===== Gerador de Payload PIX EMV (Copia e Cola) =====
+    function gerarPayloadPIX(chave, valor, nome, cidade) {
+      const crc16 = (str) => {
+        let crc = 0xFFFF;
+        for (let i = 0; i < str.length; i++) {
+          crc ^= str.charCodeAt(i) << 8;
+          for (let j = 0; j < 8; j++) {
+            if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
+            else crc <<= 1;
+          }
+        }
+        return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+      };
+      const tlv = (id, value) => {
+        const len = value.length.toString().padStart(2, '0');
+        return `${id}${len}${value}`;
+      };
+      const pixKey = chave.replace(/\s/g, '');
+      const merchantAccountInfo = tlv('00', 'BR.GOV.BCB.PIX') + tlv('01', pixKey);
+      const valorStr = valor > 0 ? valor.toFixed(2) : '';
+      let payload = '';
+      payload += tlv('00', '01'); // Payload Format Indicator
+      payload += tlv('26', merchantAccountInfo); // Merchant Account Info
+      payload += tlv('52', '0000'); // Merchant Category Code
+      payload += tlv('53', '986'); // Transaction Currency (BRL)
+      if (valorStr) payload += tlv('54', valorStr); // Transaction Amount
+      payload += tlv('58', 'BR'); // Country Code
+      payload += tlv('59', (nome || 'QUOTEX').substring(0, 25).toUpperCase()); // Merchant Name
+      payload += tlv('60', (cidade || 'BRASIL').substring(0, 15).toUpperCase()); // Merchant City
+      payload += tlv('62', tlv('05', '***')); // Additional Data Field
+      payload += '6304'; // CRC placeholder
+      return payload + crc16(payload);
+    }
+
     // ===== QR Code PIX =====
     window.openQRCodeModal = () => {
       const orc = appState.currentOrcamento;
       if (!orc?.cliente) return alert('Selecione um cliente primeiro.');
       const total = orc.total || 0;
-      const pixChave = appState.config.config_pix_chave || '';
+      const pixChave = (appState.config.config_pix_chave || '').trim();
       const modal = document.getElementById('qrcode-modal');
       const container = document.getElementById('qrcode-container');
       const valorEl = document.getElementById('qrcode-valor');
       const chaveEl = document.getElementById('qrcode-chave');
+      const copiaCola = document.getElementById('pix-copia-cola-wrapper');
+      const copiaInput = document.getElementById('pix-copia-cola-input');
+      const copiadoMsg = document.getElementById('pix-copiado-msg');
       container.innerHTML = '';
+      if (copiadoMsg) copiadoMsg.classList.add('hidden');
       valorEl.textContent = formatBRL(total);
-      chaveEl.textContent = pixChave ? `Chave PIX: ${pixChave}` : 'Configure sua chave PIX em Configurações > Formas de Pagamento';
+      if (!pixChave) {
+        chaveEl.textContent = '⚠️ Configure sua chave PIX em Configurações > Formas de Pagamento';
+        if (copiaCola) copiaCola.classList.add('hidden');
+        container.innerHTML = '<p class="text-gray-400 text-sm p-4">Chave PIX não configurada.</p>';
+        modal.classList.add('active');
+        return;
+      }
+      chaveEl.textContent = `Chave PIX: ${pixChave}`;
+      // Gerar payload EMV real
+      const nomeProfissional = (appState.config.nome || 'QUOTEX').substring(0, 25);
+      const cidadeProfissional = (appState.config.cidade || 'BRASIL').substring(0, 15);
+      const payload = gerarPayloadPIX(pixChave, total, nomeProfissional, cidadeProfissional);
+      if (copiaInput) copiaInput.value = payload;
+      if (copiaCola) copiaCola.classList.remove('hidden');
       if (typeof QRCode !== 'undefined') {
-        const qrText = pixChave ? `PIX:${pixChave}|VALOR:${total.toFixed(2)}` : `QUOTEX|TOTAL:${total.toFixed(2)}`;
         const canvas = document.createElement('canvas');
         container.appendChild(canvas);
-        QRCode.toCanvas(canvas, qrText, { width: 200, margin: 2, color: { dark: '#0f172a', light: '#ffffff' } });
+        QRCode.toCanvas(canvas, payload, { width: 200, margin: 2, color: { dark: '#0f172a', light: '#ffffff' } })
+          .catch(e => { console.error('QR Code error:', e); container.innerHTML = '<p class="text-red-500 text-sm">Erro ao gerar QR Code.</p>'; });
       } else {
         container.innerHTML = '<p class="text-gray-500 text-sm">QR Code indisponível.</p>';
       }
       modal.classList.add('active');
     };
     window.closeQRCodeModal = () => document.getElementById('qrcode-modal').classList.remove('active');
+    window.copiarPixCopiaCola = () => {
+      const input = document.getElementById('pix-copia-cola-input');
+      const msg = document.getElementById('pix-copiado-msg');
+      if (!input?.value) return;
+      navigator.clipboard.writeText(input.value).then(() => {
+        if (msg) { msg.classList.remove('hidden'); setTimeout(() => msg.classList.add('hidden'), 3000); }
+      }).catch(() => {
+        input.select(); document.execCommand('copy');
+        if (msg) { msg.classList.remove('hidden'); setTimeout(() => msg.classList.add('hidden'), 3000); }
+      });
+    };
 
-    // ===== Formato PDF Modal =====
+    // ===== Enviar PDF com formato das configurações =====
+    window.enviarPDFComFormato = async () => {
+      if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
+      const formatoConfig = appState.config.config_pdf_formato || 'completo';
+      await gerarPDF(formatoConfig);
+    };
+
+    // ===== Formato PDF Modal (mantido para acesso manual) =====
     window.openPdfFormatModal = () => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente primeiro.');
       document.getElementById('pdf-format-modal').classList.add('active');
@@ -1674,11 +1754,14 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
     };
 
     window.gerarPDF = async (formato) => {
-      closePdfFormatModal();
+      // Fechar modal de formato se estiver aberto
+      const fmtModal = document.getElementById('pdf-format-modal');
+      if (fmtModal) fmtModal.classList.remove('active');
+      
       const orc = appState.currentOrcamento;
       if (!orc?.cliente) return alert('Selecione um cliente.');
       
-      const btn = document.querySelector('button[onclick="openPdfFormatModal()"]');
+      const btn = document.getElementById('btn-enviar-pdf');
       const originalText = btn ? btn.textContent : 'Enviar PDF';
       if (btn) { btn.disabled = true; btn.textContent = 'Gerando...'; }
       
@@ -1819,31 +1902,57 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         doc.text(formatBRL(orc.total), pageW - margin - 4, y + 6.5, { align: 'right' });
         y += 18;
 
-        // QR Code PIX
+        // Formas de Pagamento
+        if (config.config_pix_chave || config.config_cartao_vezes || config.config_deposito_banco) {
+          if (y > 250) { doc.addPage(); y = margin; }
+          doc.setFontSize(8); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
+          doc.text('FORMAS DE PAGAMENTO:', margin, y); y += 4;
+          doc.setFont(undefined,'normal'); doc.setTextColor(60,60,60);
+          if (config.config_pix_chave) { doc.text(`PIX: ${config.config_pix_chave}`, margin, y); y += 4; }
+          if (config.config_cartao_vezes) { doc.text(`Cartão: até ${config.config_cartao_vezes}x${config.config_cartao_juros ? ` (${config.config_cartao_juros}% a.m.)` : ''}`, margin, y); y += 4; }
+          if (config.config_deposito_banco) { doc.text(`Depósito: ${config.config_deposito_banco} | Ag: ${config.config_deposito_ag} | Conta: ${config.config_deposito_conta}`, margin, y); y += 4; }
+          y += 2;
+        }
+
+        // QR Code PIX com payload EMV real
         if (config.config_mostrar_qrcode && config.config_pix_chave) {
           try {
-            const qrText = `PIX:${config.config_pix_chave}|VALOR:${orc.total.toFixed(2)}`;
+            if (y > 230) { doc.addPage(); y = margin; }
+            const nomePix = (config.nome || 'QUOTEX').substring(0, 25);
+            const cidadePix = (config.cidade || 'BRASIL').substring(0, 15);
+            const pixPayload = gerarPayloadPIX(config.config_pix_chave, orc.total, nomePix, cidadePix);
             const qrCanvas = document.createElement('canvas');
-            await QRCode.toCanvas(qrCanvas, qrText, { margin: 1, width: 100 });
+            await QRCode.toCanvas(qrCanvas, pixPayload, { margin: 1, width: 120 });
             const qrData = qrCanvas.toDataURL('image/png');
-            doc.setFontSize(8); doc.setFont(undefined,'bold'); doc.setTextColor(40,40,40);
-            doc.text('PAGUE COM PIX:', margin, y);
-            doc.addImage(qrData, 'PNG', margin, y + 2, 25, 25);
-            doc.setFontSize(7); doc.setFont(undefined,'normal');
-            doc.text(`Chave: ${config.config_pix_chave}`, margin + 28, y + 10);
-            doc.text('Escaneie o código ao lado', margin + 28, y + 14);
-            y += 32;
+            // Caixa de destaque para o PIX
+            doc.setFillColor(240, 249, 255);
+            doc.setDrawColor(147, 197, 253);
+            doc.roundedRect(margin, y, contentW, 35, 2, 2, 'FD');
+            doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
+            doc.text('PAGUE COM PIX:', margin + 4, y + 6);
+            doc.addImage(qrData, 'PNG', margin + 4, y + 8, 28, 28);
+            doc.setFontSize(7); doc.setFont(undefined,'normal'); doc.setTextColor(40,40,40);
+            doc.text(`Chave: ${config.config_pix_chave}`, margin + 36, y + 14);
+            doc.text('Escaneie o código ao lado para pagar', margin + 36, y + 19);
+            doc.text(`Valor: ${formatBRL(orc.total)}`, margin + 36, y + 24);
+            y += 40;
           } catch(e) { console.error('Erro QR Code PDF:', e); }
         }
 
         // Rodapé / Observações
         if (y > 260) { doc.addPage(); y = margin; }
-        doc.setFontSize(8); doc.setFont(undefined,'normal'); doc.setTextColor(100,100,100);
-        const obsPadrao = config.config_obs_padrao || '';
-        const validade = config.config_validade_orcamento || 15;
-        const footerLines = doc.splitTextToSize(`${obsPadrao}
-Orçamento válido por ${validade} dias.`, contentW);
-        doc.text(footerLines, margin, y);
+        const obsPadrao = config.obs_padrao || config.config_obs_padrao || '';
+        const validade = config.validade_orcamento || config.config_validade_orcamento || 15;
+        doc.setFontSize(7); doc.setFont(undefined,'italic'); doc.setTextColor(120,120,120);
+        if (obsPadrao) {
+          const obsLines = doc.splitTextToSize(obsPadrao, contentW);
+          doc.text(obsLines, margin, y); y += obsLines.length * 3.5 + 2;
+        }
+        doc.text(`Orçamento válido por ${validade} dias.`, margin, y); y += 4;
+        doc.setFont(undefined,'normal');
+        if (orc.items?.some(i => i.tipo === 'estoque')) {
+          doc.text('* Itens marcados com # são de estoque imediato.', margin, y);
+        }
         
         // Abrir Preview
         const pdfBlob = doc.output('blob');
@@ -1886,190 +1995,6 @@ Qualquer dúvida estou à disposição!`;
       }
     };
 
-
-        // Logo
-        if (config.logo) {
-          try { doc.addImage(config.logo, 'PNG', margin, y, 30, 15); } catch {}
-          y += 2;
-        }
-
-        // Cabeçalho Profissional
-        doc.setFontSize(12); doc.setFont(undefined,'bold');
-        const [pr,pg,pb] = hexToRgb(corPrimaria);
-        doc.setTextColor(pr,pg,pb);
-        doc.text(config.nome || 'Profissional', config.logo ? margin + 35 : margin, y + 5);
-        doc.setFontSize(8); doc.setFont(undefined,'normal'); doc.setTextColor(80,80,80);
-        const profEnd = `${config.logradouro||''}, ${config.numero||'s/n'} - ${config.bairro||''} - ${config.cidade||''}/${config.uf||''}`;
-        doc.text(profEnd, config.logo ? margin + 35 : margin, y + 10);
-        doc.text(`Tel: ${formatarTelefone(config.telefone)} | ${getLabelEValorDoc(config.doc).label} ${getLabelEValorDoc(config.doc).valor}`, config.logo ? margin + 35 : margin, y + 15);
-        y += 22;
-
-        // Linha separadora
-        doc.setDrawColor(200,200,200); doc.line(margin, y, pageW - margin, y); y += 5;
-
-        // Número e Data
-        const dateRef = orc.createdAt ? new Date(orc.createdAt) : new Date();
-        const dataFmt = dateRef.toLocaleDateString('pt-BR');
-        const numSeq = String(orc.numeroOrcamento||'').padStart(3,'0');
-        const anoFull = dateRef.getFullYear();
-        const codOrc = `${orc.cliente.numeroCadastro||'SEM-COD'}-${numSeq}/${anoFull}`;
-        doc.setFontSize(10); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
-        doc.text(`ORÇAMENTO Nº: ${codOrc}`, margin, y);
-        doc.setFont(undefined,'normal'); doc.setTextColor(80,80,80);
-        doc.text(`Data: ${dataFmt}`, pageW - margin, y, { align: 'right' });
-        y += 6;
-
-        // Dados do Cliente
-        doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
-        doc.text('CLIENTE:', margin, y); y += 4;
-        doc.setFont(undefined,'normal'); doc.setTextColor(40,40,40);
-        doc.text(orc.cliente.nome || '', margin, y); y += 4;
-        doc.setTextColor(80,80,80);
-        doc.text(formatarEnderecoCompleto(orc.cliente), margin, y); y += 4;
-        doc.text(`Tel: ${formatarTelefone(orc.cliente.telefone)}`, margin, y); y += 4;
-        if (orc.cliente.documento) {
-          const {label,valor} = getLabelEValorDoc(orc.cliente.documento);
-          doc.text(`${label} ${valor}`, margin, y); y += 4;
-        }
-        y += 2;
-        doc.setDrawColor(200,200,200); doc.line(margin, y, pageW - margin, y); y += 5;
-
-        // Descrição do Serviço
-        if (orc.descricaoServico) {
-          doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
-          doc.text('DESCRIÇÃO DO SERVIÇO:', margin, y); y += 4;
-          doc.setFont(undefined,'normal'); doc.setTextColor(60,60,60);
-          const lines = doc.splitTextToSize(orc.descricaoServico, contentW);
-          doc.text(lines, margin, y); y += lines.length * 4 + 3;
-        }
-
-        const modoCobranca = orc.modoCobranca || 'mao_de_obra';
-        const usarMaterial = orc.usarMaterial || 'sim';
-        let subtotalServicos = 0, totalMaoDeObra = 0, subtotalMateriais = 0;
-
-        // Formato COMPLETO
-        if (formato === 'completo') {
-          // Serviços (por_servico)
-          if (modoCobranca === 'por_servico' && orc.tiposDeServico?.length > 0) {
-            doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
-            doc.text('DESCRIÇÃO DOS SERVIÇOS:', margin, y); y += 4;
-            const rows = orc.tiposDeServico.map(s => {
-              const qtd = s.quantidade || 1;
-              const total = s.valor * qtd;
-              subtotalServicos += total;
-              return [s.descricao||'', String(qtd), `R$ ${(s.valor||0).toFixed(2)}`, `R$ ${total.toFixed(2)}`];
-            });
-            doc.autoTable({ startY: y, head: [['Descrição','Qtd.','V. Unit.','V. Total']], body: rows, margin: { left: margin, right: margin }, styles: { fontSize: 8, cellPadding: 2 }, headStyles: { fillColor: [30,64,175], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245,247,255] }, columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 15, halign: 'center' }, 2: { cellWidth: 30, halign: 'right' }, 3: { cellWidth: 30, halign: 'right' } } });
-            y = doc.lastAutoTable.finalY + 4;
-          }
-
-          // Mão de Obra
-          if (modoCobranca === 'mao_de_obra') {
-            totalMaoDeObra = orc.maoDeObra?.valor || 0;
-            if (totalMaoDeObra > 0) {
-              doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
-              doc.text('MÃO DE OBRA:', margin, y); y += 4;
-              doc.setFont(undefined,'normal'); doc.setTextColor(60,60,60);
-              doc.text(`${orc.maoDeObra.label||'Serviço'}: R$ ${totalMaoDeObra.toFixed(2)}`, margin, y); y += 6;
-            }
-          }
-
-          // Materiais
-          if (usarMaterial === 'sim' && orc.items?.length > 0) {
-            doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
-            doc.text('MATERIAIS:', margin, y); y += 4;
-            const matRows = orc.items.map(item => {
-              const total = item.valor * (item.quantidade||1);
-              subtotalMateriais += total;
-              return [(item.tipo==='estoque'?'# ':'')+item.nome, `${item.quantidade||1} ${item.unidade||'UNID'}`, `R$ ${item.valor.toFixed(2)}`, `R$ ${total.toFixed(2)}`];
-            });
-            doc.autoTable({ startY: y, head: [['Descrição','Qtd.','V. Unit.','V. Total']], body: matRows, margin: { left: margin, right: margin }, styles: { fontSize: 8, cellPadding: 2 }, headStyles: { fillColor: [30,64,175], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245,247,255] }, columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 25, halign: 'center' }, 2: { cellWidth: 25, halign: 'right' }, 3: { cellWidth: 25, halign: 'right' } } });
-            y = doc.lastAutoTable.finalY + 4;
-            doc.setFontSize(8); doc.setFont(undefined,'bold'); doc.setTextColor(80,80,80);
-            doc.text(`Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}`, pageW - margin, y, { align: 'right' }); y += 5;
-          }
-        } else {
-          // Formato SIMPLIFICADO
-          subtotalServicos = orc.tiposDeServico?.reduce((s,i) => s + (i.valor*(i.quantidade||1)),0) || 0;
-          totalMaoDeObra = orc.maoDeObra?.valor || 0;
-          subtotalMateriais = orc.items?.reduce((s,i) => s + (i.valor*(i.quantidade||1)),0) || 0;
-          doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
-          doc.text('RESUMO DO ORÇAMENTO:', margin, y); y += 5;
-          doc.setFont(undefined,'normal'); doc.setTextColor(60,60,60);
-          if (modoCobranca === 'por_servico' && subtotalServicos > 0) {
-            doc.text(`Serviços: R$ ${subtotalServicos.toFixed(2)}`, margin, y); y += 4;
-          }
-          if (modoCobranca === 'mao_de_obra' && totalMaoDeObra > 0) {
-            doc.text(`Mão de Obra: R$ ${totalMaoDeObra.toFixed(2)}`, margin, y); y += 4;
-          }
-          if (usarMaterial === 'sim' && subtotalMateriais > 0) {
-            doc.text(`Materiais: R$ ${subtotalMateriais.toFixed(2)}`, margin, y); y += 4;
-          }
-          y += 2;
-        }
-
-        // Desconto e Total
-        const subtotal = subtotalServicos + subtotalMateriais + totalMaoDeObra;
-        let valorDesconto = 0;
-        if (orc.desconto?.tipo !== 'nenhum' && orc.desconto?.valor > 0) {
-          valorDesconto = orc.desconto.tipo === 'percent' ? (subtotal * orc.desconto.valor / 100) : orc.desconto.valor;
-          doc.setFontSize(8); doc.setFont(undefined,'normal'); doc.setTextColor(150,50,50);
-          doc.text(`Desconto: -R$ ${valorDesconto.toFixed(2)}`, pageW - margin, y, { align: 'right' }); y += 4;
-        }
-        const totalFinal = orc.total || (subtotal - valorDesconto);
-        doc.setDrawColor(...hexToRgb(corTotal)); doc.line(margin, y, pageW - margin, y); y += 3;
-        const [tr,tg,tb] = hexToRgb(corTotal);
-        doc.setFontSize(13); doc.setFont(undefined,'bold'); doc.setTextColor(tr,tg,tb);
-        doc.text(`TOTAL: R$ ${totalFinal.toFixed(2)}`, pageW - margin, y, { align: 'right' }); y += 8;
-
-        // Pagamento
-        if (config.config_pix_chave || config.config_cartao_vezes || config.config_deposito_banco) {
-          doc.setFontSize(8); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
-          doc.text('FORMAS DE PAGAMENTO:', margin, y); y += 4;
-          doc.setFont(undefined,'normal'); doc.setTextColor(60,60,60);
-          if (config.config_pix_chave) { doc.text(`PIX: ${config.config_pix_chave}`, margin, y); y += 4; }
-          if (config.config_cartao_vezes) { doc.text(`Cartão: até ${config.config_cartao_vezes}x${config.config_cartao_juros ? ` (${config.config_cartao_juros}% a.m.)` : ''}`, margin, y); y += 4; }
-          if (config.config_deposito_banco) { doc.text(`Depósito: ${config.config_deposito_banco} | Ag: ${config.config_deposito_ag} | Conta: ${config.config_deposito_conta}`, margin, y); y += 4; }
-          y += 2;
-        }
-
-        // QR Code PIX (se configurado)
-        const mostrarQR = config.config_mostrar_qrcode && config.config_pix_chave;
-        if (mostrarQR && typeof QRCode !== 'undefined') {
-          try {
-            const qrText = `PIX:${config.config_pix_chave}|VALOR:${totalFinal.toFixed(2)}`;
-            const canvas = document.createElement('canvas');
-            await QRCode.toCanvas(canvas, qrText, { width: 80, margin: 1 });
-            doc.addImage(canvas.toDataURL(), 'PNG', margin, y, 25, 25);
-            doc.setFontSize(7); doc.setTextColor(80,80,80);
-            doc.text('Escaneie para pagar via PIX', margin + 27, y + 8);
-            y += 28;
-          } catch {}
-        }
-
-        // Validade e Observações
-        const validade = config.validade_orcamento || 15;
-        const obsPadrao = config.obs_padrao || '';
-        doc.setFontSize(7); doc.setFont(undefined,'italic'); doc.setTextColor(120,120,120);
-        doc.text(`Orçamento válido por ${validade} dias.`, margin, y); y += 4;
-        if (obsPadrao) {
-          const obsLines = doc.splitTextToSize(obsPadrao, contentW);
-          doc.text(obsLines, margin, y); y += obsLines.length * 3 + 2;
-        }
-        doc.setFont(undefined,'normal');
-        doc.text('* Itens marcados com # são de estoque imediato.', margin, y);
-
-        // Salva PDF
-        const nomeCliente = (orc.cliente.nome||'cliente').replace(/[^a-zA-Z0-9]/g,'_').toLowerCase();
-        doc.save(`orcamento_${nomeCliente}_${codOrc}.pdf`);
-      } catch(err) {
-        console.error('Erro ao gerar PDF:', err);
-        alert('Erro ao gerar PDF. Tente novamente.');
-      } finally {
-        if (btn) { btn.disabled = false; btn.textContent = 'Enviar PDF'; }
-      }
-    };
-
     // ===== WhatsApp Texto =====
     window.sendWhatsAppText = () => {
       const orc = appState.currentOrcamento;
@@ -2101,12 +2026,16 @@ Qualquer dúvida estou à disposição!`;
     
     window.saveOrcamento = async (fecharModal = true) => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
-      if (isSaving) return; 
+      // Proteção dupla contra salvamento múltiplo
+      if (isSaving) { console.warn('[saveOrcamento] Já está salvando, ignorando clique.'); return; }
       isSaving = true;
       
       const btnSalvar = document.getElementById('btn-salvar-orcamento');
+      const btnEnviar = document.getElementById('btn-enviar-pdf');
       const originalText = btnSalvar ? btnSalvar.textContent : 'Salvar';
+      // Desabilitar AMBOS os botões durante o salvamento
       if (btnSalvar) { btnSalvar.disabled = true; btnSalvar.textContent = 'Salvando...'; }
+      if (btnEnviar && fecharModal === false) { btnEnviar.disabled = true; }
       
       try {
         const data = { ...appState.currentOrcamento };
@@ -2149,6 +2078,7 @@ Qualquer dúvida estou à disposição!`;
       } finally {
         isSaving = false;
         if (btnSalvar) { btnSalvar.disabled = false; btnSalvar.textContent = originalText; }
+        if (btnEnviar) { btnEnviar.disabled = false; }
       }
     };
 
@@ -2805,6 +2735,7 @@ Qualquer dúvida estou à disposição!`;
         <div style="text-align:right;font-size:1.1em;font-weight:bold;margin-top:8px;padding:8px 4px;border-top:2px solid ${corT};color:${corT};background:#f0f4ff">TOTAL: R$ ${orc.total.toFixed(2)}</div>
         <div style="margin-top:8px">${pagHtml}
           <div style="font-size:0.8em;margin-top:4px;text-align:center;background:#FFFFCC;padding:4px;border:1px solid #eee">Orçamento válido por ${validade} dias.</div>
+          ${(config.obs_padrao||config.config_obs_padrao) ? `<div style="font-size:0.78em;margin-top:4px;padding:4px;border:1px solid #e5e7eb;border-radius:4px;color:#555;white-space:pre-line">${config.obs_padrao||config.config_obs_padrao}</div>` : ''}
         </div>
       </div>`;
     }
@@ -2897,7 +2828,6 @@ Qualquer dúvida estou à disposição!`;
       const qrEl = el('config-mostrar-qrcode'); if (qrEl) qrEl.checked = c.config_mostrar_qrcode||false;
       const novAtEl = el('config-novidades-ativo'); if (novAtEl) novAtEl.checked = c.novidades_ativo||false;
       sv('config-novidades-texto', c.novidades_texto||'');
-      renderNovidades();
       renderNovidades();
     }
 
@@ -3056,13 +2986,10 @@ Qualquer dúvida estou à disposição!`;
       });
       document.getElementById('btn-clear-tiposervico')?.addEventListener('click', async () => {
         if (!confirm('Limpar todos os tipos de serviço?') || !userId) return;
-        try {
-          const snap = await getDocs(collection(db, `users/${userId}/tiposdeservico`));
-          const batch = writeBatch(db);
-          snap.forEach(d => batch.delete(d.ref));
-          await batch.commit();
-          alert('Todos os tipos de serviço foram excluídos.');
-        } catch (e) { console.error(e); alert('Erro ao excluir.'); }
+        const snap = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js").then(m => m.getDocs(collection(db, `users/${userId}/tiposdeservico`)));
+        const batch = writeBatch(db);
+        snap.forEach(d => batch.delete(d.ref));
+        await batch.commit();
       });
 
       // Materiais
@@ -3090,13 +3017,11 @@ Qualquer dúvida estou à disposição!`;
       });
       document.getElementById('btn-clear-materiais')?.addEventListener('click', async () => {
         if (!confirm('Limpar todos os materiais?') || !userId) return;
-        try {
-          const snap = await getDocs(collection(db, `users/${userId}/materiais`));
-          const batch = writeBatch(db);
-          snap.forEach(d => batch.delete(d.ref));
-          await batch.commit();
-          alert('Todos os materiais foram excluídos.');
-        } catch (e) { console.error(e); alert('Erro ao excluir.'); }
+        const { getDocs } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+        const snap = await getDocs(collection(db, `users/${userId}/materiais`));
+        const batch = writeBatch(db);
+        snap.forEach(d => batch.delete(d.ref));
+        await batch.commit();
       });
 
       // Clientes
@@ -3125,13 +3050,11 @@ Qualquer dúvida estou à disposição!`;
       });
       document.getElementById('btn-clear-clientes')?.addEventListener('click', async () => {
         if (!confirm('Limpar todos os clientes?') || !userId) return;
-        try {
-          const snap = await getDocs(collection(db, `users/${userId}/clientes`));
-          const batch = writeBatch(db);
-          snap.forEach(d => batch.delete(d.ref));
-          await batch.commit();
-          alert('Todos os clientes foram excluídos.');
-        } catch (e) { console.error(e); alert('Erro ao excluir.'); }
+        const { getDocs } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+        const snap = await getDocs(collection(db, `users/${userId}/clientes`));
+        const batch = writeBatch(db);
+        snap.forEach(d => batch.delete(d.ref));
+        await batch.commit();
       });
     }
 
