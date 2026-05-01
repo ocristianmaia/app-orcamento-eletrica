@@ -402,6 +402,27 @@
     </div>
   </div>
 
+  
+  <!-- ===== MODAL: PRÉ-VISUALIZAÇÃO PDF ===== -->
+  <div id="pdf-preview-modal" class="modal">
+    <div class="bg-white rounded-2xl p-4 w-[95%] max-w-4xl shadow-2xl h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold text-gray-900">Pré-visualização do Orçamento</h3>
+        <button onclick="closePdfPreviewModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">&times;</button>
+      </div>
+      <div class="flex-grow bg-gray-100 rounded-lg overflow-hidden relative">
+        <iframe id="pdf-preview-iframe" class="w-full h-full border-none"></iframe>
+      </div>
+      <div class="mt-4 flex gap-3">
+        <button onclick="closePdfPreviewModal()" class="flex-1 py-3 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-colors">Cancelar</button>
+        <button id="btn-confirmar-envio" class="flex-1 py-3 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+          ENVIAR ORÇAMENTO
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== LOGIN VIEW ===== -->
   <div id="login-view" class="hidden min-h-screen flex flex-col justify-center items-center text-center p-6" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
     <div class="mb-8">
@@ -1582,15 +1603,35 @@
     }
 
     // ===== Compartilhar App =====
+    
     window.compartilharApp = async () => {
-      const appUrl = window.location.href;
-      const msg = `🔧 *QUOTEX — Orçamento Inteligente*\n\nGere orçamentos profissionais para seus clientes de forma rápida e fácil!\n\n🌐 Acesse: ${appUrl}\n\n📲 Entre em contato com a Masch Manutenção para adquirir seu acesso.`;
+      const appUrl = window.location.origin + window.location.pathname;
+      const msg = `🔧 *QUOTEX — Orçamento Inteligente*
+
+Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
+
+🌐 Conheça o app: ${appUrl}
+
+📲 Adquira seu acesso agora mesmo!`;
+      
       if (navigator.share) {
-        try { await navigator.share({ title: 'QUOTEX — Orçamento Inteligente', text: msg, url: appUrl }); return; }
-        catch {}
+        try {
+          await navigator.share({
+            title: 'QUOTEX — Orçamento Inteligente',
+            text: msg,
+            url: appUrl
+          });
+          return;
+        } catch (e) {
+          console.log('Share cancelado ou falhou:', e);
+        }
       }
-      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+      
+      // Fallback para WhatsApp
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+      window.open(waUrl, '_blank');
     };
+
 
     // ===== QR Code PIX =====
     window.openQRCodeModal = () => {
@@ -1625,14 +1666,26 @@
     window.closePdfFormatModal = () => document.getElementById('pdf-format-modal').classList.remove('active');
 
     // ===== Geração de PDF Vetorial (jsPDF) =====
+    
+    window.closePdfPreviewModal = () => {
+      document.getElementById('pdf-preview-modal').classList.remove('active');
+      const iframe = document.getElementById('pdf-preview-iframe');
+      if (iframe.src) { URL.revokeObjectURL(iframe.src); iframe.src = ''; }
+    };
+
     window.gerarPDF = async (formato) => {
       closePdfFormatModal();
       const orc = appState.currentOrcamento;
       if (!orc?.cliente) return alert('Selecione um cliente.');
+      
       const btn = document.querySelector('button[onclick="openPdfFormatModal()"]');
-      if (btn) { btn.disabled = true; btn.textContent = 'Gerando PDF...'; }
+      const originalText = btn ? btn.textContent : 'Enviar PDF';
+      if (btn) { btn.disabled = true; btn.textContent = 'Gerando...'; }
+      
       try {
+        // Salva antes de gerar para garantir dados atualizados
         await saveOrcamento(false);
+        
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const config = appState.config;
@@ -1645,6 +1698,194 @@
           const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
           return [r,g,b];
         };
+        const [pr,pg,pb] = hexToRgb(corPrimaria);
+
+        // Logo
+        if (config.logo) {
+          try { doc.addImage(config.logo, 'PNG', margin, y, 30, 15); } catch(e) { console.error('Erro logo PDF:', e); }
+          y += 2;
+        }
+
+        // Cabeçalho Empresa
+        doc.setFontSize(12); doc.setFont(undefined,'bold');
+        doc.setTextColor(pr,pg,pb);
+        doc.text(config.nome || 'Profissional', config.logo ? margin + 35 : margin, y + 5);
+        doc.setFontSize(8); doc.setFont(undefined,'normal'); doc.setTextColor(80,80,80);
+        const profEnd = `${config.logradouro||''}, ${config.numero||'s/n'} - ${config.bairro||''} - ${config.cidade||''}/${config.uf||''}`;
+        doc.text(profEnd, config.logo ? margin + 35 : margin, y + 10);
+        doc.text(`Tel: ${formatarTelefone(config.telefone)} | ${getLabelEValorDoc(config.doc).label} ${getLabelEValorDoc(config.doc).valor}`, config.logo ? margin + 35 : margin, y + 15);
+        y += 22;
+
+        doc.setDrawColor(200,200,200); doc.line(margin, y, pageW - margin, y); y += 8;
+
+        // Info Orçamento
+        const dateRef = orc.createdAt ? (orc.createdAt.toDate ? orc.createdAt.toDate() : new Date(orc.createdAt)) : new Date();
+        const dataFmt = dateRef.toLocaleDateString('pt-BR');
+        const numSeq = String(orc.numeroOrcamento||'').padStart(3,'0');
+        const codOrc = `${orc.cliente.numeroCadastro||'SEM-COD'}-${numSeq}/${dateRef.getFullYear()}`;
+        
+        doc.setFontSize(10); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
+        doc.text(`ORÇAMENTO Nº: ${codOrc}`, margin, y);
+        doc.setFont(undefined,'normal'); doc.setTextColor(80,80,80);
+        doc.text(`Data: ${dataFmt}`, pageW - margin, y, { align: 'right' });
+        y += 8;
+
+        // Cliente
+        doc.setFontSize(10); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
+        doc.text('CLIENTE:', margin, y);
+        y += 5;
+        doc.setFont(undefined,'normal'); doc.setTextColor(40,40,40);
+        doc.text(orc.cliente.nome, margin, y);
+        y += 5;
+        doc.setFontSize(8); doc.setTextColor(80,80,80);
+        const cliEnd = formatarEnderecoCompleto(orc.cliente);
+        doc.text(cliEnd, margin, y);
+        y += 4;
+        const docCli = getLabelEValorDoc(orc.cliente.documento);
+        doc.text(`${docCli.label} ${docCli.valor} | Tel: ${formatarTelefone(orc.cliente.telefone)}`, margin, y);
+        y += 10;
+
+        // Descrição do Serviço
+        if (orc.descricaoServico) {
+          doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
+          doc.text('DESCRIÇÃO DO SERVIÇO:', margin, y);
+          y += 5;
+          doc.setFont(undefined,'normal'); doc.setTextColor(60,60,60);
+          const lines = doc.splitTextToSize(orc.descricaoServico, contentW);
+          doc.text(lines, margin, y);
+          y += (lines.length * 4) + 6;
+        }
+
+        // Itens (Serviços / Materiais)
+        if (formato === 'completo') {
+          // Serviços por tipo
+          if (orc.modoCobranca === 'por_servico' && orc.tiposDeServico?.length > 0) {
+            doc.autoTable({
+              startY: y,
+              head: [['Serviço', 'Qtd', 'Unit.', 'Total']],
+              body: orc.tiposDeServico.map(s => [s.descricao, s.quantidade||1, formatBRL(s.valor), formatBRL(s.valor*(s.quantidade||1))]),
+              styles: { fontSize: 8 },
+              headStyles: { fillColor: [pr,pg,pb] },
+              margin: { left: margin, right: margin }
+            });
+            y = doc.lastAutoTable.finalY + 8;
+          }
+          
+          // Materiais
+          if (orc.usarMaterial === 'sim' && orc.items?.length > 0) {
+            doc.autoTable({
+              startY: y,
+              head: [['Material', 'Qtd', 'Unit.', 'Total']],
+              body: orc.items.map(i => [i.nome, `${i.quantidade} ${i.unidade||'UNID'}`, formatBRL(i.valor), formatBRL(i.valor*i.quantidade)]),
+              styles: { fontSize: 8 },
+              headStyles: { fillColor: [pr,pg,pb] },
+              margin: { left: margin, right: margin }
+            });
+            y = doc.lastAutoTable.finalY + 8;
+          }
+
+          // Mão de Obra Única
+          if (orc.modoCobranca === 'mao_de_obra' && orc.maoDeObra?.valor > 0) {
+            doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(40,40,40);
+            doc.text(`${orc.maoDeObra.label}:`, margin, y);
+            doc.text(formatBRL(orc.maoDeObra.valor), pageW - margin, y, { align: 'right' });
+            y += 8;
+          }
+        } else {
+          // Simplificado: Apenas resumo
+          doc.setFontSize(10); doc.setFont(undefined,'bold'); doc.setTextColor(40,40,40);
+          doc.text('RESUMO DO ORÇAMENTO:', margin, y);
+          y += 6;
+          doc.setFontSize(9); doc.setFont(undefined,'normal');
+          doc.text('Serviços e Materiais conforme acordado.', margin, y);
+          y += 10;
+        }
+
+        // Totais e Desconto
+        if (y > 240) { doc.addPage(); y = margin; }
+        
+        if (orc.desconto?.valor > 0) {
+          const descVal = orc.desconto.tipo === 'percent' ? (orc.total / (1 - orc.desconto.valor/100) * (orc.desconto.valor/100)) : orc.desconto.valor;
+          doc.setFontSize(9); doc.setTextColor(150,0,0);
+          doc.text(`Desconto: - ${formatBRL(descVal)}`, pageW - margin, y, { align: 'right' });
+          y += 6;
+        }
+
+        const [tr,tg,tb] = hexToRgb(corTotal);
+        doc.setFillColor(tr,tg,tb);
+        doc.rect(margin, y, contentW, 10, 'F');
+        doc.setFontSize(12); doc.setFont(undefined,'bold'); doc.setTextColor(255,255,255);
+        doc.text('TOTAL DO ORÇAMENTO:', margin + 4, y + 6.5);
+        doc.text(formatBRL(orc.total), pageW - margin - 4, y + 6.5, { align: 'right' });
+        y += 18;
+
+        // QR Code PIX
+        if (config.config_mostrar_qrcode && config.config_pix_chave) {
+          try {
+            const qrText = `PIX:${config.config_pix_chave}|VALOR:${orc.total.toFixed(2)}`;
+            const qrCanvas = document.createElement('canvas');
+            await QRCode.toCanvas(qrCanvas, qrText, { margin: 1, width: 100 });
+            const qrData = qrCanvas.toDataURL('image/png');
+            doc.setFontSize(8); doc.setFont(undefined,'bold'); doc.setTextColor(40,40,40);
+            doc.text('PAGUE COM PIX:', margin, y);
+            doc.addImage(qrData, 'PNG', margin, y + 2, 25, 25);
+            doc.setFontSize(7); doc.setFont(undefined,'normal');
+            doc.text(`Chave: ${config.config_pix_chave}`, margin + 28, y + 10);
+            doc.text('Escaneie o código ao lado', margin + 28, y + 14);
+            y += 32;
+          } catch(e) { console.error('Erro QR Code PDF:', e); }
+        }
+
+        // Rodapé / Observações
+        if (y > 260) { doc.addPage(); y = margin; }
+        doc.setFontSize(8); doc.setFont(undefined,'normal'); doc.setTextColor(100,100,100);
+        const obsPadrao = config.config_obs_padrao || '';
+        const validade = config.config_validade_orcamento || 15;
+        const footerLines = doc.splitTextToSize(`${obsPadrao}
+Orçamento válido por ${validade} dias.`, contentW);
+        doc.text(footerLines, margin, y);
+        
+        // Abrir Preview
+        const pdfBlob = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        const iframe = document.getElementById('pdf-preview-iframe');
+        iframe.src = pdfUrl;
+        
+        document.getElementById('pdf-preview-modal').classList.add('active');
+        
+        // Configurar botão de envio no preview
+        const btnConfirmar = document.getElementById('btn-confirmar-envio');
+        btnConfirmar.onclick = () => {
+          const msg = `Olá ${orc.cliente.nome}, segue o orçamento *${codOrc}* conforme solicitado.
+
+Total: *${formatBRL(orc.total)}*
+
+Qualquer dúvida estou à disposição!`;
+          const pdfFile = new File([pdfBlob], `Orcamento_${codOrc.replace(/\//g,'_')}.pdf`, { type: 'application/pdf' });
+          
+          if (navigator.share && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
+            navigator.share({
+              files: [pdfFile],
+              title: 'Orçamento ' + codOrc,
+              text: msg
+            }).catch(e => {
+              console.log('Share falhou, tentando WhatsApp:', e);
+              window.open(`https://wa.me/55${orc.cliente.telefone}?text=${encodeURIComponent(msg)}`, '_blank');
+            });
+          } else {
+            window.open(`https://wa.me/55${orc.cliente.telefone}?text=${encodeURIComponent(msg)}`, '_blank');
+            doc.save(`Orcamento_${codOrc.replace(/\//g,'_')}.pdf`);
+          }
+          closePdfPreviewModal();
+        };
+
+      } catch(e) {
+        console.error(e); alert('Erro ao gerar PDF: ' + e.message);
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+      }
+    };
+
 
         // Logo
         if (config.logo) {
@@ -1857,41 +2098,57 @@
     };
 
     // ===== Salvar Orçamento (com fix anti-duplicação) =====
+    
     window.saveOrcamento = async (fecharModal = true) => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
-      if (isSaving) { console.log('Salvamento já em andamento, ignorando clique duplo.'); return; }
+      if (isSaving) return; 
       isSaving = true;
+      
       const btnSalvar = document.getElementById('btn-salvar-orcamento');
+      const originalText = btnSalvar ? btnSalvar.textContent : 'Salvar';
       if (btnSalvar) { btnSalvar.disabled = true; btnSalvar.textContent = 'Salvando...'; }
-      const data = { ...appState.currentOrcamento };
-      if (!data.id) { data.status = 'pendente'; data.aprovado = false; }
-      else { data.status = data.status || (data.aprovado ? 'aprovado' : 'pendente'); }
-      if (data.modoCobranca === 'mao_de_obra') data.tiposDeServico = [];
-      else data.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
-      if (data.usarMaterial === 'nao') data.items = [];
+      
       try {
-        if (data.id) {
+        const data = { ...appState.currentOrcamento };
+        if (!data.id) { 
+          data.status = 'pendente'; 
+          data.aprovado = false;
+          // Pre-gerar ID para evitar duplicidade em cliques rápidos
+          const tempRef = doc(collection(db, `users/${userId}/orcamentos`));
+          data.id = tempRef.id;
+          appState.currentOrcamento.id = data.id;
+        }
+        
+        if (data.modoCobranca === 'mao_de_obra') data.tiposDeServico = [];
+        else data.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
+        if (data.usarMaterial === 'nao') data.items = [];
+
+        if (data.createdAt) {
+          // Update
           data.versao = (data.versao || 1) + 1;
           const ref = doc(db, `users/${userId}/orcamentos/${data.id}`);
-          delete data.createdAt;
-          await setDoc(ref, data, { merge: true });
+          const toSave = { ...data }; delete toSave.createdAt;
+          await setDoc(ref, toSave, { merge: true });
         } else {
+          // New
           const maxNumero = appState.orcamentos.reduce((max, o) => Math.max(max, o.numeroOrcamento||0), 0);
           data.numeroOrcamento = maxNumero + 1;
           data.versao = 1;
           data.createdAt = serverTimestamp();
-          const ref = await addDoc(collection(db, `users/${userId}/orcamentos`), data);
-          appState.currentOrcamento.id = ref.id;
           appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
+          await setDoc(doc(db, `users/${userId}/orcamentos/${data.id}`), data);
         }
+        
         updateOrcamentoPreview();
-        if (fecharModal) { alert('Orçamento salvo com sucesso!'); closeOrcamentoModal(); }
+        if (fecharModal) { 
+          alert('Orçamento salvo com sucesso!'); 
+          closeOrcamentoModal(); 
+        }
       } catch(e) {
         console.error(e); alert('Erro ao salvar.');
-        throw e;
       } finally {
         isSaving = false;
-        if (btnSalvar) { btnSalvar.disabled = false; btnSalvar.textContent = 'Salvar Orçamento'; }
+        if (btnSalvar) { btnSalvar.disabled = false; btnSalvar.textContent = originalText; }
       }
     };
 
