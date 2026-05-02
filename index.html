@@ -1949,7 +1949,7 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           y += 2;
         }
 
-        // QR Code PIX com payload EMV real
+                // QR Code PIX com payload EMV real
         if (config.config_mostrar_qrcode && config.config_pix_chave) {
           try {
             if (y > 230) { doc.addPage(); y = margin; }
@@ -1957,17 +1957,35 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
             const cidadePix = (config.cidade || 'BRASIL').substring(0, 15);
             const pixPayload = gerarPayloadPIX(config.config_pix_chave, orc.total, nomePix, cidadePix);
 
-            // ── CORREÇÃO FINAL: Garante que a lib QRCode está carregada antes de usar.
-            // Em alguns ambientes móveis/lentos, o clique no botão pode ocorrer antes da lib CDN carregar.
-            const QRCodeLib = await waitLib('QRCode');
+            let qrData = null;
             
-            // Gera a Data URL em memória (sem depender de canvas no DOM)
-            const qrData = await QRCodeLib.toDataURL(pixPayload, {
-              margin: 1, width: 400, errorCorrectionLevel: 'M',
-              color: { dark: '#000000', light: '#ffffff' }
-            });
+            // TENTATIVA 1: Biblioteca Local (QRCode.js)
+            try {
+              const QRCodeLib = await waitLib('QRCode', 2000); // Espera curta
+              qrData = await QRCodeLib.toDataURL(pixPayload, {
+                margin: 1, width: 400, errorCorrectionLevel: 'M',
+                color: { dark: '#000000', light: '#ffffff' }
+              });
+            } catch (libErr) {
+              console.warn('Lib local falhou, tentando API de redundância...', libErr);
+            }
 
-            if (!qrData || qrData === 'data:,') throw new Error('Imagem QR vazia');
+            // TENTATIVA 2: API Externa (Redundância Garantida)
+            if (!qrData || qrData === 'data:,') {
+              // Usando a API do goqr.me (estável e sem necessidade de chave)
+              const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(pixPayload)}`;
+              
+              // Converter imagem da API para Base64 para o jsPDF
+              const response = await fetch(apiUrl);
+              const blob = await response.blob();
+              qrData = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+              });
+            }
+
+            if (!qrData) throw new Error('Falha total na geração do QR Code');
 
             // Caixa de destaque para o PIX
             doc.setFillColor(240, 249, 255);
@@ -1984,12 +2002,12 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
             doc.text(`Valor: ${formatBRL(orc.total)}`, margin + 36, y + 24);
             y += 40;
           } catch(e) {
-            console.error('Erro QR Code PDF:', e);
-            // Fallback elegante: exibe os dados em texto se a geração visual falhar
+            console.error('Erro crítico QR Code PDF:', e);
+            // Fallback final (Texto)
             doc.setFillColor(255, 243, 205); doc.setDrawColor(255, 193, 7);
             doc.roundedRect(margin, y, contentW, 16, 2, 2, 'FD');
             doc.setFontSize(8); doc.setFont(undefined, 'bold'); doc.setTextColor(120, 80, 0);
-            doc.text('PAGAMENTO PIX:', margin + 4, y + 6);
+            doc.text('PAGAMENTO PIX (QR CODE INDISPONÍVEL):', margin + 4, y + 6);
             doc.setFont(undefined, 'normal');
             doc.text(`Chave: ${config.config_pix_chave} | Valor: ${formatBRL(orc.total)}`, margin + 4, y + 11);
             y += 20;
