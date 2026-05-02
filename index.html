@@ -1938,39 +1938,37 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         }
 
         // QR Code PIX com payload EMV real
+        // ── CORREÇÃO: QRCode.toDataURL() opera inteiramente em memória e não
+        //    depende do DOM, eliminando o problema do canvas com display:none
+        //    (que impede a computação de dimensões em vários navegadores/PWAs,
+        //    resultando em canvas 0×0 e, portanto, imagem ausente no PDF).
         if (config.config_mostrar_qrcode && config.config_pix_chave) {
           try {
             if (y > 230) { doc.addPage(); y = margin; }
             const nomePix = (config.nome || 'QUOTEX').substring(0, 25);
             const cidadePix = (config.cidade || 'BRASIL').substring(0, 15);
             const pixPayload = gerarPayloadPIX(config.config_pix_chave, orc.total, nomePix, cidadePix);
-            // Criar um canvas invisível no documento para garantir que o QRCode.js consiga renderizar
-            let tempCanvas = document.getElementById('temp-qr-canvas');
-            if (!tempCanvas) {
-              tempCanvas = document.createElement('canvas');
-              tempCanvas.id = 'temp-qr-canvas';
-              tempCanvas.style.display = 'none';
-              document.body.appendChild(tempCanvas);
-            }
-            
-            // Renderizar o QR Code no canvas
-            await QRCode.toCanvas(tempCanvas, pixPayload, { 
-              margin: 1, 
-              width: 400, 
+
+            // Gera a Data URL diretamente em memória — sem canvas no DOM
+            const qrData = await QRCode.toDataURL(pixPayload, {
+              margin: 1,
+              width: 400,
               errorCorrectionLevel: 'M',
-              color: { dark: '#000000', light: '#ffffff' } 
+              color: { dark: '#000000', light: '#ffffff' }
             });
-            
-            // Capturar a imagem como PNG (mais estável para QR Codes)
-            const qrData = tempCanvas.toDataURL('image/png');
-            
+
+            // Validação defensiva: garante que a imagem gerada é válida
+            if (!qrData || qrData === 'data:,') {
+              throw new Error('QRCode.toDataURL retornou imagem vazia.');
+            }
+
             // Caixa de destaque para o PIX
             doc.setFillColor(240, 249, 255);
             doc.setDrawColor(147, 197, 253);
             doc.roundedRect(margin, y, contentW, 35, 2, 2, 'FD');
             doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
             doc.text('PAGUE COM PIX:', margin + 4, y + 6);
-            
+
             // Adicionar imagem ao PDF
             doc.addImage(qrData, 'PNG', margin + 4, y + 8, 28, 28);
             doc.setFontSize(7); doc.setFont(undefined,'normal'); doc.setTextColor(40,40,40);
@@ -1978,7 +1976,17 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
             doc.text('Escaneie o código ao lado para pagar', margin + 36, y + 19);
             doc.text(`Valor: ${formatBRL(orc.total)}`, margin + 36, y + 24);
             y += 40;
-          } catch(e) { console.error('Erro QR Code PDF:', e); }
+          } catch(e) {
+            console.error('Erro QR Code PDF:', e);
+            // Fallback: exibe a chave PIX em texto caso o QR Code falhe
+            doc.setFillColor(255, 243, 205);
+            doc.setDrawColor(255, 193, 7);
+            doc.roundedRect(margin, y, contentW, 14, 2, 2, 'FD');
+            doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.setTextColor(120, 80, 0);
+            doc.text('PIX: ' + config.config_pix_chave, margin + 4, y + 5.5);
+            doc.text('(QR Code indisponível — use a chave acima)', margin + 4, y + 10);
+            y += 18;
+          }
         }
 
         // Rodapé / Observações
