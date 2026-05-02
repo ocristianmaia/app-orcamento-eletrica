@@ -1944,11 +1944,25 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
             const nomePix = (config.nome || 'QUOTEX').substring(0, 25);
             const cidadePix = (config.cidade || 'BRASIL').substring(0, 15);
             const pixPayload = gerarPayloadPIX(config.config_pix_chave, orc.total, nomePix, cidadePix);
-            // Criar um canvas temporário fora do DOM para garantir renderização limpa
-            const qrCanvas = document.createElement('canvas');
-            qrCanvas.width = 400; qrCanvas.height = 400;
-            await QRCode.toCanvas(qrCanvas, pixPayload, { margin: 1, width: 400, color: { dark: '#000000', light: '#ffffff' } });
-            const qrData = qrCanvas.toDataURL('image/jpeg', 1.0); // Usar JPEG para máxima compatibilidade no jsPDF
+            // Criar um canvas invisível no documento para garantir que o QRCode.js consiga renderizar
+            let tempCanvas = document.getElementById('temp-qr-canvas');
+            if (!tempCanvas) {
+              tempCanvas = document.createElement('canvas');
+              tempCanvas.id = 'temp-qr-canvas';
+              tempCanvas.style.display = 'none';
+              document.body.appendChild(tempCanvas);
+            }
+            
+            // Renderizar o QR Code no canvas
+            await QRCode.toCanvas(tempCanvas, pixPayload, { 
+              margin: 1, 
+              width: 400, 
+              errorCorrectionLevel: 'M',
+              color: { dark: '#000000', light: '#ffffff' } 
+            });
+            
+            // Capturar a imagem como PNG (mais estável para QR Codes)
+            const qrData = tempCanvas.toDataURL('image/png');
             
             // Caixa de destaque para o PIX
             doc.setFillColor(240, 249, 255);
@@ -1957,8 +1971,8 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
             doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
             doc.text('PAGUE COM PIX:', margin + 4, y + 6);
             
-            // Adicionar imagem com compressão NONE para garantir que não suma
-            doc.addImage(qrData, 'JPEG', margin + 4, y + 8, 28, 28, 'pix_qr', 'NONE');
+            // Adicionar imagem ao PDF
+            doc.addImage(qrData, 'PNG', margin + 4, y + 8, 28, 28);
             doc.setFontSize(7); doc.setFont(undefined,'normal'); doc.setTextColor(40,40,40);
             doc.text(`Chave: ${config.config_pix_chave}`, margin + 36, y + 14);
             doc.text('Escaneie o código ao lado para pagar', margin + 36, y + 19);
