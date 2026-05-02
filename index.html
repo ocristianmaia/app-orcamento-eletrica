@@ -1645,7 +1645,14 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
 
 
     // ===== Gerador de Payload PIX EMV (Copia e Cola) =====
+        // ===== Gerador de Payload PIX EMV (Copia e Cola) — CORRIGIDO =====
     function gerarPayloadPIX(chave, valor, nome, cidade) {
+      // Normalização de strings para o padrão PIX (remover acentos e caracteres especiais)
+      const normalizar = (str) => {
+        return (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+               .replace(/[^a-zA-Z0-9\s]/g, "").trim().toUpperCase();
+      };
+
       const crc16 = (str) => {
         let crc = 0xFFFF;
         for (let i = 0; i < str.length; i++) {
@@ -1657,13 +1664,20 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         }
         return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
       };
+
       const tlv = (id, value) => {
-        const len = value.length.toString().padStart(2, '0');
-        return `${id}${len}${value}`;
+        const valStr = String(value);
+        const len = valStr.length.toString().padStart(2, '0');
+        return `${id}${len}${valStr}`;
       };
-      const pixKey = chave.replace(/\s/g, '');
+
+      // Limpeza da chave: remover espaços e garantir formato correto
+      const pixKey = (chave || '').replace(/\s/g, '');
       const merchantAccountInfo = tlv('00', 'BR.GOV.BCB.PIX') + tlv('01', pixKey);
-      const valorStr = valor > 0 ? valor.toFixed(2) : '';
+      
+      // Valor deve usar ponto como separador e ter 2 casas decimais
+      const valorStr = valor > 0 ? Number(valor).toFixed(2) : '';
+      
       let payload = '';
       payload += tlv('00', '01'); // Payload Format Indicator
       payload += tlv('26', merchantAccountInfo); // Merchant Account Info
@@ -1671,10 +1685,11 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
       payload += tlv('53', '986'); // Transaction Currency (BRL)
       if (valorStr) payload += tlv('54', valorStr); // Transaction Amount
       payload += tlv('58', 'BR'); // Country Code
-      payload += tlv('59', (nome || 'QUOTEX').substring(0, 25).toUpperCase()); // Merchant Name
-      payload += tlv('60', (cidade || 'BRASIL').substring(0, 15).toUpperCase()); // Merchant City
+      payload += tlv('59', normalizar(nome || 'QUOTEX').substring(0, 25)); // Merchant Name
+      payload += tlv('60', normalizar(cidade || 'BRASIL').substring(0, 15)); // Merchant City
       payload += tlv('62', tlv('05', '***')); // Additional Data Field
       payload += '6304'; // CRC placeholder
+      
       return payload + crc16(payload);
     }
 
@@ -1949,43 +1964,24 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           y += 2;
         }
 
-                // QR Code PIX com payload EMV real
+                        // QR Code PIX com payload EMV real
         if (config.config_mostrar_qrcode && config.config_pix_chave) {
           try {
             if (y > 230) { doc.addPage(); y = margin; }
-            const nomePix = (config.nome || 'QUOTEX').substring(0, 25);
-            const cidadePix = (config.cidade || 'BRASIL').substring(0, 15);
+            const nomePix = (config.nome || 'QUOTEX');
+            const cidadePix = (config.cidade || 'BRASIL');
             const pixPayload = gerarPayloadPIX(config.config_pix_chave, orc.total, nomePix, cidadePix);
 
-            let qrData = null;
-            
-            // TENTATIVA 1: Biblioteca Local (QRCode.js)
-            try {
-              const QRCodeLib = await waitLib('QRCode', 2000); // Espera curta
-              qrData = await QRCodeLib.toDataURL(pixPayload, {
-                margin: 1, width: 400, errorCorrectionLevel: 'M',
-                color: { dark: '#000000', light: '#ffffff' }
-              });
-            } catch (libErr) {
-              console.warn('Lib local falhou, tentando API de redundância...', libErr);
-            }
+            // ── CORREÇÃO MOBILE: Uso de QRCode.toDataURL com parâmetros de compatibilidade
+            const QRCodeLib = await waitLib('QRCode', 3000);
+            const qrData = await QRCodeLib.toDataURL(pixPayload, {
+              margin: 1,
+              width: 300,
+              errorCorrectionLevel: 'L',
+              color: { dark: '#000000', light: '#ffffff' }
+            });
 
-            // TENTATIVA 2: API Externa (Redundância Garantida)
-            if (!qrData || qrData === 'data:,') {
-              // Usando a API do goqr.me (estável e sem necessidade de chave)
-              const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(pixPayload)}`;
-              
-              // Converter imagem da API para Base64 para o jsPDF
-              const response = await fetch(apiUrl);
-              const blob = await response.blob();
-              qrData = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.readAsDataURL(blob);
-              });
-            }
-
-            if (!qrData) throw new Error('Falha total na geração do QR Code');
+            if (!qrData || qrData === 'data:,') throw new Error('Falha na geração local');
 
             // Caixa de destaque para o PIX
             doc.setFillColor(240, 249, 255);
@@ -2002,12 +1998,12 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
             doc.text(`Valor: ${formatBRL(orc.total)}`, margin + 36, y + 24);
             y += 40;
           } catch(e) {
-            console.error('Erro crítico QR Code PDF:', e);
-            // Fallback final (Texto)
+            console.error('Erro QR Code:', e);
+            // Fallback elegante (sempre visível)
             doc.setFillColor(255, 243, 205); doc.setDrawColor(255, 193, 7);
             doc.roundedRect(margin, y, contentW, 16, 2, 2, 'FD');
             doc.setFontSize(8); doc.setFont(undefined, 'bold'); doc.setTextColor(120, 80, 0);
-            doc.text('PAGAMENTO PIX (QR CODE INDISPONÍVEL):', margin + 4, y + 6);
+            doc.text('DADOS PARA PAGAMENTO PIX:', margin + 4, y + 6);
             doc.setFont(undefined, 'normal');
             doc.text(`Chave: ${config.config_pix_chave} | Valor: ${formatBRL(orc.total)}`, margin + 4, y + 11);
             y += 20;
