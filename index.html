@@ -3177,20 +3177,42 @@ Qualquer dúvida estou à disposição!`;
             }
 
             
+            
+            
             userId = user.uid;
             
             // Restrição do Banner de Novidades: apenas para o administrador
-            const emailAdmin = "seu.email.aqui@gmail.com";
+            // Lista autorizada de e-mails e nomes
+            const adminsAutorizados = [
+              "seu.email.aqui@gmail.com",
+              "cristianmaia.digital@gmail.com",
+              "cristian.nunesdelima@gmail.com"
+            ];
+            const nomesAutorizados = [
+              "CRISTIAN MAIA",
+              "CRISTIAN NUNES DE LIMA MAIA"
+            ];
+
+            const userEmail = (user.email || "").toLowerCase();
+            const userName = (user.displayName || "").toUpperCase();
+
+            const isAdmin = adminsAutorizados.some(email => userEmail === email.toLowerCase()) || 
+                            nomesAutorizados.some(nome => userName.includes(nome));
+            
             const btnNovidades = document.getElementById('btn-config-novidades');
             if (btnNovidades) {
-              if (user.email === emailAdmin) {
+              if (isAdmin) {
+                btnNovidades.style.display = 'flex';
                 btnNovidades.classList.remove('hidden');
                 btnNovidades.classList.add('flex');
               } else {
+                btnNovidades.style.display = 'none';
                 btnNovidades.classList.add('hidden');
                 btnNovidades.classList.remove('flex');
               }
             }
+
+
 
             if (userInfo) userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
             document.getElementById('loading-text').textContent = 'Carregando seus dados...';
