@@ -1679,9 +1679,13 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
     }
 
     // ===== QR Code PIX =====
-    window.openQRCodeModal = () => {
+    window.openQRCodeModal = async () => {
       const orc = appState.currentOrcamento;
       if (!orc?.cliente) return alert('Selecione um cliente primeiro.');
+      
+      // Salvar automaticamente antes de mostrar o PIX
+      await saveOrcamento(false);
+      
       const total = orc.total || 0;
       const pixChave = (appState.config.config_pix_chave || '').trim();
       const modal = document.getElementById('qrcode-modal');
@@ -1691,9 +1695,11 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
       const copiaCola = document.getElementById('pix-copia-cola-wrapper');
       const copiaInput = document.getElementById('pix-copia-cola-input');
       const copiadoMsg = document.getElementById('pix-copiado-msg');
+      
       container.innerHTML = '';
       if (copiadoMsg) copiadoMsg.classList.add('hidden');
       valorEl.textContent = formatBRL(total);
+      
       if (!pixChave) {
         chaveEl.textContent = '⚠️ Configure sua chave PIX em Configurações > Formas de Pagamento';
         if (copiaCola) copiaCola.classList.add('hidden');
@@ -1701,21 +1707,26 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         modal.classList.add('active');
         return;
       }
+      
       chaveEl.textContent = `Chave PIX: ${pixChave}`;
-      // Gerar payload EMV real
       const nomeProfissional = (appState.config.nome || 'QUOTEX').substring(0, 25);
       const cidadeProfissional = (appState.config.cidade || 'BRASIL').substring(0, 15);
       const payload = gerarPayloadPIX(pixChave, total, nomeProfissional, cidadeProfissional);
+      
       if (copiaInput) copiaInput.value = payload;
       if (copiaCola) copiaCola.classList.remove('hidden');
+      
       if (typeof QRCode !== 'undefined') {
         const canvas = document.createElement('canvas');
         container.appendChild(canvas);
-        QRCode.toCanvas(canvas, payload, { width: 200, margin: 2, color: { dark: '#0f172a', light: '#ffffff' } })
+        await QRCode.toCanvas(canvas, payload, { width: 200, margin: 2, color: { dark: '#0f172a', light: '#ffffff' } })
           .catch(e => { console.error('QR Code error:', e); container.innerHTML = '<p class="text-red-500 text-sm">Erro ao gerar QR Code.</p>'; });
       } else {
         container.innerHTML = '<p class="text-gray-500 text-sm">QR Code indisponível.</p>';
       }
+      
+      // Garantir que o modal de orçamento não feche o PIX
+      modal.style.zIndex = "10000";
       modal.classList.add('active');
     };
     window.closeQRCodeModal = () => document.getElementById('qrcode-modal').classList.remove('active');
@@ -1922,7 +1933,8 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
             const cidadePix = (config.cidade || 'BRASIL').substring(0, 15);
             const pixPayload = gerarPayloadPIX(config.config_pix_chave, orc.total, nomePix, cidadePix);
             const qrCanvas = document.createElement('canvas');
-            await QRCode.toCanvas(qrCanvas, pixPayload, { margin: 1, width: 120 });
+            // Aumentar a escala para garantir nitidez no PDF
+            await QRCode.toCanvas(qrCanvas, pixPayload, { margin: 1, width: 300 });
             const qrData = qrCanvas.toDataURL('image/png');
             // Caixa de destaque para o PIX
             doc.setFillColor(240, 249, 255);
@@ -1930,7 +1942,8 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
             doc.roundedRect(margin, y, contentW, 35, 2, 2, 'FD');
             doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
             doc.text('PAGUE COM PIX:', margin + 4, y + 6);
-            doc.addImage(qrData, 'PNG', margin + 4, y + 8, 28, 28);
+            // Adicionar imagem com compressão FAST para garantir renderização
+            doc.addImage(qrData, 'PNG', margin + 4, y + 8, 28, 28, undefined, 'FAST');
             doc.setFontSize(7); doc.setFont(undefined,'normal'); doc.setTextColor(40,40,40);
             doc.text(`Chave: ${config.config_pix_chave}`, margin + 36, y + 14);
             doc.text('Escaneie o código ao lado para pagar', margin + 36, y + 19);
@@ -1960,7 +1973,9 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         const iframe = document.getElementById('pdf-preview-iframe');
         iframe.src = pdfUrl;
         
-        document.getElementById('pdf-preview-modal').classList.add('active');
+        const previewModal = document.getElementById('pdf-preview-modal');
+        previewModal.style.zIndex = "10000"; // Garantir que fique à frente de outros modais
+        previewModal.classList.add('active');
         
         // Configurar botão de envio no preview
         const btnConfirmar = document.getElementById('btn-confirmar-envio');
