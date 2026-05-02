@@ -1794,9 +1794,21 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         };
         const [pr,pg,pb] = hexToRgb(corPrimaria);
 
-        // Logo
+        // Logo com proporção mantida
         if (config.logo) {
-          try { doc.addImage(config.logo, 'PNG', margin, y, 30, 15); } catch(e) { console.error('Erro logo PDF:', e); }
+          try {
+            // Definir área máxima para a logo (35mm largura x 18mm altura)
+            const maxW = 35, maxH = 18;
+            const img = new Image();
+            img.src = config.logo;
+            // Aguardar carregamento se necessário (embora DataURL seja instantâneo)
+            let finalW = maxW, finalH = maxH;
+            if (img.width > 0) {
+              const ratio = img.width / img.height;
+              if (ratio > maxW / maxH) { finalH = maxW / ratio; } else { finalW = maxH * ratio; }
+            }
+            doc.addImage(config.logo, 'PNG', margin, y, finalW, finalH, undefined, 'FAST');
+          } catch(e) { console.error('Erro logo PDF:', e); }
           y += 2;
         }
 
@@ -1932,18 +1944,21 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
             const nomePix = (config.nome || 'QUOTEX').substring(0, 25);
             const cidadePix = (config.cidade || 'BRASIL').substring(0, 15);
             const pixPayload = gerarPayloadPIX(config.config_pix_chave, orc.total, nomePix, cidadePix);
+            // Criar um canvas temporário fora do DOM para garantir renderização limpa
             const qrCanvas = document.createElement('canvas');
-            // Aumentar a escala para garantir nitidez no PDF
-            await QRCode.toCanvas(qrCanvas, pixPayload, { margin: 1, width: 300 });
-            const qrData = qrCanvas.toDataURL('image/png');
+            qrCanvas.width = 400; qrCanvas.height = 400;
+            await QRCode.toCanvas(qrCanvas, pixPayload, { margin: 1, width: 400, color: { dark: '#000000', light: '#ffffff' } });
+            const qrData = qrCanvas.toDataURL('image/jpeg', 1.0); // Usar JPEG para máxima compatibilidade no jsPDF
+            
             // Caixa de destaque para o PIX
             doc.setFillColor(240, 249, 255);
             doc.setDrawColor(147, 197, 253);
             doc.roundedRect(margin, y, contentW, 35, 2, 2, 'FD');
             doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
             doc.text('PAGUE COM PIX:', margin + 4, y + 6);
-            // Adicionar imagem com compressão FAST para garantir renderização
-            doc.addImage(qrData, 'PNG', margin + 4, y + 8, 28, 28, undefined, 'FAST');
+            
+            // Adicionar imagem com compressão NONE para garantir que não suma
+            doc.addImage(qrData, 'JPEG', margin + 4, y + 8, 28, 28, 'pix_qr', 'NONE');
             doc.setFontSize(7); doc.setFont(undefined,'normal'); doc.setTextColor(40,40,40);
             doc.text(`Chave: ${config.config_pix_chave}`, margin + 36, y + 14);
             doc.text('Escaneie o código ao lado para pagar', margin + 36, y + 19);
