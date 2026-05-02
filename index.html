@@ -946,7 +946,7 @@
                   </button>
 
                   <!-- NOVO: Banner de Novidades -->
-                  <button onclick="showConfigSection('section-novidades')" class="flex items-center gap-4 p-4 border-2 border-gray-100 rounded-xl hover:border-orange-400 hover:bg-orange-50 transition-all group text-left">
+                  <button id="btn-config-novidades" onclick="showConfigSection('section-novidades')" class="flex items-center gap-4 p-4 border-2 border-gray-100 rounded-xl hover:border-orange-400 hover:bg-orange-50 transition-all group text-left">
                     <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center group-hover:bg-orange-200 flex-shrink-0">
                       <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
                     </div>
@@ -3176,7 +3176,22 @@ Qualquer dúvida estou à disposição!`;
               return;
             }
 
+            
             userId = user.uid;
+            
+            // Restrição do Banner de Novidades: apenas para o administrador
+            const emailAdmin = "seu.email.aqui@gmail.com";
+            const btnNovidades = document.getElementById('btn-config-novidades');
+            if (btnNovidades) {
+              if (user.email === emailAdmin) {
+                btnNovidades.classList.remove('hidden');
+                btnNovidades.classList.add('flex');
+              } else {
+                btnNovidades.classList.add('hidden');
+                btnNovidades.classList.remove('flex');
+              }
+            }
+
             if (userInfo) userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
             document.getElementById('loading-text').textContent = 'Carregando seus dados...';
             setupInitialDates();
