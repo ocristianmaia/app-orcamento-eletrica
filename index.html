@@ -1764,6 +1764,18 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
       if (iframe.src) { URL.revokeObjectURL(iframe.src); iframe.src = ''; }
     };
 
+    // Helper para garantir que bibliotecas externas carregaram
+    const waitLib = (libName, timeout = 5000) => {
+      return new Promise((resolve, reject) => {
+        if (window[libName]) return resolve(window[libName]);
+        const start = Date.now();
+        const interval = setInterval(() => {
+          if (window[libName]) { clearInterval(interval); resolve(window[libName]); }
+          else if (Date.now() - start > timeout) { clearInterval(interval); reject(new Error(`Biblioteca ${libName} não carregou.`)); }
+        }, 100);
+      });
+    };
+
     window.gerarPDF = async (formato) => {
       // Fechar modal de formato se estiver aberto
       const fmtModal = document.getElementById('pdf-format-modal');
@@ -1938,10 +1950,6 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         }
 
         // QR Code PIX com payload EMV real
-        // ── CORREÇÃO: QRCode.toDataURL() opera inteiramente em memória e não
-        //    depende do DOM, eliminando o problema do canvas com display:none
-        //    (que impede a computação de dimensões em vários navegadores/PWAs,
-        //    resultando em canvas 0×0 e, portanto, imagem ausente no PDF).
         if (config.config_mostrar_qrcode && config.config_pix_chave) {
           try {
             if (y > 230) { doc.addPage(); y = margin; }
@@ -1949,18 +1957,17 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
             const cidadePix = (config.cidade || 'BRASIL').substring(0, 15);
             const pixPayload = gerarPayloadPIX(config.config_pix_chave, orc.total, nomePix, cidadePix);
 
-            // Gera a Data URL diretamente em memória — sem canvas no DOM
-            const qrData = await QRCode.toDataURL(pixPayload, {
-              margin: 1,
-              width: 400,
-              errorCorrectionLevel: 'M',
+            // ── CORREÇÃO FINAL: Garante que a lib QRCode está carregada antes de usar.
+            // Em alguns ambientes móveis/lentos, o clique no botão pode ocorrer antes da lib CDN carregar.
+            const QRCodeLib = await waitLib('QRCode');
+            
+            // Gera a Data URL em memória (sem depender de canvas no DOM)
+            const qrData = await QRCodeLib.toDataURL(pixPayload, {
+              margin: 1, width: 400, errorCorrectionLevel: 'M',
               color: { dark: '#000000', light: '#ffffff' }
             });
 
-            // Validação defensiva: garante que a imagem gerada é válida
-            if (!qrData || qrData === 'data:,') {
-              throw new Error('QRCode.toDataURL retornou imagem vazia.');
-            }
+            if (!qrData || qrData === 'data:,') throw new Error('Imagem QR vazia');
 
             // Caixa de destaque para o PIX
             doc.setFillColor(240, 249, 255);
@@ -1978,14 +1985,14 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
             y += 40;
           } catch(e) {
             console.error('Erro QR Code PDF:', e);
-            // Fallback: exibe a chave PIX em texto caso o QR Code falhe
-            doc.setFillColor(255, 243, 205);
-            doc.setDrawColor(255, 193, 7);
-            doc.roundedRect(margin, y, contentW, 14, 2, 2, 'FD');
-            doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.setTextColor(120, 80, 0);
-            doc.text('PIX: ' + config.config_pix_chave, margin + 4, y + 5.5);
-            doc.text('(QR Code indisponível — use a chave acima)', margin + 4, y + 10);
-            y += 18;
+            // Fallback elegante: exibe os dados em texto se a geração visual falhar
+            doc.setFillColor(255, 243, 205); doc.setDrawColor(255, 193, 7);
+            doc.roundedRect(margin, y, contentW, 16, 2, 2, 'FD');
+            doc.setFontSize(8); doc.setFont(undefined, 'bold'); doc.setTextColor(120, 80, 0);
+            doc.text('PAGAMENTO PIX:', margin + 4, y + 6);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Chave: ${config.config_pix_chave} | Valor: ${formatBRL(orc.total)}`, margin + 4, y + 11);
+            y += 20;
           }
         }
 
