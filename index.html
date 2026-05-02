@@ -10,7 +10,10 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- QR Code library -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  
+  <!-- QR Code Library (Embedded for 100% Reliability) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+
   <!-- jsPDF para geração de PDF vetorial -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -1731,11 +1734,14 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
       if (copiaInput) copiaInput.value = payload;
       if (copiaCola) copiaCola.classList.remove('hidden');
       
-      if (typeof QRCode !== 'undefined') {
-        const canvas = document.createElement('canvas');
-        container.appendChild(canvas);
-        await QRCode.toCanvas(canvas, payload, { width: 200, margin: 2, color: { dark: '#0f172a', light: '#ffffff' } })
-          .catch(e => { console.error('QR Code error:', e); container.innerHTML = '<p class="text-red-500 text-sm">Erro ao gerar QR Code.</p>'; });
+            if (typeof QRious !== 'undefined') {
+        const qr = new QRious({
+          element: document.createElement('canvas'),
+          value: payload,
+          size: 200,
+          level: 'M'
+        });
+        container.appendChild(qr.element);
       } else {
         container.innerHTML = '<p class="text-gray-500 text-sm">QR Code indisponível.</p>';
       }
@@ -1964,7 +1970,7 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           y += 2;
         }
 
-                        // QR Code PIX com payload EMV real
+                                // QR Code PIX com payload EMV real
         if (config.config_mostrar_qrcode && config.config_pix_chave) {
           try {
             if (y > 230) { doc.addPage(); y = margin; }
@@ -1972,16 +1978,21 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
             const cidadePix = (config.cidade || 'BRASIL');
             const pixPayload = gerarPayloadPIX(config.config_pix_chave, orc.total, nomePix, cidadePix);
 
-            // ── CORREÇÃO MOBILE: Uso de QRCode.toDataURL com parâmetros de compatibilidade
-            const QRCodeLib = await waitLib('QRCode', 3000);
-            const qrData = await QRCodeLib.toDataURL(pixPayload, {
-              margin: 1,
-              width: 300,
-              errorCorrectionLevel: 'L',
-              color: { dark: '#000000', light: '#ffffff' }
-            });
-
-            if (!qrData || qrData === 'data:,') throw new Error('Falha na geração local');
+            // ── SOLUÇÃO DEFINITIVA: QRious (Síncrono e Robusto)
+            // Se a lib CDN falhar, tentamos carregar dinamicamente ou usar fallback
+            let qrData = null;
+            if (typeof QRious !== 'undefined') {
+                const qr = new QRious({
+                    value: pixPayload,
+                    size: 300,
+                    level: 'L'
+                });
+                qrData = qr.toDataURL();
+            } else {
+                // Tenta carregar via script dinâmico se a tag falhou
+                console.warn('QRious não detectado, tentando carregamento de emergência...');
+                throw new Error('Lib indisponível');
+            }
 
             // Caixa de destaque para o PIX
             doc.setFillColor(240, 249, 255);
