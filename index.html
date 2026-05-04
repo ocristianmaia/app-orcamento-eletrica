@@ -30,24 +30,6 @@
       touch-action: manipulation;
     }
     body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
-    .novidades-banner {
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      border-radius: 1rem;
-      padding: 1rem;
-      color: white;
-      margin-bottom: 1.5rem;
-      border: 1px solid rgba(255,255,255,0.1);
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-      min-height: 85px;
-      overflow: hidden;
-      position: relative;
-    }
-    #novidades-content {
-      transition: opacity 0.5s ease-in-out;
-    }
-    .fade-out { opacity: 0; }
-    .fade-in { opacity: 1; }
-
 
     /* ===== TABS ===== */
     .tab-content { display: none; }
@@ -1205,12 +1187,6 @@
                   <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
                     <p class="text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">Pré-visualização:</p>
                     <div id="novidades-preview" class="text-sm text-blue-900"></div>
-	                  <div>
-	                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tempo de Rotação (segundos)</label>
-	                    <input type="number" id="config-novidades-tempo" class="input-field" placeholder="Ex: 5" min="2" max="60">
-	                    <p class="text-xs text-gray-500 mt-1">Tempo que cada mensagem fica na tela (mínimo 2s).</p>
-	                  </div>
-
                   </div>
                 </div>
                 <div class="mt-5">
@@ -1627,51 +1603,20 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
       mainView.classList.remove('hidden');
     };
 
-    
-    // ===== Novidades Banner (Carrossel Rotativo) =====
-    let bannerInterval = null;
+    // ===== Novidades Banner =====
     function renderNovidades() {
       const c = appState.config;
       const wrapper = document.getElementById('novidades-banner-wrapper');
       const content = document.getElementById('novidades-content');
       if (!wrapper || !content) return;
-      
-      if (bannerInterval) { clearInterval(bannerInterval); bannerInterval = null; }
-
       if (c.novidades_ativo && c.novidades_texto) {
-        const mensagens = c.novidades_texto.split(';').map(m => m.trim()).filter(m => m.length > 0);
-        if (mensagens.length === 0) { wrapper.classList.add('hidden'); return; }
-
-        let index = 0;
-        const tempo = (c.novidades_tempo || 5) * 1000;
-
-        const formatarLink = (txt) => {
-          return txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-                    .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener" class="text-yellow-300 underline font-medium">$1</a>')
-                    .replace(/\n/g,'<br>');
-        };
-
-        const mostrarProxima = () => {
-          content.classList.add('fade-out');
-          setTimeout(() => {
-            content.innerHTML = formatarLink(mensagens[index]);
-            content.classList.remove('fade-out');
-            content.classList.add('fade-in');
-            index = (index + 1) % mensagens.length;
-          }, 500);
-        };
-
-        mostrarProxima();
+        const html = c.novidades_texto
+          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')
+          .replace(/\n/g,'<br>');
+        content.innerHTML = html;
         wrapper.classList.remove('hidden');
-
-        if (mensagens.length > 1) {
-          bannerInterval = setInterval(mostrarProxima, tempo);
-        }
       } else {
-        wrapper.classList.add('hidden');
-      }
-    }
- else {
         wrapper.classList.add('hidden');
       }
     }
@@ -2928,7 +2873,6 @@ Qualquer dúvida estou à disposição!`;
           config_mostrar_qrcode: document.getElementById('config-mostrar-qrcode')?.checked || false,
           novidades_ativo: document.getElementById('config-novidades-ativo')?.checked || false,
           novidades_texto: gv('config-novidades-texto'),
-          novidades_tempo: parseInt(gv('config-novidades-tempo')) || 5,
         };
         delete data.endereco;
         await setDoc(doc(db, `users/${userId}/config/main`), data);
@@ -2973,7 +2917,6 @@ Qualquer dúvida estou à disposição!`;
       const qrEl = el('config-mostrar-qrcode'); if (qrEl) qrEl.checked = c.config_mostrar_qrcode||false;
       const novAtEl = el('config-novidades-ativo'); if (novAtEl) novAtEl.checked = c.novidades_ativo||false;
       sv('config-novidades-texto', c.novidades_texto||'');
-      sv('config-novidades-tempo', c.novidades_tempo || 5);
       renderNovidades();
     }
 
