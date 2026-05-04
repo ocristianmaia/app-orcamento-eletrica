@@ -1427,14 +1427,17 @@
   <script type="module">
 
     // ===== Firebase Config =====
-    const firebaseConfig = {
-      apiKey: "AIzaSyB-0cfQ1Y9Cz12grbia7-Y4nSlWwmXrqWg",
-      authDomain: "app-orcamentos-eletrica.firebaseapp.com",
-      projectId: "app-orcamentos-eletrica",
-      storageBucket: "app-orcamentos-eletrica.firebasestorage.app",
-      messagingSenderId: "424397941585",
-      appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyBm1jC0oc-d3vEy03TxTOLtnMxeOfMaV2M", // Atualizada para a chave Android
+    authDomain: "app-orcamentos-eletrica.firebaseapp.com",
+    projectId: "app-orcamentos-eletrica",
+    storageBucket: "app-orcamentos-eletrica.firebasestorage.app",
+    messagingSenderId: "424397941585",
+    appId: "1:424397941585:web:3d5a24606f1a4f6ae54170"
+};
+
+// Se houver uma variável para o Client ID do Google, use esta:
+const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googleusercontent.com";
 
     import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
