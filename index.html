@@ -735,6 +735,7 @@
                   <div class="flex flex-col sm:flex-row gap-2">
                     <input type="file" id="materiais-xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm border border-gray-200 p-2 rounded-lg">
                     <button id="btn-import-materiais-xlsx" class="btn-success whitespace-nowrap text-sm px-4 py-2">Importar</button>
+                    <button id="btn-download-materiais-xlsx" class="bg-blue-600 text-white whitespace-nowrap text-sm px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors">Baixar Lista</button>
                     <button id="btn-clear-materiais" class="btn-danger whitespace-nowrap text-sm px-4 py-2">Limpar</button>
                   </div>
                   <p id="materiais-xlsx-status" class="text-xs text-gray-500 mt-2"></p>
@@ -762,9 +763,9 @@
                       <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Categoria</label>
                       <select id="tiposervico-categoria-select" class="input-field">
                         <option value="">Selecione ou crie uma categoria</option>
-                        <option value="new_category">+ Nova Categoria</option>
+                        <option value="__nova__">+ Nova Categoria</option>
                       </select>
-                      <input type="text" id="tiposervico-categoria-new" placeholder="Nome da nova categoria" class="input-field mt-2 hidden">
+                      <div id="tiposervico-nova-categoria-wrapper" class="hidden"><input type="text" id="tiposervico-categoria-nova" placeholder="Nome da nova categoria" class="input-field mt-2"></div>
                     </div>
                     <input type="text" id="tiposervico-descricao" placeholder="Descrição do serviço" class="input-field" required>
                     <input type="number" step="0.01" id="tiposervico-valor" placeholder="Valor R$" class="input-field" required>
@@ -791,6 +792,7 @@
                 <div class="flex flex-col sm:flex-row gap-2">
                   <input type="file" id="xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm border border-gray-200 p-2 rounded-lg">
                   <button id="btn-import-xlsx" class="btn-success whitespace-nowrap text-sm px-4 py-2">Importar</button>
+                  <button id="btn-download-servicos-xlsx" class="bg-blue-600 text-white whitespace-nowrap text-sm px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors">Baixar Lista</button>
                   <button id="btn-clear-tiposervico" class="btn-danger whitespace-nowrap text-sm px-4 py-2">Limpar</button>
                 </div>
                 <p id="xlsx-status" class="text-xs text-gray-500 mt-2"></p>
@@ -3048,6 +3050,51 @@ Qualquer dúvida estou à disposição!`;
       XLSX.writeFile(wb, `faturamento_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
+    
+    // ===== Exportar Listas (Download) =====
+    window.baixarListaServicos = () => {
+      if (!appState.tiposDeServico || appState.tiposDeServico.length === 0) {
+        // Criar modelo vazio se não houver dados
+        const modelo = [{ Categoria: 'EXEMPLO', Descrição: 'DESCRIÇÃO DO SERVIÇO', Valor: 100.00 }];
+        const ws = XLSX.utils.json_to_sheet(modelo);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Serviços");
+        XLSX.writeFile(wb, "modelo_servicos_quotex.xlsx");
+        return;
+      }
+      const data = appState.tiposDeServico.map(s => ({
+        Categoria: s.categoria,
+        Descrição: s.descricao,
+        Valor: s.valor
+      }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Serviços");
+      XLSX.writeFile(wb, "meus_servicos_quotex.xlsx");
+    };
+
+    window.baixarListaMateriais = () => {
+      if (!appState.materiais || appState.materiais.length === 0) {
+        const modelo = [{ Descrição: 'EXEMPLO MATERIAL', Unidade: 'UNID', Valor: 50.00, Estoque: 'NÃO', Quantidade: 0 }];
+        const ws = XLSX.utils.json_to_sheet(modelo);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Materiais");
+        XLSX.writeFile(wb, "modelo_materiais_quotex.xlsx");
+        return;
+      }
+      const data = appState.materiais.map(m => ({
+        Descrição: m.nome,
+        Unidade: m.unidade,
+        Valor: m.valor,
+        Estoque: m.tipo === 'estoque' ? 'SIM' : 'NÃO',
+        Quantidade: m.qtdEstoque || 0
+      }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Materiais");
+      XLSX.writeFile(wb, "meus_materiais_quotex.xlsx");
+    };
+
     // ===== Importar XLSX =====
     function setupXLSXImports() {
       // Serviços
@@ -3135,6 +3182,8 @@ Qualquer dúvida estou à disposição!`;
           document.getElementById('clientes-xlsx-input').value = '';
         } catch(e) { status.textContent = 'Erro na importação.'; console.error(e); }
       });
+      document.getElementById('btn-download-servicos-xlsx')?.addEventListener('click', window.baixarListaServicos);
+      document.getElementById('btn-download-materiais-xlsx')?.addEventListener('click', window.baixarListaMateriais);
       document.getElementById('btn-clear-clientes')?.addEventListener('click', async () => {
         if (!confirm('Limpar todos os clientes?') || !userId) return;
         const { getDocs } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
