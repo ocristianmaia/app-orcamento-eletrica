@@ -113,6 +113,197 @@
       }
     }
 
+
+    /* ===== TODOS OS ORCAMENTOS: VISUAL EXECUTIVO ===== */
+    .all-orcamentos-shell {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 18px 40px;
+      color: #111827;
+    }
+    .all-orcamentos-title {
+      font-size: clamp(1.45rem, 2vw, 2rem);
+      line-height: 1.1;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 0;
+    }
+    .all-orcamentos-actions { gap: 10px; }
+    .btn-executive-secondary,
+    .btn-executive-danger {
+      min-height: 44px;
+      border-radius: 10px;
+      padding: 0 18px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .btn-executive-secondary {
+      background: #ffffff;
+      color: #1f2937;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .05);
+    }
+    .btn-executive-secondary:hover { background: #f8fafc; border-color: #94a3b8; }
+    .btn-executive-danger {
+      background: #b4232f;
+      color: #ffffff;
+      border: 1px solid #b4232f;
+      box-shadow: 0 8px 18px rgba(180, 35, 47, .16);
+    }
+    .btn-executive-danger:hover { background: #981b28; transform: translateY(-1px); }
+    .btn-executive-danger:disabled { background: #e5e7eb; color: #9ca3af; border-color: #e5e7eb; box-shadow: none; transform: none; }
+    .executive-filter-card {
+      background: rgba(255,255,255,.92);
+      border: 1px solid #d8dee8;
+      border-radius: 14px;
+      box-shadow: 0 14px 36px rgba(15, 23, 42, .08);
+      backdrop-filter: blur(10px);
+    }
+    .executive-label {
+      display: block;
+      margin-bottom: 7px;
+      color: #64748b;
+      font-size: .7rem;
+      line-height: 1rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .executive-select {
+      min-height: 44px;
+      border: 1px solid #d7dde7;
+      border-radius: 10px;
+      background-color: #ffffff;
+      color: #0f172a;
+      font-size: .94rem;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(15,23,42,.04);
+    }
+    .executive-select:focus {
+      outline: none;
+      border-color: #0f766e;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, .14);
+    }
+    .executive-clear-btn {
+      min-height: 44px;
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      font-size: .9rem;
+      font-weight: 700;
+      transition: background .18s ease, border-color .18s ease, color .18s ease;
+    }
+    .executive-clear-btn:hover { background: #ffffff; border-color: #0f766e; color: #0f766e; }
+    .orcamento-executive-card {
+      position: relative;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1px solid #dce3ed;
+      border-radius: 14px;
+      box-shadow: 0 10px 26px rgba(15, 23, 42, .07);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .orcamento-executive-card::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: #0f766e;
+      opacity: .85;
+    }
+    .orcamento-executive-card:hover {
+      transform: translateY(-1px);
+      border-color: #b9c5d3;
+      box-shadow: 0 18px 42px rgba(15, 23, 42, .1);
+    }
+    .orcamento-check {
+      width: 20px;
+      height: 20px;
+      margin-top: 4px;
+      border-radius: 5px;
+      border-color: #94a3b8;
+      color: #0f766e;
+    }
+    .orcamento-nome.executive-name {
+      color: #0f172a;
+      font-size: 1.05rem;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    .orcamento-meta {
+      margin-top: 4px;
+      color: #64748b;
+      font-size: .82rem;
+      font-weight: 600;
+    }
+    .orcamento-total-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      margin-top: 12px;
+      padding: 0 14px;
+      border-radius: 10px;
+      border: 1px solid #dbe3ec;
+      background: #f8fafc;
+      color: #0b1220;
+      font-size: 1rem;
+      font-weight: 800;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+    }
+    .orcamento-status-label {
+      color: #64748b;
+      font-size: .66rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+    }
+    .orcamento-status-select {
+      width: 172px;
+      min-height: 36px;
+      border-radius: 9px;
+      border: 1px solid transparent;
+      padding: 0 10px;
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .02em;
+      box-shadow: 0 1px 3px rgba(15,23,42,.08);
+      cursor: pointer;
+    }
+    .orcamento-edit-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid #d8dee8;
+      background: #ffffff;
+      color: #475569;
+      box-shadow: 0 6px 14px rgba(15,23,42,.06);
+      transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+    }
+    .orcamento-edit-btn:hover { background: #0f766e; border-color: #0f766e; color: #ffffff; transform: translateY(-1px); }
+    .select-pendente       { background:#fffbeb; color:#92400e; border-color:#f5d38a; }
+    .select-reprovado      { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+    .select-aprovado       { background:#ecfdf5; color:#047857; border-color:#a7f3d0; }
+    .select-andamento      { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+    .select-concluido      { background:#f0fdfa; color:#0f766e; border-color:#99f6e4; }
+    .select-aguardando_pag { background:#fff7ed; color:#9a3412; border-color:#fed7aa; }
+    .select-faturado       { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+    @media (max-width: 640px) {
+      .all-orcamentos-shell { padding: 18px 12px 32px; }
+      .all-orcamentos-actions { width: 100%; display: grid; grid-template-columns: .8fr 1.2fr; }
+      .btn-executive-secondary,
+      .btn-executive-danger { width: 100%; padding: 0 10px; font-size: .82rem; }
+      .executive-filter-card { border-radius: 12px; box-shadow: 0 10px 24px rgba(15,23,42,.07); }
+      .orcamento-executive-card { border-radius: 12px; }
+      .orcamento-nome.executive-name { max-width: min(62vw, 260px); font-size: .98rem !important; }
+      .orcamento-meta { font-size: .76rem; }
+      .orcamento-total-pill { min-height: 34px; font-size: .94rem; }
+      .orcamento-status-select { width: min(52vw, 180px); }
+    }
+
     /* ===== NOVIDADES BANNER ===== */
     .novidades-banner {
       background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
@@ -1235,33 +1426,33 @@
 
     <!-- ===== ALL ORÇAMENTOS VIEW ===== -->
     <div id="all-orcamentos-view" class="hidden">
-      <div class="max-w-5xl mx-auto p-4 md:p-6 w-full">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-3">
-          <h2 class="text-2xl font-bold text-gray-900">Todos os Orçamentos</h2>
-          <div class="flex gap-2 w-full sm:w-auto justify-end">
-            <button onclick="showMainPage()" class="py-2 px-4 rounded-lg border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors">Voltar</button>
-            <button id="btn-delete-selected-orcamentos" onclick="confirmDeleteSelectedOrcamentos()" class="btn-danger text-sm py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Excluir Selecionados</button>
+      <div class="all-orcamentos-shell w-full">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <h2 class="all-orcamentos-title">Todos os Orçamentos</h2>
+          <div class="all-orcamentos-actions flex w-full sm:w-auto justify-end">
+            <button onclick="showMainPage()" class="btn-executive-secondary">Voltar</button>
+            <button id="btn-delete-selected-orcamentos" onclick="confirmDeleteSelectedOrcamentos()" class="btn-executive-danger disabled:opacity-100 disabled:cursor-not-allowed" disabled>Excluir Selecionados</button>
           </div>
         </div>
 
-        <div class="card p-4 mb-4">
+        <div class="executive-filter-card p-4 md:p-5 mb-5">
           <div class="grid gap-3 md:grid-cols-4">
             <div>
-              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</label>
-              <select id="filtro-status-orcamento" class="input-field py-1.5 text-sm">
+              <label class="executive-label">Status</label>
+              <select id="filtro-status-orcamento" class="input-field executive-select">
                 <option value="todos">Todos</option>
-                <option value="pendente">⏳ Pendentes</option>
-                <option value="reprovado">❌ Reprovados</option>
-                <option value="aprovado">✅ Aprovados</option>
-                <option value="andamento">🔧 Em Andamento</option>
-                <option value="concluido">🏁 Concluídos</option>
-                <option value="aguardando_pag">💳 Aguardando Pag.</option>
-                <option value="faturado">💰 Faturados</option>
+                <option value="pendente">Pendentes</option>
+                <option value="reprovado">Reprovados</option>
+                <option value="aprovado">Aprovados</option>
+                <option value="andamento">Em Andamento</option>
+                <option value="concluido">Concluídos</option>
+                <option value="aguardando_pag">Aguardando Pag.</option>
+                <option value="faturado">Faturados</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Mês</label>
-              <select id="filtro-mes-orcamento" class="input-field py-1.5 text-sm">
+              <label class="executive-label">Mês</label>
+              <select id="filtro-mes-orcamento" class="input-field executive-select">
                 <option value="todos">Todos</option>
                 <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
                 <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
@@ -1270,15 +1461,15 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Ano</label>
-              <select id="filtro-ano-orcamento" class="input-field py-1.5 text-sm">
+              <label class="executive-label">Ano</label>
+              <select id="filtro-ano-orcamento" class="input-field executive-select">
                 <option value="todos">Todos</option>
                 <option value="2023">2023</option><option value="2024">2024</option>
                 <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
               </select>
             </div>
             <div class="flex items-end">
-              <button id="btn-limpar-filtros-orcamento" class="w-full py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">Limpar Filtros</button>
+              <button id="btn-limpar-filtros-orcamento" class="executive-clear-btn">Limpar Filtros</button>
             </div>
           </div>
         </div>
@@ -2273,13 +2464,13 @@ Qualquer dúvida estou à disposição!`;
 
       const ALL_STATUS = ['pendente','reprovado','aprovado','andamento','concluido','aguardando_pag','faturado'];
       const STATUS_INFO = {
-        pendente:       { label: '⏳ PENDENTE',       cls: 'badge-pendente',       sel: 'select-pendente' },
-        reprovado:      { label: '❌ REPROVADO',      cls: 'badge-reprovado',      sel: 'select-reprovado' },
-        aprovado:       { label: '✅ APROVADO',       cls: 'badge-aprovado',       sel: 'select-aprovado' },
-        andamento:      { label: '🔧 ANDAMENTO',      cls: 'badge-andamento',      sel: 'select-andamento' },
-        concluido:      { label: '🏁 CONCLUÍDO',      cls: 'badge-concluido',      sel: 'select-concluido' },
-        aguardando_pag: { label: '💳 AGUARD. PAG.',   cls: 'badge-aguardando_pag', sel: 'select-aguardando_pag' },
-        faturado:       { label: '💰 FATURADO',       cls: 'badge-faturado',       sel: 'select-faturado' },
+        pendente:       { label: 'PENDENTE',        cls: 'badge-pendente',       sel: 'select-pendente' },
+        reprovado:      { label: 'REPROVADO',       cls: 'badge-reprovado',      sel: 'select-reprovado' },
+        aprovado:       { label: 'APROVADO',        cls: 'badge-aprovado',       sel: 'select-aprovado' },
+        andamento:      { label: 'EM ANDAMENTO',    cls: 'badge-andamento',      sel: 'select-andamento' },
+        concluido:      { label: 'CONCLUÍDO',       cls: 'badge-concluido',      sel: 'select-concluido' },
+        aguardando_pag: { label: 'AGUARD. PAG.',    cls: 'badge-aguardando_pag', sel: 'select-aguardando_pag' },
+        faturado:       { label: 'FATURADO',        cls: 'badge-faturado',       sel: 'select-faturado' },
       };
 
       el.innerHTML = list.map(orc => {
@@ -2300,23 +2491,23 @@ Qualquer dúvida estou à disposição!`;
           const isChecked = appState.orcamentosParaExcluir.has(orc.id);
           const opts = ALL_STATUS.map(s => `<option value="${s}" ${sv===s?'selected':''}>${STATUS_INFO[s].label}</option>`).join('');
           return `
-          <div class="card p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-4 hover:shadow-md transition-shadow animate-fadeIn">
+          <div class="orcamento-executive-card p-4 md:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-4 animate-fadeIn">
             <div class="flex items-start gap-3 flex-1 w-full">
               <label class="flex items-start cursor-pointer flex-1">
-                <input type="checkbox" data-id="${orc.id}" ${isChecked?'checked':''} onchange="toggleOrcamentoExclusao(this)" class="h-5 w-5 mt-1 text-red-600 border-gray-300 rounded flex-shrink-0">
+                <input type="checkbox" data-id="${orc.id}" ${isChecked?'checked':''} onchange="toggleOrcamentoExclusao(this)" class="orcamento-check flex-shrink-0">
                 <div class="ml-3 flex-1">
-                  <p class="orcamento-nome font-bold text-lg text-gray-800">${nomeCliente}</p>
-                  <p class="text-xs text-gray-500">${codOrc} • ${dateStr}</p>
-                  <div class="mt-2"><span class="inline-block text-base font-bold text-gray-900 bg-gray-50 border border-gray-200 rounded px-3 py-1">${total}</span></div>
+                  <p class="orcamento-nome executive-name">${nomeCliente}</p>
+                  <p class="orcamento-meta">${codOrc} • ${dateStr}</p>
+                  <div class="mt-2"><span class="orcamento-total-pill">${total}</span></div>
                 </div>
               </label>
             </div>
             <div class="flex flex-row sm:flex-col items-center sm:items-end gap-3 w-full sm:w-auto justify-between sm:justify-end">
               <div class="flex flex-col items-end">
-                <span class="text-[10px] font-bold text-gray-400 uppercase mb-1 hidden sm:block">STATUS</span>
-                <select onchange="changeOrcamentoStatus(this)" data-id="${orc.id}" class="block w-40 rounded-lg border-0 py-1.5 text-xs font-bold shadow-sm ring-1 ring-inset focus:ring-2 cursor-pointer ${si.sel} ring-gray-300">${opts}</select>
+                <span class="orcamento-status-label mb-1 hidden sm:block">STATUS</span>
+                <select onchange="changeOrcamentoStatus(this)" data-id="${orc.id}" class="orcamento-status-select ${si.sel}">${opts}</select>
               </div>
-              <button onclick="editOrcamento('${orc.id}')" class="flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all" title="Editar">
+              <button onclick="editOrcamento('${orc.id}')" class="orcamento-edit-btn flex items-center justify-center" title="Editar">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
               </button>
             </div>
