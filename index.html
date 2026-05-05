@@ -1576,7 +1576,7 @@
                 <div id="orc-mao-de-obra" class="space-y-2">
                   <label class="flex items-center p-3 border-2 rounded-xl has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 cursor-pointer">
                     <input type="radio" name="tipo-servico" value="empreitada" class="h-4 w-4 text-blue-600">
-                    <span class="ml-2 text-sm font-medium text-gray-800 flex-1">Empreitada</span>
+                    <span class="ml-2 text-sm font-medium text-gray-800 flex-1">Valor por Serviço</span>
                     <input type="number" step="0.01" id="empreitada-valor" placeholder="Valor R$" class="w-28 p-1.5 border rounded-lg text-sm">
                   </label>
                   <label class="flex items-center p-3 border-2 rounded-xl has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 cursor-pointer">
@@ -1714,6 +1714,8 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
 
     // ===== Estado Global =====
     let app, db, auth, userId;
+    let currentUserIsAdmin = false;
+
     setLogLevel('error');
 
     const loadingOverlay  = document.getElementById('loading-overlay');
@@ -1726,7 +1728,7 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
     const userInfo        = document.getElementById('user-info');
 
     const appState = {
-      config: {}, clientes: [], materiais: [], orcamentos: [],
+      config: {}, novidades: {}, clientes: [], materiais: [], orcamentos: [],
       tiposDeServico: [], currentOrcamento: null,
       orcamentosParaExcluir: new Set()
     };
@@ -1874,7 +1876,7 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
     // ===== Novidades Banner (Carrossel Rotativo) =====
     let bannerInterval = null;
     function renderNovidades() {
-      const c = appState.config;
+            const c = Object.keys(appState.novidades || {}).length ? appState.novidades : appState.config;
       const wrapper = document.getElementById('novidades-banner-wrapper');
       const content = document.getElementById('novidades-content');
       if (!wrapper || !content) return;
@@ -3021,7 +3023,7 @@ Qualquer dúvida estou à disposição!`;
         case 'empreitada':
           raw_value = parseFloat(document.getElementById('empreitada-valor').value)||0;
           valor = rates.empreitada > 0 && tipoObra === 'residencial' ? rates.empreitada : raw_value;
-          label = 'Empreitada'; break;
+          label = 'Valor por Serviço'; break;
         case 'diaria':
           raw_value = parseInt(document.getElementById('diaria-qtd').value)||0;
           valor = raw_value * rates.diaria; label = `${raw_value} diária(s)`; break;
@@ -3171,6 +3173,14 @@ Qualquer dúvida estou à disposição!`;
         };
         delete data.endereco;
         await setDoc(doc(db, `users/${userId}/config/main`), data);
+                if (currentUserIsAdmin) {
+          await setDoc(doc(db, 'app_config/novidades'), {
+            novidades_ativo: data.novidades_ativo,
+            novidades_texto: data.novidades_texto,
+            novidades_tempo: data.novidades_tempo,
+          }, { merge: true });
+        }
+
         alert('Configurações salvas com sucesso!');
         hideConfigSection();
       } catch(e) { console.error(e); alert('Erro ao salvar.'); }
@@ -3210,9 +3220,10 @@ Qualquer dúvida estou à disposição!`;
       const fmtEl = document.querySelector(`input[name="config-pdf-formato"][value="${c.config_pdf_formato||'completo'}"]`);
       if (fmtEl) fmtEl.checked = true;
       const qrEl = el('config-mostrar-qrcode'); if (qrEl) qrEl.checked = c.config_mostrar_qrcode||false;
-      const novAtEl = el('config-novidades-ativo'); if (novAtEl) novAtEl.checked = c.novidades_ativo||false;
-      sv('config-novidades-texto', c.novidades_texto||'');
-      sv('config-novidades-tempo', c.novidades_tempo || 5);
+            const n = Object.keys(appState.novidades || {}).length ? appState.novidades : c;
+      const novAtEl = el('config-novidades-ativo'); if (novAtEl) novAtEl.checked = n.novidades_ativo||false;
+      sv('config-novidades-texto', n.novidades_texto||'');
+      sv('config-novidades-tempo', n.novidades_tempo || 5);
       renderNovidades();
     }
 
@@ -3547,6 +3558,7 @@ Qualquer dúvida estou à disposição!`;
             const isAdmin = adminsAutorizados.some(email => userEmail === email.toLowerCase()) || 
                             nomesAutorizados.some(nome => userName.includes(nome));
             
+            currentUserIsAdmin = isAdmin;
             const btnNovidades = document.getElementById('btn-config-novidades');
             if (btnNovidades) {
               if (isAdmin) {
@@ -3609,6 +3621,14 @@ Qualquer dúvida estou à disposição!`;
         if (snap.exists()) appState.config = snap.data();
         updateConfigForm();
       });
+            onSnapshot(doc(db, 'app_config/novidades'), (snap) => {
+        appState.novidades = snap.exists() ? snap.data() : {};
+        updateConfigForm();
+      }, (err) => {
+        console.warn('Não foi possível carregar o banner global de novidades:', err);
+        renderNovidades();
+      });
+
       onSnapshot(query(collection(db, `${prefix}/clientes`)), (snap) => {
         appState.clientes = snap.docs.map(d => ({ ...d.data(), id: d.id }));
         renderClientesList();
