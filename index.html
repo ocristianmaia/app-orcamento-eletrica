@@ -3173,7 +3173,8 @@ Qualquer dúvida estou à disposição!`;
         };
         delete data.endereco;
         await setDoc(doc(db, `users/${userId}/config/main`), data);
-                if (currentUserIsAdmin) {
+                        const sectionNovidadesAberta = !document.getElementById('section-novidades')?.classList.contains('hidden');
+        if (currentUserIsAdmin && sectionNovidadesAberta) {
           await setDoc(doc(db, 'app_config/novidades'), {
             novidades_ativo: data.novidades_ativo,
             novidades_texto: data.novidades_texto,
