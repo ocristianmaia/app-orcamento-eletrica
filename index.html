@@ -1652,7 +1652,7 @@
                 </div>
                 <div class="flex gap-2">
                   <input type="file" id="orc-cotacao-arquivo" accept=".pdf,.xlsx,.xls,.csv,.doc,.docx" class="input-field flex-1" placeholder="Selecionar arquivo de cotação...">
-                  <button onclick="handleCotacaoUpload()" class="px-3 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors">Importar</button>
+                  <button onclick="handleCotacaoUpload(this)" class="px-3 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors">Importar</button>
                 </div>
                 <div id="orc-cotacao-info" class="text-xs text-gray-600 p-2 bg-gray-50 rounded-lg hidden">
                   <span id="orc-cotacao-nome"></span>
@@ -2475,18 +2475,19 @@ Qualquer dúvida estou à disposição!`;
     
     window.saveOrcamento = async (fecharModal = true) => {
       if (!appState.currentOrcamento?.cliente) return alert('Selecione um cliente.');
-      // Proteção dupla contra salvamento múltiplo
+      
+      // Proteção contra salvamento múltiplo
       if (isSaving) { console.warn('[saveOrcamento] Já está salvando, ignorando clique.'); return; }
-      isSaving = true;
       
       const btnSalvar = document.getElementById('btn-salvar-orcamento');
       const btnEnviar = document.getElementById('btn-enviar-pdf');
       const originalText = btnSalvar ? btnSalvar.textContent : 'Salvar';
-      // Desabilitar AMBOS os botões durante o salvamento
-      if (btnSalvar) { btnSalvar.disabled = true; btnSalvar.textContent = 'Salvando...'; }
-      if (btnEnviar && fecharModal === false) { btnEnviar.disabled = true; }
       
       try {
+        isSaving = true;
+        if (btnSalvar) { btnSalvar.disabled = true; btnSalvar.textContent = 'Salvando...'; }
+        if (btnEnviar && fecharModal === false) { btnEnviar.disabled = true; }
+
         const data = { ...appState.currentOrcamento };
         if (!data.id) { 
           data.status = 'pendente'; 
@@ -4086,7 +4087,7 @@ Qualquer dúvida estou à disposição!`;
     logoClearBtn?.addEventListener('click', () => { applyLogoToPreview(''); if (logoFileInput) logoFileInput.value = ''; });
 
     // ===== Material Avulso e Cotação =====
-    window.handleCotacaoUpload = async () => {
+    window.handleCotacaoUpload = async (btn) => {
       const fileInput = document.getElementById('orc-cotacao-arquivo');
       const file = fileInput.files[0];
       if (!file) return alert('Selecione um arquivo.');
@@ -4094,18 +4095,21 @@ Qualquer dúvida estou à disposição!`;
       const maxSize = 10 * 1024 * 1024; // 10MB
       if (file.size > maxSize) return alert('Arquivo muito grande. Máximo 10MB.');
       
-      const btn = document.querySelector('button[onclick="handleCotacaoUpload()"]');
-      const originalText = btn ? btn.textContent : 'Importar';
-      if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+      // Se o botão não foi passado, tenta encontrar pelo seletor (fallback)
+      const targetBtn = btn || document.querySelector('button[onclick^="handleCotacaoUpload"]');
+      const originalText = targetBtn ? targetBtn.textContent : 'Importar';
       
       try {
         if (!userId) throw new Error('Usuário não autenticado.');
-        const { ref, uploadBytes, getDownloadURL } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js");
+        if (targetBtn) { targetBtn.disabled = true; targetBtn.textContent = 'Enviando...'; }
+
+        // IMPORTANTE: Usar as funções já importadas no topo do arquivo para evitar conflitos de instância
         const storageRef = ref(storage, `users/${userId}/cotacoes/${Date.now()}_${file.name}`);
         const snapshot = await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(snapshot.ref);
 
-        if (!appState.currentOrcamento) appState.currentOrcamento = {};
+        if (!appState.currentOrcamento) resetCurrentOrcamento();
+        
         appState.currentOrcamento.cotacao = {
           nome: file.name,
           tipo: file.type,
@@ -4113,8 +4117,12 @@ Qualquer dúvida estou à disposição!`;
           url: downloadURL
         };
         
-        document.getElementById('orc-cotacao-nome').textContent = '📄 ' + file.name;
-        document.getElementById('orc-cotacao-info').classList.remove('hidden');
+        const infoNome = document.getElementById('orc-cotacao-nome');
+        const infoDiv = document.getElementById('orc-cotacao-info');
+        
+        if (infoNome) infoNome.textContent = '📄 ' + file.name;
+        if (infoDiv) infoDiv.classList.remove('hidden');
+        
         fileInput.value = '';
         updateOrcamentoPreview();
         alert('Cotação importada com sucesso!');
@@ -4122,7 +4130,7 @@ Qualquer dúvida estou à disposição!`;
         console.error('Erro ao carregar arquivo:', e);
         alert('Erro ao processar arquivo: ' + e.message);
       } finally {
-        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+        if (targetBtn) { targetBtn.disabled = false; targetBtn.textContent = originalText; }
       }
     };
 
