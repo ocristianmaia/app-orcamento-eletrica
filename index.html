@@ -2269,6 +2269,18 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         // Totais e Desconto
         if (y > 240) { doc.addPage(); y = margin; }
         
+        // Recalcular subtotal para garantir que material avulso está incluso
+        let subtotalPDF = 0;
+        if (orc.modoCobranca === 'por_servico') {
+          subtotalPDF += (orc.tiposDeServico || []).reduce((acc, s) => acc + (s.valor * (s.quantidade || 1)), 0);
+        } else {
+          subtotalPDF += (orc.maoDeObra?.valor || 0);
+        }
+        if (orc.usarMaterial === 'sim') {
+          subtotalPDF += (orc.items || []).reduce((acc, i) => acc + (i.valor * (i.quantidade || 1)), 0);
+        }
+        subtotalPDF += (orc.materialAvulso || 0);
+
         // Material Avulso
         if (orc.materialAvulso > 0) {
           doc.setFontSize(9); doc.setTextColor(40,40,40);
@@ -2277,12 +2289,15 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           y += 6;
         }
         
+        let valorDescontoPDF = 0;
         if (orc.desconto?.valor > 0) {
-          const descVal = orc.desconto.tipo === 'percent' ? (orc.total / (1 - orc.desconto.valor/100) * (orc.desconto.valor/100)) : orc.desconto.valor;
+          valorDescontoPDF = orc.desconto.tipo === 'percent' ? (subtotalPDF * orc.desconto.valor / 100) : orc.desconto.valor;
           doc.setFontSize(9); doc.setTextColor(150,0,0);
-          doc.text(`Desconto: - ${formatBRL(descVal)}`, pageW - margin, y, { align: 'right' });
+          doc.text(`Desconto: - ${formatBRL(valorDescontoPDF)}`, pageW - margin, y, { align: 'right' });
           y += 6;
         }
+        
+        orc.total = subtotalPDF - valorDescontoPDF;
 
         const [tr,tg,tb] = hexToRgb(corTotal);
         doc.setFillColor(tr,tg,tb);
@@ -3136,7 +3151,8 @@ Qualquer dúvida estou à disposição!`;
         }).join('');
         matHtml = `<h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">MATERIAIS:</h4><table style="width:100%;border-collapse:collapse;font-size:0.85em"><thead><tr><th style="text-align:left;padding:3px 2px;border-bottom:1px solid #ccc">Descrição</th><th style="text-align:center;padding:3px 2px;border-bottom:1px solid #ccc">Qtd</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid #ccc">Unit.</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid #ccc">Total</th></tr></thead><tbody>${linhas}</tbody></table><div style="text-align:right;font-weight:bold;margin-top:6px;padding-top:4px;border-top:1px solid #ccc"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>`;
       }
-      const materialAvulso = orc.materialAvulso || 0;
+      const materialAvulso = parseFloat(document.getElementById('orc-material-avulso')?.value) || orc.materialAvulso || 0;
+      orc.materialAvulso = materialAvulso; // Sincroniza o estado
       const subtotal = subtotalServicos + subtotalMateriais + totalMaoDeObra + materialAvulso;
       let materialAvulsoHtml = '';
       if (materialAvulso > 0) {
@@ -4058,14 +4074,6 @@ Qualquer dúvida estou à disposição!`;
     });
     logoClearBtn?.addEventListener('click', () => { applyLogoToPreview(''); if (logoFileInput) logoFileInput.value = ''; });
 
-    // ===== Inicializar =====
-    window.onload = initializeFirebase;
-
-  </script>
-</body>
-</html>
-
-
     // ===== Material Avulso e Cotação =====
     window.handleCotacaoUpload = async () => {
       const fileInput = document.getElementById('orc-cotacao-arquivo');
@@ -4107,7 +4115,16 @@ Qualquer dúvida estou à disposição!`;
     // Atualizar material avulso no estado
     document.addEventListener('input', (e) => {
       if (e.target.id === 'orc-material-avulso') {
-        appState.currentOrcamento.materialAvulso = parseFloat(e.target.value) || 0;
-        updateOrcamentoPreview();
+        if (appState.currentOrcamento) {
+          appState.currentOrcamento.materialAvulso = parseFloat(e.target.value) || 0;
+          updateOrcamentoPreview();
+        }
       }
     });
+
+    // ===== Inicializar =====
+    window.onload = initializeFirebase;
+
+  </script>
+</body>
+</html>
