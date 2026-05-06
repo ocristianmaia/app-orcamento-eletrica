@@ -1642,6 +1642,22 @@
               </div>
             </div>
 
+            <!-- Material Avulso -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Material Avulso (Cotação Externa)</label>
+              <div class="space-y-2">
+                <input type="number" step="0.01" id="orc-material-avulso" class="input-field" placeholder="Valor de material avulso (R$)" value="0">
+                <div class="flex gap-2">
+                  <input type="file" id="orc-cotacao-arquivo" accept=".pdf,.xlsx,.xls,.csv,.doc,.docx" class="input-field flex-1" placeholder="Selecionar arquivo de cotação...">
+                  <button onclick="handleCotacaoUpload()" class="px-3 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors">Importar</button>
+                </div>
+                <div id="orc-cotacao-info" class="text-xs text-gray-600 p-2 bg-gray-50 rounded-lg hidden">
+                  <span id="orc-cotacao-nome"></span>
+                  <button onclick="removerCotacao()" class="ml-2 text-red-600 font-bold hover:text-red-700">Remover</button>
+                </div>
+              </div>
+            </div>
+
             <!-- Desconto -->
             <div>
               <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Desconto (Opcional)</label>
@@ -1760,6 +1776,7 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
         tiposDeServico: [], items: [],
         maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
         desconto: { tipo: 'nenhum', valor: 0 },
+        materialAvulso: 0, cotacao: null,
         total: 0, tipoObra: 'residencial', createdAt: null,
         status: 'pendente', numeroOrcamento: null, versao: 1
       };
@@ -2252,6 +2269,14 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         // Totais e Desconto
         if (y > 240) { doc.addPage(); y = margin; }
         
+        // Material Avulso
+        if (orc.materialAvulso > 0) {
+          doc.setFontSize(9); doc.setTextColor(40,40,40);
+          doc.text('Material Avulso (Cotacao Externa):', margin, y);
+          doc.text(formatBRL(orc.materialAvulso), pageW - margin, y, { align: 'right' });
+          y += 6;
+        }
+        
         if (orc.desconto?.valor > 0) {
           const descVal = orc.desconto.tipo === 'percent' ? (orc.total / (1 - orc.desconto.valor/100) * (orc.desconto.valor/100)) : orc.desconto.valor;
           doc.setFontSize(9); doc.setTextColor(150,0,0);
@@ -2330,6 +2355,16 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           }
         }
 
+        // Cotação Anexada
+        if (orc.cotacao) {
+          if (y > 250) { doc.addPage(); y = margin; }
+          doc.setFillColor(243, 232, 255); doc.setDrawColor(221, 214, 254);
+          doc.roundedRect(margin, y, contentW, 10, 2, 2, 'FD');
+          doc.setFontSize(8); doc.setFont(undefined,'bold'); doc.setTextColor(88, 28, 135);
+          doc.text('COTAÇÃO ANEXADA: ' + orc.cotacao.nome, margin + 3, y + 6.5);
+          y += 14;
+        }
+        
         // Rodapé / Observações
         if (y > 260) { doc.addPage(); y = margin; }
         const obsPadrao = config.obs_padrao || config.config_obs_padrao || '';
@@ -2917,6 +2952,8 @@ Qualquer dúvida estou à disposição!`;
           clone.tipoObra = clone.tipoObra || 'residencial';
           clone.maoDeObra = clone.maoDeObra || { tipo:'',valor:0,label:'',raw_value:'' };
           clone.desconto = clone.desconto || { tipo:'nenhum',valor:0 };
+          clone.materialAvulso = clone.materialAvulso || 0;
+          clone.cotacao = clone.cotacao || null;
           appState.currentOrcamento = clone;
           const descEl = document.getElementById('orc-descricao-servico');
           if (descEl) descEl.value = clone.descricaoServico||'';
@@ -2942,6 +2979,13 @@ Qualquer dúvida estou à disposição!`;
           } else {
             if (dTipo) dTipo.value = 'nenhum';
             if (dVal) { dVal.value = ''; dVal.disabled = true; }
+          }
+          document.getElementById('orc-material-avulso').value = clone.materialAvulso || '0';
+          if (clone.cotacao) {
+            document.getElementById('orc-cotacao-nome').textContent = '📄 ' + clone.cotacao.nome;
+            document.getElementById('orc-cotacao-info').classList.remove('hidden');
+          } else {
+            document.getElementById('orc-cotacao-info').classList.add('hidden');
           }
           toggleModoDeCobranca(clone.modoCobranca);
           toggleUsarMaterial(clone.usarMaterial);
@@ -2977,6 +3021,9 @@ Qualquer dúvida estou à disposição!`;
           const dVal = document.getElementById('orc-desconto-valor');
           if (dTipo) dTipo.value = 'nenhum';
           if (dVal) { dVal.value = ''; dVal.disabled = true; }
+          document.getElementById('orc-material-avulso').value = '0';
+          document.getElementById('orc-cotacao-arquivo').value = '';
+          document.getElementById('orc-cotacao-info').classList.add('hidden');
           toggleModoDeCobranca('mao_de_obra');
           toggleUsarMaterial('sim');
           document.getElementById('orc-cliente-select').value = '';
@@ -3089,7 +3136,12 @@ Qualquer dúvida estou à disposição!`;
         }).join('');
         matHtml = `<h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">MATERIAIS:</h4><table style="width:100%;border-collapse:collapse;font-size:0.85em"><thead><tr><th style="text-align:left;padding:3px 2px;border-bottom:1px solid #ccc">Descrição</th><th style="text-align:center;padding:3px 2px;border-bottom:1px solid #ccc">Qtd</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid #ccc">Unit.</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid #ccc">Total</th></tr></thead><tbody>${linhas}</tbody></table><div style="text-align:right;font-weight:bold;margin-top:6px;padding-top:4px;border-top:1px solid #ccc"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>`;
       }
-      const subtotal = subtotalServicos + subtotalMateriais + totalMaoDeObra;
+      const materialAvulso = orc.materialAvulso || 0;
+      const subtotal = subtotalServicos + subtotalMateriais + totalMaoDeObra + materialAvulso;
+      let materialAvulsoHtml = '';
+      if (materialAvulso > 0) {
+        materialAvulsoHtml = `<div style="text-align:right;background:#f0f9ff;padding:6px 4px;margin-top:6px;border:1px solid #bfdbfe;border-radius:4px"><span style="font-weight:bold">Material Avulso (Cotacao Externa): R$ ${materialAvulso.toFixed(2)}</span></div>`;
+      }
       let valorDesconto = 0, descontoHtml = '';
       if (orc.desconto?.tipo !== 'nenhum' && orc.desconto?.valor > 0) {
         valorDesconto = orc.desconto.tipo === 'percent' ? (subtotal*orc.desconto.valor/100) : orc.desconto.valor;
@@ -3124,9 +3176,10 @@ Qualquer dúvida estou à disposição!`;
         <span style="display:block;font-size:0.85em">Tel: ${formatarTelefone(orc.cliente.telefone)}</span>
         <hr style="margin:10px 0">
         ${orc.descricaoServico ? `<h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">DESCRIÇÃO DO SERVIÇO:</h4><p style="font-size:0.85em;margin-bottom:8px;white-space:pre-line">${orc.descricaoServico}</p>` : ''}
-        ${tiposHtml}${matHtml}${moHtml}${descontoHtml}
+        ${tiposHtml}${matHtml}${moHtml}${materialAvulsoHtml}${descontoHtml}
         <div style="text-align:right;font-size:1.1em;font-weight:bold;margin-top:8px;padding:8px 4px;border-top:2px solid ${corT};color:${corT};background:#f0f4ff">TOTAL: R$ ${orc.total.toFixed(2)}</div>
         <div style="margin-top:8px">${pagHtml}
+          ${orc.cotacao ? `<div style="font-size:0.8em;margin-top:8px;padding:8px;background:#f3e8ff;border:1px solid #ddd6fe;border-radius:4px;text-align:center"><strong>Cotação Anexada:</strong> ${orc.cotacao.nome}</div>` : ''}
           <div style="font-size:0.8em;margin-top:4px;text-align:center;background:#FFFFCC;padding:4px;border:1px solid #eee">Orçamento válido por ${validade} dias.</div>
           ${(config.obs_padrao||config.config_obs_padrao) ? `<div style="font-size:0.78em;margin-top:4px;padding:4px;border:1px solid #e5e7eb;border-radius:4px;color:#555;white-space:pre-line">${config.obs_padrao||config.config_obs_padrao}</div>` : ''}
         </div>
@@ -4011,3 +4064,50 @@ Qualquer dúvida estou à disposição!`;
   </script>
 </body>
 </html>
+
+
+    // ===== Material Avulso e Cotação =====
+    window.handleCotacaoUpload = async () => {
+      const fileInput = document.getElementById('orc-cotacao-arquivo');
+      const file = fileInput.files[0];
+      if (!file) return alert('Selecione um arquivo.');
+      
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) return alert('Arquivo muito grande. Máximo 10MB.');
+      
+      try {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const base64Data = e.target.result;
+          appState.currentOrcamento.cotacao = {
+            nome: file.name,
+            tipo: file.type,
+            tamanho: file.size,
+            data: base64Data
+          };
+          document.getElementById('orc-cotacao-nome').textContent = '📄 ' + file.name;
+          document.getElementById('orc-cotacao-info').classList.remove('hidden');
+          fileInput.value = '';
+          updateOrcamentoPreview();
+        };
+        reader.readAsDataURL(file);
+      } catch(e) {
+        console.error('Erro ao carregar arquivo:', e);
+        alert('Erro ao processar arquivo.');
+      }
+    };
+
+    window.removerCotacao = () => {
+      appState.currentOrcamento.cotacao = null;
+      document.getElementById('orc-cotacao-arquivo').value = '';
+      document.getElementById('orc-cotacao-info').classList.add('hidden');
+      updateOrcamentoPreview();
+    };
+
+    // Atualizar material avulso no estado
+    document.addEventListener('input', (e) => {
+      if (e.target.id === 'orc-material-avulso') {
+        appState.currentOrcamento.materialAvulso = parseFloat(e.target.value) || 0;
+        updateOrcamentoPreview();
+      }
+    });
