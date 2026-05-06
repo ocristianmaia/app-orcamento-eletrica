@@ -1646,7 +1646,10 @@
             <div>
               <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Material Avulso (Cotação Externa)</label>
               <div class="space-y-2">
-                <input type="number" step="0.01" id="orc-material-avulso" class="input-field" placeholder="Valor de material avulso (R$)" value="0">
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">R$</span>
+                  <input type="number" step="0.01" id="orc-material-avulso" class="input-field pl-10" placeholder="0,00" value="0">
+                </div>
                 <div class="flex gap-2">
                   <input type="file" id="orc-cotacao-arquivo" accept=".pdf,.xlsx,.xls,.csv,.doc,.docx" class="input-field flex-1" placeholder="Selecionar arquivo de cotação...">
                   <button onclick="handleCotacaoUpload()" class="px-3 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors">Importar</button>
@@ -1735,9 +1738,10 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
     import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, OAuthProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
     // ===== Estado Global =====
-    let app, db, auth, userId;
+    let app, db, auth, storage, userId;
     let currentUserIsAdmin = false;
 
     setLogLevel('error');
@@ -2371,13 +2375,15 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         }
 
         // Cotação Anexada
-        if (orc.cotacao) {
+        if (orc.cotacao && orc.cotacao.url) {
           if (y > 250) { doc.addPage(); y = margin; }
           doc.setFillColor(243, 232, 255); doc.setDrawColor(221, 214, 254);
-          doc.roundedRect(margin, y, contentW, 10, 2, 2, 'FD');
+          doc.roundedRect(margin, y, contentW, 12, 2, 2, 'FD');
           doc.setFontSize(8); doc.setFont(undefined,'bold'); doc.setTextColor(88, 28, 135);
-          doc.text('COTAÇÃO ANEXADA: ' + orc.cotacao.nome, margin + 3, y + 6.5);
-          y += 14;
+          doc.text('COTAÇÃO ANEXADA (CLIQUE PARA ABRIR):', margin + 3, y + 5);
+          doc.setFontSize(7); doc.setFont(undefined,'normal'); doc.setTextColor(107, 33, 168);
+          doc.textWithLink(orc.cotacao.nome, margin + 3, y + 9, { url: orc.cotacao.url });
+          y += 16;
         }
         
         // Rodapé / Observações
@@ -2495,20 +2501,24 @@ Qualquer dúvida estou à disposição!`;
         else data.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
         if (data.usarMaterial === 'nao') data.items = [];
 
+        // Limpeza de dados para evitar erros de serialização do Firestore
+        const cleanData = JSON.parse(JSON.stringify(data));
+        if (data.createdAt) cleanData.createdAt = data.createdAt; // Preserva se for objeto do Firestore
+
         if (data.createdAt) {
           // Update
-          data.versao = (data.versao || 1) + 1;
-          const ref = doc(db, `users/${userId}/orcamentos/${data.id}`);
-          const toSave = { ...data }; delete toSave.createdAt;
+          cleanData.versao = (cleanData.versao || 1) + 1;
+          const ref = doc(db, `users/${userId}/orcamentos/${cleanData.id}`);
+          const toSave = { ...cleanData }; delete toSave.createdAt;
           await setDoc(ref, toSave, { merge: true });
         } else {
           // New
           const maxNumero = appState.orcamentos.reduce((max, o) => Math.max(max, o.numeroOrcamento||0), 0);
-          data.numeroOrcamento = maxNumero + 1;
-          data.versao = 1;
-          data.createdAt = serverTimestamp();
-          appState.currentOrcamento.numeroOrcamento = data.numeroOrcamento;
-          await setDoc(doc(db, `users/${userId}/orcamentos/${data.id}`), data);
+          cleanData.numeroOrcamento = maxNumero + 1;
+          cleanData.versao = 1;
+          cleanData.createdAt = serverTimestamp();
+          appState.currentOrcamento.numeroOrcamento = cleanData.numeroOrcamento;
+          await setDoc(doc(db, `users/${userId}/orcamentos/${cleanData.id}`), cleanData);
         }
         
         updateOrcamentoPreview();
@@ -3195,7 +3205,7 @@ Qualquer dúvida estou à disposição!`;
         ${tiposHtml}${matHtml}${moHtml}${materialAvulsoHtml}${descontoHtml}
         <div style="text-align:right;font-size:1.1em;font-weight:bold;margin-top:8px;padding:8px 4px;border-top:2px solid ${corT};color:${corT};background:#f0f4ff">TOTAL: R$ ${orc.total.toFixed(2)}</div>
         <div style="margin-top:8px">${pagHtml}
-          ${orc.cotacao ? `<div style="font-size:0.8em;margin-top:8px;padding:8px;background:#f3e8ff;border:1px solid #ddd6fe;border-radius:4px;text-align:center"><strong>Cotação Anexada:</strong> ${orc.cotacao.nome}</div>` : ''}
+          ${orc.cotacao ? `<div style="font-size:0.8em;margin-top:8px;padding:8px;background:#f3e8ff;border:1px solid #ddd6fe;border-radius:4px;text-align:center"><strong>Cotação Anexada:</strong> <a href="${orc.cotacao.url}" target="_blank" style="color:#6b21a8;text-decoration:underline">${orc.cotacao.nome} (Clique para abrir)</a></div>` : ''}
           <div style="font-size:0.8em;margin-top:4px;text-align:center;background:#FFFFCC;padding:4px;border:1px solid #eee">Orçamento válido por ${validade} dias.</div>
           ${(config.obs_padrao||config.config_obs_padrao) ? `<div style="font-size:0.78em;margin-top:4px;padding:4px;border:1px solid #e5e7eb;border-radius:4px;color:#555;white-space:pre-line">${config.obs_padrao||config.config_obs_padrao}</div>` : ''}
         </div>
@@ -3594,6 +3604,7 @@ Qualquer dúvida estou à disposição!`;
         app = initializeApp(firebaseConfig);
         db = getFirestore(app);
         auth = getAuth(app);
+        storage = getStorage(app);
 
         onAuthStateChanged(auth, async (user) => {
           if (user) {
@@ -4083,25 +4094,35 @@ Qualquer dúvida estou à disposição!`;
       const maxSize = 10 * 1024 * 1024; // 10MB
       if (file.size > maxSize) return alert('Arquivo muito grande. Máximo 10MB.');
       
+      const btn = document.querySelector('button[onclick="handleCotacaoUpload()"]');
+      const originalText = btn ? btn.textContent : 'Importar';
+      if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+      
       try {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          const base64Data = e.target.result;
-          appState.currentOrcamento.cotacao = {
-            nome: file.name,
-            tipo: file.type,
-            tamanho: file.size,
-            data: base64Data
-          };
-          document.getElementById('orc-cotacao-nome').textContent = '📄 ' + file.name;
-          document.getElementById('orc-cotacao-info').classList.remove('hidden');
-          fileInput.value = '';
-          updateOrcamentoPreview();
+        if (!userId) throw new Error('Usuário não autenticado.');
+        const { ref, uploadBytes, getDownloadURL } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js");
+        const storageRef = ref(storage, `users/${userId}/cotacoes/${Date.now()}_${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+
+        if (!appState.currentOrcamento) appState.currentOrcamento = {};
+        appState.currentOrcamento.cotacao = {
+          nome: file.name,
+          tipo: file.type,
+          tamanho: file.size,
+          url: downloadURL
         };
-        reader.readAsDataURL(file);
+        
+        document.getElementById('orc-cotacao-nome').textContent = '📄 ' + file.name;
+        document.getElementById('orc-cotacao-info').classList.remove('hidden');
+        fileInput.value = '';
+        updateOrcamentoPreview();
+        alert('Cotação importada com sucesso!');
       } catch(e) {
         console.error('Erro ao carregar arquivo:', e);
-        alert('Erro ao processar arquivo.');
+        alert('Erro ao processar arquivo: ' + e.message);
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
       }
     };
 
