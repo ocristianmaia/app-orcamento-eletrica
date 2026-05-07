@@ -1702,6 +1702,7 @@
                 </button>
                 <button onclick="sendWhatsAppText()" class="py-2.5 rounded-lg bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 transition-colors">Enviar Texto</button>
               </div>
+              <button onclick="closeOrcamentoModal()" class="w-full py-2.5 rounded-lg bg-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-300 transition-colors">Fechar</button>
             </div>
           </div>
         </div>
@@ -2496,6 +2497,8 @@ Qualquer dúvida estou à disposição!`;
             window.open(`https://wa.me/55${orc.cliente.telefone}?text=${encodeURIComponent(msg)}`, '_blank');
           }
           closePdfPreviewModal();
+          // Fechar modal de orçamento automaticamente após enviar
+          closeOrcamentoModal();
         };
 
       } catch(e) {
