@@ -3054,6 +3054,10 @@ Qualquer dúvida estou à disposição!`;
           setR('usar-material', clone.usarMaterial);
           if (clone.modoCobranca === 'mao_de_obra') {
             setR('tipo-obra', clone.tipoObra);
+            // Disparar evento de mudança para atualizar labels (Ponto vs Equipamento)
+            const rbTipoObra = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
+            if (rbTipoObra) rbTipoObra.dispatchEvent(new Event('change'));
+
             if (clone.maoDeObra?.tipo) {
               setR('tipo-servico', clone.maoDeObra.tipo);
               const map = { empreitada:'empreitada-valor', diaria:'diaria-qtd', ponto:'ponto-qtd', hora:'hora-qtd', metro:'metro-qtd' };
@@ -3961,7 +3965,38 @@ Qualquer dúvida estou à disposição!`;
 
     document.querySelectorAll('input[name="tipo-obra"]').forEach(rb => {
       rb.addEventListener('change', (e) => {
-        if (appState.currentOrcamento) appState.currentOrcamento.tipoObra = e.target.value;
+        const tipoObra = e.target.value;
+        if (appState.currentOrcamento) appState.currentOrcamento.tipoObra = tipoObra;
+        
+        // Atualizar interface de acordo com a especialidade
+        const spanPonto = document.getElementById('ponto-label-span');
+        if (spanPonto) {
+          spanPonto.textContent = tipoObra === 'industrial' ? 'Por Equipamento' : 'Por Ponto';
+        }
+        
+        const pontoInput = document.getElementById('ponto-qtd');
+        if (pontoInput) {
+          pontoInput.placeholder = tipoObra === 'industrial' ? 'Qtd. Equip.' : 'Qtd. Pontos';
+        }
+
+        // Se for Industrial, esconder 'Valor por m²' e 'Valor por Serviço' (Empreitada) se não houver taxas configuradas
+        const rowEmpreitada = document.querySelector('input[name="tipo-servico"][value="empreitada"]')?.closest('label');
+        const rowMetro = document.querySelector('input[name="tipo-servico"][value="metro"]')?.closest('label');
+        
+        if (tipoObra === 'industrial') {
+          if (rowEmpreitada) rowEmpreitada.classList.add('hidden');
+          if (rowMetro) rowMetro.classList.add('hidden');
+          // Se o selecionado era um dos escondidos, muda para diária
+          const currentTipo = document.querySelector('input[name="tipo-servico"]:checked')?.value;
+          if (currentTipo === 'empreitada' || currentTipo === 'metro') {
+            const diariaRb = document.querySelector('input[name="tipo-servico"][value="diaria"]');
+            if (diariaRb) { diariaRb.checked = true; }
+          }
+        } else {
+          if (rowEmpreitada) rowEmpreitada.classList.remove('hidden');
+          if (rowMetro) rowMetro.classList.remove('hidden');
+        }
+
         calculateMaoDeObra();
         updateOrcamentoPreview();
       });
