@@ -2378,14 +2378,20 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         if (orc.cotacao && (orc.cotacao.url || orc.cotacao.data)) {
           if (y > 250) { doc.addPage(); y = margin; }
           doc.setFillColor(243, 232, 255); doc.setDrawColor(221, 214, 254);
-          doc.roundedRect(margin, y, contentW, 12, 2, 2, 'FD');
+          doc.roundedRect(margin, y, contentW, 14, 2, 2, 'FD');
           doc.setFontSize(8); doc.setFont(undefined,'bold'); doc.setTextColor(88, 28, 135);
-          doc.text('COTAÇÃO ANEXADA (CLIQUE PARA ABRIR):', margin + 3, y + 5);
+          doc.text('COTAÇÃO ANEXADA:', margin + 3, y + 5);
           doc.setFontSize(7); doc.setFont(undefined,'normal'); doc.setTextColor(107, 33, 168);
-          // Se for base64, usamos o link de dados direto
+          
           const fileUrl = orc.cotacao.url || orc.cotacao.data;
-          doc.textWithLink(orc.cotacao.nome, margin + 3, y + 9, { url: fileUrl });
-          y += 16;
+          // Para Base64 muito grandes, o link direto no PDF pode falhar. 
+          // Tentamos encurtar ou usar o link direto se for URL.
+          if (fileUrl.length < 5000) {
+            doc.textWithLink('Clique aqui para abrir: ' + orc.cotacao.nome, margin + 3, y + 10, { url: fileUrl });
+          } else {
+            doc.text('Anexo incluído no orçamento (visualize no aplicativo)', margin + 3, y + 10);
+          }
+          y += 18;
         }
         
         // Rodapé / Observações
@@ -3208,7 +3214,7 @@ Qualquer dúvida estou à disposição!`;
         ${tiposHtml}${matHtml}${moHtml}${materialAvulsoHtml}${descontoHtml}
         <div style="text-align:right;font-size:1.1em;font-weight:bold;margin-top:8px;padding:8px 4px;border-top:2px solid ${corT};color:${corT};background:#f0f4ff">TOTAL: R$ ${orc.total.toFixed(2)}</div>
         <div style="margin-top:8px">${pagHtml}
-          ${orc.cotacao ? `<div style="font-size:0.8em;margin-top:8px;padding:8px;background:#f3e8ff;border:1px solid #ddd6fe;border-radius:4px;text-align:center"><strong>Cotação Anexada:</strong> <a href="#" onclick="event.preventDefault(); const win=window.open(); win.document.write('<iframe src=\'${orc.cotacao.url || orc.cotacao.data}\' frameborder=\'0\' style=\'border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;\' allowfullscreen></iframe>');" style="color:#6b21a8;text-decoration:underline">${orc.cotacao.nome} (Clique para abrir)</a></div>` : ''}
+          ${orc.cotacao ? `<div style="font-size:0.8em;margin-top:8px;padding:8px;background:#f3e8ff;border:1px solid #ddd6fe;border-radius:4px;text-align:center"><strong>Cotação Anexada:</strong> <button onclick="abrirAnexoCotacao()" style="color:#6b21a8;text-decoration:underline;background:none;border:none;cursor:pointer;font-weight:bold">${orc.cotacao.nome} (Clique para abrir)</button></div>` : ''}
           <div style="font-size:0.8em;margin-top:4px;text-align:center;background:#FFFFCC;padding:4px;border:1px solid #eee">Orçamento válido por ${validade} dias.</div>
           ${(config.obs_padrao||config.config_obs_padrao) ? `<div style="font-size:0.78em;margin-top:4px;padding:4px;border:1px solid #e5e7eb;border-radius:4px;color:#555;white-space:pre-line">${config.obs_padrao||config.config_obs_padrao}</div>` : ''}
         </div>
@@ -4148,6 +4154,23 @@ Qualquer dúvida estou à disposição!`;
       document.getElementById('orc-cotacao-arquivo').value = '';
       document.getElementById('orc-cotacao-info').classList.add('hidden');
       updateOrcamentoPreview();
+    };
+
+    window.abrirAnexoCotacao = () => {
+      const orc = appState.currentOrcamento;
+      if (!orc?.cotacao) return;
+      const data = orc.cotacao.url || orc.cotacao.data;
+      if (!data) return alert('Anexo não encontrado.');
+      
+      const win = window.open();
+      if (!win) return alert('O bloqueador de pop-ups impediu a abertura do anexo.');
+      
+      if (data.startsWith('data:')) {
+        // Se for Base64, criamos um iframe para exibir corretamente
+        win.document.write(`<html><head><title>${orc.cotacao.nome}</title></head><body style="margin:0"><iframe src="${data}" frameborder="0" style="border:0; width:100%; height:100%;" allowfullscreen></iframe></body></html>`);
+      } else {
+        win.location.href = data;
+      }
     };
 
     // Atualizar material avulso no estado
