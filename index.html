@@ -3009,19 +3009,24 @@ Qualquer dúvida estou à disposição!`;
     const toggleModoDeCobranca = (modo) => {
       const moW = document.getElementById('orc-cobranca-mo-wrapper');
       const svW = document.getElementById('orc-cobranca-servico-wrapper');
+      const isEditing = document.getElementById('modal-title').textContent === 'Editar Orçamento';
       if (modo === 'por_servico') {
         moW.classList.add('hidden'); svW.classList.remove('hidden');
-        if (appState.currentOrcamento) { appState.currentOrcamento.maoDeObra = { tipo:'',valor:0,label:'',raw_value:'' }; }
+        if (appState.currentOrcamento && !isEditing) { appState.currentOrcamento.maoDeObra = { tipo:'',valor:0,label:'',raw_value:'' }; }
       } else {
         moW.classList.remove('hidden'); svW.classList.add('hidden');
-        if (appState.currentOrcamento) appState.currentOrcamento.tiposDeServico = [];
+        if (appState.currentOrcamento && !isEditing) appState.currentOrcamento.tiposDeServico = [];
       }
       updateOrcamentoPreview();
     };
 
     const toggleUsarMaterial = (modo) => {
       const mW = document.getElementById('orc-cobranca-material-wrapper');
-      if (modo === 'nao') { mW.classList.add('hidden'); if (appState.currentOrcamento) appState.currentOrcamento.items = []; }
+      const isEditing = document.getElementById('modal-title').textContent === 'Editar Orçamento';
+      if (modo === 'nao') { 
+        mW.classList.add('hidden'); 
+        if (appState.currentOrcamento && !isEditing) appState.currentOrcamento.items = []; 
+      }
       else mW.classList.remove('hidden');
       updateOrcamentoPreview();
     };
@@ -3083,6 +3088,7 @@ Qualquer dúvida estou à disposição!`;
           }
           toggleModoDeCobranca(clone.modoCobranca);
           toggleUsarMaterial(clone.usarMaterial);
+
           sel.dispatchEvent(new Event('change'));
           setTimeout(() => {
             if (clone.usarMaterial === 'sim') {
