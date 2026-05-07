@@ -2384,14 +2384,21 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           doc.setFontSize(7); doc.setFont(undefined,'normal'); doc.setTextColor(107, 33, 168);
           
           const fileUrl = orc.cotacao.url || orc.cotacao.data;
-          // Para Base64 muito grandes, o link direto no PDF pode falhar. 
-          // Tentamos encurtar ou usar o link direto se for URL.
-          if (fileUrl.length < 5000) {
-            doc.textWithLink('Clique aqui para abrir: ' + orc.cotacao.nome, margin + 3, y + 10, { url: fileUrl });
-          } else {
-            doc.text('Anexo incluído no orçamento (visualize no aplicativo)', margin + 3, y + 10);
-          }
-          y += 18;
+          
+          // Estilização do link: Azul e Sublinhado
+          doc.setTextColor(0, 0, 255);
+          doc.textWithLink('Clique aqui para abrir: ' + orc.cotacao.nome, margin + 3, y + 10, { url: fileUrl });
+          
+          // Desenhar sublinhado manualmente (jsPDF textWithLink não sublinha automaticamente)
+          const textWidth = doc.getTextWidth('Clique aqui para abrir: ' + orc.cotacao.nome);
+          doc.setDrawColor(0, 0, 255);
+          doc.line(margin + 3, y + 10.5, margin + 3 + textWidth, y + 10.5);
+          
+          // Instrução para Celular / WhatsApp
+          doc.setFontSize(6); doc.setTextColor(107, 33, 168);
+          doc.text('(Nota: Se estiver no celular e o link não abrir, tente abrir o PDF pelo navegador)', margin + 3, y + 14);
+          
+          y += 20;
         }
         
         // Rodapé / Observações
