@@ -17,6 +17,8 @@
   <!-- jsPDF para geração de PDF vetorial -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <!-- pdf-lib para mesclagem de PDFs -->
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
 
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180x180.png">
@@ -2385,29 +2387,16 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           
           const fileUrl = orc.cotacao.url || orc.cotacao.data;
           
-          // Estilização do link: Azul e Sublinhado
+          // Nova lógica: Informar que o anexo está no final do PDF
           doc.setFont(undefined, 'bold');
-          doc.setTextColor(30, 64, 175); // Azul mais escuro para melhor contraste
-          doc.textWithLink('CLIQUE AQUI PARA ABRIR O ANEXO', margin + 3, y + 8, { url: fileUrl });
+          doc.setTextColor(pr, pg, pb);
+          doc.text('✓ ANEXO INCLUÍDO AO FINAL DESTE PDF', margin + 3, y + 8);
           
-          // Desenhar sublinhado manualmente
-          const textWidth = doc.getTextWidth('CLIQUE AQUI PARA ABRIR O ANEXO');
-          doc.setDrawColor(30, 64, 175);
-          doc.line(margin + 3, y + 8.5, margin + 3 + textWidth, y + 8.5);
-          
-          // Instrução para Celular / WhatsApp (Solução para bloqueio de link Base64)
           doc.setFont(undefined, 'normal');
           doc.setFontSize(7); doc.setTextColor(80, 80, 80);
-          doc.text('Arquivo: ' + orc.cotacao.nome, margin + 3, y + 12);
+          doc.text('Arquivo anexado: ' + orc.cotacao.nome, margin + 3, y + 12);
           
-          doc.setFontSize(6.5); doc.setTextColor(180, 35, 47); // Vermelho para destaque
-          doc.setFont(undefined, 'bold');
-          doc.text('DICA PARA CELULAR:', margin + 3, y + 16);
-          doc.setFont(undefined, 'normal');
-          doc.setTextColor(60, 60, 60);
-          doc.text('Se o link acima não abrir, pressione e segure sobre ele para "Abrir no Navegador".', margin + 3, y + 19);
-          
-          y += 24;
+          y += 18;
         }
         
         // Rodapé / Observações
@@ -2425,9 +2414,53 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           doc.text('* Itens marcados com # são de estoque imediato.', margin, y);
         }
         
+        // --- SOLUÇÃO DEFINITIVA: Mesclagem de Anexo ---
+        let finalPdfBlob = doc.output('blob');
+        
+        if (orc.cotacao && (orc.cotacao.url || orc.cotacao.data)) {
+          try {
+            const { PDFDocument } = PDFLib;
+            const mainPdfBytes = await finalPdfBlob.arrayBuffer();
+            const mainPdfDoc = await PDFDocument.load(mainPdfBytes);
+            
+            const attachmentData = orc.cotacao.url || orc.cotacao.data;
+            
+            if (attachmentData.includes('application/pdf')) {
+              // É um PDF: Mesclar páginas
+              const attachmentBytes = await fetch(attachmentData).then(res => res.arrayBuffer());
+              const attachmentPdfDoc = await PDFDocument.load(attachmentBytes);
+              const copiedPages = await mainPdfDoc.copyPages(attachmentPdfDoc, attachmentPdfDoc.getPageIndices());
+              copiedPages.forEach((page) => mainPdfDoc.addPage(page));
+              
+              const mergedPdfBytes = await mainPdfDoc.save();
+              finalPdfBlob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+            } else if (attachmentData.includes('image/')) {
+              // É uma imagem: Adicionar nova página e desenhar imagem
+              const imgBytes = await fetch(attachmentData).then(res => res.arrayBuffer());
+              let image;
+              if (attachmentData.includes('image/png')) image = await mainPdfDoc.embedPng(imgBytes);
+              else image = await mainPdfDoc.embedJpg(imgBytes);
+              
+              const page = mainPdfDoc.addPage([595.28, 841.89]); // A4 em pontos
+              const { width, height } = image.scaleToFit(555, 801);
+              page.drawImage(image, {
+                x: 20,
+                y: 841.89 - height - 20,
+                width,
+                height,
+              });
+              
+              const mergedPdfBytes = await mainPdfDoc.save();
+              finalPdfBlob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+            }
+          } catch (err) {
+            console.error('Erro ao mesclar anexo:', err);
+            // Se falhar a mesclagem, mantém o PDF original (segurança)
+          }
+        }
+
         // Abrir Preview
-        const pdfBlob = doc.output('blob');
-        const pdfUrl = URL.createObjectURL(pdfBlob);
+        const pdfUrl = URL.createObjectURL(finalPdfBlob);
         const iframe = document.getElementById('pdf-preview-iframe');
         iframe.src = pdfUrl;
         
@@ -2443,7 +2476,7 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
 Total: *${formatBRL(orc.total)}*
 
 Qualquer dúvida estou à disposição!`;
-          const pdfFile = new File([pdfBlob], `Orcamento_${codOrc.replace(/\//g,'_')}.pdf`, { type: 'application/pdf' });
+          const pdfFile = new File([finalPdfBlob], `Orcamento_${codOrc.replace(/\//g,'_')}.pdf`, { type: 'application/pdf' });
           
           if (navigator.share && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
             navigator.share({
@@ -2455,8 +2488,12 @@ Qualquer dúvida estou à disposição!`;
               window.open(`https://wa.me/55${orc.cliente.telefone}?text=${encodeURIComponent(msg)}`, '_blank');
             });
           } else {
+            // No computador, baixamos o arquivo final mesclado
+            const downloadLink = document.createElement('a');
+            downloadLink.href = pdfUrl;
+            downloadLink.download = `Orcamento_${codOrc.replace(/\//g,'_')}.pdf`;
+            downloadLink.click();
             window.open(`https://wa.me/55${orc.cliente.telefone}?text=${encodeURIComponent(msg)}`, '_blank');
-            doc.save(`Orcamento_${codOrc.replace(/\//g,'_')}.pdf`);
           }
           closePdfPreviewModal();
         };
