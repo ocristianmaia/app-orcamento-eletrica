@@ -2374,15 +2374,17 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           }
         }
 
-        // Cotação Anexada
-        if (orc.cotacao && orc.cotacao.url) {
+        // Cotação Anexada (Suporte a Base64/Firestore)
+        if (orc.cotacao && (orc.cotacao.url || orc.cotacao.data)) {
           if (y > 250) { doc.addPage(); y = margin; }
           doc.setFillColor(243, 232, 255); doc.setDrawColor(221, 214, 254);
           doc.roundedRect(margin, y, contentW, 12, 2, 2, 'FD');
           doc.setFontSize(8); doc.setFont(undefined,'bold'); doc.setTextColor(88, 28, 135);
           doc.text('COTAÇÃO ANEXADA (CLIQUE PARA ABRIR):', margin + 3, y + 5);
           doc.setFontSize(7); doc.setFont(undefined,'normal'); doc.setTextColor(107, 33, 168);
-          doc.textWithLink(orc.cotacao.nome, margin + 3, y + 9, { url: orc.cotacao.url });
+          // Se for base64, usamos o link de dados direto
+          const fileUrl = orc.cotacao.url || orc.cotacao.data;
+          doc.textWithLink(orc.cotacao.nome, margin + 3, y + 9, { url: fileUrl });
           y += 16;
         }
         
@@ -3206,7 +3208,7 @@ Qualquer dúvida estou à disposição!`;
         ${tiposHtml}${matHtml}${moHtml}${materialAvulsoHtml}${descontoHtml}
         <div style="text-align:right;font-size:1.1em;font-weight:bold;margin-top:8px;padding:8px 4px;border-top:2px solid ${corT};color:${corT};background:#f0f4ff">TOTAL: R$ ${orc.total.toFixed(2)}</div>
         <div style="margin-top:8px">${pagHtml}
-          ${orc.cotacao ? `<div style="font-size:0.8em;margin-top:8px;padding:8px;background:#f3e8ff;border:1px solid #ddd6fe;border-radius:4px;text-align:center"><strong>Cotação Anexada:</strong> <a href="${orc.cotacao.url}" target="_blank" style="color:#6b21a8;text-decoration:underline">${orc.cotacao.nome} (Clique para abrir)</a></div>` : ''}
+          ${orc.cotacao ? `<div style="font-size:0.8em;margin-top:8px;padding:8px;background:#f3e8ff;border:1px solid #ddd6fe;border-radius:4px;text-align:center"><strong>Cotação Anexada:</strong> <a href="#" onclick="event.preventDefault(); const win=window.open(); win.document.write('<iframe src=\'${orc.cotacao.url || orc.cotacao.data}\' frameborder=\'0\' style=\'border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;\' allowfullscreen></iframe>');" style="color:#6b21a8;text-decoration:underline">${orc.cotacao.nome} (Clique para abrir)</a></div>` : ''}
           <div style="font-size:0.8em;margin-top:4px;text-align:center;background:#FFFFCC;padding:4px;border:1px solid #eee">Orçamento válido por ${validade} dias.</div>
           ${(config.obs_padrao||config.config_obs_padrao) ? `<div style="font-size:0.78em;margin-top:4px;padding:4px;border:1px solid #e5e7eb;border-radius:4px;color:#555;white-space:pre-line">${config.obs_padrao||config.config_obs_padrao}</div>` : ''}
         </div>
@@ -4092,59 +4094,47 @@ Qualquer dúvida estou à disposição!`;
       const file = fileInput.files[0];
       if (!file) return alert('Selecione um arquivo.');
       
-      const maxSize = 10 * 1024 * 1024; // 10MB
-      if (file.size > maxSize) return alert('Arquivo muito grande. Máximo 10MB.');
+      // Limite para Firestore (documento máximo 1MB, vamos usar 800KB para segurança)
+      const maxSize = 800 * 1024; 
+      if (file.size > maxSize) return alert('Para usar a versão gratuita (sem Storage pago), o arquivo deve ter no máximo 800KB. Por favor, reduza o tamanho do PDF ou use um arquivo menor.');
       
       const targetBtn = btn || document.querySelector('button[onclick^="handleCotacaoUpload"]');
       const originalText = targetBtn ? targetBtn.textContent : 'Importar';
       
-      // Sanitizar nome do arquivo (remover espaços e caracteres especiais)
-      const safeName = file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9.-]/g, "_");
-      const filePath = `users/${userId}/cotacoes/${Date.now()}_${safeName}`;
-      
       try {
-        if (!userId) throw new Error('Usuário não autenticado.');
-        if (!storage) throw new Error('Serviço de armazenamento não inicializado.');
-        
-        if (targetBtn) { targetBtn.disabled = true; targetBtn.textContent = 'Enviando...'; }
+        if (targetBtn) { targetBtn.disabled = true; targetBtn.textContent = 'Processando...'; }
 
-        // Criar referência e realizar upload com tratamento de timeout manual
-        const storageRef = ref(storage, filePath);
-        
-        // Promise de upload com timeout de 30 segundos
-        const uploadPromise = uploadBytes(storageRef, file);
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Tempo limite de upload excedido (30s). Verifique sua conexão.')), 30000)
-        );
+        // Converter arquivo para Base64 (salvando direto no Firestore, custo zero de Storage)
+        const reader = new FileReader();
+        const base64Promise = new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (err) => reject(err);
+          reader.readAsDataURL(file);
+        });
 
-        const snapshot = await Promise.race([uploadPromise, timeoutPromise]);
-        const downloadURL = await getDownloadURL(snapshot.ref);
+        const base64Data = await base64Promise;
 
         if (!appState.currentOrcamento) resetCurrentOrcamento();
         
         appState.currentOrcamento.cotacao = {
-          nome: file.name, // Mantém o nome original para exibição
+          nome: file.name,
           tipo: file.type,
           tamanho: file.size,
-          url: downloadURL
+          data: base64Data // O conteúdo do arquivo agora vai como texto no banco de dados
         };
         
         const infoNome = document.getElementById('orc-cotacao-nome');
         const infoDiv = document.getElementById('orc-cotacao-info');
         
-        if (infoNome) infoNome.textContent = '📄 ' + file.name;
+        if (infoNome) infoNome.textContent = '📄 ' + file.name + ' (Pronto)';
         if (infoDiv) infoDiv.classList.remove('hidden');
         
         fileInput.value = '';
         updateOrcamentoPreview();
-        alert('Cotação importada com sucesso!');
+        alert('Cotação anexada com sucesso! (Salva localmente até você clicar em Salvar Orçamento)');
       } catch(e) {
-        console.error('Erro no upload:', e);
-        let msg = 'Erro ao processar arquivo.';
-        if (e.code === 'storage/unauthorized') msg = 'Sem permissão para salvar arquivos. Verifique seu login.';
-        else if (e.code === 'storage/canceled') msg = 'Upload cancelado.';
-        else msg = e.message;
-        alert(msg);
+        console.error('Erro ao processar arquivo:', e);
+        alert('Erro ao processar arquivo: ' + e.message);
       } finally {
         if (targetBtn) { 
           targetBtn.disabled = false; 
