@@ -2386,19 +2386,28 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           const fileUrl = orc.cotacao.url || orc.cotacao.data;
           
           // Estilização do link: Azul e Sublinhado
-          doc.setTextColor(0, 0, 255);
-          doc.textWithLink('Clique aqui para abrir: ' + orc.cotacao.nome, margin + 3, y + 10, { url: fileUrl });
+          doc.setFont(undefined, 'bold');
+          doc.setTextColor(30, 64, 175); // Azul mais escuro para melhor contraste
+          doc.textWithLink('CLIQUE AQUI PARA ABRIR O ANEXO', margin + 3, y + 8, { url: fileUrl });
           
-          // Desenhar sublinhado manualmente (jsPDF textWithLink não sublinha automaticamente)
-          const textWidth = doc.getTextWidth('Clique aqui para abrir: ' + orc.cotacao.nome);
-          doc.setDrawColor(0, 0, 255);
-          doc.line(margin + 3, y + 10.5, margin + 3 + textWidth, y + 10.5);
+          // Desenhar sublinhado manualmente
+          const textWidth = doc.getTextWidth('CLIQUE AQUI PARA ABRIR O ANEXO');
+          doc.setDrawColor(30, 64, 175);
+          doc.line(margin + 3, y + 8.5, margin + 3 + textWidth, y + 8.5);
           
-          // Instrução para Celular / WhatsApp
-          doc.setFontSize(6); doc.setTextColor(107, 33, 168);
-          doc.text('(Nota: Se estiver no celular e o link não abrir, tente abrir o PDF pelo navegador)', margin + 3, y + 14);
+          // Instrução para Celular / WhatsApp (Solução para bloqueio de link Base64)
+          doc.setFont(undefined, 'normal');
+          doc.setFontSize(7); doc.setTextColor(80, 80, 80);
+          doc.text('Arquivo: ' + orc.cotacao.nome, margin + 3, y + 12);
           
-          y += 20;
+          doc.setFontSize(6.5); doc.setTextColor(180, 35, 47); // Vermelho para destaque
+          doc.setFont(undefined, 'bold');
+          doc.text('DICA PARA CELULAR:', margin + 3, y + 16);
+          doc.setFont(undefined, 'normal');
+          doc.setTextColor(60, 60, 60);
+          doc.text('Se o link acima não abrir, pressione e segure sobre ele para "Abrir no Navegador".', margin + 3, y + 19);
+          
+          y += 24;
         }
         
         // Rodapé / Observações
