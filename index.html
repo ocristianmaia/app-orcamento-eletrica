@@ -1739,8 +1739,8 @@
 const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googleusercontent.com";
 
     import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, OAuthProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, OAuthProvider, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, addDoc, serverTimestamp, writeBatch, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
     // ===== Estado Global =====
@@ -3675,6 +3675,16 @@ Qualquer dúvida estou à disposição!`;
         auth = getAuth(app);
         storage = getStorage(app);
 
+        // --- MELHORIAS PARA MOBILE / IPHONE ---
+        // 1. Persistência de Autenticação (Mantém logado no Web App)
+        setPersistence(auth, browserLocalPersistence).catch(err => console.warn('Auth Persistence:', err));
+
+        // 2. Persistência Offline do Firestore (Carrega dados mesmo sem internet estável)
+        enableIndexedDbPersistence(db).catch((err) => {
+            if (err.code == 'failed-precondition') console.warn('Múltiplas abas abertas, persistência desativada.');
+            else if (err.code == 'unimplemented') console.warn('Navegador não suporta persistência offline.');
+        });
+
         onAuthStateChanged(auth, async (user) => {
           if (user) {
             try {
@@ -3735,8 +3745,12 @@ Qualquer dúvida estou à disposição!`;
             if (userInfo) userInfo.textContent = `Logado como: ${user.displayName || user.email}`;
             document.getElementById('loading-text').textContent = 'Carregando seus dados...';
             setupInitialDates();
-            loadAllData();
-            setupXLSXImports();
+            
+            // Pequeno delay para garantir estabilidade no carregamento inicial do Mobile
+            setTimeout(() => {
+              loadAllData();
+              setupXLSXImports();
+            }, 300);
             loginView.classList.add('hidden');
             appView.classList.remove('hidden');
             loadingOverlay.style.display = 'none';
