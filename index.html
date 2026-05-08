@@ -3062,13 +3062,6 @@ Qualquer dúvida estou à disposição!`;
             // Disparar evento de mudança para atualizar labels (Ponto vs Equipamento)
             const rbTipoObra = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
             if (rbTipoObra) rbTipoObra.dispatchEvent(new Event('change'));
-
-            if (clone.maoDeObra?.tipo) {
-              setR('tipo-servico', clone.maoDeObra.tipo);
-              const map = { empreitada:'empreitada-valor', diaria:'diaria-qtd', ponto:'ponto-qtd', hora:'hora-qtd', metro:'metro-qtd' };
-              const fid = map[clone.maoDeObra.tipo];
-              if (fid) document.getElementById(fid).value = clone.maoDeObra.raw_value||'';
-            }
           }
           const dTipo = document.getElementById('orc-desconto-tipo');
           const dVal = document.getElementById('orc-desconto-valor');
@@ -3091,6 +3084,20 @@ Qualquer dúvida estou à disposição!`;
 
           sel.dispatchEvent(new Event('change'));
           setTimeout(() => {
+            // Restaurar Mão de Obra após o delay para garantir que o DOM e eventos de UI já processaram
+            if (clone.modoCobranca === 'mao_de_obra' && clone.maoDeObra?.tipo) {
+              const setR = (name, val) => { const r = document.querySelector(`input[name="${name}"][value="${val}"]`); if (r) r.checked = true; };
+              setR('tipo-servico', clone.maoDeObra.tipo);
+              const map = { empreitada:'empreitada-valor', diaria:'diaria-qtd', ponto:'ponto-qtd', hora:'hora-qtd', metro:'metro-qtd' };
+              const fid = map[clone.maoDeObra.tipo];
+              if (fid) {
+                const inputEl = document.getElementById(fid);
+                if (inputEl) inputEl.value = clone.maoDeObra.raw_value||'';
+              }
+              // Forçar o estado interno a manter o valor original do clone
+              appState.currentOrcamento.maoDeObra = JSON.parse(JSON.stringify(clone.maoDeObra));
+            }
+
             if (clone.usarMaterial === 'sim') {
               (clone.items||[]).forEach(item => {
                 const cb = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
@@ -3107,9 +3114,9 @@ Qualquer dúvida estou à disposição!`;
                 if (qty) { qty.disabled = false; qty.value = item.quantidade??1; }
               });
             }
-            calculateMaoDeObra();
+            // Não chamamos calculateMaoDeObra aqui para não sobrescrever o raw_value restaurado
             updateOrcamentoPreview();
-          }, 300);
+          }, 400);
         } else {
           document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
           resetCurrentOrcamento();
@@ -3160,7 +3167,11 @@ Qualquer dúvida estou à disposição!`;
     function calculateMaoDeObra() {
       const tipoSel = document.querySelector('input[name="tipo-servico"]:checked');
       if (!appState.currentOrcamento || !tipoSel) {
-        if (appState.currentOrcamento) appState.currentOrcamento.maoDeObra = { tipo:'',valor:0,label:'',raw_value:'' };
+        // Se não houver seleção, só limpamos se não estivermos no meio de um carregamento de edição
+        const isEditing = document.getElementById('modal-title').textContent === 'Editar Orçamento';
+        if (appState.currentOrcamento && !isEditing) {
+          appState.currentOrcamento.maoDeObra = { tipo:'',valor:0,label:'',raw_value:'' };
+        }
         return;
       }
       const tipo = tipoSel.value;
