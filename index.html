@@ -3354,6 +3354,9 @@ Qualquer dúvida estou à disposição!`;
         await setDoc(doc(db, `users/${userId}/config/main`), data);
                         const sectionNovidadesAberta = !document.getElementById('section-novidades')?.classList.contains('hidden');
         if (currentUserIsAdmin && sectionNovidadesAberta) {
+        if (!currentUserIsAdmin) {
+  document.getElementById('section-novidades')?.classList.add('hidden');
+}
           await setDoc(doc(db, 'app_config/novidades'), {
             novidades_ativo: data.novidades_ativo,
             novidades_texto: data.novidades_texto,
