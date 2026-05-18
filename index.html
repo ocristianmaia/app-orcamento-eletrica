@@ -3756,29 +3756,25 @@ if (planLabel) {
     `inline-block px-3 py-1 rounded-full text-sm font-semibold text-white ${planColor}`;
 }
 if (!userDocSnap.exists()) {
-
   const now = Date.now();
-
-const sevenDays = 7 * 24 * 60 * 60 * 1000;
-
-await setDoc(userDocRef, {
-
-  email: user.email,
-  plan: "trial",
-  premium: false,
-  subscriptionStatus: "trial",
-  createdAt: now,
-  trialStartedAt: now,
-  trialEndsAt: now + sevenDays
-
-});
-
+  const sevenDays = 7 * 24 * 60 * 60 * 1000;
+  await setDoc(userDocRef, {
+    email: user.email,
+    plan: "trial",
+    premium: false,
+    subscriptionStatus: "trial",
+    createdAt: now,
+    trialStartedAt: now,
+    trialEndsAt: now + sevenDays
+  });
+  // Atualiza a variável local para que a verificação abaixo passe na primeira vez
+  userPlan = "trial";
 }
-              if (
-  user.email !== emailAdmin &&
-  !docSnap.exists() &&
-  userPlan !== "trial"
-) {
+
+// Se o usuário já existe mas não tem plano definido (caso raro), garantir que passe se for trial
+if (userPlan === "trial") {
+    // Ok, usuário trial
+} else if (user.email !== emailAdmin && !docSnap.exists()) {
                 await signOut(auth);
                 alert("⛔ ACESSO RESTRITO\n\nEste usuário não possui uma licença ativa.\nEntre em contato com a Masch Manutenção para adquirir seu acesso.");
                 return;
