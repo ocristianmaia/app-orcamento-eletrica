@@ -3712,7 +3712,7 @@ Qualquer dúvida estou à disposição!`;
         onAuthStateChanged(auth, async (user) => {
           if (user) {
             try {
-              const emailAdmin = "maschmanutencao@gmail.com";
+              const emailAdmin = "cristianmaia.digital@gmail.com";
               const docRef = doc(db, "acesso_permitido", user.email);
               const docSnap = await getDoc(docRef);
               const userDocRef = doc(db, "users", user.uid);
