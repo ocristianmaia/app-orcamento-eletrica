@@ -3719,13 +3719,21 @@ if (userDocSnap.exists()) {
 }
 if (!userDocSnap.exists()) {
 
-  await setDoc(userDocRef, {
-    email: user.email,
-    plan: "legacy",
-    premium: true,
-    subscriptionStatus: "active",
-    createdAt: Date.now()
-  });
+  const now = Date.now();
+
+const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+await setDoc(userDocRef, {
+
+  email: user.email,
+  plan: "trial",
+  premium: false,
+  subscriptionStatus: "trial",
+  createdAt: now,
+  trialStartedAt: now,
+  trialEndsAt: now + sevenDays
+
+});
 
 }
               if (user.email !== emailAdmin && !docSnap.exists()) {
