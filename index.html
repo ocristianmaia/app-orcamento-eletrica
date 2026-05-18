@@ -725,12 +725,6 @@
         </div>
         <div class="flex items-center gap-2">
           <!-- Botão Compartilhar App -->
-           <div id="plan-badge" class="mt-2 text-center">
-  <span id="user-plan-label"
-    class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-blue-600 text-white">
-    Plano: Carregando...
-  </span>
-</div>
           <button onclick="compartilharApp()" title="Compartilhar App" class="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
             <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
           </button>
@@ -3015,24 +3009,19 @@ Qualquer dúvida estou à disposição!`;
     const toggleModoDeCobranca = (modo) => {
       const moW = document.getElementById('orc-cobranca-mo-wrapper');
       const svW = document.getElementById('orc-cobranca-servico-wrapper');
-      const isEditing = document.getElementById('modal-title').textContent === 'Editar Orçamento';
       if (modo === 'por_servico') {
         moW.classList.add('hidden'); svW.classList.remove('hidden');
-        if (appState.currentOrcamento && !isEditing) { appState.currentOrcamento.maoDeObra = { tipo:'',valor:0,label:'',raw_value:'' }; }
+        if (appState.currentOrcamento) { appState.currentOrcamento.maoDeObra = { tipo:'',valor:0,label:'',raw_value:'' }; }
       } else {
         moW.classList.remove('hidden'); svW.classList.add('hidden');
-        if (appState.currentOrcamento && !isEditing) appState.currentOrcamento.tiposDeServico = [];
+        if (appState.currentOrcamento) appState.currentOrcamento.tiposDeServico = [];
       }
       updateOrcamentoPreview();
     };
 
     const toggleUsarMaterial = (modo) => {
       const mW = document.getElementById('orc-cobranca-material-wrapper');
-      const isEditing = document.getElementById('modal-title').textContent === 'Editar Orçamento';
-      if (modo === 'nao') { 
-        mW.classList.add('hidden'); 
-        if (appState.currentOrcamento && !isEditing) appState.currentOrcamento.items = []; 
-      }
+      if (modo === 'nao') { mW.classList.add('hidden'); if (appState.currentOrcamento) appState.currentOrcamento.items = []; }
       else mW.classList.remove('hidden');
       updateOrcamentoPreview();
     };
@@ -3068,6 +3057,13 @@ Qualquer dúvida estou à disposição!`;
             // Disparar evento de mudança para atualizar labels (Ponto vs Equipamento)
             const rbTipoObra = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
             if (rbTipoObra) rbTipoObra.dispatchEvent(new Event('change'));
+
+            if (clone.maoDeObra?.tipo) {
+              setR('tipo-servico', clone.maoDeObra.tipo);
+              const map = { empreitada:'empreitada-valor', diaria:'diaria-qtd', ponto:'ponto-qtd', hora:'hora-qtd', metro:'metro-qtd' };
+              const fid = map[clone.maoDeObra.tipo];
+              if (fid) document.getElementById(fid).value = clone.maoDeObra.raw_value||'';
+            }
           }
           const dTipo = document.getElementById('orc-desconto-tipo');
           const dVal = document.getElementById('orc-desconto-valor');
@@ -3087,23 +3083,8 @@ Qualquer dúvida estou à disposição!`;
           }
           toggleModoDeCobranca(clone.modoCobranca);
           toggleUsarMaterial(clone.usarMaterial);
-
           sel.dispatchEvent(new Event('change'));
           setTimeout(() => {
-            // Restaurar Mão de Obra após o delay para garantir que o DOM e eventos de UI já processaram
-            if (clone.modoCobranca === 'mao_de_obra' && clone.maoDeObra?.tipo) {
-              const setR = (name, val) => { const r = document.querySelector(`input[name="${name}"][value="${val}"]`); if (r) r.checked = true; };
-              setR('tipo-servico', clone.maoDeObra.tipo);
-              const map = { empreitada:'empreitada-valor', diaria:'diaria-qtd', ponto:'ponto-qtd', hora:'hora-qtd', metro:'metro-qtd' };
-              const fid = map[clone.maoDeObra.tipo];
-              if (fid) {
-                const inputEl = document.getElementById(fid);
-                if (inputEl) inputEl.value = clone.maoDeObra.raw_value||'';
-              }
-              // Forçar o estado interno a manter o valor original do clone
-              appState.currentOrcamento.maoDeObra = JSON.parse(JSON.stringify(clone.maoDeObra));
-            }
-
             if (clone.usarMaterial === 'sim') {
               (clone.items||[]).forEach(item => {
                 const cb = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
@@ -3120,9 +3101,9 @@ Qualquer dúvida estou à disposição!`;
                 if (qty) { qty.disabled = false; qty.value = item.quantidade??1; }
               });
             }
-            // Não chamamos calculateMaoDeObra aqui para não sobrescrever o raw_value restaurado
+            calculateMaoDeObra();
             updateOrcamentoPreview();
-          }, 400);
+          }, 300);
         } else {
           document.getElementById('modal-title').textContent = 'Criar Novo Orçamento';
           resetCurrentOrcamento();
@@ -3173,11 +3154,7 @@ Qualquer dúvida estou à disposição!`;
     function calculateMaoDeObra() {
       const tipoSel = document.querySelector('input[name="tipo-servico"]:checked');
       if (!appState.currentOrcamento || !tipoSel) {
-        // Se não houver seleção, só limpamos se não estivermos no meio de um carregamento de edição
-        const isEditing = document.getElementById('modal-title').textContent === 'Editar Orçamento';
-        if (appState.currentOrcamento && !isEditing) {
-          appState.currentOrcamento.maoDeObra = { tipo:'',valor:0,label:'',raw_value:'' };
-        }
+        if (appState.currentOrcamento) appState.currentOrcamento.maoDeObra = { tipo:'',valor:0,label:'',raw_value:'' };
         return;
       }
       const tipo = tipoSel.value;
@@ -3352,8 +3329,7 @@ Qualquer dúvida estou à disposição!`;
         };
         delete data.endereco;
         await setDoc(doc(db, `users/${userId}/config/main`), data);
-        
-        const sectionNovidadesAberta = !document.getElementById('section-novidades')?.classList.contains('hidden');
+                        const sectionNovidadesAberta = !document.getElementById('section-novidades')?.classList.contains('hidden');
         if (currentUserIsAdmin && sectionNovidadesAberta) {
           await setDoc(doc(db, 'app_config/novidades'), {
             novidades_ativo: data.novidades_ativo,
@@ -3712,73 +3688,10 @@ Qualquer dúvida estou à disposição!`;
         onAuthStateChanged(auth, async (user) => {
           if (user) {
             try {
-              const emailAdmin = "cristianmaia.digital@gmail.com";
+              const emailAdmin = "seu.email.aqui@gmail.com";
               const docRef = doc(db, "acesso_permitido", user.email);
               const docSnap = await getDoc(docRef);
-              const userDocRef = doc(db, "users", user.uid);
-const userDocSnap = await getDoc(userDocRef);
-
-let userPlan = "legacy";
-
-if (userDocSnap.exists()) {
-  const userData = userDocSnap.data();
-  userPlan = userData.plan || "legacy";
-}
-const planLabel = document.getElementById("user-plan-label");
-
-if (planLabel) {
-
-  let planText = "Premium";
-  let planColor = "bg-yellow-500";
-
-  if (userPlan === "trial") {
-    planText = "Trial";
-    planColor = "bg-blue-600";
-  }
-
-  if (userPlan === "premium") {
-    planText = "Premium";
-    planColor = "bg-yellow-500";
-  }
-
-  if (userPlan === "legacy") {
-    planText = "Premium";
-    planColor = "bg-yellow-500";
-  }
-
-  if (window.innerWidth < 768) {
-  planLabel.textContent = planText;
-} else {
-  planLabel.textContent = `Plano: ${planText}`;
-}
-
-  planLabel.className =
-    `inline-block px-3 py-1 rounded-full text-sm font-semibold text-white ${planColor}`;
-}
-if (!userDocSnap.exists()) {
-
-  const now = Date.now();
-
-const sevenDays = 7 * 24 * 60 * 60 * 1000;
-
-await setDoc(userDocRef, {
-
-  email: user.email,
-  plan: "trial",
-  premium: false,
-  subscriptionStatus: "trial",
-  createdAt: now,
-  trialStartedAt: now,
-  trialEndsAt: now + sevenDays
-
-});
-
-}
-              if (
-  user.email !== emailAdmin &&
-  !docSnap.exists() &&
-  userPlan !== "trial"
-) {
+              if (user.email !== emailAdmin && !docSnap.exists()) {
                 await signOut(auth);
                 alert("⛔ ACESSO RESTRITO\n\nEste usuário não possui uma licença ativa.\nEntre em contato com a Masch Manutenção para adquirir seu acesso.");
                 return;
@@ -3798,6 +3711,7 @@ await setDoc(userDocRef, {
             
             // Restrição do Banner de Novidades: apenas para o administrador
             const adminsAutorizados = [
+              "seu.email.aqui@gmail.com",
               "cristianmaia.digital@gmail.com",
               "cristian.nunesdelima@gmail.com"
             ];
@@ -3809,8 +3723,7 @@ await setDoc(userDocRef, {
             const userEmail = (user.email || "").toLowerCase();
             const userName = (user.displayName || "").toUpperCase();
 
-            const isAdmin = adminsAutorizados.some(email => userEmail === email.toLowerCase()) || 
-                            nomesAutorizados.some(nome => userName.includes(nome));
+            const isAdmin = adminsAutorizados.some(email => userEmail === email.toLowerCase());
             
             currentUserIsAdmin = isAdmin;
             const btnNovidades = document.getElementById('btn-config-novidades');
