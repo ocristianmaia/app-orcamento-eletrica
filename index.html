@@ -3352,11 +3352,9 @@ Qualquer dúvida estou à disposição!`;
         };
         delete data.endereco;
         await setDoc(doc(db, `users/${userId}/config/main`), data);
-                        const sectionNovidadesAberta = !document.getElementById('section-novidades')?.classList.contains('hidden');
+        
+        const sectionNovidadesAberta = !document.getElementById('section-novidades')?.classList.contains('hidden');
         if (currentUserIsAdmin && sectionNovidadesAberta) {
-        if (!currentUserIsAdmin) {
-  document.getElementById('section-novidades')?.classList.add('hidden');
-}
           await setDoc(doc(db, 'app_config/novidades'), {
             novidades_ativo: data.novidades_ativo,
             novidades_texto: data.novidades_texto,
@@ -3714,7 +3712,7 @@ Qualquer dúvida estou à disposição!`;
         onAuthStateChanged(auth, async (user) => {
           if (user) {
             try {
-              const emailAdmin = "seu.email.aqui@gmail.com";
+              const emailAdmin = "maschmanutencao@gmail.com";
               const docRef = doc(db, "acesso_permitido", user.email);
               const docSnap = await getDoc(docRef);
               const userDocRef = doc(db, "users", user.uid);
@@ -3800,7 +3798,7 @@ await setDoc(userDocRef, {
             
             // Restrição do Banner de Novidades: apenas para o administrador
             const adminsAutorizados = [
-              "seu.email.aqui@gmail.com",
+              "maschmanutencao@gmail.com",
               "cristianmaia.digital@gmail.com",
               "cristian.nunesdelima@gmail.com"
             ];
