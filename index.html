@@ -3736,7 +3736,11 @@ await setDoc(userDocRef, {
 });
 
 }
-              if (user.email !== emailAdmin && !docSnap.exists()) {
+              if (
+  user.email !== emailAdmin &&
+  !docSnap.exists() &&
+  userPlan !== "trial"
+) {
                 await signOut(auth);
                 alert("⛔ ACESSO RESTRITO\n\nEste usuário não possui uma licença ativa.\nEntre em contato com a Masch Manutenção para adquirir seu acesso.");
                 return;
