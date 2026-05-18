@@ -3745,7 +3745,11 @@ if (planLabel) {
     planColor = "bg-yellow-500";
   }
 
+  if (window.innerWidth < 768) {
   planLabel.textContent = planText;
+} else {
+  planLabel.textContent = `Plano: ${planText}`;
+}
 
   planLabel.className =
     `inline-block px-3 py-1 rounded-full text-sm font-semibold text-white ${planColor}`;
