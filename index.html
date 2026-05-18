@@ -3708,6 +3708,26 @@ Qualquer dúvida estou à disposição!`;
               const emailAdmin = "seu.email.aqui@gmail.com";
               const docRef = doc(db, "acesso_permitido", user.email);
               const docSnap = await getDoc(docRef);
+              const userDocRef = doc(db, "users", user.uid);
+const userDocSnap = await getDoc(userDocRef);
+
+let userPlan = "legacy";
+
+if (userDocSnap.exists()) {
+  const userData = userDocSnap.data();
+  userPlan = userData.plan || "legacy";
+}
+if (!userDocSnap.exists()) {
+
+  await setDoc(userDocRef, {
+    email: user.email,
+    plan: "legacy",
+    premium: true,
+    subscriptionStatus: "active",
+    createdAt: Date.now()
+  });
+
+}
               if (user.email !== emailAdmin && !docSnap.exists()) {
                 await signOut(auth);
                 alert("⛔ ACESSO RESTRITO\n\nEste usuário não possui uma licença ativa.\nEntre em contato com a Masch Manutenção para adquirir seu acesso.");
