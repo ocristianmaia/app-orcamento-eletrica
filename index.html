@@ -3716,65 +3716,82 @@ Qualquer dúvida estou à disposição!`;
               const docRef = doc(db, "acesso_permitido", user.email);
               const docSnap = await getDoc(docRef);
               const userDocRef = doc(db, "users", user.uid);
-const userDocSnap = await getDoc(userDocRef);
+              const userDocSnap = await getDoc(userDocRef);
 
-let userPlan = "legacy";
+              let userPlan = "legacy";
+              const isAllowedEmail = docSnap.exists() || user.email === emailAdmin;
 
-if (userDocSnap.exists()) {
-  const userData = userDocSnap.data();
-  userPlan = userData.plan || "legacy";
-}
-const planLabel = document.getElementById("user-plan-label");
+              if (userDocSnap.exists()) {
+                const userData = userDocSnap.data();
+                userPlan = userData.plan || "legacy";
+                
+                // CORREÇÃO: Se o usuário está na lista de permitidos mas o plano no DB está como trial,
+                // força para premium para garantir que usuários antigos/autorizados não vejam o trial.
+                if (isAllowedEmail && userPlan === "trial") {
+                  userPlan = "premium";
+                  await setDoc(userDocRef, { plan: "premium", premium: true, subscriptionStatus: "active" }, { merge: true });
+                }
+              } else {
+                // Novo usuário
+                const now = Date.now();
+                const sevenDays = 7 * 24 * 60 * 60 * 1000;
+                
+                if (isAllowedEmail) {
+                  // Se já está na lista de permitidos, cria como premium
+                  userPlan = "premium";
+                  await setDoc(userDocRef, {
+                    email: user.email,
+                    plan: "premium",
+                    premium: true,
+                    subscriptionStatus: "active",
+                    createdAt: now
+                  });
+                } else {
+                  // Se não está na lista, inicia o trial de 7 dias
+                  userPlan = "trial";
+                  await setDoc(userDocRef, {
+                    email: user.email,
+                    plan: "trial",
+                    premium: false,
+                    subscriptionStatus: "trial",
+                    createdAt: now,
+                    trialStartedAt: now,
+                    trialEndsAt: now + sevenDays
+                  });
+                }
+              }
 
-if (planLabel) {
+              // Atualização visual do label do plano
+              const planLabel = document.getElementById("user-plan-label");
+              if (planLabel) {
+                let planText = "Premium";
+                let planColor = "bg-yellow-500";
 
-  let planText = "Premium";
-  let planColor = "bg-yellow-500";
+                if (userPlan === "trial") {
+                  planText = "Trial";
+                  planColor = "bg-blue-600";
+                }
 
-  if (userPlan === "trial") {
-    planText = "Trial";
-    planColor = "bg-blue-600";
-  }
+                if (window.innerWidth < 768) {
+                  planLabel.textContent = planText;
+                } else {
+                  planLabel.textContent = `Plano: ${planText}`;
+                }
 
-  if (userPlan === "premium") {
-    planText = "Premium";
-    planColor = "bg-yellow-500";
-  }
+                planLabel.className = `inline-block px-3 py-1 rounded-full text-sm font-semibold text-white ${planColor}`;
+              }
 
-  if (userPlan === "legacy") {
-    planText = "Premium";
-    planColor = "bg-yellow-500";
-  }
-
-  if (window.innerWidth < 768) {
-  planLabel.textContent = planText;
-} else {
-  planLabel.textContent = `Plano: ${planText}`;
-}
-
-  planLabel.className =
-    `inline-block px-3 py-1 rounded-full text-sm font-semibold text-white ${planColor}`;
-}
-if (!userDocSnap.exists()) {
-  const now = Date.now();
-  const sevenDays = 7 * 24 * 60 * 60 * 1000;
-  await setDoc(userDocRef, {
-    email: user.email,
-    plan: "trial",
-    premium: false,
-    subscriptionStatus: "trial",
-    createdAt: now,
-    trialStartedAt: now,
-    trialEndsAt: now + sevenDays
-  });
-  // Atualiza a variável local para que a verificação abaixo passe na primeira vez
-  userPlan = "trial";
-}
-
-// Se o usuário já existe mas não tem plano definido (caso raro), garantir que passe se for trial
-if (userPlan === "trial") {
-    // Ok, usuário trial
-} else if (user.email !== emailAdmin && !docSnap.exists()) {
+              // Verificação de Acesso
+              if (userPlan === "trial") {
+                // Verifica se o trial expirou
+                const userData = (await getDoc(userDocRef)).data();
+                if (userData && userData.trialEndsAt && Date.now() > userData.trialEndsAt) {
+                  await signOut(auth);
+                  alert("⛔ TRIAL EXPIRADO\n\nSeu período de teste de 7 dias terminou.\nEntre em contato com a Masch Manutenção para adquirir seu acesso Premium.");
+                  return;
+                }
+              } else if (!isAllowedEmail && userPlan !== "premium") {
+                // Se não é trial, não é admin e não está na lista, bloqueia
                 await signOut(auth);
                 alert("⛔ ACESSO RESTRITO\n\nEste usuário não possui uma licença ativa.\nEntre em contato com a Masch Manutenção para adquirir seu acesso.");
                 return;
