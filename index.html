@@ -483,6 +483,59 @@
     </div>
   </div>
 
+  <!-- ===== MODAL: CADASTRO RÁPIDO DE CLIENTE (ORÇAMENTO) ===== -->
+  <div id="cliente-cadastro-modal" class="modal">
+    <div class="bg-white rounded-2xl p-6 w-[95%] max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-xl font-bold text-gray-900">Cadastrar Novo Cliente</h3>
+        <button type="button" onclick="closeClienteCadastroModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">&times;</button>
+      </div>
+      <form id="form-cliente-cadastro" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Nome do Cliente</label>
+          <input type="text" id="cadastro-cliente-nome" placeholder="Nome do Cliente" class="input-field" required>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Telefone</label>
+          <input type="tel" id="cadastro-cliente-telefone" placeholder="Telefone (com DDD)" class="input-field" required>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="col-span-2">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">CEP</label>
+            <input type="text" id="cadastro-cliente-cep" onchange="buscarCEP(this.value, { logradouro: 'cadastro-cliente-logradouro', bairro: 'cadastro-cliente-bairro', cidade: 'cadastro-cliente-cidade', uf: 'cadastro-cliente-uf', numero: 'cadastro-cliente-numero' })" placeholder="CEP" class="input-field">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Nº</label>
+            <input type="text" id="cadastro-cliente-numero" placeholder="Nº" class="input-field">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Logradouro</label>
+          <input type="text" id="cadastro-cliente-logradouro" placeholder="Logradouro (auto)" class="input-field bg-gray-50" readonly>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Bairro</label>
+            <input type="text" id="cadastro-cliente-bairro" placeholder="Bairro (auto)" class="input-field bg-gray-50" readonly>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Cidade</label>
+            <input type="text" id="cadastro-cliente-cidade" placeholder="Cidade (auto)" class="input-field bg-gray-50" readonly>
+          </div>
+        </div>
+        <input type="hidden" id="cadastro-cliente-uf">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">CPF ou CNPJ (opcional)</label>
+          <input type="text" id="cadastro-cliente-documento" placeholder="CPF ou CNPJ (opcional)" class="input-field">
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeClienteCadastroModal()" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors">Cancelar</button>
+          <button type="submit" class="flex-1 btn-primary">Salvar Cliente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- ===== MODAL: EDITAR CLIENTE ===== -->
   <div id="edit-cliente-modal" class="modal">
     <div class="bg-white rounded-2xl p-6 w-[95%] max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -1576,9 +1629,14 @@
 
             <div>
               <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Cliente</label>
-              <select id="orc-cliente-select" class="input-field">
-                <option value="">Selecione um cliente</option>
-              </select>
+              <div class="flex gap-2">
+                <select id="orc-cliente-select" class="input-field flex-1">
+                  <option value="">Selecione um cliente</option>
+                </select>
+                <button type="button" onclick="openClienteCadastroModal()" class="btn-primary px-4 py-2 h-10 whitespace-nowrap" title="Cadastrar novo cliente">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                </button>
+              </div>
             </div>
 
             <div>
@@ -2886,6 +2944,16 @@ Qualquer dúvida estou à disposição!`;
     };
     window.closeEditClienteModal = () => { document.getElementById('edit-cliente-modal').classList.remove('active'); document.getElementById('form-edit-cliente').reset(); };
 
+    // ===== Cadastro Rapido de Cliente (Orcamento) =====
+    window.openClienteCadastroModal = () => {
+      document.getElementById('cliente-cadastro-modal').classList.add('active');
+      document.getElementById('form-cliente-cadastro').reset();
+    };
+    window.closeClienteCadastroModal = () => {
+      document.getElementById('cliente-cadastro-modal').classList.remove('active');
+      document.getElementById('form-cliente-cadastro').reset();
+    };
+
     window.shareCliente = async (id) => {
       const c = appState.clientes.find(cl => cl.id === id);
       if (!c) return;
@@ -4027,6 +4095,42 @@ Qualquer dúvida estou à disposição!`;
         });
         e.target.reset();
         alert(`Cliente cadastrado!\nID: ${novoID}`);
+      } catch(err) { console.error(err); alert('Erro ao salvar cliente.'); }
+      finally { btn.disabled = false; btn.textContent = 'Salvar Cliente'; }
+    });
+
+    // ===== Formulário: Cadastro Rápido de Cliente (Orçamento) =====
+    document.getElementById('form-cliente-cadastro')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faça login novamente.');
+      const nome = document.getElementById('cadastro-cliente-nome').value;
+      if (!nome?.trim()) return alert('Preencha o Nome do Cliente.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent = 'Salvando...';
+      try {
+        const novoID = gerarNovoNumeroCliente();
+        const novoCliente = {
+          nome: nome.trim().toUpperCase(),
+          telefone: document.getElementById('cadastro-cliente-telefone').value.replace(/\D/g,''),
+          documento: document.getElementById('cadastro-cliente-documento').value.replace(/\D/g,''),
+          numeroCadastro: novoID,
+          cep: document.getElementById('cadastro-cliente-cep').value.replace(/\D/g,''),
+          numero: document.getElementById('cadastro-cliente-numero').value,
+          logradouro: document.getElementById('cadastro-cliente-logradouro').value,
+          bairro: document.getElementById('cadastro-cliente-bairro').value,
+          cidade: document.getElementById('cadastro-cliente-cidade').value,
+          uf: document.getElementById('cadastro-cliente-uf').value,
+        };
+        const docRef = await addDoc(collection(db, `users/${userId}/clientes`), novoCliente);
+        // Fechar o modal
+        closeClienteCadastroModal();
+        // Atualizar o seletor de cliente e selecionar o novo cliente
+        setTimeout(() => {
+          populateClienteSelect();
+          const sel = document.getElementById('orc-cliente-select');
+          if (sel) sel.value = docRef.id;
+          sel.dispatchEvent(new Event('change'));
+        }, 500);
       } catch(err) { console.error(err); alert('Erro ao salvar cliente.'); }
       finally { btn.disabled = false; btn.textContent = 'Salvar Cliente'; }
     });
