@@ -3069,6 +3069,29 @@ Qualquer dúvida estou à disposição!`;
         populateClienteSelect();
         populateMateriaisOrcamento();
         populateTiposDeServicoOrcamento();
+        
+        // --- CORREÇÃO: Aplicar visibilidade dos campos baseada nas configurações ---
+        const aplicarVisibilidadeCampos = () => {
+          const config = appState.config || {};
+          const tipoObra = document.querySelector('input[name="tipo-obra"]:checked')?.value || 'residencial';
+          
+          if (tipoObra === 'residencial') {
+            document.getElementById('row-tipo-empreitada').style.display = (config.show_res_empreitada !== false) ? 'flex' : 'none';
+            document.getElementById('row-tipo-diaria').style.display = (config.show_res_diaria !== false) ? 'flex' : 'none';
+            document.getElementById('row-tipo-ponto').style.display = (config.show_res_ponto !== false) ? 'flex' : 'none';
+            document.getElementById('row-tipo-hora').style.display = (config.show_res_hora !== false) ? 'flex' : 'none';
+            document.getElementById('row-tipo-metro').style.display = (config.show_res_metro !== false) ? 'flex' : 'none';
+            document.getElementById('ponto-label-span').textContent = 'Por Ponto';
+          } else {
+            document.getElementById('row-tipo-empreitada').style.display = 'none';
+            document.getElementById('row-tipo-diaria').style.display = (config.show_ind_diaria !== false) ? 'flex' : 'none';
+            document.getElementById('row-tipo-ponto').style.display = (config.show_ind_ponto !== false) ? 'flex' : 'none';
+            document.getElementById('row-tipo-hora').style.display = (config.show_ind_hora !== false) ? 'flex' : 'none';
+            document.getElementById('row-tipo-metro').style.display = 'none';
+            document.getElementById('ponto-label-span').textContent = 'Por Equipamento';
+          }
+        };
+
         if (orcamentoParaEditar) {
           document.getElementById('modal-title').textContent = 'Editar Orçamento';
           const clone = JSON.parse(JSON.stringify(orcamentoParaEditar||{}));
@@ -3111,6 +3134,7 @@ Qualquer dúvida estou à disposição!`;
           }
           toggleModoDeCobranca(clone.modoCobranca);
           toggleUsarMaterial(clone.usarMaterial);
+          aplicarVisibilidadeCampos(); // Aplica ao editar
 
           sel.dispatchEvent(new Event('change'));
           setTimeout(() => {
@@ -3163,6 +3187,7 @@ Qualquer dúvida estou à disposição!`;
           document.getElementById('orc-cotacao-info').classList.add('hidden');
           toggleModoDeCobranca('mao_de_obra');
           toggleUsarMaterial('sim');
+          aplicarVisibilidadeCampos(); // Aplica ao criar novo
           document.getElementById('orc-cliente-select').value = '';
           document.getElementById('orc-cliente-select').dispatchEvent(new Event('change'));
           updateOrcamentoPreview();
