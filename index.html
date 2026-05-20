@@ -597,6 +597,46 @@
     </div>
   </div>
 
+  <!-- ===== MODAL: CADASTRO RÁPIDO DE MATERIAL (ORÇAMENTO) ===== -->
+  <div id="material-cadastro-modal" class="modal" style="z-index: 10000;">
+    <div class="bg-white rounded-2xl p-6 w-[95%] max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-xl font-bold text-gray-900">Cadastrar Novo Material</h3>
+        <button type="button" onclick="closeMaterialCadastroModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">&times;</button>
+      </div>
+      <form id="form-material-cadastro" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Descrição do Material</label>
+          <input type="text" id="cadastro-material-nome" placeholder="Descrição do material" class="input-field" required>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Unidade</label>
+            <select id="cadastro-material-unidade" class="input-field">
+              <option>UNID</option><option>Pç</option><option>m</option><option>cx</option><option>kit</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Valor (R$)</label>
+            <input type="number" step="0.01" id="cadastro-material-valor" placeholder="Valor R$" class="input-field" required>
+          </div>
+        </div>
+        <label class="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100 cursor-pointer">
+          <input type="checkbox" id="cadastro-material-is-estoque" onchange="toggleQtdEstoqueModal(this)" class="h-4 w-4 text-blue-600 rounded">
+          <span class="text-sm font-medium text-blue-800">Item de Estoque</span>
+        </label>
+        <div id="div-qtd-estoque-modal" class="hidden">
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Quantidade Inicial em Estoque</label>
+          <input type="number" step="1" id="cadastro-material-qtd-inicial" placeholder="Quantidade inicial em estoque" class="input-field">
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeMaterialCadastroModal()" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors">Cancelar</button>
+          <button type="submit" class="flex-1 btn-primary">Salvar Material</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- ===== MODAL: EDITAR MATERIAL ===== -->
   <div id="edit-material-modal" class="modal">
     <div class="bg-white rounded-2xl p-6 w-[95%] max-w-lg shadow-2xl">
@@ -1727,7 +1767,12 @@
                   <button id="tab-mat-compra" onclick="filtrarMateriaisModal('padrao')" class="text-xs font-bold px-3 py-1.5 bg-blue-100 rounded-lg text-blue-700">Compras</button>
                   <button id="tab-mat-estoque" onclick="filtrarMateriaisModal('estoque')" class="text-xs font-bold px-3 py-1.5 bg-white border rounded-lg text-gray-600 hover:bg-gray-100">Estoque</button>
                 </div>
-                <input type="text" id="orc-search-material-modal" placeholder="Buscar item..." class="input-field mb-2" oninput="populateMateriaisOrcamento()">
+                <div class="flex gap-2 mb-2">
+                  <input type="text" id="orc-search-material-modal" placeholder="Buscar item..." class="input-field flex-1" oninput="populateMateriaisOrcamento()">
+                  <button type="button" onclick="openMaterialCadastroModal()" class="btn-primary px-4 py-2 h-10 whitespace-nowrap" title="Cadastrar novo material">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  </button>
+                </div>
                 <div id="orc-materiais-list" class="h-40 overflow-y-auto border border-gray-200 p-2 bg-gray-50 rounded-xl"></div>
               </div>
             </div>
@@ -2998,6 +3043,22 @@ Qualquer dúvida estou à disposição!`;
     };
     window.closeEditMaterialModal = () => { document.getElementById('edit-material-modal').classList.remove('active'); document.getElementById('form-edit-material').reset(); };
 
+    // ===== Cadastro Rapido de Material (Orcamento) =====
+    window.openMaterialCadastroModal = () => {
+      document.getElementById('material-cadastro-modal').classList.add('active');
+      document.getElementById('form-material-cadastro').reset();
+      document.getElementById('div-qtd-estoque-modal').classList.add('hidden');
+    };
+    window.closeMaterialCadastroModal = () => {
+      document.getElementById('material-cadastro-modal').classList.remove('active');
+      document.getElementById('form-material-cadastro').reset();
+      document.getElementById('div-qtd-estoque-modal').classList.add('hidden');
+    };
+    window.toggleQtdEstoqueModal = (cb) => {
+      const div = document.getElementById('div-qtd-estoque-modal');
+      if (cb.checked) div.classList.remove('hidden'); else div.classList.add('hidden');
+    };
+
     // ===== Tipos de Serviço =====
     function renderTiposDeServicoList() {
       const el = document.getElementById('tiposdeservico-list');
@@ -4175,6 +4236,30 @@ Qualquer dúvida estou à disposição!`;
         document.getElementById('div-qtd-estoque').classList.add('hidden');
       } catch(err) { console.error(err); alert('Erro ao salvar item.'); }
       finally { btn.disabled = false; btn.textContent = 'Salvar Item'; }
+    });
+
+    // ===== Formulario: Cadastro Rapido de Material (Orcamento) =====
+    document.getElementById('form-material-cadastro')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faca login novamente.');
+      const nome = document.getElementById('cadastro-material-nome').value;
+      if (!nome?.trim()) return alert('Preencha a Descricao do Material.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent = 'Salvando...';
+      try {
+        const valor = parseFloat(document.getElementById('cadastro-material-valor').value);
+        const unidade = document.getElementById('cadastro-material-unidade').value;
+        const isEstoque = document.getElementById('cadastro-material-is-estoque').checked;
+        const qtdEstoque = isEstoque ? (parseFloat(document.getElementById('cadastro-material-qtd-inicial').value)||0) : 0;
+        await addDoc(collection(db, `users/${userId}/materiais`), { nome, valor, unidade, tipo: isEstoque ? 'estoque' : 'padrao', qtdEstoque });
+        // Fechar o modal
+        closeMaterialCadastroModal();
+        // Atualizar a lista de materiais no modal de orcamento
+        setTimeout(() => {
+          populateMateriaisOrcamento();
+        }, 500);
+      } catch(err) { console.error(err); alert('Erro ao salvar material.'); }
+      finally { btn.disabled = false; btn.textContent = 'Salvar Material'; }
     });
 
     document.getElementById('form-edit-material')?.addEventListener('submit', async (e) => {
