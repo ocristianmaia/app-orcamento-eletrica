@@ -25,6 +25,37 @@
   <meta name="theme-color" content="#0f172a">
 
   <style>
+    /* Estilos para o Modal de Bloqueio Trial */
+    #trial-blocked-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(8px);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    #trial-blocked-modal.active { display: flex; }
+    
+    .trial-warning-banner {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      animation: slideDown 0.5s ease-out;
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
     html, body {
       overflow-x: hidden;
       width: 100%;
@@ -803,6 +834,31 @@
     <p class="text-white/30 text-xs mt-8">Desenvolvido por Masch Manutenção</p>
   </div>
 
+  <!-- ===== MODAL: TRIAL BLOQUEADO ===== -->
+  <div id="trial-blocked-modal">
+    <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl text-center border border-gray-100">
+      <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg class="w-10 h-10 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m11-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h3 class="text-2xl font-black text-gray-900 mb-2">TRIAL EXPIRADO</h3>
+      <p class="text-gray-600 mb-8 leading-relaxed">
+        Seu período de teste de 7 dias terminou.<br>
+        Entre em contato com o administrador para ter acesso ao plano <strong>Premium</strong> e contratar mensalmente o app.
+      </p>
+      <div class="space-y-3">
+        <a href="https://wa.me/5511999999999" target="_blank" class="w-full flex items-center justify-center gap-3 py-4 bg-green-600 text-white rounded-2xl font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-200">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.067 2.877 1.215 3.076.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          Clique aqui para ter acesso ao Premium
+        </a>
+        <button onclick="signOut(auth)" class="w-full py-4 bg-gray-100 text-gray-700 rounded-2xl font-bold hover:bg-gray-200 transition-all">
+          Clique aqui!
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== APP VIEW ===== -->
   <div id="app-view" class="hidden">
 
@@ -912,6 +968,9 @@
 
           <!-- ===== TAB: INÍCIO / ORÇAMENTOS ===== -->
           <div id="orcamentos" class="tab-content active space-y-4">
+
+            <!-- Aviso de Trial -->
+            <div id="trial-warning-container"></div>
 
             <!-- Banner de Novidades -->
             <div id="novidades-banner-wrapper" class="novidades-banner hidden">
@@ -4032,12 +4091,37 @@ Qualquer dúvida estou à disposição!`;
 
               // Verificação de Acesso
               if (userPlan === "trial") {
-                // Verifica se o trial expirou
                 const userData = (await getDoc(userDocRef)).data();
-                if (userData && userData.trialEndsAt && Date.now() > userData.trialEndsAt) {
-                  await signOut(auth);
-                  alert("⛔ TRIAL EXPIRADO\n\nSeu período de teste de 7 dias terminou.\nEntre em contato com a Masch Manutenção para adquirir seu acesso Premium.");
+                const trialEndsAt = userData?.trialEndsAt || 0;
+                const now = Date.now();
+                
+                if (trialEndsAt && now > trialEndsAt) {
+                  // Bloqueia acesso
+                  document.getElementById('app-view').classList.add('hidden');
+                  document.getElementById('trial-blocked-modal').classList.add('active');
+                  document.getElementById('loading-overlay').style.display = 'none';
                   return;
+                } else if (trialEndsAt) {
+                  // Avisos de expiração
+                  const timeLeft = trialEndsAt - now;
+                  const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
+                  
+                  if (daysLeft <= 2) {
+                    const warningContainer = document.getElementById('trial-warning-container');
+                    if (warningContainer) {
+                      const msg = daysLeft === 1 ? "Seu período de teste termina AMANHÃ!" : `Faltam apenas ${daysLeft} dias de teste!`;
+                      warningContainer.innerHTML = `
+                        <div class="trial-warning-banner">
+                          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                          <div class="flex-1">
+                            <p class="text-sm font-bold">${msg}</p>
+                            <p class="text-[10px] opacity-90 uppercase tracking-wider">Garanta seu acesso Premium agora</p>
+                          </div>
+                          <a href="https://wa.me/5511999999999" target="_blank" class="bg-white text-amber-600 px-3 py-1 rounded-lg text-xs font-black uppercase">Assinar</a>
+                        </div>
+                      `;
+                    }
+                  }
                 }
               } else if (!isAllowedEmail && userPlan !== "premium") {
                 // Se não é trial, não é admin e não está na lista, bloqueia
