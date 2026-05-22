@@ -783,6 +783,38 @@
     </div>
   </div>
 
+  <!-- ===== MODAL: CADASTRO RÁPIDO DE SERVIÇO (ORÇAMENTO) ===== -->
+  <div id="servicos-cadastro-modal" class="modal" style="z-index: 10000;">
+    <div class="bg-white rounded-2xl p-6 w-[95%] max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-xl font-bold text-gray-900">Cadastrar Novo Serviço</h3>
+        <button type="button" onclick="closeServicosCadastroModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">&times;</button>
+      </div>
+      <form id="form-servicos-cadastro" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Categoria</label>
+          <select id="cadastro-servicos-categoria-select" class="input-field">
+            <option value="">Selecione ou crie uma categoria</option>
+            <option value="__nova__">+ Nova Categoria</option>
+          </select>
+          <div id="cadastro-servicos-nova-categoria-wrapper" class="hidden"><input type="text" id="cadastro-servicos-categoria-nova" placeholder="Nome da nova categoria" class="input-field mt-2"></div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Descrição do Serviço</label>
+          <input type="text" id="cadastro-servicos-descricao" placeholder="Descrição do serviço" class="input-field" required>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Valor (R$)</label>
+          <input type="number" step="0.01" id="cadastro-servicos-valor" placeholder="Valor R$" class="input-field" required>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeServicosCadastroModal()" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors">Cancelar</button>
+          <button type="submit" class="flex-1 btn-primary">Salvar Serviço</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- ===== MODAL: EDITAR MATERIAL ===== -->
   <div id="edit-material-modal" class="modal">
     <div class="bg-white rounded-2xl p-6 w-[95%] max-w-lg shadow-2xl">
@@ -1954,7 +1986,12 @@
             <!-- Wrapper Por Serviço -->
             <div id="orc-cobranca-servico-wrapper" class="hidden">
               <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Serviços</label>
-              <input type="text" id="filter-tipos" placeholder="Filtrar serviços..." class="input-field mb-2">
+              <div class="flex gap-2 mb-2">
+                <input type="text" id="filter-tipos" placeholder="Filtrar serviços..." class="input-field flex-1">
+                <button type="button" onclick="openServicosCadastroModal()" class="btn-primary px-4 py-2 h-10 whitespace-nowrap" title="Cadastrar novo serviço">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                </button>
+              </div>
               <div id="orc-tiposdeservico-list" class="h-48 overflow-y-auto border border-gray-200 p-2 bg-gray-50 rounded-xl space-y-1"></div>
             </div>
 
@@ -3294,6 +3331,28 @@ Qualquer dúvida estou à disposição!`;
       if (cb.checked) div.classList.remove('hidden'); else div.classList.add('hidden');
     };
 
+    // ===== Cadastro Rápido de Serviço (Orçamento) =====
+    window.openServicosCadastroModal = () => {
+      document.getElementById('servicos-cadastro-modal').classList.add('active');
+      document.getElementById('form-servicos-cadastro').reset();
+      document.getElementById('cadastro-servicos-nova-categoria-wrapper').classList.add('hidden');
+      // Preencher as categorias existentes
+      const select = document.getElementById('cadastro-servicos-categoria-select');
+      const cats = [...new Set((appState.tiposDeServico||[]).map(s => s.categoria||'OUTROS'))].sort();
+      select.innerHTML = '<option value="">Selecione ou crie uma categoria</option><option value="__nova__">+ Nova Categoria</option>';
+      cats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+      });
+    };
+    window.closeServicosCadastroModal = () => {
+      document.getElementById('servicos-cadastro-modal').classList.remove('active');
+      document.getElementById('form-servicos-cadastro').reset();
+      document.getElementById('cadastro-servicos-nova-categoria-wrapper').classList.add('hidden');
+    };
+
     // ===== Tipos de Serviço =====
     function renderTiposDeServicoList() {
       const el = document.getElementById('tiposdeservico-list');
@@ -4531,6 +4590,43 @@ Qualquer dúvida estou à disposição!`;
         }, 500);
       } catch(err) { console.error(err); alert('Erro ao salvar material.'); }
       finally { btn.disabled = false; btn.textContent = 'Salvar Material'; }
+    });
+
+    // ===== Formulario: Cadastro Rapido de Servico (Orcamento) =====
+    document.getElementById('form-servicos-cadastro')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!userId) return alert('Faca login novamente.');
+      const descricao = document.getElementById('cadastro-servicos-descricao').value;
+      if (!descricao?.trim()) return alert('Preencha a Descricao do Servico.');
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent = 'Salvando...';
+      try {
+        let categoria = document.getElementById('cadastro-servicos-categoria-select').value;
+        if (categoria === '__nova__') {
+          categoria = document.getElementById('cadastro-servicos-categoria-nova').value?.trim();
+          if (!categoria) return alert('Preencha o nome da nova categoria.');
+        }
+        if (!categoria) categoria = 'OUTROS';
+        const valor = parseFloat(document.getElementById('cadastro-servicos-valor').value);
+        await addDoc(collection(db, `users/${userId}/tiposDeServico`), { categoria, descricao, valor });
+        // Fechar o modal
+        closeServicosCadastroModal();
+        // Atualizar a lista de servicos no modal de orcamento
+        setTimeout(() => {
+          populateTiposDeServicoOrcamento();
+        }, 500);
+      } catch(err) { console.error(err); alert('Erro ao salvar servico.'); }
+      finally { btn.disabled = false; btn.textContent = 'Salvar Servico'; }
+    });
+
+    // Listener para mostrar/ocultar campo de nova categoria
+    document.getElementById('cadastro-servicos-categoria-select')?.addEventListener('change', (e) => {
+      const wrapper = document.getElementById('cadastro-servicos-nova-categoria-wrapper');
+      if (e.target.value === '__nova__') {
+        wrapper.classList.remove('hidden');
+      } else {
+        wrapper.classList.add('hidden');
+      }
     });
 
     document.getElementById('form-edit-material')?.addEventListener('submit', async (e) => {
