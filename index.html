@@ -1786,6 +1786,15 @@
                       </div>
                     </label>
                   </div>
+                  <div>
+                    <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border cursor-pointer">
+                      <input type="checkbox" id="config-ocultar-mao-de-obra" class="h-4 w-4 text-blue-600 rounded">
+                      <div>
+                        <p class="text-sm font-medium text-gray-800">Ocultar Mão de Obra</p>
+                        <p class="text-xs text-gray-500">Mantém o Novo Orçamento apenas com cobrança por serviços</p>
+                      </div>
+                    </label>
+                  </div>
                 </div>
                 <div class="mt-5">
                   <button type="button" onclick="saveConfigData()" class="w-full btn-primary">Salvar Ajustes</button>
@@ -1924,11 +1933,11 @@
             <div>
               <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Modo de Cobrança</label>
               <div id="orc-modo-cobranca" class="grid grid-cols-2 gap-2">
-                <label class="flex items-center p-3 border-2 rounded-xl has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 cursor-pointer">
+                <label id="modo-cobranca-mao-de-obra-option" class="flex items-center p-3 border-2 rounded-xl has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 cursor-pointer">
                   <input type="radio" name="modo-cobranca" value="mao_de_obra" class="h-4 w-4 text-blue-600" checked>
                   <span class="ml-2 text-sm font-medium text-gray-800">Mão de Obra</span>
                 </label>
-                <label class="flex items-center p-3 border-2 rounded-xl has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 cursor-pointer">
+                <label id="modo-cobranca-por-servico-option" class="flex items-center p-3 border-2 rounded-xl has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 cursor-pointer">
                   <input type="radio" name="modo-cobranca" value="por_servico" class="h-4 w-4 text-blue-600">
                   <span class="ml-2 text-sm font-medium text-gray-800">Por Serviço</span>
                 </label>
@@ -2159,7 +2168,7 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
     function resetCurrentOrcamento() {
       appState.currentOrcamento = {
         id: null, cliente: null,
-        modoCobranca: 'mao_de_obra', usarMaterial: 'sim',
+        modoCobranca: appState.config?.ocultar_mao_de_obra ? 'por_servico' : 'mao_de_obra', usarMaterial: 'sim',
         tiposDeServico: [], items: [],
         maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
         desconto: { tipo: 'nenhum', valor: 0 },
@@ -3459,11 +3468,40 @@ Qualquer dúvida estou à disposição!`;
       });
     }
 
+    function isMaoDeObraOculta() {
+      return appState.config?.ocultar_mao_de_obra === true;
+    }
+
+    function aplicarVisibilidadeModoCobranca() {
+      const ocultar = isMaoDeObraOculta();
+      const modoWrapper = document.getElementById('orc-modo-cobranca');
+      const moOption = document.getElementById('modo-cobranca-mao-de-obra-option');
+      const moRadio = document.querySelector('input[name="modo-cobranca"][value="mao_de_obra"]');
+      const servicoRadio = document.querySelector('input[name="modo-cobranca"][value="por_servico"]');
+      
+      if (moOption) moOption.classList.toggle('hidden', ocultar);
+      if (modoWrapper) {
+        modoWrapper.classList.toggle('grid-cols-2', !ocultar);
+        modoWrapper.classList.toggle('grid-cols-1', ocultar);
+      }
+      if (ocultar) {
+        if (moRadio) moRadio.checked = false;
+        if (servicoRadio) servicoRadio.checked = true;
+        if (appState.currentOrcamento) {
+          appState.currentOrcamento.modoCobranca = 'por_servico';
+          appState.currentOrcamento.maoDeObra = { tipo:'', valor:0, label:'', raw_value:'' };
+        }
+      }
+    }
+
     const toggleModoDeCobranca = (modo) => {
+      aplicarVisibilidadeModoCobranca();
+      const modoEfetivo = isMaoDeObraOculta() ? 'por_servico' : modo;
       const moW = document.getElementById('orc-cobranca-mo-wrapper');
       const svW = document.getElementById('orc-cobranca-servico-wrapper');
       const isEditing = document.getElementById('modal-title').textContent === 'Editar Orçamento';
-      if (modo === 'por_servico') {
+      if (appState.currentOrcamento) appState.currentOrcamento.modoCobranca = modoEfetivo;
+      if (modoEfetivo === 'por_servico') {
         moW.classList.add('hidden'); svW.classList.remove('hidden');
         if (appState.currentOrcamento && !isEditing) { appState.currentOrcamento.maoDeObra = { tipo:'',valor:0,label:'',raw_value:'' }; }
       } else {
@@ -3522,6 +3560,10 @@ Qualquer dúvida estou à disposição!`;
           clone.usarMaterial = clone.usarMaterial || 'sim';
           clone.tipoObra = clone.tipoObra || 'residencial';
           clone.maoDeObra = clone.maoDeObra || { tipo:'',valor:0,label:'',raw_value:'' };
+          if (isMaoDeObraOculta()) {
+            clone.modoCobranca = 'por_servico';
+            clone.maoDeObra = { tipo:'',valor:0,label:'',raw_value:'' };
+          }
           clone.desconto = clone.desconto || { tipo:'nenhum',valor:0 };
           clone.materialAvulso = clone.materialAvulso || 0;
           clone.cotacao = clone.cotacao || null;
@@ -3608,7 +3650,7 @@ Qualquer dúvida estou à disposição!`;
           document.getElementById('orc-material-avulso').value = '0';
           document.getElementById('orc-cotacao-arquivo').value = '';
           document.getElementById('orc-cotacao-info').classList.add('hidden');
-          toggleModoDeCobranca('mao_de_obra');
+          toggleModoDeCobranca(isMaoDeObraOculta() ? 'por_servico' : 'mao_de_obra');
           toggleUsarMaterial('sim');
           aplicarVisibilidadeCampos(); // Aplica ao criar novo
           document.getElementById('orc-cliente-select').value = '';
@@ -3835,6 +3877,7 @@ Qualquer dúvida estou à disposição!`;
           novidades_texto: gv('config-novidades-texto'),
           novidades_tempo: parseInt(gv('config-novidades-tempo')) || 5,
           ocultar_material_avulso: document.getElementById('config-ocultar-material-avulso')?.checked || false,
+          ocultar_mao_de_obra: document.getElementById('config-ocultar-mao-de-obra')?.checked || false,
         };
         delete data.endereco;
         await setDoc(doc(db, `users/${userId}/config/main`), data);
@@ -3905,12 +3948,16 @@ Qualquer dúvida estou à disposição!`;
       
       const ocultarMatEl = el('config-ocultar-material-avulso');
       if (ocultarMatEl) ocultarMatEl.checked = c.ocultar_material_avulso || false;
+      const ocultarMoEl = el('config-ocultar-mao-de-obra');
+      if (ocultarMoEl) ocultarMoEl.checked = c.ocultar_mao_de_obra || false;
       
       const containerMat = el('container-material-avulso');
       if (containerMat) {
         if (c.ocultar_material_avulso) containerMat.classList.add('hidden');
         else containerMat.classList.remove('hidden');
       }
+
+      if (typeof aplicarVisibilidadeModoCobranca === 'function') aplicarVisibilidadeModoCobranca();
 
       renderNovidades();
     }
@@ -4694,8 +4741,9 @@ Qualquer dúvida estou à disposição!`;
 
     document.querySelectorAll('input[name="modo-cobranca"]').forEach(rb => {
       rb.addEventListener('change', (e) => {
-        if (appState.currentOrcamento) appState.currentOrcamento.modoCobranca = e.target.value;
-        toggleModoDeCobranca(e.target.value);
+        const modo = isMaoDeObraOculta() ? 'por_servico' : e.target.value;
+        if (appState.currentOrcamento) appState.currentOrcamento.modoCobranca = modo;
+        toggleModoDeCobranca(modo);
       });
     });
 
