@@ -836,40 +836,48 @@
   </div>
 
   <!-- ===== MODAL: CADASTRO RÁPIDO DE MATERIAL (ORÇAMENTO) ===== -->
-  <div id="material-cadastro-modal" class="modal" style="z-index: 10000;">
+  <div id="estoque-cadastro-modal" class="modal" style="z-index: 10000;">
     <div class="bg-white rounded-2xl p-6 w-[95%] max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-5">
-        <h3 class="text-xl font-bold text-gray-900">Cadastrar Novo Material</h3>
-        <button type="button" onclick="closeMaterialCadastroModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">&times;</button>
+        <h3 class="text-xl font-bold text-gray-900">Cadastrar Novo Estoque</h3>
+        <button type="button" onclick="closeEstoqueCadastroModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">&times;</button>
       </div>
-      <form id="form-material-cadastro" class="space-y-4">
+      <form id="form-estoque-cadastro" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Descrição do Material</label>
-          <input type="text" id="cadastro-material-nome" placeholder="Descrição do material" class="input-field" required>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Categoria</label>
+          <select id="cadastro-estoque-categoria-select" class="input-field">
+            <option value="">Selecione ou crie uma categoria</option>
+            <option value="__nova__">+ Nova Categoria</option>
+          </select>
+          <div id="cadastro-estoque-nova-categoria-wrapper" class="hidden"><input type="text" id="cadastro-estoque-categoria-nova" placeholder="Nome da nova categoria" class="input-field mt-2"></div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Descrição do Item</label>
+          <input type="text" id="cadastro-estoque-nome" placeholder="Descrição do item" class="input-field" required>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Unidade</label>
-            <select id="cadastro-material-unidade" class="input-field">
+            <select id="cadastro-estoque-unidade" class="input-field">
               <option>UNID</option><option>Pç</option><option>m</option><option>cx</option><option>kit</option>
             </select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Valor (R$)</label>
-            <input type="number" step="0.01" id="cadastro-material-valor" placeholder="Valor R$" class="input-field" required>
+            <input type="number" step="0.01" id="cadastro-estoque-valor" placeholder="Valor R$" class="input-field" required>
           </div>
         </div>
         <label class="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100 cursor-pointer">
-          <input type="checkbox" id="cadastro-material-is-estoque" onchange="toggleQtdEstoqueModal(this)" class="h-4 w-4 text-blue-600 rounded">
+          <input type="checkbox" id="cadastro-estoque-is-estoque" onchange="toggleQtdEstoqueModal(this)" class="h-4 w-4 text-blue-600 rounded">
           <span class="text-sm font-medium text-blue-800">Item de Estoque</span>
         </label>
         <div id="div-qtd-estoque-modal" class="hidden">
           <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Quantidade Inicial em Estoque</label>
-          <input type="number" step="1" id="cadastro-material-qtd-inicial" placeholder="Quantidade inicial em estoque" class="input-field">
+          <input type="number" step="1" id="cadastro-estoque-qtd-inicial" placeholder="Quantidade inicial em estoque" class="input-field">
         </div>
         <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeMaterialCadastroModal()" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors">Cancelar</button>
-          <button type="submit" class="flex-1 btn-primary">Salvar Material</button>
+          <button type="button" onclick="closeEstoqueCadastroModal()" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors">Cancelar</button>
+          <button type="submit" class="flex-1 btn-primary">Salvar Estoque</button>
         </div>
       </form>
     </div>
@@ -908,32 +916,37 @@
   </div>
 
   <!-- ===== MODAL: EDITAR MATERIAL ===== -->
-  <div id="edit-material-modal" class="modal">
+  <div id="edit-estoque-modal" class="modal">
     <div class="bg-white rounded-2xl p-6 w-[95%] max-w-lg shadow-2xl">
       <div class="flex items-center justify-between mb-5">
-        <h3 class="text-xl font-bold text-gray-900">Editar Material</h3>
-        <button onclick="closeEditMaterialModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">&times;</button>
+        <h3 class="text-xl font-bold text-gray-900">Editar Item de Estoque</h3>
+        <button onclick="closeEditEstoqueModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">&times;</button>
       </div>
-      <form id="form-edit-material" class="space-y-4">
-        <input type="hidden" id="edit-material-id">
+      <form id="form-edit-estoque" class="space-y-4">
+        <input type="hidden" id="edit-estoque-id">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Categoria</label>
+          <input type="text" id="edit-estoque-categoria" class="input-field bg-gray-50" readonly>
+          <p class="text-[10px] text-gray-400 mt-1">A categoria não pode ser alterada na edição rápida.</p>
+        </div>
         <div>
           <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Descrição</label>
-          <input type="text" id="edit-material-nome" class="input-field" required>
+          <input type="text" id="edit-estoque-nome" class="input-field" required>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Unidade</label>
-            <select id="edit-material-unidade" class="input-field">
+            <select id="edit-estoque-unidade" class="input-field">
               <option>UNID</option><option>Pç</option><option>m</option><option>cx</option><option>kit</option>
             </select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Valor (R$)</label>
-            <input type="number" step="0.01" id="edit-material-valor" class="input-field" required>
+            <input type="number" step="0.01" id="edit-estoque-valor" class="input-field" required>
           </div>
         </div>
         <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeEditMaterialModal()" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors">Cancelar</button>
+          <button type="button" onclick="closeEditEstoqueModal()" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors">Cancelar</button>
           <button type="submit" class="flex-1 btn-primary">Salvar Alterações</button>
         </div>
       </form>
@@ -1010,7 +1023,7 @@
           </div>
           <div class="text-left">
             <p class="font-semibold text-gray-800">Formato Completo</p>
-            <p class="text-xs text-gray-500">Todos os detalhes, materiais e serviços</p>
+            <p class="text-xs text-gray-500">Todos os detalhes, estoque e serviços</p>
           </div>
         </button>
         <button onclick="gerarPDF('simplificado')" class="w-full flex items-center gap-4 p-4 border-2 border-gray-100 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all group">
@@ -1140,7 +1153,7 @@
             Novo Orçamento
           </button>
           <button class="mobile-menu-item" data-tab="clientes" onclick="navigateMobileMenu('clientes')">Clientes</button>
-          <button class="mobile-menu-item" data-tab="materiais" onclick="navigateMobileMenu('materiais')">Materiais</button>
+          <button class="mobile-menu-item" data-tab="estoque" onclick="navigateMobileMenu('estoque')">Estoque</button>
           <button class="mobile-menu-item" data-tab="servicos" onclick="navigateMobileMenu('servicos')">Serviços</button>
           <button class="mobile-menu-item" data-tab="financeiro" onclick="navigateMobileMenu('financeiro')">Financeiro</button>
           <button class="mobile-menu-item" data-tab="configuracoes" onclick="navigateMobileMenu('configuracoes')">Configurações</button>
@@ -1169,10 +1182,10 @@
                 Clientes
               </span>
             </button>
-            <button class="tab py-4 px-4 text-sm text-gray-500 hover:text-blue-600 font-medium transition-colors" data-tab="materiais" onclick="changeTab(event, 'materiais')">
+            <button class="tab py-4 px-4 text-sm text-gray-500 hover:text-blue-600 font-medium transition-colors" data-tab="estoque" onclick="changeTab(event, 'estoque')">
               <span class="flex items-center gap-1.5">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                Materiais
+                Estoque
               </span>
             </button>
             <button class="tab py-4 px-4 text-sm text-gray-500 hover:text-blue-600 font-medium transition-colors" data-tab="servicos" onclick="changeTab(event, 'servicos')">
@@ -1438,10 +1451,10 @@
             </div>
           </div>
 
-          <!-- ===== TAB: MATERIAIS ===== -->
-          <div id="materiais" class="tab-content space-y-4">
+          <!-- ===== TAB: ESTOQUE ===== -->
+          <div id="estoque" class="tab-content space-y-4">
             <div class="card p-5">
-              <h2 class="text-lg font-bold text-gray-900 mb-4">Gerenciar Materiais</h2>
+              <h2 class="text-lg font-bold text-gray-900 mb-4">Gerenciar Estoque</h2>
 
               <details class="group border border-gray-200 rounded-xl mb-4">
                 <summary class="flex items-center justify-between p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-xl font-semibold text-gray-700 select-none transition-colors">
@@ -1452,73 +1465,64 @@
                   <svg class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </summary>
                 <div class="p-5 bg-white rounded-b-xl border-t border-gray-100">
-                  <form id="form-material" class="space-y-3">
-                    <input type="text" id="material-nome" placeholder="Descrição do material" class="input-field" required>
+                  <form id="form-estoque" class="space-y-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Categoria</label>
+                      <select id="estoque-categoria-select" class="input-field">
+                        <option value="">Selecione ou crie uma categoria</option>
+                        <option value="__nova__">+ Nova Categoria</option>
+                      </select>
+                      <div id="estoque-nova-categoria-wrapper" class="hidden"><input type="text" id="estoque-categoria-nova" placeholder="Nome da nova categoria" class="input-field mt-2"></div>
+                    </div>
+                    <input type="text" id="estoque-nome" placeholder="Descrição do item" class="input-field" required>
                     <div class="grid grid-cols-2 gap-3">
-                      <select id="material-unidade" class="input-field">
+                      <select id="estoque-unidade" class="input-field">
                         <option>UNID</option><option>Pç</option><option>m</option><option>cx</option><option>kit</option>
                       </select>
-                      <input type="number" step="0.01" id="material-valor" placeholder="Valor R$" class="input-field" required>
+                      <input type="number" step="0.01" id="estoque-valor" placeholder="Valor R$" class="input-field" required>
                     </div>
                     <label class="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100 cursor-pointer">
-                      <input type="checkbox" id="material-is-estoque" onchange="toggleQtdEstoque(this)" class="h-4 w-4 text-blue-600 rounded">
+                      <input type="checkbox" id="estoque-is-estoque" onchange="toggleQtdEstoque(this)" class="h-4 w-4 text-blue-600 rounded">
                       <span class="text-sm font-medium text-blue-800">Item de Estoque</span>
                     </label>
                     <div id="div-qtd-estoque" class="hidden">
-                      <input type="number" step="1" id="material-qtd-inicial" placeholder="Quantidade inicial em estoque" class="input-field">
+                      <input type="number" step="1" id="estoque-qtd-inicial" placeholder="Quantidade inicial em estoque" class="input-field">
                     </div>
                     <button type="submit" class="w-full btn-primary">Salvar Item</button>
                   </form>
                 </div>
               </details>
 
-              <!-- Busca de materiais -->
+              <!-- Busca de estoque -->
               <div class="relative mb-3">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
-                <input type="text" id="input-busca-material" class="input-field pl-9" placeholder="Buscar material..." oninput="renderMateriaisList()">
+                <input type="text" id="input-busca-estoque" class="input-field pl-9" placeholder="Buscar estoque..." oninput="renderEstoqueList()">
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <details class="group border border-gray-200 rounded-xl mt-4">
-                  <summary class="flex items-center justify-between p-4 cursor-pointer bg-white hover:bg-gray-50 rounded-t-xl border-b border-gray-100 select-none">
-                    <span class="font-semibold text-gray-700 text-sm flex items-center gap-2">
-                      <span class="w-2 h-2 bg-blue-500 rounded-full"></span> Materiais de Compra
-                    </span>
-                    <svg class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                  </summary>
-                  <div id="materiais-list-padrao" class="p-3 bg-white rounded-b-xl space-y-1"></div>
-                </details>
-                <details class="group border border-gray-200 rounded-xl mt-4">
-                  <summary class="flex items-center justify-between p-4 cursor-pointer bg-white hover:bg-gray-50 rounded-t-xl border-b border-gray-100 select-none">
-                    <span class="font-semibold text-gray-700 text-sm flex items-center gap-2">
-                      <span class="w-2 h-2 bg-green-500 rounded-full"></span> Itens de Estoque
-                    </span>
-                    <svg class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                  </summary>
-                  <div id="materiais-list-estoque" class="p-3 bg-white rounded-b-xl space-y-1"></div>
-                </details>
+              <div class="grid grid-cols-1 gap-4 mt-4">
+                <div id="estoque-list-categorias" class="space-y-4"></div>
               </div>
 
-              <!-- Importar Materiais -->
+              <!-- Importar Estoque -->
               <details class="group border border-gray-200 rounded-xl mt-4">
                 <summary class="flex items-center justify-between p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-xl font-semibold text-gray-700 select-none transition-colors">
                   <span class="flex items-center gap-2 text-gray-600 text-sm">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>
-                    Importar Materiais (.xlsx)
+                    Importar Estoque (.xlsx)
                   </span>
                   <svg class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </summary>
                 <div class="p-4 bg-white rounded-b-xl border-t border-gray-100">
-                  <p class="text-xs text-gray-500 mb-3">Planilha com colunas: Descrição, Unidade, Valor. Coluna Estoque (SIM/NÃO) e Quantidade são opcionais.</p>
+                  <p class="text-xs text-gray-500 mb-3">Planilha com colunas: Categoria, Descrição, Unidade, Valor. Coluna Estoque (SIM/NÃO) e Quantidade são opcionais.</p>
                   <div class="flex flex-col sm:flex-row gap-2">
-                    <input type="file" id="materiais-xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm border border-gray-200 p-2 rounded-lg">
-                    <button id="btn-import-materiais-xlsx" class="btn-success whitespace-nowrap text-sm px-4 py-2">Importar</button>
-                    <button id="btn-download-materiais-xlsx" class="bg-blue-600 text-white whitespace-nowrap text-sm px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors">Baixar Lista</button>
-                    <button id="btn-clear-materiais" class="btn-danger whitespace-nowrap text-sm px-4 py-2">Limpar</button>
+                    <input type="file" id="estoque-xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm border border-gray-200 p-2 rounded-lg">
+                    <button id="btn-import-estoque-xlsx" class="btn-success whitespace-nowrap text-sm px-4 py-2">Importar</button>
+                    <button id="btn-download-estoque-xlsx" class="bg-blue-600 text-white whitespace-nowrap text-sm px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors">Baixar Lista</button>
+                    <button id="btn-clear-estoque" class="btn-danger whitespace-nowrap text-sm px-4 py-2">Limpar</button>
                   </div>
-                  <p id="materiais-xlsx-status" class="text-xs text-gray-500 mt-2"></p>
+                  <p id="estoque-xlsx-status" class="text-xs text-gray-500 mt-2"></p>
                 </div>
               </details>
             </div>
@@ -1639,7 +1643,11 @@
                   </select>
                 </div>
               </div>
-              <div class="flex justify-end mt-4 gap-2">
+              <div class="flex justify-end mt-4 gap-2 flex-wrap">
+                <button onclick="limparFiltrosFinanceiro()" class="px-4 py-1.5 text-xs font-bold bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:border-slate-400 hover:text-slate-800 transition-colors flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  Limpar Filtros
+                </button>
                 <button onclick="exportarFinanceiro()" class="px-4 py-1.5 text-xs font-bold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">Exportar Relatório</button>
                 <button onclick="updateFinanceiroView()" class="px-4 py-1.5 text-xs font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Atualizar Dados</button>
               </div>
@@ -1991,7 +1999,7 @@
                   </div>
                   <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Observações Padrão do PDF</label>
-                    <textarea id="config-obs-padrao" class="input-field" rows="4" placeholder="Ex: Serviço garantido por 90 dias. Materiais de primeira linha."></textarea>
+                    <textarea id="config-obs-padrao" class="input-field" rows="4" placeholder="Ex: Serviço garantido por 90 dias. Estoque de primeira linha."></textarea>
                     <p class="text-xs text-gray-500 mt-1">Aparece no rodapé de todos os orçamentos.</p>
                   </div>
                   <div>
@@ -2040,9 +2048,9 @@
                 <div class="space-y-4">
                   <div>
                     <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border cursor-pointer">
-                      <input type="checkbox" id="config-ocultar-material-avulso" class="h-4 w-4 text-blue-600 rounded">
+                      <input type="checkbox" id="config-ocultar-estoque-avulso" class="h-4 w-4 text-blue-600 rounded">
                       <div>
-                        <p class="text-sm font-medium text-gray-800">Ocultar Material Avulso (Cotação Externa)</p>
+                        <p class="text-sm font-medium text-gray-800">Ocultar Estoque Avulso (Cotação Externa)</p>
                         <p class="text-xs text-gray-500">Remove este campo da aba de Novo Orçamento</p>
                       </div>
                     </label>
@@ -2058,10 +2066,10 @@
                   </div>
                   <div>
                     <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border cursor-pointer">
-                      <input type="checkbox" id="config-ocultar-materiais" class="h-4 w-4 text-blue-600 rounded">
+                      <input type="checkbox" id="config-ocultar-estoque" class="h-4 w-4 text-blue-600 rounded">
                       <div>
-                        <p class="text-sm font-medium text-gray-800">Ocultar Materiais</p>
-                        <p class="text-xs text-gray-500">Remove a seção de materiais da aba de Novo Orçamento</p>
+                        <p class="text-sm font-medium text-gray-800">Ocultar Estoque</p>
+                        <p class="text-xs text-gray-500">Remove a seção de estoque da aba de Novo Orçamento</p>
                       </div>
                     </label>
                   </div>
@@ -2274,42 +2282,42 @@
               <div id="orc-tiposdeservico-list" class="h-48 overflow-y-auto border border-gray-200 p-2 bg-gray-50 rounded-xl space-y-1"></div>
             </div>
 
-            <!-- Materiais -->
-            <div id="orc-materiais-section">
-              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Materiais</label>
-              <div id="orc-usar-material" class="grid grid-cols-2 gap-2 mb-3">
+            <!-- Estoque -->
+            <div id="orc-estoque-section">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Estoque</label>
+              <div id="orc-usar-estoque" class="grid grid-cols-2 gap-2 mb-3">
                 <label class="flex items-center p-3 border-2 rounded-xl has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 cursor-pointer">
-                  <input type="radio" name="usar-material" value="sim" class="h-4 w-4 text-blue-600" checked>
-                  <span class="ml-2 text-sm font-medium text-gray-800">Incluir Materiais</span>
+                  <input type="radio" name="usar-estoque" value="sim" class="h-4 w-4 text-blue-600" checked>
+                  <span class="ml-2 text-sm font-medium text-gray-800">Incluir Estoque</span>
                 </label>
                 <label class="flex items-center p-3 border-2 rounded-xl has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 cursor-pointer">
-                  <input type="radio" name="usar-material" value="nao" class="h-4 w-4 text-blue-600">
+                  <input type="radio" name="usar-estoque" value="nao" class="h-4 w-4 text-blue-600">
                   <span class="ml-2 text-sm font-medium text-gray-800">Não Incluir</span>
                 </label>
               </div>
 
-              <div id="orc-cobranca-material-wrapper">
+              <div id="orc-cobranca-estoque-wrapper">
                 <div class="flex gap-2 mb-2">
-                  <button id="tab-mat-compra" onclick="filtrarMateriaisModal('padrao')" class="text-xs font-bold px-3 py-1.5 bg-blue-100 rounded-lg text-blue-700">Compras</button>
-                  <button id="tab-mat-estoque" onclick="filtrarMateriaisModal('estoque')" class="text-xs font-bold px-3 py-1.5 bg-white border rounded-lg text-gray-600 hover:bg-gray-100">Estoque</button>
+                  <button id="tab-mat-compra" onclick="filtrarEstoqueModal('padrao')" class="text-xs font-bold px-3 py-1.5 bg-blue-100 rounded-lg text-blue-700">Compras</button>
+                  <button id="tab-mat-estoque" onclick="filtrarEstoqueModal('estoque')" class="text-xs font-bold px-3 py-1.5 bg-white border rounded-lg text-gray-600 hover:bg-gray-100">Estoque</button>
                 </div>
                 <div class="flex gap-2 mb-2">
-                  <input type="text" id="orc-search-material-modal" placeholder="Buscar item..." class="input-field flex-1" oninput="populateMateriaisOrcamento()">
-                  <button type="button" onclick="openMaterialCadastroModal()" class="btn-primary px-4 py-2 h-10 whitespace-nowrap" title="Cadastrar novo material">
+                  <input type="text" id="orc-search-estoque-modal" placeholder="Buscar item..." class="input-field flex-1" oninput="populateEstoqueOrcamento()">
+                  <button type="button" onclick="openEstoqueCadastroModal()" class="btn-primary px-4 py-2 h-10 whitespace-nowrap" title="Cadastrar novo estoque">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                   </button>
                 </div>
-                <div id="orc-materiais-list" class="h-40 overflow-y-auto border border-gray-200 p-2 bg-gray-50 rounded-xl"></div>
+                <div id="orc-estoque-list" class="h-40 overflow-y-auto border border-gray-200 p-2 bg-gray-50 rounded-xl"></div>
               </div>
             </div>
 
-            <!-- Material Avulso -->
-            <div id="container-material-avulso">
-              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Material Avulso (Cotação Externa)</label>
+            <!-- Estoque Avulso -->
+            <div id="container-estoque-avulso">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Estoque Avulso (Cotação Externa)</label>
               <div class="space-y-2">
                 <div class="relative">
                   <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">R$</span>
-                  <input type="number" step="0.01" id="orc-material-avulso" class="input-field pl-10" placeholder="0,00" value="0">
+                  <input type="number" step="0.01" id="orc-estoque-avulso" class="input-field pl-10" placeholder="0,00" value="0">
                 </div>
                 <div class="flex gap-2">
                   <input type="file" id="orc-cotacao-arquivo" accept=".pdf,.xlsx,.xls,.csv,.doc,.docx" class="input-field flex-1" placeholder="Selecionar arquivo de cotação...">
@@ -2418,7 +2426,7 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
     const userInfo        = document.getElementById('user-info');
 
     const appState = {
-      config: {}, novidades: {}, clientes: [], materiais: [], orcamentos: [],
+      config: {}, novidades: {}, clientes: [], estoque: [], orcamentos: [],
       tiposDeServico: [], currentOrcamento: null,
       orcamentosParaExcluir: new Set()
     };
@@ -2441,11 +2449,11 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
       appState.currentOrcamento = {
         id: null, cliente: null,
         modoCobranca: appState.config?.ocultar_mao_de_obra ? 'por_servico' : 'mao_de_obra',
-        usarMaterial: appState.config?.ocultar_materiais ? 'nao' : 'sim',
+        usarEstoque: appState.config?.ocultar_estoque ? 'nao' : 'sim',
         tiposDeServico: [], items: [],
         maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
         desconto: { tipo: 'nenhum', valor: 0 },
-        materialAvulso: 0, cotacao: null,
+        estoqueAvulso: 0, cotacao: null,
         total: 0, tipoObra: 'residencial', createdAt: null,
         status: 'pendente', numeroOrcamento: null, versao: 1
       };
@@ -2637,6 +2645,19 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
       if (panel) {
         panel.classList.toggle('hidden');
       }
+    };
+
+    window.limparFiltrosFinanceiro = () => {
+      const hoje = new Date();
+      const anoAtual = String(hoje.getFullYear());
+      const mesAtual = String(hoje.getMonth());
+      const elAno = document.getElementById('fat-ano');
+      const elMes = document.getElementById('fat-mes');
+      const elPeriodo = document.getElementById('chart-periodo');
+      if (elAno) elAno.value = anoAtual;
+      if (elMes) elMes.value = mesAtual;
+      if (elPeriodo) elPeriodo.value = 'mensal';
+      updateFinanceiroView();
     };
 
     window.showAllOrcamentosPage = () => {
@@ -2973,7 +2994,7 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           y += (lines.length * 4) + 6;
         }
 
-        // Itens (Serviços / Materiais)
+        // Itens (Serviços / Estoque)
         if (formato === 'completo') {
           // Serviços por tipo
           if (orc.modoCobranca === 'por_servico' && orc.tiposDeServico?.length > 0) {
@@ -2988,11 +3009,11 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
             y = doc.lastAutoTable.finalY + 8;
           }
           
-          // Materiais
-          if (orc.usarMaterial === 'sim' && orc.items?.length > 0) {
+          // Estoque
+          if (orc.usarEstoque === 'sim' && orc.items?.length > 0) {
             doc.autoTable({
               startY: y,
-              head: [['Material', 'Qtd', 'Unit.', 'Total']],
+              head: [['Estoque', 'Qtd', 'Unit.', 'Total']],
               body: orc.items.map(i => [i.nome, `${i.quantidade} ${i.unidade||'UNID'}`, formatBRL(i.valor), formatBRL(i.valor*i.quantidade)]),
               styles: { fontSize: 8 },
               headStyles: { fillColor: [pr,pg,pb] },
@@ -3014,30 +3035,30 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           doc.text('RESUMO DO ORÇAMENTO:', margin, y);
           y += 6;
           doc.setFontSize(9); doc.setFont(undefined,'normal');
-          doc.text('Serviços e Materiais conforme acordado.', margin, y);
+          doc.text('Serviços e Estoque conforme acordado.', margin, y);
           y += 10;
         }
 
         // Totais e Desconto
         if (y > 240) { doc.addPage(); y = margin; }
         
-        // Recalcular subtotal para garantir que material avulso está incluso
+        // Recalcular subtotal para garantir que estoque avulso está incluso
         let subtotalPDF = 0;
         if (orc.modoCobranca === 'por_servico') {
           subtotalPDF += (orc.tiposDeServico || []).reduce((acc, s) => acc + (s.valor * (s.quantidade || 1)), 0);
         } else {
           subtotalPDF += (orc.maoDeObra?.valor || 0);
         }
-        if (orc.usarMaterial === 'sim') {
+        if (orc.usarEstoque === 'sim') {
           subtotalPDF += (orc.items || []).reduce((acc, i) => acc + (i.valor * (i.quantidade || 1)), 0);
         }
-        subtotalPDF += (orc.materialAvulso || 0);
+        subtotalPDF += (orc.estoqueAvulso || 0);
 
-        // Material Avulso
-        if (orc.materialAvulso > 0) {
+        // Estoque Avulso
+        if (orc.estoqueAvulso > 0) {
           doc.setFontSize(9); doc.setTextColor(40,40,40);
-          doc.text('Material Avulso (Cotacao Externa):', margin, y);
-          doc.text(formatBRL(orc.materialAvulso), pageW - margin, y, { align: 'right' });
+          doc.text('Estoque Avulso (Cotacao Externa):', margin, y);
+          doc.text(formatBRL(orc.estoqueAvulso), pageW - margin, y, { align: 'right' });
           y += 6;
         }
         
@@ -3268,8 +3289,8 @@ Qualquer dúvida estou à disposição!`;
       if (orc.modoCobranca === 'mao_de_obra' && orc.maoDeObra?.valor > 0) {
         msg += `🔨 *Mão de Obra:* R$ ${orc.maoDeObra.valor.toFixed(2)}\n`;
       }
-      if (orc.usarMaterial === 'sim' && orc.items?.length > 0) {
-        msg += `\n📦 *Materiais:*\n`;
+      if (orc.usarEstoque === 'sim' && orc.items?.length > 0) {
+        msg += `\n📦 *Estoque:*\n`;
         orc.items.forEach(i => { msg += `• ${i.nome} (${i.quantidade||1}x) = R$ ${(i.valor*(i.quantidade||1)).toFixed(2)}\n`; });
       }
       msg += `\n💰 *TOTAL: R$ ${total.toFixed(2)}*\n`;
@@ -3309,8 +3330,8 @@ Qualquer dúvida estou à disposição!`;
         
         if (data.modoCobranca === 'mao_de_obra') data.tiposDeServico = [];
         else data.maoDeObra = { tipo: '', valor: 0, label: '', raw_value: '' };
-        if (appState.config?.ocultar_materiais) data.usarMaterial = 'nao';
-        if (data.usarMaterial === 'nao') data.items = [];
+        if (appState.config?.ocultar_estoque) data.usarEstoque = 'nao';
+        if (data.usarEstoque === 'nao') data.items = [];
 
         // Limpeza de dados para evitar erros de serialização do Firestore
         const cleanData = JSON.parse(JSON.stringify(data));
@@ -3538,8 +3559,8 @@ Qualquer dúvida estou à disposição!`;
           if (!confirm(`Confirmar mudança para "${novoStatus.toUpperCase()}"?\nIsso dará BAIXA automática no estoque.`)) { selectEl.value = statusAntigo; return; }
           (orcAtual.items||[]).forEach(item => {
             if (item.tipo === 'estoque') {
-              const mat = appState.materiais.find(m => m.id === item.id);
-              if (mat) batch.update(doc(db, `users/${userId}/materiais/${item.id}`), { qtdEstoque: (mat.qtdEstoque||0) - (item.quantidade||1) });
+              const mat = appState.estoque.find(m => m.id === item.id);
+              if (mat) batch.update(doc(db, `users/${userId}/estoque/${item.id}`), { qtdEstoque: (mat.qtdEstoque||0) - (item.quantidade||1) });
             }
           });
         }
@@ -3547,8 +3568,8 @@ Qualquer dúvida estou à disposição!`;
           if (confirm('Deseja DEVOLVER os itens ao estoque?')) {
             (orcAtual.items||[]).forEach(item => {
               if (item.tipo === 'estoque') {
-                const mat = appState.materiais.find(m => m.id === item.id);
-                if (mat) batch.update(doc(db, `users/${userId}/materiais/${item.id}`), { qtdEstoque: (mat.qtdEstoque||0) + (item.quantidade||1) });
+                const mat = appState.estoque.find(m => m.id === item.id);
+                if (mat) batch.update(doc(db, `users/${userId}/estoque/${item.id}`), { qtdEstoque: (mat.qtdEstoque||0) + (item.quantidade||1) });
               }
             });
           }
@@ -3648,49 +3669,89 @@ Qualquer dúvida estou à disposição!`;
       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
-    // ===== Materiais =====
-    window.renderMateriaisList = function() {
-      const elP = document.getElementById('materiais-list-padrao');
-      const elE = document.getElementById('materiais-list-estoque');
-      const termo = document.getElementById('input-busca-material')?.value.toLowerCase() || '';
-      if (!elP || !elE) return;
-      let lista = (appState.materiais||[]).filter(m => !termo || (m.nome||'').toLowerCase().includes(termo)).sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
-      const padrao = lista.filter(m => m.tipo !== 'estoque');
-      const estoque = lista.filter(m => m.tipo === 'estoque');
-      const html = (itens, ehEst) => {
-        if (!itens.length) return `<p class="text-gray-500 text-xs p-2 text-center">${termo ? 'Nenhum item encontrado.' : 'Vazio.'}</p>`;
-        return itens.map(m => `
-          <div class="flex justify-between items-center p-2 border-b last:border-0 hover:bg-gray-50">
-            <div class="flex-grow cursor-pointer" onclick="openEditMaterialModal('${m.id}')">
-              <p class="servico-slim text-sm">${ehEst ? '<span class="text-blue-600 font-bold">#</span> ' : ''}<strong>${m.nome}</strong> (${m.unidade||'UNID'}) — R$ ${parseFloat(m.valor).toFixed(2)}${ehEst ? `<br><span class="text-xs font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded">Estoque: ${m.qtdEstoque||0}</span>` : ''}</p>
-            </div>
-            <button onclick="deleteMaterial('${m.id}')" class="text-red-500 hover:text-red-700 font-bold px-2 text-lg leading-none">&times;</button>
-          </div>`).join('');
-      };
-      elP.innerHTML = html(padrao, false);
-      elE.innerHTML = html(estoque, true);
-    };
-    window.deleteMaterial = async (id) => { if (confirm('Excluir este item?')) await deleteDoc(doc(db, `users/${userId}/materiais/${id}`)); };
-    window.openEditMaterialModal = (id) => {
-      const m = appState.materiais.find(x => x.id === id);
-      if (!m) return;
-      document.getElementById('edit-material-id').value = m.id;
-      document.getElementById('edit-material-nome').value = m.nome||'';
-      document.getElementById('edit-material-unidade').value = m.unidade||'UNID';
-      document.getElementById('edit-material-valor').value = m.valor||0;
-      document.getElementById('edit-material-modal').classList.add('active');
-    };
-    window.closeEditMaterialModal = () => { document.getElementById('edit-material-modal').classList.remove('active'); document.getElementById('form-edit-material').reset(); };
+    // ===== Estoque =====
+    window.renderEstoqueList = function() {
+      const el = document.getElementById('estoque-list-categorias');
+      const termo = document.getElementById('input-busca-estoque')?.value.toLowerCase() || '';
+      if (!el) return;
+      
+      let lista = (appState.estoque||[]).filter(m => !termo || (m.nome||'').toLowerCase().includes(termo));
+      if (!lista.length) {
+        el.innerHTML = `<p class="text-gray-500 text-sm text-center p-4">Nenhum item encontrado.</p>`;
+        return;
+      }
 
-    // ===== Cadastro Rapido de Material (Orcamento) =====
-    window.openMaterialCadastroModal = () => {
-      document.getElementById('material-cadastro-modal').classList.add('active');
-      document.getElementById('form-material-cadastro').reset();
-      document.getElementById('div-qtd-estoque-modal').classList.add('hidden');
+      const byCat = lista.reduce((acc, m) => {
+        const k = m.categoria || 'OUTROS';
+        (acc[k] || (acc[k] = [])).push(m);
+        return acc;
+      }, {});
+
+      el.innerHTML = Object.keys(byCat).sort().map(cat => {
+        const itens = byCat[cat].sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+        return `
+          <details class="border border-gray-200 rounded-xl overflow-hidden" open>
+            <summary class="flex items-center justify-between p-3 cursor-pointer bg-gray-50 hover:bg-gray-100 font-semibold text-gray-700 select-none transition-colors">
+              <span class="text-sm flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                ${cat} (${itens.length})
+              </span>
+              <svg class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="bg-white divide-y divide-gray-100">
+              ${itens.map(m => {
+                const ehEst = m.tipo === 'estoque';
+                return `
+                  <div class="flex justify-between items-center p-3 hover:bg-gray-50 transition-colors">
+                    <div class="flex-grow cursor-pointer" onclick="openEditEstoqueModal('${m.id}')">
+                      <p class="text-sm font-medium text-gray-900">${m.nome}</p>
+                      <p class="text-xs text-gray-500">
+                        ${m.unidade || 'UNID'} — R$ ${parseFloat(m.valor).toFixed(2)}
+                        ${ehEst ? ` • <span class="font-bold text-blue-600">Qtd: ${m.qtdEstoque || 0}</span>` : ''}
+                      </p>
+                    </div>
+                    <button onclick="deleteEstoque('${m.id}')" class="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </div>`;
+              }).join('')}
+            </div>
+          </details>`;
+      }).join('');
     };
-    window.closeMaterialCadastroModal = () => {
-      document.getElementById('material-cadastro-modal').classList.remove('active');
-      document.getElementById('form-material-cadastro').reset();
+    window.deleteEstoque = async (id) => { if (confirm('Excluir este item?')) await deleteDoc(doc(db, `users/${userId}/estoque/${id}`)); };
+    window.openEditEstoqueModal = (id) => {
+      const m = appState.estoque.find(x => x.id === id);
+      if (!m) return;
+      document.getElementById('edit-estoque-id').value = m.id;
+      document.getElementById('edit-estoque-categoria').value = m.categoria||'OUTROS';
+      document.getElementById('edit-estoque-nome').value = m.nome||'';
+      document.getElementById('edit-estoque-unidade').value = m.unidade||'UNID';
+      document.getElementById('edit-estoque-valor').value = m.valor||0;
+      document.getElementById('edit-estoque-modal').classList.add('active');
+    };
+    window.closeEditEstoqueModal = () => { document.getElementById('edit-estoque-modal').classList.remove('active'); document.getElementById('form-edit-estoque').reset(); };
+
+    // ===== Cadastro Rapido de Estoque (Orcamento) =====
+    window.openEstoqueCadastroModal = () => {
+      document.getElementById('estoque-cadastro-modal').classList.add('active');
+      document.getElementById('form-estoque-cadastro').reset();
+      document.getElementById('div-qtd-estoque-modal').classList.add('hidden');
+      document.getElementById('cadastro-estoque-nova-categoria-wrapper').classList.add('hidden');
+      // Preencher as categorias existentes
+      const select = document.getElementById('cadastro-estoque-categoria-select');
+      const cats = [...new Set((appState.estoque||[]).map(m => m.categoria||'OUTROS'))].sort();
+      select.innerHTML = '<option value="">Selecione ou crie uma categoria</option><option value="__nova__">+ Nova Categoria</option>';
+      cats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+      });
+    };
+    window.closeEstoqueCadastroModal = () => {
+      document.getElementById('estoque-cadastro-modal').classList.remove('active');
+      document.getElementById('form-estoque-cadastro').reset();
       document.getElementById('div-qtd-estoque-modal').classList.add('hidden');
     };
     window.toggleQtdEstoqueModal = (cb) => {
@@ -3754,10 +3815,10 @@ Qualquer dúvida estou à disposição!`;
     window.closeEditTipoServicoModal = () => { document.getElementById('edit-tiposervico-modal').classList.remove('active'); document.getElementById('form-edit-tiposervico').reset(); };
 
     // ===== Modal de Orçamento =====
-    let currentMaterialTab = 'padrao';
+    let currentEstoqueTab = 'padrao';
 
-    window.filtrarMateriaisModal = (tipo) => {
-      currentMaterialTab = tipo;
+    window.filtrarEstoqueModal = (tipo) => {
+      currentEstoqueTab = tipo;
       const btnC = document.getElementById('tab-mat-compra');
       const btnE = document.getElementById('tab-mat-estoque');
       if (tipo === 'padrao') {
@@ -3767,28 +3828,50 @@ Qualquer dúvida estou à disposição!`;
         btnC.className = 'text-xs font-bold px-3 py-1.5 bg-white border rounded-lg text-gray-600 hover:bg-gray-100';
         btnE.className = 'text-xs font-bold px-3 py-1.5 bg-blue-100 rounded-lg text-blue-700';
       }
-      const si = document.getElementById('orc-search-material-modal');
+      const si = document.getElementById('orc-search-estoque-modal');
       if (si) si.value = '';
-      populateMateriaisOrcamento();
+      populateEstoqueOrcamento();
     };
 
-    window.populateMateriaisOrcamento = function() {
-      const listEl = document.getElementById('orc-materiais-list');
-      const termo = document.getElementById('orc-search-material-modal')?.value.toLowerCase() || '';
-      let filtrados = appState.materiais.filter(m => currentMaterialTab === 'estoque' ? m.tipo === 'estoque' : m.tipo !== 'estoque');
+    window.populateEstoqueOrcamento = function() {
+      const listEl = document.getElementById('orc-estoque-list');
+      const termo = document.getElementById('orc-search-estoque-modal')?.value.toLowerCase() || '';
+      let filtrados = (appState.estoque||[]).filter(m => currentEstoqueTab === 'estoque' ? m.tipo === 'estoque' : m.tipo !== 'estoque');
       if (termo) filtrados = filtrados.filter(m => (m.nome||'').toLowerCase().includes(termo));
-      filtrados.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
-      if (!filtrados.length) { listEl.innerHTML = '<p class="text-gray-500 text-xs p-2 text-center">Nenhum item encontrado.</p>'; return; }
-      listEl.innerHTML = filtrados.map(m => {
-        const checked = appState.currentOrcamento?.items?.some(i => i.id === m.id);
-        const qty = appState.currentOrcamento?.items?.find(i => i.id === m.id)?.quantidade || 1;
-        return `<div class="flex items-center justify-between p-1 rounded-md hover:bg-gray-100">
-          <label class="flex items-center flex-grow cursor-pointer">
-            <input type="checkbox" data-id="${m.id}" ${checked?'checked':''} class="h-4 w-4 rounded border-gray-300 text-blue-600">
-            <span class="ml-2 servico-slim">${m.tipo==='estoque'?'# ':''}${m.nome} — R$ ${m.valor.toFixed(2)}</span>
-          </label>
-          <input type="number" min="1" value="${qty}" data-id="${m.id}" class="w-16 p-1 border rounded-md text-xs ml-2" ${checked?'':'disabled'}>
-        </div>`;
+      
+      if (!filtrados.length) { 
+        listEl.innerHTML = '<p class="text-gray-500 text-xs p-2 text-center">Nenhum item encontrado.</p>'; 
+        return; 
+      }
+
+      const byCat = filtrados.reduce((acc, m) => {
+        const k = m.categoria || 'OUTROS';
+        (acc[k] || (acc[k] = [])).push(m);
+        return acc;
+      }, {});
+
+      listEl.innerHTML = Object.keys(byCat).sort().map(cat => {
+        const itens = byCat[cat].sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+        return `
+          <details class="border rounded-lg mb-1" open>
+            <summary class="flex items-center justify-between px-2 py-1.5 cursor-pointer bg-gray-50 hover:bg-gray-100 text-xs font-semibold text-gray-700 select-none">
+              ${cat} <svg class="w-3 h-3 arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="pl-1 pb-1">
+              ${itens.map(m => {
+                const checked = appState.currentOrcamento?.items?.some(i => i.id === m.id);
+                const qty = appState.currentOrcamento?.items?.find(i => i.id === m.id)?.quantidade || 1;
+                return `
+                  <div class="flex items-center justify-between p-1 rounded-md hover:bg-gray-100">
+                    <label class="flex items-center flex-grow cursor-pointer">
+                      <input type="checkbox" data-id="${m.id}" ${checked?'checked':''} class="h-3.5 w-3.5 rounded border-gray-300 text-blue-600">
+                      <span class="ml-2 servico-slim text-[11px]">${m.nome} — R$ ${m.valor.toFixed(2)}</span>
+                    </label>
+                    <input type="number" min="1" value="${qty}" data-id="${m.id}" class="w-12 p-0.5 border rounded-md text-[10px] ml-1 text-center" ${checked?'':'disabled'}>
+                  </div>`;
+              }).join('')}
+            </div>
+          </details>`;
       }).join('');
     };
 
@@ -3830,8 +3913,8 @@ Qualquer dúvida estou à disposição!`;
       return appState.config?.ocultar_mao_de_obra === true;
     }
 
-    function isMateriaisOcultos() {
-      return appState.config?.ocultar_materiais === true;
+    function isEstoqueOcultos() {
+      return appState.config?.ocultar_estoque === true;
     }
 
     function aplicarVisibilidadeModoCobranca() {
@@ -3856,21 +3939,21 @@ Qualquer dúvida estou à disposição!`;
       }
     }
 
-    function aplicarVisibilidadeMateriais() {
-      const ocultar = isMateriaisOcultos();
-      const section = document.getElementById('orc-materiais-section');
-      const simRadio = document.querySelector('input[name="usar-material"][value="sim"]');
-      const naoRadio = document.querySelector('input[name="usar-material"][value="nao"]');
+    function aplicarVisibilidadeEstoque() {
+      const ocultar = isEstoqueOcultos();
+      const section = document.getElementById('orc-estoque-section');
+      const simRadio = document.querySelector('input[name="usar-estoque"][value="sim"]');
+      const naoRadio = document.querySelector('input[name="usar-estoque"][value="nao"]');
       
       if (section) section.classList.toggle('hidden', ocultar);
       if (ocultar) {
         if (simRadio) simRadio.checked = false;
         if (naoRadio) naoRadio.checked = true;
         if (appState.currentOrcamento) {
-          appState.currentOrcamento.usarMaterial = 'nao';
+          appState.currentOrcamento.usarEstoque = 'nao';
           appState.currentOrcamento.items = [];
         }
-        const mW = document.getElementById('orc-cobranca-material-wrapper');
+        const mW = document.getElementById('orc-cobranca-estoque-wrapper');
         if (mW) mW.classList.add('hidden');
       }
     }
@@ -3892,12 +3975,12 @@ Qualquer dúvida estou à disposição!`;
       updateOrcamentoPreview();
     };
 
-    const toggleUsarMaterial = (modo) => {
-      aplicarVisibilidadeMateriais();
-      const modoEfetivo = isMateriaisOcultos() ? 'nao' : modo;
-      const mW = document.getElementById('orc-cobranca-material-wrapper');
+    const toggleUsarEstoque = (modo) => {
+      aplicarVisibilidadeEstoque();
+      const modoEfetivo = isEstoqueOcultos() ? 'nao' : modo;
+      const mW = document.getElementById('orc-cobranca-estoque-wrapper');
       const isEditing = document.getElementById('modal-title').textContent === 'Editar Orçamento';
-      if (appState.currentOrcamento) appState.currentOrcamento.usarMaterial = modoEfetivo;
+      if (appState.currentOrcamento) appState.currentOrcamento.usarEstoque = modoEfetivo;
       if (modoEfetivo === 'nao') { 
         mW.classList.add('hidden'); 
         if (appState.currentOrcamento && !isEditing) appState.currentOrcamento.items = []; 
@@ -3912,7 +3995,7 @@ Qualquer dúvida estou à disposição!`;
         const modal = document.getElementById('orcamento-modal');
         modal.classList.add('active');
         populateClienteSelect();
-        populateMateriaisOrcamento();
+        populateEstoqueOrcamento();
         populateTiposDeServicoOrcamento();
         
         // --- CORREÇÃO: Aplicar visibilidade dos campos baseada nas configurações ---
@@ -3941,19 +4024,19 @@ Qualquer dúvida estou à disposição!`;
           document.getElementById('modal-title').textContent = 'Editar Orçamento';
           const clone = JSON.parse(JSON.stringify(orcamentoParaEditar||{}));
           clone.modoCobranca = clone.modoCobranca || 'mao_de_obra';
-          clone.usarMaterial = clone.usarMaterial || 'sim';
+          clone.usarEstoque = clone.usarEstoque || 'sim';
           clone.tipoObra = clone.tipoObra || 'residencial';
           clone.maoDeObra = clone.maoDeObra || { tipo:'',valor:0,label:'',raw_value:'' };
           if (isMaoDeObraOculta()) {
             clone.modoCobranca = 'por_servico';
             clone.maoDeObra = { tipo:'',valor:0,label:'',raw_value:'' };
           }
-          if (isMateriaisOcultos()) {
-            clone.usarMaterial = 'nao';
+          if (isEstoqueOcultos()) {
+            clone.usarEstoque = 'nao';
             clone.items = [];
           }
           clone.desconto = clone.desconto || { tipo:'nenhum',valor:0 };
-          clone.materialAvulso = clone.materialAvulso || 0;
+          clone.estoqueAvulso = clone.estoqueAvulso || 0;
           clone.cotacao = clone.cotacao || null;
           appState.currentOrcamento = clone;
           const descEl = document.getElementById('orc-descricao-servico');
@@ -3962,7 +4045,7 @@ Qualquer dúvida estou à disposição!`;
           if (clone.cliente?.id) sel.value = clone.cliente.id; else sel.value = '';
           const setR = (name, val) => { const r = document.querySelector(`input[name="${name}"][value="${val}"]`); if (r) r.checked = true; };
           setR('modo-cobranca', clone.modoCobranca);
-          setR('usar-material', clone.usarMaterial);
+          setR('usar-estoque', clone.usarEstoque);
           if (clone.modoCobranca === 'mao_de_obra') {
             setR('tipo-obra', clone.tipoObra);
             // Disparar evento de mudança para atualizar labels (Ponto vs Equipamento)
@@ -3978,7 +4061,7 @@ Qualquer dúvida estou à disposição!`;
             if (dTipo) dTipo.value = 'nenhum';
             if (dVal) { dVal.value = ''; dVal.disabled = true; }
           }
-          document.getElementById('orc-material-avulso').value = clone.materialAvulso || '0';
+          document.getElementById('orc-estoque-avulso').value = clone.estoqueAvulso || '0';
           if (clone.cotacao) {
             document.getElementById('orc-cotacao-nome').textContent = '📄 ' + clone.cotacao.nome;
             document.getElementById('orc-cotacao-info').classList.remove('hidden');
@@ -3986,8 +4069,8 @@ Qualquer dúvida estou à disposição!`;
             document.getElementById('orc-cotacao-info').classList.add('hidden');
           }
           toggleModoDeCobranca(clone.modoCobranca);
-          toggleUsarMaterial(clone.usarMaterial);
-          aplicarVisibilidadeMateriais();
+          toggleUsarEstoque(clone.usarEstoque);
+          aplicarVisibilidadeEstoque();
           aplicarVisibilidadeCampos(); // Aplica ao editar
 
           sel.dispatchEvent(new Event('change'));
@@ -4006,10 +4089,10 @@ Qualquer dúvida estou à disposição!`;
               appState.currentOrcamento.maoDeObra = JSON.parse(JSON.stringify(clone.maoDeObra));
             }
 
-            if (clone.usarMaterial === 'sim') {
+            if (clone.usarEstoque === 'sim') {
               (clone.items||[]).forEach(item => {
-                const cb = document.querySelector(`#orc-materiais-list input[type="checkbox"][data-id="${item.id}"]`);
-                const qty = document.querySelector(`#orc-materiais-list input[type="number"][data-id="${item.id}"]`);
+                const cb = document.querySelector(`#orc-estoque-list input[type="checkbox"][data-id="${item.id}"]`);
+                const qty = document.querySelector(`#orc-estoque-list input[type="number"][data-id="${item.id}"]`);
                 if (cb) cb.checked = true;
                 if (qty) { qty.disabled = false; qty.value = item.quantidade??1; }
               });
@@ -4031,17 +4114,17 @@ Qualquer dúvida estou à disposição!`;
           const descEl = document.getElementById('orc-descricao-servico');
           if (descEl) descEl.value = '';
           document.querySelector('input[name="modo-cobranca"][value="mao_de_obra"]').checked = true;
-          document.querySelector(`input[name="usar-material"][value="${isMateriaisOcultos() ? 'nao' : 'sim'}"]`).checked = true;
+          document.querySelector(`input[name="usar-estoque"][value="${isEstoqueOcultos() ? 'nao' : 'sim'}"]`).checked = true;
           const dTipo = document.getElementById('orc-desconto-tipo');
           const dVal = document.getElementById('orc-desconto-valor');
           if (dTipo) dTipo.value = 'nenhum';
           if (dVal) { dVal.value = ''; dVal.disabled = true; }
-          document.getElementById('orc-material-avulso').value = '0';
+          document.getElementById('orc-estoque-avulso').value = '0';
           document.getElementById('orc-cotacao-arquivo').value = '';
           document.getElementById('orc-cotacao-info').classList.add('hidden');
           toggleModoDeCobranca(isMaoDeObraOculta() ? 'por_servico' : 'mao_de_obra');
-          toggleUsarMaterial(isMateriaisOcultos() ? 'nao' : 'sim');
-          aplicarVisibilidadeMateriais();
+          toggleUsarEstoque(isEstoqueOcultos() ? 'nao' : 'sim');
+          aplicarVisibilidadeEstoque();
           aplicarVisibilidadeCampos(); // Aplica ao criar novo
           document.getElementById('orc-cliente-select').value = '';
           document.getElementById('orc-cliente-select').dispatchEvent(new Event('change'));
@@ -4055,7 +4138,7 @@ Qualquer dúvida estou à disposição!`;
       document.getElementById('orcamento-modal').classList.remove('active');
       resetCurrentOrcamento();
       document.getElementById('orc-cliente-select').value = '';
-      const matList = document.querySelector('#orc-materiais-list');
+      const matList = document.querySelector('#orc-estoque-list');
       if (matList) { matList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); matList.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; }); }
       const srvList = document.querySelector('#orc-tiposdeservico-list');
       if (srvList) { srvList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); srvList.querySelectorAll('input[type="number"]').forEach(inp => { inp.value = '1'; inp.disabled = true; }); }
@@ -4064,10 +4147,10 @@ Qualquer dúvida estou à disposição!`;
       document.querySelectorAll('input[name="tipo-servico"]').forEach(rb => rb.checked = false);
       document.querySelectorAll('#orc-mao-de-obra input[type="number"]').forEach(inp => inp.value = '');
       document.querySelector('input[name="modo-cobranca"][value="mao_de_obra"]').checked = true;
-      document.querySelector(`input[name="usar-material"][value="${isMateriaisOcultos() ? 'nao' : 'sim'}"]`).checked = true;
+      document.querySelector(`input[name="usar-estoque"][value="${isEstoqueOcultos() ? 'nao' : 'sim'}"]`).checked = true;
       document.querySelector('input[name="tipo-obra"][value="residencial"]').checked = true;
       toggleModoDeCobranca('mao_de_obra');
-      toggleUsarMaterial(isMateriaisOcultos() ? 'nao' : 'sim');
+      toggleUsarEstoque(isEstoqueOcultos() ? 'nao' : 'sim');
       
       // Forçar atualização da visibilidade dos campos de mão de obra
       const rbResidencial = document.querySelector('input[name="tipo-obra"][value="residencial"]');
@@ -4137,8 +4220,8 @@ Qualquer dúvida estou à disposição!`;
       const {label:cDocL, valor:cDocV} = getLabelEValorDoc(orc.cliente.documento);
       const cliEnd = formatarEnderecoCompleto(orc.cliente);
       const modoCobranca = orc.modoCobranca || 'mao_de_obra';
-      const usarMaterial = orc.usarMaterial || 'sim';
-      let subtotalServicos = 0, totalMaoDeObra = 0, subtotalMateriais = 0;
+      const usarEstoque = orc.usarEstoque || 'sim';
+      let subtotalServicos = 0, totalMaoDeObra = 0, subtotalEstoque = 0;
       let tiposHtml = '', moHtml = '', matHtml = '';
 
       if (modoCobranca === 'por_servico' && orc.tiposDeServico?.length > 0) {
@@ -4153,20 +4236,20 @@ Qualquer dúvida estou à disposição!`;
         totalMaoDeObra = orc.maoDeObra?.valor||0;
         if (totalMaoDeObra > 0) moHtml = `<h4 style="font-size:1em;font-weight:bold;margin-top:10px;margin-bottom:4px;color:${corP}">MÃO DE OBRA:</h4><div style="text-align:right"><span>${orc.maoDeObra.label}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>`;
       }
-      if (usarMaterial === 'sim' && orc.items?.length > 0) {
+      if (usarEstoque === 'sim' && orc.items?.length > 0) {
         const linhas = orc.items.map(item => {
           const tot = item.valor*(item.quantidade||1);
-          subtotalMateriais += tot;
+          subtotalEstoque += tot;
           return `<tr><td style="padding:3px 2px">${item.tipo==='estoque'?'# ':''}${item.nome}</td><td style="padding:3px 2px;text-align:center">${item.quantidade||1} ${item.unidade||'UNID'}</td><td style="padding:3px 2px;text-align:right">R$ ${item.valor.toFixed(2)}</td><td style="padding:3px 2px;text-align:right">R$ ${tot.toFixed(2)}</td></tr>`;
         }).join('');
-        matHtml = `<h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">MATERIAIS:</h4><table style="width:100%;border-collapse:collapse;font-size:0.85em"><thead><tr><th style="text-align:left;padding:3px 2px;border-bottom:1px solid #ccc">Descrição</th><th style="text-align:center;padding:3px 2px;border-bottom:1px solid #ccc">Qtd</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid #ccc">Unit.</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid #ccc">Total</th></tr></thead><tbody>${linhas}</tbody></table><div style="text-align:right;font-weight:bold;margin-top:6px;padding-top:4px;border-top:1px solid #ccc"><span>Subtotal Materiais: R$ ${subtotalMateriais.toFixed(2)}</span></div>`;
+        matHtml = `<h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">ESTOQUE:</h4><table style="width:100%;border-collapse:collapse;font-size:0.85em"><thead><tr><th style="text-align:left;padding:3px 2px;border-bottom:1px solid #ccc">Descrição</th><th style="text-align:center;padding:3px 2px;border-bottom:1px solid #ccc">Qtd</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid #ccc">Unit.</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid #ccc">Total</th></tr></thead><tbody>${linhas}</tbody></table><div style="text-align:right;font-weight:bold;margin-top:6px;padding-top:4px;border-top:1px solid #ccc"><span>Subtotal Estoque: R$ ${subtotalEstoque.toFixed(2)}</span></div>`;
       }
-      const materialAvulso = parseFloat(document.getElementById('orc-material-avulso')?.value) || orc.materialAvulso || 0;
-      orc.materialAvulso = materialAvulso; // Sincroniza o estado
-      const subtotal = subtotalServicos + subtotalMateriais + totalMaoDeObra + materialAvulso;
-      let materialAvulsoHtml = '';
-      if (materialAvulso > 0) {
-        materialAvulsoHtml = `<div style="text-align:right;background:#f0f9ff;padding:6px 4px;margin-top:6px;border:1px solid #bfdbfe;border-radius:4px"><span style="font-weight:bold">Material Avulso (Cotacao Externa): R$ ${materialAvulso.toFixed(2)}</span></div>`;
+      const estoqueAvulso = parseFloat(document.getElementById('orc-estoque-avulso')?.value) || orc.estoqueAvulso || 0;
+      orc.estoqueAvulso = estoqueAvulso; // Sincroniza o estado
+      const subtotal = subtotalServicos + subtotalEstoque + totalMaoDeObra + estoqueAvulso;
+      let estoqueAvulsoHtml = '';
+      if (estoqueAvulso > 0) {
+        estoqueAvulsoHtml = `<div style="text-align:right;background:#f0f9ff;padding:6px 4px;margin-top:6px;border:1px solid #bfdbfe;border-radius:4px"><span style="font-weight:bold">Estoque Avulso (Cotacao Externa): R$ ${estoqueAvulso.toFixed(2)}</span></div>`;
       }
       let valorDesconto = 0, descontoHtml = '';
       if (orc.desconto?.tipo !== 'nenhum' && orc.desconto?.valor > 0) {
@@ -4202,7 +4285,7 @@ Qualquer dúvida estou à disposição!`;
         <span style="display:block;font-size:0.85em">Tel: ${formatarTelefone(orc.cliente.telefone)}</span>
         <hr style="margin:10px 0">
         ${orc.descricaoServico ? `<h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">DESCRIÇÃO DO SERVIÇO:</h4><p style="font-size:0.85em;margin-bottom:8px;white-space:pre-line">${orc.descricaoServico}</p>` : ''}
-        ${tiposHtml}${matHtml}${moHtml}${materialAvulsoHtml}${descontoHtml}
+        ${tiposHtml}${matHtml}${moHtml}${estoqueAvulsoHtml}${descontoHtml}
         <div style="text-align:right;font-size:1.1em;font-weight:bold;margin-top:8px;padding:8px 4px;border-top:2px solid ${corT};color:${corT};background:#f0f4ff">TOTAL: R$ ${orc.total.toFixed(2)}</div>
         <div style="margin-top:8px">${pagHtml}
           ${orc.cotacao ? `<div style="font-size:0.8em;margin-top:8px;padding:8px;background:#f3e8ff;border:1px solid #ddd6fe;border-radius:4px;text-align:center"><strong>Cotação Anexada:</strong> <button onclick="abrirAnexoCotacao()" style="color:#6b21a8;text-decoration:underline;background:none;border:none;cursor:pointer;font-weight:bold">${orc.cotacao.nome} (Clique para abrir)</button></div>` : ''}
@@ -4266,9 +4349,9 @@ Qualquer dúvida estou à disposição!`;
           novidades_ativo: document.getElementById('config-novidades-ativo')?.checked || false,
           novidades_texto: gv('config-novidades-texto'),
           novidades_tempo: parseInt(gv('config-novidades-tempo')) || 5,
-          ocultar_material_avulso: document.getElementById('config-ocultar-material-avulso')?.checked || false,
+          ocultar_estoque_avulso: document.getElementById('config-ocultar-estoque-avulso')?.checked || false,
           ocultar_mao_de_obra: document.getElementById('config-ocultar-mao-de-obra')?.checked || false,
-          ocultar_materiais: document.getElementById('config-ocultar-materiais')?.checked || false,
+          ocultar_estoque: document.getElementById('config-ocultar-estoque')?.checked || false,
         };
         delete data.endereco;
         await setDoc(doc(db, `users/${userId}/config/main`), data);
@@ -4337,21 +4420,21 @@ Qualquer dúvida estou à disposição!`;
       sv('config-novidades-texto', n.novidades_texto||'');
       sv('config-novidades-tempo', n.novidades_tempo || 5);
       
-      const ocultarMatEl = el('config-ocultar-material-avulso');
-      if (ocultarMatEl) ocultarMatEl.checked = c.ocultar_material_avulso || false;
+      const ocultarMatEl = el('config-ocultar-estoque-avulso');
+      if (ocultarMatEl) ocultarMatEl.checked = c.ocultar_estoque_avulso || false;
       const ocultarMoEl = el('config-ocultar-mao-de-obra');
       if (ocultarMoEl) ocultarMoEl.checked = c.ocultar_mao_de_obra || false;
-      const ocultarMateriaisEl = el('config-ocultar-materiais');
-      if (ocultarMateriaisEl) ocultarMateriaisEl.checked = c.ocultar_materiais || false;
+      const ocultarEstoqueEl = el('config-ocultar-estoque');
+      if (ocultarEstoqueEl) ocultarEstoqueEl.checked = c.ocultar_estoque || false;
       
-      const containerMat = el('container-material-avulso');
+      const containerMat = el('container-estoque-avulso');
       if (containerMat) {
-        if (c.ocultar_material_avulso) containerMat.classList.add('hidden');
+        if (c.ocultar_estoque_avulso) containerMat.classList.add('hidden');
         else containerMat.classList.remove('hidden');
       }
 
       if (typeof aplicarVisibilidadeModoCobranca === 'function') aplicarVisibilidadeModoCobranca();
-      if (typeof aplicarVisibilidadeMateriais === 'function') aplicarVisibilidadeMateriais();
+      if (typeof aplicarVisibilidadeEstoque === 'function') aplicarVisibilidadeEstoque();
 
       renderNovidades();
     }
@@ -4747,16 +4830,17 @@ Qualquer dúvida estou à disposição!`;
       XLSX.writeFile(wb, "meus_servicos_quotex.xlsx");
     };
 
-    window.baixarListaMateriais = () => {
-      if (!appState.materiais || appState.materiais.length === 0) {
-        const modelo = [{ Descrição: 'EXEMPLO MATERIAL', Unidade: 'UNID', Valor: 50.00, Estoque: 'NÃO', Quantidade: 0 }];
+    window.baixarListaEstoque = () => {
+      if (!appState.estoque || appState.estoque.length === 0) {
+        const modelo = [{ Categoria: 'GERAL', Descrição: 'EXEMPLO ITEM', Unidade: 'UNID', Valor: 50.00, Estoque: 'NÃO', Quantidade: 0 }];
         const ws = XLSX.utils.json_to_sheet(modelo);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Materiais");
-        XLSX.writeFile(wb, "modelo_materiais_quotex.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Estoque");
+        XLSX.writeFile(wb, "modelo_estoque_quotex.xlsx");
         return;
       }
-      const data = appState.materiais.map(m => ({
+      const data = appState.estoque.map(m => ({
+        Categoria: m.categoria || 'OUTROS',
         Descrição: m.nome,
         Unidade: m.unidade,
         Valor: m.valor,
@@ -4765,8 +4849,8 @@ Qualquer dúvida estou à disposição!`;
       }));
       const ws = XLSX.utils.json_to_sheet(data);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Materiais");
-      XLSX.writeFile(wb, "meus_materiais_quotex.xlsx");
+      XLSX.utils.book_append_sheet(wb, ws, "Estoque");
+      XLSX.writeFile(wb, "meus_estoque_quotex.xlsx");
     };
 
     // ===== Importar XLSX =====
@@ -4800,11 +4884,11 @@ Qualquer dúvida estou à disposição!`;
         await batch.commit();
       });
 
-      // Materiais
-      document.getElementById('btn-import-materiais-xlsx')?.addEventListener('click', async () => {
-        const file = document.getElementById('materiais-xlsx-input')?.files[0];
+      // Estoque
+      document.getElementById('btn-import-estoque-xlsx')?.addEventListener('click', async () => {
+        const file = document.getElementById('estoque-xlsx-input')?.files[0];
         if (!file || !userId) return;
-        const status = document.getElementById('materiais-xlsx-status');
+        const status = document.getElementById('estoque-xlsx-status');
         status.textContent = 'Importando...';
         try {
           const data = await file.arrayBuffer();
@@ -4812,21 +4896,25 @@ Qualquer dúvida estou à disposição!`;
           const rows = XLSX.utils.sheet_to_json(ws);
           let count = 0;
           for (const row of rows) {
+            const categoria = (row['Categoria']||row['categoria']||'OUTROS').toString().trim().toUpperCase();
             const nome = (row['Descrição']||row['Descricao']||row['Nome']||row['nome']||'').toString().trim();
             const unidade = (row['Unidade']||row['unidade']||'UNID').toString().trim();
             const valor = parseFloat(row['Valor']||row['valor']||0);
             const ehEst = (row['Estoque']||row['estoque']||'').toString().toUpperCase() === 'SIM';
             const qtdEst = parseFloat(row['Quantidade']||row['quantidade']||0);
-            if (nome && valor > 0) { await addDoc(collection(db, `users/${userId}/materiais`), { nome, unidade, valor, tipo: ehEst ? 'estoque' : 'padrao', qtdEstoque: ehEst ? qtdEst : 0 }); count++; }
+            if (nome && valor > 0) { 
+              await addDoc(collection(db, `users/${userId}/estoque`), { categoria, nome, unidade, valor, tipo: ehEst ? 'estoque' : 'padrao', qtdEstoque: ehEst ? qtdEst : 0 }); 
+              count++; 
+            }
           }
           status.textContent = `${count} item(ns) importado(s)!`;
-          document.getElementById('materiais-xlsx-input').value = '';
+          document.getElementById('estoque-xlsx-input').value = '';
         } catch(e) { status.textContent = 'Erro na importação.'; console.error(e); }
       });
-      document.getElementById('btn-clear-materiais')?.addEventListener('click', async () => {
-        if (!confirm('Limpar todos os materiais?') || !userId) return;
+      document.getElementById('btn-clear-estoque')?.addEventListener('click', async () => {
+        if (!confirm('Limpar todos os estoque?') || !userId) return;
         const { getDocs } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-        const snap = await getDocs(collection(db, `users/${userId}/materiais`));
+        const snap = await getDocs(collection(db, `users/${userId}/estoque`));
         const batch = writeBatch(db);
         snap.forEach(d => batch.delete(d.ref));
         await batch.commit();
@@ -4857,7 +4945,7 @@ Qualquer dúvida estou à disposição!`;
         } catch(e) { status.textContent = 'Erro na importação.'; console.error(e); }
       });
       document.getElementById('btn-download-servicos-xlsx')?.addEventListener('click', window.baixarListaServicos);
-      document.getElementById('btn-download-materiais-xlsx')?.addEventListener('click', window.baixarListaMateriais);
+      document.getElementById('btn-download-estoque-xlsx')?.addEventListener('click', window.baixarListaEstoque);
       document.getElementById('btn-clear-clientes')?.addEventListener('click', async () => {
         if (!confirm('Limpar todos os clientes?') || !userId) return;
         const { getDocs } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
@@ -4870,11 +4958,21 @@ Qualquer dúvida estou à disposição!`;
 
     // ===== Categoria Select =====
     function populateCategorySelect() {
-      const sel = document.getElementById('tiposervico-categoria-select');
-      if (!sel) return;
-      while (sel.options.length > 2) sel.remove(2);
-      const cats = [...new Set(appState.tiposDeServico.map(s => s.categoria).filter(Boolean))].sort();
-      cats.forEach(cat => { const o = document.createElement('option'); o.value = cat; o.textContent = cat; sel.appendChild(o); });
+      // Categorias de Serviços
+      const selS = document.getElementById('tiposervico-categoria-select');
+      if (selS) {
+        while (selS.options.length > 2) selS.remove(2);
+        const catsS = [...new Set(appState.tiposDeServico.map(s => s.categoria).filter(Boolean))].sort();
+        catsS.forEach(cat => { const o = document.createElement('option'); o.value = cat; o.textContent = cat; selS.appendChild(o); });
+      }
+
+      // Categorias de Estoque
+      const selE = document.getElementById('estoque-categoria-select');
+      if (selE) {
+        while (selE.options.length > 2) selE.remove(2);
+        const catsE = [...new Set((appState.estoque||[]).map(m => m.categoria).filter(Boolean))].sort();
+        catsE.forEach(cat => { const o = document.createElement('option'); o.value = cat; o.textContent = cat; selE.appendChild(o); });
+      }
     }
 
     // ===== Firebase Init =====
@@ -5121,9 +5219,10 @@ Qualquer dúvida estou à disposição!`;
         updateFinanceiroView();
         updateDashboardView();
       });
-      onSnapshot(query(collection(db, `${prefix}/materiais`)), (snap) => {
-        appState.materiais = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderMateriaisList();
+      onSnapshot(query(collection(db, `${prefix}/estoque`)), (snap) => {
+        appState.estoque = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderEstoqueList();
+        populateCategorySelect();
       });
       onSnapshot(query(collection(db, `${prefix}/tiposdeservico`)), (snap) => {
         appState.tiposDeServico = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(s => s.descricao && s.valor > 0);
@@ -5232,46 +5331,61 @@ Qualquer dúvida estou à disposição!`;
       finally { btn.disabled = false; btn.textContent = 'Salvar Alterações'; }
     });
 
-    document.getElementById('form-material')?.addEventListener('submit', async (e) => {
+    document.getElementById('form-estoque')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faça login.');
       const btn = e.target.querySelector('button[type="submit"]');
       btn.disabled = true;
       try {
-        const nome = document.getElementById('material-nome').value;
-        const valor = parseFloat(document.getElementById('material-valor').value);
-        const unidade = document.getElementById('material-unidade').value;
-        const isEstoque = document.getElementById('material-is-estoque').checked;
-        const qtdEstoque = isEstoque ? (parseFloat(document.getElementById('material-qtd-inicial').value)||0) : 0;
-        await addDoc(collection(db, `users/${userId}/materiais`), { nome, valor, unidade, tipo: isEstoque ? 'estoque' : 'padrao', qtdEstoque });
+        const catSel = document.getElementById('estoque-categoria-select').value;
+        const catNova = document.getElementById('estoque-categoria-nova').value.trim().toUpperCase();
+        const categoria = catSel === '__nova__' ? catNova : catSel;
+        const nome = document.getElementById('estoque-nome').value;
+        const valor = parseFloat(document.getElementById('estoque-valor').value);
+        const unidade = document.getElementById('estoque-unidade').value;
+        const isEstoque = document.getElementById('estoque-is-estoque').checked;
+        const qtdEstoque = isEstoque ? (parseFloat(document.getElementById('estoque-qtd-inicial').value)||0) : 0;
+        
+        if (!categoria) return alert('Selecione ou crie uma categoria.');
+        if (!nome || valor <= 0) return alert('Preencha os campos corretamente.');
+
+        await addDoc(collection(db, `users/${userId}/estoque`), { categoria, nome, valor, unidade, tipo: isEstoque ? 'estoque' : 'padrao', qtdEstoque });
         e.target.reset();
         document.getElementById('div-qtd-estoque').classList.add('hidden');
+        document.getElementById('estoque-nova-categoria-wrapper').classList.add('hidden');
       } catch(err) { console.error(err); alert('Erro ao salvar item.'); }
       finally { btn.disabled = false; btn.textContent = 'Salvar Item'; }
     });
 
-    // ===== Formulario: Cadastro Rapido de Material (Orcamento) =====
-    document.getElementById('form-material-cadastro')?.addEventListener('submit', async (e) => {
+    // ===== Formulario: Cadastro Rapido de Estoque (Orcamento) =====
+    document.getElementById('form-estoque-cadastro')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return alert('Faca login novamente.');
-      const nome = document.getElementById('cadastro-material-nome').value;
-      if (!nome?.trim()) return alert('Preencha a Descricao do Material.');
+      
+      const catSel = document.getElementById('cadastro-estoque-categoria-select').value;
+      const catNova = document.getElementById('cadastro-estoque-categoria-nova').value.trim().toUpperCase();
+      const categoria = catSel === '__nova__' ? catNova : catSel;
+      const nome = document.getElementById('cadastro-estoque-nome').value;
+      
+      if (!categoria) return alert('Selecione ou crie uma categoria.');
+      if (!nome?.trim()) return alert('Preencha a Descricao do Item.');
+      
       const btn = e.target.querySelector('button[type="submit"]');
       btn.disabled = true; btn.textContent = 'Salvando...';
       try {
-        const valor = parseFloat(document.getElementById('cadastro-material-valor').value);
-        const unidade = document.getElementById('cadastro-material-unidade').value;
-        const isEstoque = document.getElementById('cadastro-material-is-estoque').checked;
-        const qtdEstoque = isEstoque ? (parseFloat(document.getElementById('cadastro-material-qtd-inicial').value)||0) : 0;
-        await addDoc(collection(db, `users/${userId}/materiais`), { nome, valor, unidade, tipo: isEstoque ? 'estoque' : 'padrao', qtdEstoque });
+        const valor = parseFloat(document.getElementById('cadastro-estoque-valor').value);
+        const unidade = document.getElementById('cadastro-estoque-unidade').value;
+        const isEstoque = document.getElementById('cadastro-estoque-is-estoque').checked;
+        const qtdEstoque = isEstoque ? (parseFloat(document.getElementById('cadastro-estoque-qtd-inicial').value)||0) : 0;
+        await addDoc(collection(db, `users/${userId}/estoque`), { categoria, nome, valor, unidade, tipo: isEstoque ? 'estoque' : 'padrao', qtdEstoque });
         // Fechar o modal
-        closeMaterialCadastroModal();
-        // Atualizar a lista de materiais no modal de orcamento
+        closeEstoqueCadastroModal();
+        // Atualizar a lista de estoque no modal de orcamento
         setTimeout(() => {
-          populateMateriaisOrcamento();
+          populateEstoqueOrcamento();
         }, 500);
-      } catch(err) { console.error(err); alert('Erro ao salvar material.'); }
-      finally { btn.disabled = false; btn.textContent = 'Salvar Material'; }
+      } catch(err) { console.error(err); alert('Erro ao salvar item.'); }
+      finally { btn.disabled = false; btn.textContent = 'Salvar Item'; }
     });
 
     // ===== Formulario: Cadastro Rapido de Servico (Orcamento) =====
@@ -5311,20 +5425,20 @@ Qualquer dúvida estou à disposição!`;
       }
     });
 
-    document.getElementById('form-edit-material')?.addEventListener('submit', async (e) => {
+    document.getElementById('form-edit-estoque')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!userId) return;
-      const id = document.getElementById('edit-material-id').value;
+      const id = document.getElementById('edit-estoque-id').value;
       const btn = e.target.querySelector('button[type="submit"]');
       btn.disabled = true; btn.textContent = 'Salvando...';
       try {
-        await setDoc(doc(db, `users/${userId}/materiais/${id}`), {
-          nome: document.getElementById('edit-material-nome').value,
-          unidade: document.getElementById('edit-material-unidade').value,
-          valor: parseFloat(document.getElementById('edit-material-valor').value)||0,
+        await setDoc(doc(db, `users/${userId}/estoque/${id}`), {
+          nome: document.getElementById('edit-estoque-nome').value,
+          unidade: document.getElementById('edit-estoque-unidade').value,
+          valor: parseFloat(document.getElementById('edit-estoque-valor').value)||0,
         }, { merge: true });
         alert('Item atualizado!');
-        closeEditMaterialModal();
+        closeEditEstoqueModal();
       } catch(err) { console.error(err); alert('Erro ao atualizar.'); }
       finally { btn.disabled = false; btn.textContent = 'Salvar Alterações'; }
     });
@@ -5382,11 +5496,11 @@ Qualquer dúvida estou à disposição!`;
       });
     });
 
-    document.querySelectorAll('input[name="usar-material"]').forEach(rb => {
+    document.querySelectorAll('input[name="usar-estoque"]').forEach(rb => {
       rb.addEventListener('change', (e) => {
-        const modo = isMateriaisOcultos() ? 'nao' : e.target.value;
-        if (appState.currentOrcamento) appState.currentOrcamento.usarMaterial = modo;
-        toggleUsarMaterial(modo);
+        const modo = isEstoqueOcultos() ? 'nao' : e.target.value;
+        if (appState.currentOrcamento) appState.currentOrcamento.usarEstoque = modo;
+        toggleUsarEstoque(modo);
       });
     });
 
@@ -5469,12 +5583,12 @@ Qualquer dúvida estou à disposição!`;
       if (appState.currentOrcamento) { appState.currentOrcamento.descricaoServico = e.target.value; updateOrcamentoPreview(); }
     });
 
-    document.getElementById('orc-materiais-list')?.addEventListener('change', (e) => {
+    document.getElementById('orc-estoque-list')?.addEventListener('change', (e) => {
       if (!appState.currentOrcamento) return;
       const target = e.target;
       if (target.type === 'checkbox') {
         const id = target.dataset.id;
-        const mat = appState.materiais.find(m => m.id === id);
+        const mat = appState.estoque.find(m => m.id === id);
         if (!mat) return;
         const qtyInput = target.closest('div').querySelector('input[type="number"]');
         if (target.checked) {
@@ -5525,6 +5639,16 @@ Qualquer dúvida estou à disposição!`;
       if (wrapper) wrapper.classList.toggle('hidden', e.target.value !== '__nova__');
     });
 
+    document.getElementById('estoque-categoria-select')?.addEventListener('change', (e) => {
+      const wrapper = document.getElementById('estoque-nova-categoria-wrapper');
+      if (wrapper) wrapper.classList.toggle('hidden', e.target.value !== '__nova__');
+    });
+
+    document.getElementById('cadastro-estoque-categoria-select')?.addEventListener('change', (e) => {
+      const wrapper = document.getElementById('cadastro-estoque-nova-categoria-wrapper');
+      if (wrapper) wrapper.classList.toggle('hidden', e.target.value !== '__nova__');
+    });
+
     // ===== Financeiro – filtros =====
     document.getElementById('fat-ano')?.addEventListener('change', updateFinanceiroView);
     document.getElementById('fat-mes')?.addEventListener('change', updateFinanceiroView);
@@ -5569,8 +5693,8 @@ Qualquer dúvida estou à disposição!`;
     document.getElementById('btn-toggle-filtros-orcamento')?.addEventListener('click', toggleFiltrosOrcamento);
     updateFiltrosOrcamentoUI();
 
-    // ===== Busca de material =====
-    document.getElementById('input-busca-material')?.addEventListener('input', renderMateriaisList);
+    // ===== Busca de estoque =====
+    document.getElementById('input-busca-estoque')?.addEventListener('input', renderEstoqueList);
 
     // ===== Login / Logout =====
     const loginWithGoogle = async () => {
@@ -5627,7 +5751,7 @@ Qualquer dúvida estou à disposição!`;
     });
     logoClearBtn?.addEventListener('click', () => { applyLogoToPreview(''); if (logoFileInput) logoFileInput.value = ''; });
 
-    // ===== Material Avulso e Cotação =====
+    // ===== Estoque Avulso e Cotação =====
     window.handleCotacaoUpload = async (btn) => {
       const fileInput = document.getElementById('orc-cotacao-arquivo');
       const file = fileInput.files[0];
@@ -5706,11 +5830,11 @@ Qualquer dúvida estou à disposição!`;
       }
     };
 
-    // Atualizar material avulso no estado
+    // Atualizar estoque avulso no estado
     document.addEventListener('input', (e) => {
-      if (e.target.id === 'orc-material-avulso') {
+      if (e.target.id === 'orc-estoque-avulso') {
         if (appState.currentOrcamento) {
-          appState.currentOrcamento.materialAvulso = parseFloat(e.target.value) || 0;
+          appState.currentOrcamento.estoqueAvulso = parseFloat(e.target.value) || 0;
           updateOrcamentoPreview();
         }
       }
