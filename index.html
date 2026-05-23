@@ -4547,11 +4547,18 @@ Qualquer dúvida estou à disposição!`;
     function updateDashboardView() {
       const now = new Date();
       
-      // Inicializar selects se necessário
+      // Inicializar selects se necessário (apenas se ainda não tiverem valor definido ou se for a primeira carga)
       const selMes = document.getElementById('dash-filter-mes');
       const selAno = document.getElementById('dash-filter-ano');
-      if (selMes && selMes.dataset.init !== 'true') { selMes.value = now.getMonth(); selMes.dataset.init = 'true'; }
-      if (selAno && selAno.dataset.init !== 'true') { selAno.value = now.getFullYear(); selAno.dataset.init = 'true'; }
+      
+      if (selMes && !selMes.dataset.init) {
+        selMes.value = now.getMonth();
+        selMes.dataset.init = "true";
+      }
+      if (selAno && !selAno.dataset.init) {
+        selAno.value = now.getFullYear();
+        selAno.dataset.init = "true";
+      }
 
       const mesFiltro = selMes ? parseInt(selMes.value) : now.getMonth();
       const anoFiltro = selAno ? parseInt(selAno.value) : now.getFullYear();
@@ -5808,6 +5815,10 @@ Qualquer dúvida estou à disposição!`;
 
     // ===== Busca de estoque =====
     document.getElementById('input-busca-estoque')?.addEventListener('input', renderEstoqueList);
+
+    // listeners para os filtros da aba inicial
+    document.getElementById('dash-filter-mes')?.addEventListener('change', updateDashboardView);
+    document.getElementById('dash-filter-ano')?.addEventListener('change', updateDashboardView);
 
     // ===== Login / Logout =====
     const loginWithGoogle = async () => {
