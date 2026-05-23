@@ -511,8 +511,100 @@
 
     /* ===== HEADER ===== */
     .app-header {
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,.2);
+      background: rgba(255,255,255,.96);
+      border-bottom: 1px solid #e2e8f0;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 1px 2px rgba(15,23,42,.05);
+    }
+
+    .dashboard-shell { color: #0f172a; }
+    .dashboard-eyebrow { color: #64748b; font-weight: 500; }
+    .dashboard-card {
+      background: #ffffff;
+      border: 1px solid #dbe4ef;
+      border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(15,23,42,.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .dashboard-card::before {
+      content: '';
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 3px;
+      background: var(--accent, #06b6d4);
+    }
+    .dashboard-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--soft, #e0f2fe);
+      color: var(--accent, #06b6d4);
+    }
+    .dashboard-panel {
+      background: #ffffff;
+      border: 1px solid #dbe4ef;
+      border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(15,23,42,.08);
+    }
+    .dashboard-chart-box { height: 245px; }
+    .quick-action-card {
+      background: #ffffff;
+      border: 1px solid #dbe4ef;
+      border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(15,23,42,.06);
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+    .quick-action-card:hover {
+      transform: translateY(-2px);
+      border-color: #67e8f9;
+      box-shadow: 0 14px 24px rgba(15,23,42,.1);
+    }
+    .mobile-menu-panel {
+      position: absolute;
+      top: calc(100% + .5rem);
+      right: 1rem;
+      width: min(88vw, 320px);
+      background: #ffffff;
+      border: 1px solid #dbe4ef;
+      border-radius: 14px;
+      box-shadow: 0 20px 45px rgba(15,23,42,.22);
+      padding: .75rem;
+      z-index: 60;
+    }
+    .mobile-menu-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .8rem .85rem;
+      border-radius: 10px;
+      color: #334155;
+      font-size: .9rem;
+      font-weight: 650;
+      transition: background .2s, color .2s;
+    }
+    .mobile-menu-item:hover, .mobile-menu-item.active {
+      background: #ecfeff;
+      color: #0891b2;
+    }
+    .desktop-action-btn {
+      background: #06b6d4;
+      color: #ffffff;
+      border-radius: 10px;
+      padding: .7rem 1rem;
+      font-weight: 750;
+      font-size: .9rem;
+      box-shadow: 0 8px 18px rgba(6,182,212,.3);
+      transition: transform .2s, background .2s, box-shadow .2s;
+    }
+    .desktop-action-btn:hover {
+      background: #0891b2;
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(6,182,212,.35);
     }
 
     /* ===== BOTÕES ===== */
@@ -960,7 +1052,7 @@
   <div id="login-view" class="hidden min-h-screen flex flex-col justify-center items-center text-center p-6" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
     <div class="mb-8">
       <img src="https://i.postimg.cc/T3VYRRgx/Orcamento-Inteligente.png" alt="QUOTEX" class="h-20 w-auto mx-auto mb-4 drop-shadow-lg">
-      <h1 class="text-5xl font-extrabold text-white mb-2 tracking-tight">QUOTEX</h1>
+      <h1 class="text-5xl font-extrabold text-white mb-2">QUOTEX</h1>
       <p class="text-blue-300 text-lg font-medium">Orçamento Inteligente para Técnicos</p>
     </div>
     <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-sm w-full border border-white/20">
@@ -1010,33 +1102,57 @@
   <div id="app-view" class="hidden">
 
     <!-- Header -->
-    <header class="app-header text-white shadow-lg sticky top-0 z-40">
-      <div class="max-w-5xl mx-auto py-3 px-4 md:px-6 flex justify-between items-center">
+    <header class="app-header sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto py-3 px-4 md:px-6 flex justify-between items-center relative">
         <div class="flex items-center gap-3">
           <img src="https://i.postimg.cc/T3VYRRgx/Orcamento-Inteligente.png" alt="QUOTEX" class="h-10 w-auto">
           <div>
-            <h1 class="font-extrabold text-xl leading-tight tracking-tight">QUOTEX</h1>
-            <p class="text-blue-300 text-xs font-medium">Orçamento Inteligente</p>
+            <h1 class="font-extrabold text-xl leading-tight text-slate-950">QUOTEX</h1>
+            <p class="text-cyan-600 text-xs font-semibold">Orçamento Inteligente</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
           <!-- Botão Compartilhar App -->
-           <div id="plan-badge" class="mt-2 text-center">
+           <div id="plan-badge" class="hidden md:block text-center">
   <span id="user-plan-label"
-    class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-blue-600 text-white">
+    class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-cyan-50 text-cyan-700 border border-cyan-100">
     Plano: Carregando...
   </span>
 </div>
-          <button onclick="compartilharApp()" title="Compartilhar App" class="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          <button type="button" onclick="openOrcamentoModal()" class="desktop-action-btn hidden md:inline-flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
+            Novo Orçamento
           </button>
+          <button onclick="compartilharApp()" title="Compartilhar App" class="hidden md:flex w-10 h-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-cyan-50 hover:text-cyan-700 transition-colors">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          </button>
+          <button type="button" onclick="toggleMobileMenu()" class="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-700 hover:bg-cyan-50 hover:text-cyan-700 transition-colors" aria-label="Abrir menu">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+        <div id="mobile-menu-panel" class="mobile-menu-panel hidden md:hidden">
+          <button class="mobile-menu-item active" data-tab="orcamentos" onclick="navigateMobileMenu('orcamentos')">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l9-8 9 8M5 10v10h14V10"/></svg>
+            Início
+          </button>
+          <button class="mobile-menu-item" type="button" onclick="closeMobileMenu(); openOrcamentoModal()">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
+            Novo Orçamento
+          </button>
+          <button class="mobile-menu-item" data-tab="clientes" onclick="navigateMobileMenu('clientes')">Clientes</button>
+          <button class="mobile-menu-item" data-tab="materiais" onclick="navigateMobileMenu('materiais')">Materiais</button>
+          <button class="mobile-menu-item" data-tab="servicos" onclick="navigateMobileMenu('servicos')">Serviços</button>
+          <button class="mobile-menu-item" data-tab="financeiro" onclick="navigateMobileMenu('financeiro')">Financeiro</button>
+          <button class="mobile-menu-item" data-tab="configuracoes" onclick="navigateMobileMenu('configuracoes')">Configurações</button>
+          <button class="mobile-menu-item" type="button" onclick="closeMobileMenu(); showAllOrcamentosPage()">Ver Orçamentos</button>
+          <button class="mobile-menu-item" type="button" onclick="closeMobileMenu(); compartilharApp()">Compartilhar App</button>
         </div>
       </div>
     </header>
 
     <!-- Main View -->
     <div id="main-view">
-      <div class="max-w-5xl mx-auto p-4 md:p-6 w-full">
+      <div class="max-w-7xl mx-auto p-4 md:p-6 w-full">
 
         <!-- Desktop Tabs -->
         <div class="mb-6 border-b border-gray-200 hidden sm:block bg-white rounded-t-xl px-4 shadow-sm">
@@ -1080,41 +1196,10 @@
           </nav>
         </div>
 
-        <!-- Mobile Tabs -->
-        <div class="sm:hidden mb-5">
-          <p class="text-center text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Crie, gerencie e envie orçamentos</p>
-          <div class="grid grid-cols-3 gap-2">
-            <button class="mobile-tab active bg-slate-800 text-white p-2.5 rounded-xl shadow text-xs font-semibold flex flex-col items-center justify-center gap-1 h-16 transition-all" data-tab="orcamentos" onclick="changeTab(event, 'orcamentos')">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-              Início
-            </button>
-            <button class="mobile-tab bg-slate-800 text-white p-2.5 rounded-xl shadow text-xs font-semibold flex flex-col items-center justify-center gap-1 h-16 transition-all" data-tab="clientes" onclick="changeTab(event, 'clientes')">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-              Clientes
-            </button>
-            <button class="mobile-tab bg-slate-800 text-white p-2.5 rounded-xl shadow text-xs font-semibold flex flex-col items-center justify-center gap-1 h-16 transition-all" data-tab="materiais" onclick="changeTab(event, 'materiais')">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-              Materiais
-            </button>
-            <button class="mobile-tab bg-slate-800 text-white p-2.5 rounded-xl shadow text-xs font-semibold flex flex-col items-center justify-center gap-1 h-16 transition-all" data-tab="servicos" onclick="changeTab(event, 'servicos')">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.525.322 1.017.575 1.558.75.244.081.503.14.767.17.844.088 1.517.766 1.517 1.61z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-              Serviços
-            </button>
-            <button class="mobile-tab bg-slate-800 text-white p-2.5 rounded-xl shadow text-xs font-semibold flex flex-col items-center justify-center gap-1 h-16 transition-all" data-tab="configuracoes" onclick="changeTab(event, 'configuracoes')">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-              Config
-            </button>
-            <button class="mobile-tab bg-slate-800 text-white p-2.5 rounded-xl shadow text-xs font-semibold flex flex-col items-center justify-center gap-1 h-16 transition-all" data-tab="financeiro" onclick="changeTab(event, 'financeiro')">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              Finanças
-            </button>
-          </div>
-        </div>
-
         <main>
 
           <!-- ===== TAB: INÍCIO / ORÇAMENTOS ===== -->
-          <div id="orcamentos" class="tab-content active space-y-4">
+          <div id="orcamentos" class="tab-content active dashboard-shell space-y-6">
 
             <!-- Aviso de Trial -->
             <div id="trial-warning-container"></div>
@@ -1132,21 +1217,122 @@
               </div>
             </div>
 
-            <!-- Botões principais -->
-            <div class="grid grid-cols-2 gap-3">
-              <button onclick="showAllOrcamentosPage()" class="card p-4 flex flex-col items-center justify-center gap-2 hover:shadow-md transition-all hover:border-slate-300 group">
-                <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-slate-200 transition-colors">
-                  <svg class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                </div>
-                <span class="font-semibold text-gray-700 text-sm">Ver Orçamentos</span>
-              </button>
-              <button type="button" onclick="openOrcamentoModal()" class="card p-4 flex flex-col items-center justify-center gap-2 bg-blue-600 border-blue-600 hover:bg-blue-700 hover:border-blue-700 transition-all group">
-                <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center group-hover:bg-blue-400 transition-colors">
-                  <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                </div>
-                <span class="font-semibold text-white text-sm">Novo Orçamento</span>
-              </button>
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 id="dashboard-greeting" class="text-2xl md:text-3xl font-extrabold text-slate-950">Boa tarde!</h2>
+                <p id="dashboard-period" class="dashboard-eyebrow mt-1">Visão geral do negócio</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="showAllOrcamentosPage()" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm hover:border-cyan-200 hover:text-cyan-700 transition-colors">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h10M9 12h10M9 19h10M4 5h.01M4 12h.01M4 19h.01"/></svg>
+                  Ver Orçamentos
+                </button>
+                <button type="button" onclick="openOrcamentoModal()" class="desktop-action-btn inline-flex items-center justify-center gap-2">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
+                  Novo Orçamento
+                </button>
+              </div>
             </div>
+
+            <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-4">
+              <article class="dashboard-card p-6 xl:col-span-1" style="--accent:#10b981;--soft:#d1fae5;">
+                <div class="dashboard-icon mb-5">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m-4-2.5c.75.9 2.05 1.5 4 1.5 2.2 0 4-1.1 4-2.8 0-1.9-1.8-2.5-4-3.2-2.2-.7-4-1.3-4-3.2C8 6.1 9.8 5 12 5c1.55 0 2.75.45 3.55 1.2"/></svg>
+                </div>
+                <p id="dash-faturamento-aprovado" class="text-2xl font-extrabold text-slate-950">R$ 0,00</p>
+                <p class="text-sm text-slate-500 mt-1">Faturamento aprovado</p>
+              </article>
+              <article class="dashboard-card p-6" style="--accent:#3b82f6;--soft:#dbeafe;">
+                <div class="dashboard-icon mb-5">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M7 3h7l5 5v13H7z"/></svg>
+                </div>
+                <p id="dash-total-orcamentos" class="text-2xl font-extrabold text-slate-950">0</p>
+                <p class="text-sm text-slate-500 mt-1">Orçamentos totais</p>
+              </article>
+              <article class="dashboard-card p-6" style="--accent:#f97316;--soft:#ffedd5;">
+                <div class="dashboard-icon mb-5">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-5m6 3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <p id="dash-aprovados" class="text-2xl font-extrabold text-slate-950">0</p>
+                <p class="text-sm text-slate-500 mt-1">Aprovados</p>
+              </article>
+              <article class="dashboard-card p-6" style="--accent:#8b5cf6;--soft:#ede9fe;">
+                <div class="dashboard-icon mb-5">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H2v-2a4 4 0 014-4h3m4-8a4 4 0 11-8 0 4 4 0 018 0zm6 2a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <p id="dash-clientes" class="text-2xl font-extrabold text-slate-950">0</p>
+                <p class="text-sm text-slate-500 mt-1">Clientes ativos</p>
+              </article>
+              <article class="dashboard-card p-6" style="--accent:#06b6d4;--soft:#cffafe;">
+                <div class="dashboard-icon mb-5">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 5L5 19M7.5 8.5h.01M16.5 15.5h.01"/></svg>
+                </div>
+                <p id="dash-taxa-aprovacao" class="text-2xl font-extrabold text-cyan-600">0%</p>
+                <p class="text-sm text-slate-500 mt-1">Taxa de aprovação</p>
+              </article>
+              <article class="dashboard-card p-6" style="--accent:#8b5cf6;--soft:#f3e8ff;">
+                <div class="dashboard-icon mb-5">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19l6-6 4 4 6-8m0 0h-5m5 0v5"/></svg>
+                </div>
+                <p id="dash-ticket-medio" class="text-2xl font-extrabold text-violet-500">-</p>
+                <p class="text-sm text-slate-500 mt-1">Ticket médio</p>
+              </article>
+            </section>
+
+            <section class="grid grid-cols-1 xl:grid-cols-4 gap-4">
+              <div class="dashboard-panel xl:col-span-3">
+                <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                  <h3 class="font-extrabold text-slate-950 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19V9m7 10V5m7 14v-7"/></svg>
+                    Faturamento Mensal
+                  </h3>
+                  <span class="text-xs md:text-sm text-slate-500">Últimos 6 meses · aprovados</span>
+                </div>
+                <div class="dashboard-chart-box p-4">
+                  <canvas id="dashboard-revenue-chart"></canvas>
+                </div>
+              </div>
+              <div class="dashboard-panel">
+                <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                  <h3 class="font-extrabold text-slate-950 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Status
+                  </h3>
+                  <button type="button" onclick="showAllOrcamentosPage()" class="text-sm font-semibold text-cyan-600 hover:text-cyan-700">Ver detalhes -></button>
+                </div>
+                <div class="p-5">
+                  <div class="h-44">
+                    <canvas id="dashboard-status-chart"></canvas>
+                  </div>
+                  <div id="dashboard-status-legend" class="mt-4 grid grid-cols-2 gap-2 text-xs text-slate-600"></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button type="button" onclick="openOrcamentoModal()" class="quick-action-card p-5 text-left">
+                <div class="flex items-center gap-4">
+                  <span class="dashboard-icon" style="--accent:#06b6d4;--soft:#cffafe;">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
+                  </span>
+                  <span>
+                    <span class="block font-extrabold text-slate-950">Criar novo orçamento</span>
+                    <span class="block text-sm text-slate-500">Abrir o fluxo de orçamento agora</span>
+                  </span>
+                </div>
+              </button>
+              <button type="button" onclick="showAllOrcamentosPage()" class="quick-action-card p-5 text-left">
+                <div class="flex items-center gap-4">
+                  <span class="dashboard-icon" style="--accent:#10b981;--soft:#d1fae5;">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h10M9 12h10M9 19h10M4 5h.01M4 12h.01M4 19h.01"/></svg>
+                  </span>
+                  <span>
+                    <span class="block font-extrabold text-slate-950">Ver todos os orçamentos</span>
+                    <span class="block text-sm text-slate-500">Consultar, editar e filtrar propostas</span>
+                  </span>
+                </div>
+              </button>
+            </section>
 
             <!-- Últimos orçamentos -->
             <div>
@@ -2163,6 +2349,8 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
     };
 
     let financeChart = null;
+    let dashboardRevenueChart = null;
+    let dashboardStatusChart = null;
     let chartType = 'bar';
 
     // ===== FIX: Flag anti-duplicação de salvamento =====
@@ -2277,13 +2465,14 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
     }
 
     // ===== Navegação =====
-    window.changeTab = (e, tabId) => {
+    function activateTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.mobile-tab').forEach(el => {
         el.classList.remove('active');
         el.style.background = '';
       });
+      document.querySelectorAll('.mobile-menu-item[data-tab]').forEach(el => el.classList.remove('active'));
       const content = document.getElementById(tabId);
       if (content) content.classList.add('active');
       const allTabs = document.querySelectorAll(`[data-tab="${tabId}"]`);
@@ -2291,6 +2480,27 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
         t.classList.add('active');
         if (t.classList.contains('mobile-tab')) t.style.background = '#1e40af';
       });
+      if (tabId === 'orcamentos') updateDashboardView();
+      if (tabId === 'financeiro') updateFinanceiroView();
+    }
+
+    window.changeTab = (e, tabId) => {
+      activateTab(tabId);
+      closeMobileMenu();
+    };
+
+    window.navigateMobileMenu = (tabId) => {
+      showMainPage();
+      activateTab(tabId);
+      closeMobileMenu();
+    };
+
+    window.toggleMobileMenu = () => {
+      document.getElementById('mobile-menu-panel')?.classList.toggle('hidden');
+    };
+
+    window.closeMobileMenu = () => {
+      document.getElementById('mobile-menu-panel')?.classList.add('hidden');
     };
 
     window.showAllOrcamentosPage = () => {
@@ -3213,6 +3423,7 @@ Qualquer dúvida estou à disposição!`;
         batch.set(doc(db, `users/${userId}/orcamentos/${id}`), updateData, { merge: true });
         await batch.commit();
         updateFinanceiroView();
+        updateDashboardView();
       } catch(err) { console.error(err); alert('Erro ao atualizar status.'); }
     };
 
@@ -4020,6 +4231,110 @@ Qualquer dúvida estou à disposição!`;
       });
     }
 
+    function updateDashboardView() {
+      const now = new Date();
+      const hora = now.getHours();
+      const saudacao = hora < 12 ? 'Bom dia' : (hora < 18 ? 'Boa tarde' : 'Boa noite');
+      const nome = (appState.config?.nome || 'Profissional').split(' ')[0];
+      const mesesLongos = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+      const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+      const aprovadosSet = ['aprovado','concluido','faturado','andamento','aguardando_pag'];
+      const statusOf = (orc) => (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
+      const orcamentos = appState.orcamentos || [];
+      const aprovados = orcamentos.filter(orc => aprovadosSet.includes(statusOf(orc)));
+      const faturamentoAprovado = aprovados.reduce((acc, orc) => acc + Number(orc.total || 0), 0);
+      const taxa = orcamentos.length ? Math.round((aprovados.length / orcamentos.length) * 100) : 0;
+      const ticket = aprovados.length ? faturamentoAprovado / aprovados.length : 0;
+
+      setText('dashboard-greeting', `${saudacao}, ${nome}!`);
+      setText('dashboard-period', `${mesesLongos[now.getMonth()][0].toUpperCase()}${mesesLongos[now.getMonth()].slice(1)} ${now.getFullYear()} · Visão geral do negócio`);
+      setText('dash-faturamento-aprovado', formatBRL(faturamentoAprovado));
+      setText('dash-total-orcamentos', String(orcamentos.length));
+      setText('dash-aprovados', String(aprovados.length));
+      setText('dash-clientes', String((appState.clientes || []).length));
+      setText('dash-taxa-aprovacao', `${taxa}%`);
+      setText('dash-ticket-medio', aprovados.length ? formatBRL(ticket) : '-');
+
+      const lastMonths = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        lastMonths.push({ date: d, label: d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }), value: 0 });
+      }
+      aprovados.forEach(orc => {
+        const ref = orc.dataFaturamento?.toDate ? orc.dataFaturamento.toDate() : (orc.dataFaturamento ? new Date(orc.dataFaturamento) : (orc.createdAt ? new Date(orc.createdAt) : null));
+        if (!ref || Number.isNaN(ref.getTime())) return;
+        const slot = lastMonths.find(m => m.date.getFullYear() === ref.getFullYear() && m.date.getMonth() === ref.getMonth());
+        if (slot) slot.value += Number(orc.total || 0);
+      });
+
+      const revenueCanvas = document.getElementById('dashboard-revenue-chart');
+      if (revenueCanvas && typeof Chart !== 'undefined') {
+        if (dashboardRevenueChart) { try { dashboardRevenueChart.destroy(); } catch {} }
+        dashboardRevenueChart = new Chart(revenueCanvas.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: lastMonths.map(m => m.label),
+            datasets: [{
+              data: lastMonths.map(m => m.value),
+              borderColor: '#06b6d4',
+              backgroundColor: 'rgba(6,182,212,.12)',
+              fill: true,
+              tension: .35,
+              pointRadius: 4,
+              pointBackgroundColor: '#06b6d4',
+              borderWidth: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => formatBRL(ctx.raw) } } },
+            scales: {
+              y: { beginAtZero: true, grid: { color: '#e2e8f0' }, ticks: { color: '#94a3b8', callback: (v) => formatBRL(v) } },
+              x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+            }
+          }
+        });
+      }
+
+      const statusGroups = [
+        { key: 'aprovado', label: 'Aprovado', color: '#10b981', count: 0 },
+        { key: 'andamento', label: 'Andamento', color: '#06b6d4', count: 0 },
+        { key: 'pendente', label: 'Pendente', color: '#f59e0b', count: 0 },
+        { key: 'faturado', label: 'Faturado', color: '#3b82f6', count: 0 },
+        { key: 'outros', label: 'Outros', color: '#94a3b8', count: 0 },
+      ];
+      orcamentos.forEach(orc => {
+        const st = statusOf(orc);
+        if (st === 'aprovado' || st === 'concluido') statusGroups[0].count++;
+        else if (st === 'andamento' || st === 'aguardando_pag') statusGroups[1].count++;
+        else if (st === 'pendente') statusGroups[2].count++;
+        else if (st === 'faturado') statusGroups[3].count++;
+        else statusGroups[4].count++;
+      });
+      const statusCanvas = document.getElementById('dashboard-status-chart');
+      if (statusCanvas && typeof Chart !== 'undefined') {
+        if (dashboardStatusChart) { try { dashboardStatusChart.destroy(); } catch {} }
+        dashboardStatusChart = new Chart(statusCanvas.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: statusGroups.map(s => s.label),
+            datasets: [{ data: statusGroups.map(s => s.count), backgroundColor: statusGroups.map(s => s.color), borderColor: '#ffffff', borderWidth: 4 }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '68%',
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+      const legend = document.getElementById('dashboard-status-legend');
+      if (legend) {
+        legend.innerHTML = statusGroups.map(s => `<span class="flex items-center gap-2"><i class="w-2.5 h-2.5 rounded-full" style="background:${s.color}"></i>${s.label} <strong class="ml-auto text-slate-800">${s.count}</strong></span>`).join('');
+      }
+    }
+
     function updateFinanceiroView() {
       const anoSel = document.getElementById('fat-ano')?.value || 'todos';
       const mesSel = document.getElementById('fat-mes')?.value || 'all';
@@ -4518,6 +4833,7 @@ Qualquer dúvida estou à disposição!`;
       onSnapshot(doc(db, `${prefix}/config/main`), (snap) => {
         if (snap.exists()) appState.config = snap.data();
         updateConfigForm();
+        updateDashboardView();
       });
             onSnapshot(doc(db, 'app_config/novidades'), (snap) => {
         appState.novidades = snap.exists() ? snap.data() : {};
@@ -4533,6 +4849,7 @@ Qualquer dúvida estou à disposição!`;
         renderOrcamentosList();
         renderOrcamentosList(true);
         updateFinanceiroView();
+        updateDashboardView();
       });
       onSnapshot(query(collection(db, `${prefix}/materiais`)), (snap) => {
         appState.materiais = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -4553,6 +4870,7 @@ Qualquer dúvida estou à disposição!`;
         renderOrcamentosList();
         renderOrcamentosList(true);
         updateFinanceiroView();
+        updateDashboardView();
       });
     }
 
