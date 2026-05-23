@@ -1305,7 +1305,7 @@
                     <svg class="w-5 h-5 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19V9m7 10V5m7 14v-7"/></svg>
                     Faturamento Mensal
                   </h3>
-                  <select id="dashboard-month-filter" class="px-3 py-1.5 text-xs md:text-sm border border-slate-200 rounded-lg bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500" onchange="updateDashboardMonthFilter()">
+                  <select id="dashboard-month-filter" class="px-3 py-1.5 text-xs md:text-sm border border-slate-200 rounded-lg bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500">
                     <option value="all">Últimos 6 meses</option>
                     <option value="0">Janeiro</option>
                     <option value="1">Fevereiro</option>
@@ -4344,9 +4344,13 @@ Qualquer dúvida estou à disposição!`;
         } else {
           const selectedMonth = parseInt(monthFilter);
           const monthAprovados = aprovados.filter(orc => {
-            const ref = orc.dataFaturamento?.toDate ? orc.dataFaturamento.toDate() : (orc.dataFaturamento ? new Date(orc.dataFaturamento) : (orc.createdAt ? new Date(orc.createdAt) : null));
-            if (!ref || Number.isNaN(ref.getTime())) return false;
-            return ref.getMonth() === selectedMonth;
+            const st = statusOf(orc);
+            if (st === 'faturado') {
+              const dF = orc.dataFaturamento?.toDate ? orc.dataFaturamento.toDate() : (orc.dataFaturamento ? new Date(orc.dataFaturamento) : null);
+              if (dF && !Number.isNaN(dF.getTime())) return dF.getMonth() === selectedMonth;
+            }
+            const dC = orc.createdAt instanceof Date ? orc.createdAt : (orc.createdAt?.toDate ? orc.createdAt.toDate() : new Date(orc.createdAt));
+            return dC && !Number.isNaN(dC.getTime()) && dC.getMonth() === selectedMonth;
           });
           const totalValue = monthAprovados.reduce((acc, orc) => acc + Number(orc.total || 0), 0);
           dashboardRevenueChart = new Chart(revenueCanvas.getContext('2d'), {
@@ -4385,7 +4389,14 @@ Qualquer dúvida estou à disposição!`;
       const filteredOrcamentos = monthFilter === 'all' ? orcamentos : orcamentos.filter(orc => {
         const ref = orc.dataFaturamento?.toDate ? orc.dataFaturamento.toDate() : (orc.dataFaturamento ? new Date(orc.dataFaturamento) : (orc.createdAt ? new Date(orc.createdAt) : null));
         if (!ref || Number.isNaN(ref.getTime())) return false;
-        return ref.getMonth().toString() === monthFilter;
+        // Se for um orçamento faturado, usamos a data de faturamento, senão usamos a data de criação
+        const st = statusOf(orc);
+        if (st === 'faturado') {
+          const dF = orc.dataFaturamento?.toDate ? orc.dataFaturamento.toDate() : (orc.dataFaturamento ? new Date(orc.dataFaturamento) : null);
+          if (dF && !Number.isNaN(dF.getTime())) return dF.getMonth().toString() === monthFilter;
+        }
+        const dC = orc.createdAt instanceof Date ? orc.createdAt : (orc.createdAt?.toDate ? orc.createdAt.toDate() : new Date(orc.createdAt));
+        return dC.getMonth().toString() === monthFilter;
       });
       filteredOrcamentos.forEach(orc => {
         const st = statusOf(orc);
@@ -4420,8 +4431,8 @@ Qualquer dúvida estou à disposição!`;
 
     function updateDashboardMonthFilter() {
       // Forçar a reinicialização dos gráficos
-      if (dashboardRevenueChart) { dashboardRevenueChart.destroy(); dashboardRevenueChart = null; }
-      if (dashboardStatusChart) { dashboardStatusChart.destroy(); dashboardStatusChart = null; }
+      if (dashboardRevenueChart) { try { dashboardRevenueChart.destroy(); } catch(e) {} dashboardRevenueChart = null; }
+      if (dashboardStatusChart) { try { dashboardStatusChart.destroy(); } catch(e) {} dashboardStatusChart = null; }
       updateDashboardView();
     }
 
@@ -5348,6 +5359,7 @@ Qualquer dúvida estou à disposição!`;
     // ===== Financeiro – filtros =====
     document.getElementById('fat-ano')?.addEventListener('change', updateFinanceiroView);
     document.getElementById('fat-mes')?.addEventListener('change', updateFinanceiroView);
+    document.getElementById('dashboard-month-filter')?.addEventListener('change', updateDashboardMonthFilter);
     document.getElementById('chart-periodo')?.addEventListener('change', updateFinanceiroView);
     document.getElementById('btn-exportar-xlsx')?.addEventListener('click', exportarFinanceiro);
 
