@@ -1234,6 +1234,28 @@
               </div>
             </div>
 
+            <section class="flex flex-col xl:grid xl:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <article class="dashboard-card p-3 sm:p-6 order-1 xl:order-none" style="--accent:#10b981;--soft:#d1fae5;">
+                <div class="flex items-center gap-3 sm:block">
+                  <div class="dashboard-icon sm:mb-5 shrink-0">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m-4-2.5c.75.9 2.05 1.5 4 1.5 2.2 0 4-1.1 4-2.8 0-1.9-1.8-2.5-4-3.2-2.2-.7-4-1.3-4-3.2C8 6.1 9.8 5 12 5c1.55 0 2.75.45 3.55 1.2"/></svg>
+                  </div>
+                  <p id="dash-faturamento-aprovado" class="text-lg sm:text-2xl font-extrabold text-slate-950">R$ 0,00</p>
+                </div>
+                <p class="text-[11px] sm:text-sm text-slate-500 mt-2 sm:mt-1">Faturamento aprovado</p>
+              </article>
+
+              <article class="dashboard-card p-3 sm:p-6 order-2 xl:order-none" style="--accent:#8b5cf6;--soft:#f3e8ff;">
+                <div class="flex items-center gap-3 sm:block">
+                  <div class="dashboard-icon sm:mb-5 shrink-0">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19l6-6 4 4 6-8m0 0h-5m5 0v5"/></svg>
+                  </div>
+                  <p id="dash-ticket-medio" class="text-lg sm:text-2xl font-extrabold text-violet-500">-</p>
+                </div>
+                <p class="text-[11px] sm:text-sm text-slate-500 mt-2 sm:mt-1">Ticket médio</p>
+              </article>
+            </section>
+
             <section class="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
               <article class="dashboard-card p-3 sm:p-6" style="--accent:#3b82f6;--soft:#dbeafe;">
                 <div class="flex items-center gap-3 sm:block">
@@ -1273,28 +1295,6 @@
                   <p id="dash-taxa-aprovacao" class="text-lg sm:text-2xl font-extrabold text-cyan-600">0%</p>
                 </div>
                 <p class="text-[11px] sm:text-sm text-slate-500 mt-2 sm:mt-1">Taxa de aprovação</p>
-              </article>
-            </section>
-
-            <section class="grid grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4">
-              <article class="dashboard-card p-3 sm:p-6" style="--accent:#10b981;--soft:#d1fae5;">
-                <div class="flex items-center gap-3 sm:block">
-                  <div class="dashboard-icon sm:mb-5 shrink-0">
-                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m-4-2.5c.75.9 2.05 1.5 4 1.5 2.2 0 4-1.1 4-2.8 0-1.9-1.8-2.5-4-3.2-2.2-.7-4-1.3-4-3.2C8 6.1 9.8 5 12 5c1.55 0 2.75.45 3.55 1.2"/></svg>
-                  </div>
-                  <p id="dash-faturamento-aprovado" class="text-lg sm:text-2xl font-extrabold text-slate-950">R$ 0,00</p>
-                </div>
-                <p class="text-[11px] sm:text-sm text-slate-500 mt-2 sm:mt-1">Faturamento aprovado</p>
-              </article>
-
-              <article class="dashboard-card p-3 sm:p-6" style="--accent:#8b5cf6;--soft:#f3e8ff;">
-                <div class="flex items-center gap-3 sm:block">
-                  <div class="dashboard-icon sm:mb-5 shrink-0">
-                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19l6-6 4 4 6-8m0 0h-5m5 0v5"/></svg>
-                  </div>
-                  <p id="dash-ticket-medio" class="text-lg sm:text-2xl font-extrabold text-violet-500">-</p>
-                </div>
-                <p class="text-[11px] sm:text-sm text-slate-500 mt-2 sm:mt-1">Ticket médio</p>
               </article>
             </section>
 
@@ -4313,31 +4313,65 @@ Qualquer dúvida estou à disposição!`;
       const revenueCanvas = document.getElementById('dashboard-revenue-chart');
       if (revenueCanvas && typeof Chart !== 'undefined') {
         if (dashboardRevenueChart) { try { dashboardRevenueChart.destroy(); } catch {} }
-        dashboardRevenueChart = new Chart(revenueCanvas.getContext('2d'), {
-          type: 'line',
-          data: {
-            labels: lastMonths.map(m => m.label),
-            datasets: [{
-              data: lastMonths.map(m => m.value),
-              borderColor: '#06b6d4',
-              backgroundColor: 'rgba(6,182,212,.12)',
-              fill: true,
-              tension: .35,
-              pointRadius: 4,
-              pointBackgroundColor: '#06b6d4',
-              borderWidth: 3
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => formatBRL(ctx.raw) } } },
-            scales: {
-              y: { beginAtZero: true, grid: { color: '#e2e8f0' }, ticks: { color: '#94a3b8', callback: (v) => formatBRL(v) } },
-              x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+        const monthFilter = document.getElementById('dashboard-month-filter')?.value || 'all';
+        
+        if (monthFilter === 'all') {
+          dashboardRevenueChart = new Chart(revenueCanvas.getContext('2d'), {
+            type: 'line',
+            data: {
+              labels: lastMonths.map(m => m.label),
+              datasets: [{
+                data: lastMonths.map(m => m.value),
+                borderColor: '#06b6d4',
+                backgroundColor: 'rgba(6,182,212,.12)',
+                fill: true,
+                tension: .35,
+                pointRadius: 4,
+                pointBackgroundColor: '#06b6d4',
+                borderWidth: 3
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => formatBRL(ctx.raw) } } },
+              scales: {
+                y: { beginAtZero: true, grid: { color: '#e2e8f0' }, ticks: { color: '#94a3b8', callback: (v) => formatBRL(v) } },
+                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+              }
             }
-          }
-        });
+          });
+        } else {
+          const selectedMonth = parseInt(monthFilter);
+          const monthAprovados = aprovados.filter(orc => {
+            const ref = orc.dataFaturamento?.toDate ? orc.dataFaturamento.toDate() : (orc.dataFaturamento ? new Date(orc.dataFaturamento) : (orc.createdAt ? new Date(orc.createdAt) : null));
+            if (!ref || Number.isNaN(ref.getTime())) return false;
+            return ref.getMonth() === selectedMonth;
+          });
+          const totalValue = monthAprovados.reduce((acc, orc) => acc + Number(orc.total || 0), 0);
+          dashboardRevenueChart = new Chart(revenueCanvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+              labels: [mesesLongos[selectedMonth][0].toUpperCase() + mesesLongos[selectedMonth].slice(1)],
+              datasets: [{
+                data: [totalValue],
+                backgroundColor: '#06b6d4',
+                borderRadius: 4,
+                borderSkipped: false,
+                barThickness: 60
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => formatBRL(ctx.raw) } } },
+              scales: {
+                y: { beginAtZero: true, grid: { color: '#e2e8f0' }, ticks: { color: '#94a3b8', callback: (v) => formatBRL(v) } },
+                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+              }
+            }
+          });
+        }
       }
 
       const statusGroups = [
@@ -4349,9 +4383,9 @@ Qualquer dúvida estou à disposição!`;
       ];
       const monthFilter = document.getElementById('dashboard-month-filter')?.value || 'all';
       const filteredOrcamentos = monthFilter === 'all' ? orcamentos : orcamentos.filter(orc => {
-        if (!orc.createdAt) return false;
-        const d = new Date(orc.createdAt);
-        return d.getMonth().toString() === monthFilter;
+        const ref = orc.dataFaturamento?.toDate ? orc.dataFaturamento.toDate() : (orc.dataFaturamento ? new Date(orc.dataFaturamento) : (orc.createdAt ? new Date(orc.createdAt) : null));
+        if (!ref || Number.isNaN(ref.getTime())) return false;
+        return ref.getMonth().toString() === monthFilter;
       });
       filteredOrcamentos.forEach(orc => {
         const st = statusOf(orc);
@@ -4385,86 +4419,9 @@ Qualquer dúvida estou à disposição!`;
     }
 
     function updateDashboardMonthFilter() {
-      const monthFilter = document.getElementById('dashboard-month-filter')?.value || 'all';
-      const now = new Date();
-      const aprovadosSet = ['aprovado','concluido','faturado','andamento','aguardando_pag'];
-      const statusOf = (orc) => (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
-      const orcamentos = appState.orcamentos || [];
-      const aprovados = orcamentos.filter(orc => aprovadosSet.includes(statusOf(orc)));
-      
-      const revenueCanvas = document.getElementById('dashboard-revenue-chart');
-      if (revenueCanvas && typeof Chart !== 'undefined') {
-        if (dashboardRevenueChart) { try { dashboardRevenueChart.destroy(); } catch {} }
-        if (monthFilter === 'all') {
-          const lastMonths = [];
-          for (let i = 5; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            lastMonths.push({ date: d, label: d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }), value: 0 });
-          }
-          aprovados.forEach(orc => {
-            const ref = orc.dataFaturamento?.toDate ? orc.dataFaturamento.toDate() : (orc.dataFaturamento ? new Date(orc.dataFaturamento) : (orc.createdAt ? new Date(orc.createdAt) : null));
-            if (!ref || Number.isNaN(ref.getTime())) return;
-            const slot = lastMonths.find(m => m.date.getFullYear() === ref.getFullYear() && m.date.getMonth() === ref.getMonth());
-            if (slot) slot.value += Number(orc.total || 0);
-          });
-          dashboardRevenueChart = new Chart(revenueCanvas.getContext('2d'), {
-            type: 'line',
-            data: {
-              labels: lastMonths.map(m => m.label),
-              datasets: [{
-                data: lastMonths.map(m => m.value),
-                borderColor: '#06b6d4',
-                backgroundColor: 'rgba(6,182,212,.12)',
-                fill: true,
-                tension: .35,
-                pointRadius: 4,
-                pointBackgroundColor: '#06b6d4',
-                borderWidth: 3
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => formatBRL(ctx.raw) } } },
-              scales: {
-                y: { beginAtZero: true, grid: { color: '#e2e8f0' }, ticks: { color: '#94a3b8', callback: (v) => formatBRL(v) } },
-                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-              }
-            }
-          });
-        } else {
-          const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-          const selectedMonth = parseInt(monthFilter);
-          const monthAprovados = aprovados.filter(orc => {
-            const ref = orc.dataFaturamento?.toDate ? orc.dataFaturamento.toDate() : (orc.dataFaturamento ? new Date(orc.dataFaturamento) : (orc.createdAt ? new Date(orc.createdAt) : null));
-            if (!ref || Number.isNaN(ref.getTime())) return false;
-            return ref.getMonth() === selectedMonth;
-          });
-          const totalValue = monthAprovados.reduce((acc, orc) => acc + Number(orc.total || 0), 0);
-          dashboardRevenueChart = new Chart(revenueCanvas.getContext('2d'), {
-            type: 'bar',
-            data: {
-              labels: [meses[selectedMonth]],
-              datasets: [{
-                data: [totalValue],
-                backgroundColor: '#06b6d4',
-                borderRadius: 4,
-                borderSkipped: false
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => formatBRL(ctx.raw) } } },
-              scales: {
-                y: { beginAtZero: true, grid: { color: '#e2e8f0' }, ticks: { color: '#94a3b8', callback: (v) => formatBRL(v) } },
-                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-              }
-            }
-          });
-        }
-      }
-      
+      // Forçar a reinicialização dos gráficos
+      if (dashboardRevenueChart) { dashboardRevenueChart.destroy(); dashboardRevenueChart = null; }
+      if (dashboardStatusChart) { dashboardStatusChart.destroy(); dashboardStatusChart = null; }
       updateDashboardView();
     }
 
