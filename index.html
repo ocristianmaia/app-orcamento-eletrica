@@ -1589,25 +1589,117 @@
           </div>
 
           <!-- ===== TAB: FINANCEIRO ===== -->
-          <div id="financeiro" class="tab-content space-y-4">
-            <div class="card p-5 space-y-4">
-              <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-                <div>
-                  <h2 class="text-lg font-bold text-gray-900 mb-1">Financeiro / Faturamento</h2>
-                  <p class="text-sm text-gray-500">Acompanhe o valor bruto gerado e o valor faturado.</p>
+          <div id="financeiro" class="tab-content space-y-6">
+            <!-- Header da aba Financeiro -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 class="text-2xl font-extrabold text-slate-900">Financeiro</h2>
+                <p class="text-sm text-slate-500">Controle de recebimentos, despesas e fluxo de caixa</p>
+              </div>
+              <div class="flex gap-2">
+                <button type="button" class="btn-secondary flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"/></svg>
+                  Nova Despesa
+                </button>
+                <button type="button" class="btn-primary flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  Nova Conta a Receber
+                </button>
+              </div>
+            </div>
+
+            <!-- Barra de Busca e Filtros -->
+            <div class="flex items-center gap-4 mb-6">
+              <div class="relative flex-grow">
+                <input type="text" placeholder="Buscar..." class="input-field pl-10" id="financeiro-search">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </div>
+              <button type="button" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.525.322 1.017.575 1.558.75.244.081.503.14.767.17.844.088 1.517.766 1.517 1.61z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </button>
+            </div>
+
+            <!-- Navegação de abas Financeiras -->
+            <div class="mb-6 border-b border-gray-200">
+              <nav class="flex -mb-px space-x-4">
+                <button class="tab-financeiro active py-2 px-4 text-sm font-medium text-blue-600 border-b-2 border-blue-600" data-tab-financeiro="visao-geral">Visão Geral</button>
+                <button class="tab-financeiro py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab-financeiro="a-receber">A Receber</button>
+                <button class="tab-financeiro py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab-financeiro="despesas">Despesas</button>
+                <button class="tab-financeiro py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab-financeiro="caixa">Caixa</button>
+              </nav>
+            </div>
+
+            <!-- Conteúdo da Visão Geral -->
+            <div id="visao-geral" class="tab-financeiro-content active space-y-6">
+              <!-- Cards de Resumo Financeiro -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                <div class="card p-4 border-l-4 border-green-500">
+                  <p class="text-xs font-semibold text-gray-500 uppercase">Recebido no Mês</p>
+                  <p class="text-xl font-bold text-green-600 mt-1" id="financeiro-recebido-mes">R$ 0,00</p>
                 </div>
-                <div class="flex flex-col sm:flex-row gap-2">
-                  <div class="flex items-center gap-2">
-                    <label for="fat-ano" class="text-xs font-semibold text-gray-500 uppercase">Ano:</label>
-                    <select id="fat-ano" class="input-field py-1.5 text-sm">
+                <div class="card p-4 border-l-4 border-blue-500">
+                  <p class="text-xs font-semibold text-gray-500 uppercase">A Receber</p>
+                  <p class="text-xl font-bold text-blue-600 mt-1" id="financeiro-a-receber">R$ 0,00</p>
+                </div>
+                <div class="card p-4 border-l-4 border-red-500">
+                  <p class="text-xs font-semibold text-gray-500 uppercase">Vencidos</p>
+                  <p class="text-xl font-bold text-red-600 mt-1" id="financeiro-vencidos">R$ 0,00</p>
+                </div>
+                <div class="card p-4 border-l-4 border-yellow-500">
+                  <p class="text-xs font-semibold text-gray-500 uppercase">Ticket Médio</p>
+                  <p class="text-xl font-bold text-yellow-600 mt-1" id="financeiro-ticket-medio">R$ 0,00</p>
+                </div>
+                <div class="card p-4 border-l-4 border-purple-500">
+                  <p class="text-xs font-semibold text-gray-500 uppercase">A Pagar</p>
+                  <p class="text-xl font-bold text-purple-600 mt-1" id="financeiro-a-pagar">R$ 0,00</p>
+                </div>
+                <div class="card p-4 border-l-4 border-cyan-500">
+                  <p class="text-xs font-semibold text-gray-500 uppercase">Saldo Próx. 30 Dias</p>
+                  <p class="text-xl font-bold text-cyan-600 mt-1" id="financeiro-saldo-30-dias">R$ 0,00</p>
+                </div>
+              </div>
+
+              <!-- Saldo em Caixa -->
+              <div class="card p-4 flex items-center gap-4">
+                <div class="flex-shrink-0 bg-green-100 p-3 rounded-full">
+                  <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-gray-500 uppercase">Saldo em Caixa</p>
+                  <p class="text-2xl font-bold text-green-700 mt-1" id="financeiro-saldo-caixa">R$ 0,00</p>
+                  <p class="text-xs text-gray-400 mt-1">Zerado</p>
+                </div>
+              </div>
+
+              <!-- Gráficos e Detalhes -->
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card p-5">
+                  <h3 class="text-lg font-bold text-gray-900 mb-4">Receita Mensal (Últimos 6 meses)</h3>
+                  <div class="relative h-64">
+                    <canvas id="finance-chart"></canvas>
+                  </div>
+                </div>
+                <div class="card p-5">
+                  <h3 class="text-lg font-bold text-gray-900 mb-4">Por Forma de Pagamento</h3>
+                  <p class="text-sm text-gray-500">Sem dados</p>
+                </div>
+              </div>
+
+              <!-- Controles de Filtro e Exportação -->
+              <div class="card p-5 space-y-4">
+                <h3 class="text-lg font-bold text-gray-900">Filtros e Exportação</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label for="fat-ano" class="block text-sm font-medium text-gray-700">Ano:</label>
+                    <select id="fat-ano" class="input-field mt-1">
                       <option value="todos">Todos</option>
                       <option value="2023">2023</option><option value="2024">2024</option>
                       <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
                     </select>
                   </div>
-                  <div class="flex items-center gap-2">
-                    <label for="fat-mes" class="text-xs font-semibold text-gray-500 uppercase">Mês:</label>
-                    <select id="fat-mes" class="input-field py-1.5 text-sm">
+                  <div>
+                    <label for="fat-mes" class="block text-sm font-medium text-gray-700">Mês:</label>
+                    <select id="fat-mes" class="input-field mt-1">
                       <option value="all">Todos</option>
                       <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
                       <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
@@ -1615,64 +1707,34 @@
                       <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
                     </select>
                   </div>
-                </div>
-              </div>
-
-              <div class="grid gap-3 md:grid-cols-3">
-                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                  <p class="text-xs font-bold text-amber-700 uppercase tracking-wide">Valor Bruto</p>
-                  <p id="fat-bruto" class="mt-1 text-xl font-bold text-amber-800">R$ 0,00</p>
-                </div>
-                <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-                  <p class="text-xs font-bold text-green-700 uppercase tracking-wide">Valor Faturado</p>
-                  <p id="fat-liquido" class="mt-1 text-xl font-bold text-green-800">R$ 0,00</p>
-                </div>
-                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                  <p class="text-xs font-bold text-blue-700 uppercase tracking-wide">Aprovados</p>
-                  <p id="fat-contagem" class="mt-1 text-sm font-semibold text-blue-800">R$ 0,00</p>
-                </div>
-              </div>
-
-              <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-semibold text-gray-500 uppercase">Visualização:</span>
-                  <select id="chart-periodo" class="input-field py-1.5 text-sm" onchange="updateFinanceiroView()">
-                    <option value="mensal">Mensal (Detalhado)</option>
-                    <option value="anual">Anual (Mês a Mês)</option>
-                  </select>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-semibold text-gray-500 uppercase">Tipo:</span>
-                  <div class="flex bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <button type="button" class="px-3 py-1.5 text-sm hover:bg-gray-100 border-r border-gray-200" onclick="mudarTipoGrafico('bar')" title="Colunas">📊</button>
-                    <button type="button" class="px-3 py-1.5 text-sm hover:bg-gray-100" onclick="mudarTipoGrafico('pie')" title="Pizza">🍕</button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="bg-white p-4 rounded-xl border border-gray-200">
-                <div class="relative h-[280px] w-full">
-                  <canvas id="finance-chart"></canvas>
-                </div>
-              </div>
-
-              <div class="border-t pt-4">
-                <h3 class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Exportar Faturamento</h3>
-                <div class="grid gap-3 md:grid-cols-3 md:items-end">
                   <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Data Inicial</label>
-                    <input type="date" id="fat-data-inicio" class="input-field">
-                  </div>
-                  <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Data Final</label>
-                    <input type="date" id="fat-data-fim" class="input-field">
-                  </div>
-                  <div class="flex gap-2">
-                    <button id="btn-atualizar-financeiro" class="flex-1 py-2.5 border border-indigo-400 text-indigo-600 text-sm font-semibold rounded-lg hover:bg-indigo-50 transition-colors">Atualizar</button>
-                    <button id="btn-exportar-financeiro" class="flex-1 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Exportar</button>
+                    <label for="chart-periodo" class="block text-sm font-medium text-gray-700">Visualização:</label>
+                    <select id="chart-periodo" class="input-field mt-1" onchange="updateFinanceiroView()">
+                      <option value="mensal">Mensal (Detalhado)</option>
+                      <option value="anual">Anual (Mês a Mês)</option>
+                    </select>
                   </div>
                 </div>
+                <div class="flex gap-2">
+                  <button id="btn-atualizar-financeiro" class="btn-secondary flex-1">Atualizar Dados</button>
+                  <button id="btn-exportar-financeiro" class="btn-primary flex-1">Exportar Relatório</button>
+                </div>
               </div>
+            </div>
+
+            <!-- Conteúdo de A Receber (placeholder) -->
+            <div id="a-receber" class="tab-financeiro-content hidden">
+              <p class="text-gray-500 text-center py-10">Conteúdo de Contas a Receber</p>
+            </div>
+
+            <!-- Conteúdo de Despesas (placeholder) -->
+            <div id="despesas" class="tab-financeiro-content hidden">
+              <p class="text-gray-500 text-center py-10">Conteúdo de Despesas</p>
+            </div>
+
+            <!-- Conteúdo de Caixa (placeholder) -->
+            <div id="caixa" class="tab-financeiro-content hidden">
+              <p class="text-gray-500 text-center py-10">Conteúdo de Caixa</p>
             </div>
           </div>
 
@@ -2509,6 +2571,27 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
 
     // ===== Navegação =====
     function activateTab(tabId) {
+      document.querySelectorAll('.tab-financeiro-content').forEach(el => el.classList.remove('active', 'block'));
+      document.querySelectorAll('.tab-financeiro-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-financeiro').forEach(el => {
+        el.classList.remove('active', 'text-blue-600', 'border-blue-600');
+        el.classList.add('text-gray-500', 'hover:text-gray-700');
+      });
+
+      const financeiroTabContent = document.getElementById(tabId);
+      if (financeiroTabContent) {
+        financeiroTabContent.classList.remove('hidden');
+        financeiroTabContent.classList.add('active', 'block');
+      }
+
+      const financeiroTabButton = document.querySelector(`.tab-financeiro[data-tab-financeiro="${tabId}"]`);
+      if (financeiroTabButton) {
+        financeiroTabButton.classList.add('active', 'text-blue-600', 'border-blue-600');
+        financeiroTabButton.classList.remove('text-gray-500', 'hover:text-gray-700');
+      }
+
+      // Original tab activation logic
+
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.mobile-tab').forEach(el => {
@@ -2525,6 +2608,44 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
       });
       if (tabId === 'orcamentos') updateDashboardView();
       if (tabId === 'financeiro') updateFinanceiroView();
+
+      // Event listeners for new financeiro tabs
+      document.querySelectorAll(".tab-financeiro").forEach(button => {
+        button.onclick = () => {
+          const tabId = button.getAttribute("data-tab-financeiro");
+          activateFinanceiroTab(tabId);
+        };
+      });
+
+      function activateFinanceiroTab(tabId) {
+        document.querySelectorAll(".tab-financeiro-content").forEach(content => {
+          content.classList.add("hidden");
+          content.classList.remove("active");
+        });
+        document.querySelectorAll(".tab-financeiro").forEach(button => {
+          button.classList.remove("active", "text-blue-600", "border-b-2", "border-blue-600");
+          button.classList.add("text-gray-500", "hover:text-gray-700");
+        });
+
+        const targetContent = document.getElementById(tabId);
+        if (targetContent) {
+          targetContent.classList.remove("hidden");
+          targetContent.classList.add("active");
+        }
+        const targetButton = document.querySelector(`.tab-financeiro[data-tab-financeiro="${tabId}"]`);
+        if (targetButton) {
+          targetButton.classList.add("active", "text-blue-600", "border-b-2", "border-blue-600");
+          targetButton.classList.remove("text-gray-500", "hover:text-gray-700");
+        }
+
+        if (tabId === 'visao-geral') {
+          updateFinanceiroView();
+        }
+      }
+
+      // Initial activation for financeiro tabs
+      activateFinanceiroTab('visao-geral');
+
     }
 
     window.changeTab = (e, tabId) => {
@@ -4463,13 +4584,9 @@ Qualquer dúvida estou à disposição!`;
           }
         });
         labels = meses;
-        if (chartType === 'pie') {
-          datasets = [{ data: [bruto,aprovado,faturado], backgroundColor: ['#FACC15','#22C55E','#3B82F6'], borderWidth: 2, borderColor: '#fff' }];
-          labels = ['Bruto','Aprovado','Faturado'];
-        } else {
-          const bc = { barPercentage: 0.7, categoryPercentage: 0.8, borderRadius: 4 };
-          datasets = [{ label:'Bruto', data: bM, backgroundColor:'#FACC15', ...bc }, { label:'Aprovado', data: aM, backgroundColor:'#22C55E', ...bc }, { label:'Faturado', data: fM, backgroundColor:'#3B82F6', ...bc }];
-        }
+        const bc = { barPercentage: 0.7, categoryPercentage: 0.8, borderRadius: 4 };
+        datasets = [{ label:'Bruto', data: bM, backgroundColor:'#FACC15', ...bc }, { label:'Aprovado', data: aM, backgroundColor:'#22C55E', ...bc }, { label:'Faturado', data: fM, backgroundColor:'#3B82F6', ...bc }];
+        chartType = 'bar';
       } else {
         appState.orcamentos.forEach(orc => {
           const total = Number(orc.total||0);
@@ -4486,22 +4603,71 @@ Qualquer dúvida estou à disposição!`;
             if (dF && (anoSel==='todos'||dF.getFullYear().toString()===anoSel) && (mesSel==='all'||dF.getMonth().toString()===mesSel)) faturado += total;
           }
         });
-        if (chartType === 'pie') {
-          labels = ['Bruto','Aprovado','Faturado'];
-          datasets = [{ data: [bruto,aprovado,faturado], backgroundColor: ['#FACC15','#22C55E','#3B82F6'], borderWidth: 2, borderColor: '#fff' }];
-        } else {
-          const bc = { barPercentage: 0.6, maxBarThickness: 80, borderRadius: 4 };
-          labels = ['Total do Mês'];
-          datasets = [{ label:'Bruto', data:[bruto], backgroundColor:'#FACC15', ...bc }, { label:'Aprovado', data:[aprovado], backgroundColor:'#22C55E', ...bc }, { label:'Faturado', data:[faturado], backgroundColor:'#3B82F6', ...bc }];
-        }
+        const bc = { barPercentage: 0.6, maxBarThickness: 80, borderRadius: 4 };
+        labels = ['Total do Mês'];
+        datasets = [{ label:'Bruto', data:[bruto], backgroundColor:'#FACC15', ...bc }, { label:'Aprovado', data:[aprovado], backgroundColor:'#22C55E', ...bc }, { label:'Faturado', data:[faturado], backgroundColor:'#3B82F6', ...bc }];
+        chartType = 'bar';
       }
 
-      const elB = document.getElementById('fat-bruto');
-      const elL = document.getElementById('fat-liquido');
-      const elC = document.getElementById('fat-contagem');
-      if (elB) elB.textContent = format(bruto);
-      if (elL) elL.textContent = format(faturado);
-      if (elC) elC.textContent = `Aprovado: ${format(aprovado)}`;
+      // Atualiza os novos cards de resumo financeiro
+      let recebidoMes = 0, aReceber = 0, vencidos = 0, ticketMedio = 0, aPagar = 0, saldo30Dias = 0, saldoCaixa = 0;
+      const hoje = new Date();
+      const trintaDiasFrente = new Date();
+      trintaDiasFrente.setDate(hoje.getDate() + 30);
+
+      appState.orcamentos.forEach(orc => {
+        const total = Number(orc.total || 0);
+        const st = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
+        const dataCriacao = orc.createdAt ? new Date(orc.createdAt) : null;
+        const dataFaturamento = orc.dataFaturamento ? (orc.dataFaturamento.toDate ? orc.dataFaturamento.toDate() : new Date(orc.dataFaturamento)) : null;
+
+        // Recebido no Mês (usando faturamento como base)
+        if (dataFaturamento && dataFaturamento.getMonth() === hoje.getMonth() && dataFaturamento.getFullYear() === hoje.getFullYear()) {
+          recebidoMes += total;
+        }
+
+        // A Receber (considerando orçamentos aprovados/em andamento que não foram faturados)
+        if (['aprovado', 'concluido', 'andamento', 'aguardando_pag'].includes(st) && st !== 'faturado') {
+          aReceber += total;
+        }
+
+        // Vencidos (orçamentos aprovados/em andamento com data de criação anterior a hoje e não faturados)
+        if (['aprovado', 'concluido', 'andamento', 'aguardando_pag'].includes(st) && st !== 'faturado' && dataCriacao && dataCriacao < hoje) {
+          vencidos += total;
+        }
+
+        // Saldo Próx. 30 Dias (orçamentos aprovados/em andamento com data de criação nos próximos 30 dias e não faturados)
+        if (['aprovado', 'concluido', 'andamento', 'aguardando_pag'].includes(st) && st !== 'faturado' && dataCriacao && dataCriacao > hoje && dataCriacao <= trintaDiasFrente) {
+          saldo30Dias += total;
+        }
+      });
+
+      // Ticket Médio (calculado com base nos orçamentos faturados)
+      const orcamentosFaturados = appState.orcamentos.filter(orc => (orc.status || '').toLowerCase() === 'faturado');
+      if (orcamentosFaturados.length > 0) {
+        const totalFaturado = orcamentosFaturados.reduce((sum, orc) => sum + Number(orc.total || 0), 0);
+        ticketMedio = totalFaturado / orcamentosFaturados.length;
+      }
+
+      // A Pagar e Saldo em Caixa (placeholders, pois não temos dados de despesas no appState atual)
+      aPagar = 0; // Necessitaria de uma estrutura de despesas
+      saldoCaixa = recebidoMes - aPagar; // Simplificado, idealmente seria recebimentos - despesas
+
+      document.getElementById('financeiro-recebido-mes').textContent = format(recebidoMes);
+      document.getElementById('financeiro-a-receber').textContent = format(aReceber);
+      document.getElementById('financeiro-vencidos').textContent = format(vencidos);
+      document.getElementById('financeiro-ticket-medio').textContent = format(ticketMedio);
+      document.getElementById('financeiro-a-pagar').textContent = format(aPagar);
+      document.getElementById('financeiro-saldo-30-dias').textContent = format(saldo30Dias);
+      document.getElementById('financeiro-saldo-caixa').textContent = format(saldoCaixa);
+
+      // Remove os elementos antigos, se existirem
+      // const elB = document.getElementById('fat-bruto');
+      // const elL = document.getElementById('fat-liquido');
+      // const elC = document.getElementById('fat-contagem');
+      // if (elB) elB.textContent = format(bruto);
+      // if (elL) elL.textContent = format(faturado);
+      // if (elC) elC.textContent = `Aprovado: ${format(aprovado)}`;
 
       const canvas = document.getElementById('finance-chart');
       if (!canvas || typeof Chart === 'undefined') return;
@@ -4515,10 +4681,10 @@ Qualquer dúvida estou à disposição!`;
           plugins: {
             legend: { position: 'top', labels: { boxWidth: 12, padding: 12 } },
             tooltip: { backgroundColor: 'rgba(0,0,0,.8)', padding: 10, cornerRadius: 8,
-              callbacks: { label: (ctx) => { let l = chartType==='pie' ? ctx.label : ctx.dataset.label; l += ': '; let v = ctx.parsed.y; if (v===undefined) v = ctx.raw; l += format(v); return l; } }
+              callbacks: { label: (ctx) => { let l = ctx.dataset.label; l += ': '; let v = ctx.parsed.y; if (v===undefined) v = ctx.raw; l += format(v); return l; } }
             }
           },
-          scales: chartType === 'pie' ? { x:{display:false}, y:{display:false} } : {
+          scales: {
             y: { beginAtZero: true, ticks: { callback: (v) => format(v) } },
             x: { grid: { display: false } }
           }
@@ -4526,7 +4692,7 @@ Qualquer dúvida estou à disposição!`;
       });
     }
 
-    window.mudarTipoGrafico = (tipo) => { chartType = tipo; updateFinanceiroView(); };
+
 
     function exportarFinanceiro() {
       const ini = document.getElementById('fat-data-inicio')?.value || '';
