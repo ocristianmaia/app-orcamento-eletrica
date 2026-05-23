@@ -3226,7 +3226,7 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         
         if (orc.cotacao && (orc.cotacao.url || orc.cotacao.data)) {
           try {
-            const { PDFDocument } = PDFLib;
+            const { PDFDocument, degrees } = PDFLib;
             const mainPdfBytes = await finalPdfBlob.arrayBuffer();
             const mainPdfDoc = await PDFDocument.load(mainPdfBytes);
             
@@ -3237,7 +3237,15 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
               const attachmentBytes = await fetch(attachmentData).then(res => res.arrayBuffer());
               const attachmentPdfDoc = await PDFDocument.load(attachmentBytes);
               const copiedPages = await mainPdfDoc.copyPages(attachmentPdfDoc, attachmentPdfDoc.getPageIndices());
-              copiedPages.forEach((page) => mainPdfDoc.addPage(page));
+              
+              copiedPages.forEach((page) => {
+                const { width, height } = page.getSize();
+                // Se a largura for maior que a altura, rotaciona para ficar na vertical
+                if (width > height) {
+                  page.setRotation(degrees(-90));
+                }
+                mainPdfDoc.addPage(page);
+              });
               
               const mergedPdfBytes = await mainPdfDoc.save();
               finalPdfBlob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
@@ -3249,13 +3257,27 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
               else image = await mainPdfDoc.embedJpg(imgBytes);
               
               const page = mainPdfDoc.addPage([595.28, 841.89]); // A4 em pontos
-              const { width, height } = image.scaleToFit(555, 801);
-              page.drawImage(image, {
-                x: 20,
-                y: 841.89 - height - 20,
-                width,
-                height,
-              });
+              const { width: imgW, height: imgH } = image;
+              
+              // Se a imagem for horizontal (largura > altura), rotaciona
+              if (imgW > imgH) {
+                const { width, height } = image.scaleToFit(801, 555); // Inverte limites para escala
+                page.drawImage(image, {
+                  x: (595.28 - height) / 2, // Centraliza após rotação
+                  y: (841.89 + width) / 2,
+                  width,
+                  height,
+                  rotate: degrees(-90),
+                });
+              } else {
+                const { width, height } = image.scaleToFit(555, 801);
+                page.drawImage(image, {
+                  x: (595.28 - width) / 2,
+                  y: (841.89 - height) / 2,
+                  width,
+                  height,
+                });
+              }
               
               const mergedPdfBytes = await mainPdfDoc.save();
               finalPdfBlob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
