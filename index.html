@@ -1594,17 +1594,13 @@
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div>
                 <h2 class="text-2xl font-extrabold text-slate-900">Financeiro</h2>
-                <p class="text-sm text-slate-500">Controle de recebimentos, despesas e fluxo de caixa</p>
+                <p class="text-sm text-slate-500">Controle e fluxo de caixa</p>
               </div>
 
             </div>
 
-            <!-- Barra de Busca e Filtros -->
-            <div class="flex items-center gap-4 mb-4">
-              <div class="relative flex-grow">
-                <input type="text" placeholder="Buscar..." class="input-field pl-10" id="financeiro-search">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-              </div>
+            <!-- Botão de Filtros -->
+            <div class="flex justify-end mb-4">
               <button type="button" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors" onclick="toggleFinanceiroFilters()" title="Filtros">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.525.322 1.017.575 1.558.75.244.081.503.14.767.17.844.088 1.517.766 1.517 1.61z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               </button>
@@ -4601,32 +4597,41 @@ Qualquer dúvida estou à disposição!`;
         const dataCriacao = orc.createdAt ? new Date(orc.createdAt) : null;
         const dataFaturamento = orc.dataFaturamento ? (orc.dataFaturamento.toDate ? orc.dataFaturamento.toDate() : new Date(orc.dataFaturamento)) : null;
 
-        // Recebido no Mês (usando faturamento como base)
-        if (dataFaturamento && dataFaturamento.getMonth() === hoje.getMonth() && dataFaturamento.getFullYear() === hoje.getFullYear()) {
+        // Lógica de Filtro para os Cards
+        const matchAno = (anoSel === 'todos' || (dataCriacao && dataCriacao.getFullYear().toString() === anoSel));
+        const matchMes = (mesSel === 'all' || (dataCriacao && dataCriacao.getMonth().toString() === mesSel));
+        
+        const matchAnoFat = (anoSel === 'todos' || (dataFaturamento && dataFaturamento.getFullYear().toString() === anoSel));
+        const matchMesFat = (mesSel === 'all' || (dataFaturamento && dataFaturamento.getMonth().toString() === mesSel));
+
+        // Recebido no Período Selecionado
+        if (st === 'faturado' && matchAnoFat && matchMesFat) {
           recebidoMes += total;
         }
 
-        // A Receber (considerando orçamentos aprovados/em andamento que não foram faturados)
-        if (['aprovado', 'concluido', 'andamento', 'aguardando_pag'].includes(st) && st !== 'faturado') {
+        // A Receber (considerando orçamentos aprovados/em andamento que não foram faturados no período)
+        if (['aprovado', 'concluido', 'andamento', 'aguardando_pag'].includes(st) && st !== 'faturado' && matchAno && matchMes) {
           aReceber += total;
         }
 
-        // Vencidos (orçamentos aprovados/em andamento com data de criação anterior a hoje e não faturados)
-        if (['aprovado', 'concluido', 'andamento', 'aguardando_pag'].includes(st) && st !== 'faturado' && dataCriacao && dataCriacao < hoje) {
+        // Vencidos (orçamentos pendentes/aprovados do período selecionado que já passaram da data atual)
+        if (['aprovado', 'concluido', 'andamento', 'aguardando_pag', 'pendente'].includes(st) && st !== 'faturado' && matchAno && matchMes && dataCriacao && dataCriacao < hoje) {
           vencidos += total;
-        }
-
-        // Saldo Próx. 30 Dias (orçamentos aprovados/em andamento com data de criação nos próximos 30 dias e não faturados)
-        if (['aprovado', 'concluido', 'andamento', 'aguardando_pag'].includes(st) && st !== 'faturado' && dataCriacao && dataCriacao > hoje && dataCriacao <= trintaDiasFrente) {
-          saldo30Dias += total;
         }
       });
 
-      // Ticket Médio (calculado com base nos orçamentos faturados)
-      const orcamentosFaturados = appState.orcamentos.filter(orc => (orc.status || '').toLowerCase() === 'faturado');
-      if (orcamentosFaturados.length > 0) {
-        const totalFaturado = orcamentosFaturados.reduce((sum, orc) => sum + Number(orc.total || 0), 0);
-        ticketMedio = totalFaturado / orcamentosFaturados.length;
+      // Ticket Médio (calculado com base nos orçamentos faturados no período selecionado)
+      const orcamentosFaturadosPeriodo = appState.orcamentos.filter(orc => {
+        const st = (orc.status || '').toLowerCase();
+        const dF = orc.dataFaturamento ? (orc.dataFaturamento.toDate ? orc.dataFaturamento.toDate() : new Date(orc.dataFaturamento)) : (orc.createdAt ? new Date(orc.createdAt) : null);
+        const matchAnoFat = (anoSel === 'todos' || (dF && dF.getFullYear().toString() === anoSel));
+        const matchMesFat = (mesSel === 'all' || (dF && dF.getMonth().toString() === mesSel));
+        return st === 'faturado' && matchAnoFat && matchMesFat;
+      });
+
+      if (orcamentosFaturadosPeriodo.length > 0) {
+        const totalFaturadoPeriodo = orcamentosFaturadosPeriodo.reduce((sum, orc) => sum + Number(orc.total || 0), 0);
+        ticketMedio = totalFaturadoPeriodo / orcamentosFaturadosPeriodo.length;
       }
 
       // A Pagar e Saldo em Caixa (placeholders, pois não temos dados de despesas no appState atual)
