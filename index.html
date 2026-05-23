@@ -1600,14 +1600,49 @@
             </div>
 
             <!-- Barra de Busca e Filtros -->
-            <div class="flex items-center gap-4 mb-6">
+            <div class="flex items-center gap-4 mb-4">
               <div class="relative flex-grow">
                 <input type="text" placeholder="Buscar..." class="input-field pl-10" id="financeiro-search">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
               </div>
-              <button type="button" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100">
+              <button type="button" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors" onclick="toggleFinanceiroFilters()" title="Filtros">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.525.322 1.017.575 1.558.75.244.081.503.14.767.17.844.088 1.517.766 1.517 1.61z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               </button>
+            </div>
+
+            <!-- Painel de Filtros Retrátil -->
+            <div id="financeiro-filters-panel" class="hidden mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200 animate-fade-in">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label for="fat-ano" class="block text-xs font-bold text-slate-500 uppercase mb-1">Ano:</label>
+                  <select id="fat-ano" class="input-field py-1.5 text-sm" onchange="updateFinanceiroView()">
+                    <option value="todos">Todos os Anos</option>
+                    <option value="2023">2023</option><option value="2024">2024</option>
+                    <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="fat-mes" class="block text-xs font-bold text-slate-500 uppercase mb-1">Mês:</label>
+                  <select id="fat-mes" class="input-field py-1.5 text-sm" onchange="updateFinanceiroView()">
+                    <option value="all">Todos os Meses</option>
+                    <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+                    <option value="3">Abril</option><option value="4" selected>Maio</option><option value="5">Junho</option>
+                    <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+                    <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="chart-periodo" class="block text-xs font-bold text-slate-500 uppercase mb-1">Visualização:</label>
+                  <select id="chart-periodo" class="input-field py-1.5 text-sm" onchange="updateFinanceiroView()">
+                    <option value="mensal">Mensal (Detalhado)</option>
+                    <option value="anual">Anual (Mês a Mês)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="flex justify-end mt-4 gap-2">
+                <button onclick="exportarFinanceiro()" class="px-4 py-1.5 text-xs font-bold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">Exportar Relatório</button>
+                <button onclick="updateFinanceiroView()" class="px-4 py-1.5 text-xs font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Atualizar Dados</button>
+              </div>
             </div>
 
             <!-- Navegação de abas Financeiras -->
@@ -1668,41 +1703,7 @@
                 </div>
               </div>
 
-              <!-- Controles de Filtro e Exportação -->
-              <div class="card p-5 space-y-4">
-                <h3 class="text-lg font-bold text-gray-900">Filtros e Exportação</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label for="fat-ano" class="block text-sm font-medium text-gray-700">Ano:</label>
-                    <select id="fat-ano" class="input-field mt-1">
-                      <option value="todos">Todos</option>
-                      <option value="2023">2023</option><option value="2024">2024</option>
-                      <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="fat-mes" class="block text-sm font-medium text-gray-700">Mês:</label>
-                    <select id="fat-mes" class="input-field mt-1">
-                      <option value="all">Todos</option>
-                      <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
-                      <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
-                      <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
-                      <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="chart-periodo" class="block text-sm font-medium text-gray-700">Visualização:</label>
-                    <select id="chart-periodo" class="input-field mt-1" onchange="updateFinanceiroView()">
-                      <option value="mensal">Mensal (Detalhado)</option>
-                      <option value="anual">Anual (Mês a Mês)</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="flex gap-2">
-                  <button id="btn-atualizar-financeiro" class="btn-secondary flex-1">Atualizar Dados</button>
-                  <button id="btn-exportar-financeiro" class="btn-primary flex-1">Exportar Relatório</button>
-                </div>
-              </div>
+
             </div>
 
 
@@ -2629,6 +2630,13 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
 
     window.closeMobileMenu = () => {
       document.getElementById('mobile-menu-panel')?.classList.add('hidden');
+    };
+
+    window.toggleFinanceiroFilters = () => {
+      const panel = document.getElementById('financeiro-filters-panel');
+      if (panel) {
+        panel.classList.toggle('hidden');
+      }
     };
 
     window.showAllOrcamentosPage = () => {
