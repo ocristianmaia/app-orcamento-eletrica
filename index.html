@@ -1247,6 +1247,26 @@
               </div>
             </div>
 
+            <!-- Filtro de Período da Aba Inicial -->
+            <div class="bg-white p-3 rounded-xl shadow-sm mb-4 border border-slate-100 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <div class="w-1 h-6 bg-cyan-600 rounded-full"></div>
+                <h3 class="font-bold text-slate-800 text-sm">Resumo do Período</h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <select id="dash-filter-mes" onchange="updateDashboardView()" class="text-xs border-slate-200 rounded-lg focus:ring-cyan-500 focus:border-cyan-500 p-1.5 bg-slate-50">
+                  <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+                  <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+                  <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+                  <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+                </select>
+                <select id="dash-filter-ano" onchange="updateDashboardView()" class="text-xs border-slate-200 rounded-lg focus:ring-cyan-500 focus:border-cyan-500 p-1.5 bg-slate-50">
+                  <option value="2023">2023</option><option value="2024">2024</option>
+                  <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
+                </select>
+              </div>
+            </div>
+
             <section class="flex flex-col xl:grid xl:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
               <article class="dashboard-card p-3 sm:p-6 order-1 xl:order-none" style="--accent:#10b981;--soft:#d1fae5;">
                 <div class="flex items-center gap-3 sm:block">
@@ -4526,6 +4546,16 @@ Qualquer dúvida estou à disposição!`;
 
     function updateDashboardView() {
       const now = new Date();
+      
+      // Inicializar selects se necessário
+      const selMes = document.getElementById('dash-filter-mes');
+      const selAno = document.getElementById('dash-filter-ano');
+      if (selMes && selMes.dataset.init !== 'true') { selMes.value = now.getMonth(); selMes.dataset.init = 'true'; }
+      if (selAno && selAno.dataset.init !== 'true') { selAno.value = now.getFullYear(); selAno.dataset.init = 'true'; }
+
+      const mesFiltro = selMes ? parseInt(selMes.value) : now.getMonth();
+      const anoFiltro = selAno ? parseInt(selAno.value) : now.getFullYear();
+
       const hora = now.getHours();
       const saudacao = hora < 12 ? 'Bom dia' : (hora < 18 ? 'Boa tarde' : 'Boa noite');
       const nome = (appState.config?.nome || 'Profissional').split(' ')[0];
@@ -4533,20 +4563,29 @@ Qualquer dúvida estou à disposição!`;
       const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
       const aprovadosSet = ['aprovado','concluido','faturado','andamento','aguardando_pag'];
       const statusOf = (orc) => (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
-      const orcamentos = appState.orcamentos || [];
+      
+      const orcamentosRaw = appState.orcamentos || [];
+      
+      // Filtrar orçamentos pelo período selecionado
+      const orcamentos = orcamentosRaw.filter(orc => {
+        const ref = orc.createdAt ? (orc.createdAt.toDate ? orc.createdAt.toDate() : new Date(orc.createdAt)) : null;
+        if (!ref) return false;
+        return ref.getFullYear() === anoFiltro && ref.getMonth() === mesFiltro;
+      });
+
       const aprovados = orcamentos.filter(orc => aprovadosSet.includes(statusOf(orc)));
       const faturamentoAprovado = aprovados.reduce((acc, orc) => acc + Number(orc.total || 0), 0);
       const taxa = orcamentos.length ? Math.round((aprovados.length / orcamentos.length) * 100) : 0;
       const ticket = aprovados.length ? faturamentoAprovado / aprovados.length : 0;
 
       setText('dashboard-greeting', `${saudacao}, ${nome}!`);
-      setText('dashboard-period', `${mesesLongos[now.getMonth()][0].toUpperCase()}${mesesLongos[now.getMonth()].slice(1)} ${now.getFullYear()} · Visão geral do negócio`);
-      setText('dash-faturamento-aprovado', formatBRLCompact(faturamentoAprovado));
+      setText('dashboard-period', `${mesesLongos[mesFiltro][0].toUpperCase()}${mesesLongos[mesFiltro].slice(1)} ${anoFiltro} · Visão geral do período`);
+      setText('dash-faturamento-aprovado', formatBRL(faturamentoAprovado));
       setText('dash-total-orcamentos', String(orcamentos.length));
       setText('dash-aprovados', String(aprovados.length));
       setText('dash-clientes', String((appState.clientes || []).length));
       setText('dash-taxa-aprovacao', `${taxa}%`);
-      setText('dash-ticket-medio', aprovados.length ? formatBRLCompact(ticket) : '-');
+      setText('dash-ticket-medio', aprovados.length ? formatBRL(ticket) : '-');
 
       const lastMonths = [];
       for (let i = 5; i >= 0; i--) {
