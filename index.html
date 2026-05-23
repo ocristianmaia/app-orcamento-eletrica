@@ -1596,16 +1596,7 @@
                 <h2 class="text-2xl font-extrabold text-slate-900">Financeiro</h2>
                 <p class="text-sm text-slate-500">Controle de recebimentos, despesas e fluxo de caixa</p>
               </div>
-              <div class="flex gap-2">
-                <button type="button" class="btn-secondary flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"/></svg>
-                  Nova Despesa
-                </button>
-                <button type="button" class="btn-primary flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                  Nova Conta a Receber
-                </button>
-              </div>
+
             </div>
 
             <!-- Barra de Busca e Filtros -->
@@ -1623,8 +1614,6 @@
             <div class="mb-6 border-b border-gray-200">
               <nav class="flex -mb-px space-x-4">
                 <button class="tab-financeiro active py-2 px-4 text-sm font-medium text-blue-600 border-b-2 border-blue-600" data-tab-financeiro="visao-geral">Visão Geral</button>
-                <button class="tab-financeiro py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab-financeiro="a-receber">A Receber</button>
-                <button class="tab-financeiro py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab-financeiro="despesas">Despesas</button>
                 <button class="tab-financeiro py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab-financeiro="caixa">Caixa</button>
               </nav>
             </div>
@@ -1632,7 +1621,7 @@
             <!-- Conteúdo da Visão Geral -->
             <div id="visao-geral" class="tab-financeiro-content active space-y-6">
               <!-- Cards de Resumo Financeiro -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="card p-4 border-l-4 border-green-500">
                   <p class="text-xs font-semibold text-gray-500 uppercase">Recebido no Mês</p>
                   <p class="text-xl font-bold text-green-600 mt-1" id="financeiro-recebido-mes">R$ 0,00</p>
@@ -1649,14 +1638,6 @@
                   <p class="text-xs font-semibold text-gray-500 uppercase">Ticket Médio</p>
                   <p class="text-xl font-bold text-yellow-600 mt-1" id="financeiro-ticket-medio">R$ 0,00</p>
                 </div>
-                <div class="card p-4 border-l-4 border-purple-500">
-                  <p class="text-xs font-semibold text-gray-500 uppercase">A Pagar</p>
-                  <p class="text-xl font-bold text-purple-600 mt-1" id="financeiro-a-pagar">R$ 0,00</p>
-                </div>
-                <div class="card p-4 border-l-4 border-cyan-500">
-                  <p class="text-xs font-semibold text-gray-500 uppercase">Saldo Próx. 30 Dias</p>
-                  <p class="text-xl font-bold text-cyan-600 mt-1" id="financeiro-saldo-30-dias">R$ 0,00</p>
-                </div>
               </div>
 
               <!-- Saldo em Caixa -->
@@ -1672,16 +1653,18 @@
               </div>
 
               <!-- Gráficos e Detalhes -->
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div class="grid grid-cols-1 gap-6">
                 <div class="card p-5">
-                  <h3 class="text-lg font-bold text-gray-900 mb-4">Receita Mensal (Últimos 6 meses)</h3>
+                  <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-900">Receita Mensal (Últimos 6 meses)</h3>
+                    <div class="flex bg-white rounded-lg border border-gray-200 overflow-hidden">
+                      <button type="button" class="px-3 py-1.5 text-sm hover:bg-gray-100 border-r border-gray-200" onclick="mudarTipoGrafico('bar')" title="Colunas">📊</button>
+                      <button type="button" class="px-3 py-1.5 text-sm hover:bg-gray-100" onclick="mudarTipoGrafico('pie')" title="Pizza">🍕</button>
+                    </div>
+                  </div>
                   <div class="relative h-64">
                     <canvas id="finance-chart"></canvas>
                   </div>
-                </div>
-                <div class="card p-5">
-                  <h3 class="text-lg font-bold text-gray-900 mb-4">Por Forma de Pagamento</h3>
-                  <p class="text-sm text-gray-500">Sem dados</p>
                 </div>
               </div>
 
@@ -1722,19 +1705,15 @@
               </div>
             </div>
 
-            <!-- Conteúdo de A Receber (placeholder) -->
-            <div id="a-receber" class="tab-financeiro-content hidden">
-              <p class="text-gray-500 text-center py-10">Conteúdo de Contas a Receber</p>
-            </div>
 
-            <!-- Conteúdo de Despesas (placeholder) -->
-            <div id="despesas" class="tab-financeiro-content hidden">
-              <p class="text-gray-500 text-center py-10">Conteúdo de Despesas</p>
-            </div>
 
-            <!-- Conteúdo de Caixa (placeholder) -->
+            <!-- Conteúdo de Caixa -->
             <div id="caixa" class="tab-financeiro-content hidden">
-              <p class="text-gray-500 text-center py-10">Conteúdo de Caixa</p>
+              <div class="card p-6 text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Saldo em Caixa (Mês Atual)</h3>
+                <p class="text-4xl font-extrabold text-green-600" id="caixa-valor-detalhado">R$ 0,00</p>
+                <p class="text-sm text-gray-500 mt-4">Este valor representa o total recebido de orçamentos faturados no mês corrente.</p>
+              </div>
             </div>
           </div>
 
@@ -2571,27 +2550,7 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
 
     // ===== Navegação =====
     function activateTab(tabId) {
-      document.querySelectorAll('.tab-financeiro-content').forEach(el => el.classList.remove('active', 'block'));
-      document.querySelectorAll('.tab-financeiro-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.tab-financeiro').forEach(el => {
-        el.classList.remove('active', 'text-blue-600', 'border-blue-600');
-        el.classList.add('text-gray-500', 'hover:text-gray-700');
-      });
-
-      const financeiroTabContent = document.getElementById(tabId);
-      if (financeiroTabContent) {
-        financeiroTabContent.classList.remove('hidden');
-        financeiroTabContent.classList.add('active', 'block');
-      }
-
-      const financeiroTabButton = document.querySelector(`.tab-financeiro[data-tab-financeiro="${tabId}"]`);
-      if (financeiroTabButton) {
-        financeiroTabButton.classList.add('active', 'text-blue-600', 'border-blue-600');
-        financeiroTabButton.classList.remove('text-gray-500', 'hover:text-gray-700');
-      }
-
-      // Original tab activation logic
-
+      // 1. Reset all main tabs
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.mobile-tab').forEach(el => {
@@ -2599,54 +2558,59 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
         el.style.background = '';
       });
       document.querySelectorAll('.mobile-menu-item[data-tab]').forEach(el => el.classList.remove('active'));
+
+      // 2. Activate the target main tab
       const content = document.getElementById(tabId);
       if (content) content.classList.add('active');
+      
       const allTabs = document.querySelectorAll(`[data-tab="${tabId}"]`);
       allTabs.forEach(t => {
         t.classList.add('active');
         if (t.classList.contains('mobile-tab')) t.style.background = '#1e40af';
       });
-      if (tabId === 'orcamentos') updateDashboardView();
-      if (tabId === 'financeiro') updateFinanceiroView();
 
-      // Event listeners for new financeiro tabs
+      // 3. Handle specific view updates
+      if (tabId === 'orcamentos') updateDashboardView();
+      if (tabId === 'financeiro') {
+        updateFinanceiroView();
+        activateFinanceiroTab('visao-geral');
+      }
+    }
+
+    function activateFinanceiroTab(subTabId) {
+      document.querySelectorAll(".tab-financeiro-content").forEach(content => {
+        content.classList.add("hidden");
+        content.classList.remove("active");
+      });
       document.querySelectorAll(".tab-financeiro").forEach(button => {
-        button.onclick = () => {
-          const tabId = button.getAttribute("data-tab-financeiro");
-          activateFinanceiroTab(tabId);
-        };
+        button.classList.remove("active", "text-blue-600", "border-b-2", "border-blue-600");
+        button.classList.add("text-gray-500", "hover:text-gray-700");
       });
 
-      function activateFinanceiroTab(tabId) {
-        document.querySelectorAll(".tab-financeiro-content").forEach(content => {
-          content.classList.add("hidden");
-          content.classList.remove("active");
-        });
-        document.querySelectorAll(".tab-financeiro").forEach(button => {
-          button.classList.remove("active", "text-blue-600", "border-b-2", "border-blue-600");
-          button.classList.add("text-gray-500", "hover:text-gray-700");
-        });
-
-        const targetContent = document.getElementById(tabId);
-        if (targetContent) {
-          targetContent.classList.remove("hidden");
-          targetContent.classList.add("active");
-        }
-        const targetButton = document.querySelector(`.tab-financeiro[data-tab-financeiro="${tabId}"]`);
-        if (targetButton) {
-          targetButton.classList.add("active", "text-blue-600", "border-b-2", "border-blue-600");
-          targetButton.classList.remove("text-gray-500", "hover:text-gray-700");
-        }
-
-        if (tabId === 'visao-geral') {
-          updateFinanceiroView();
-        }
+      const targetContent = document.getElementById(subTabId);
+      if (targetContent) {
+        targetContent.classList.remove("hidden");
+        targetContent.classList.add("active");
+      }
+      const targetButton = document.querySelector(`.tab-financeiro[data-tab-financeiro="${subTabId}"]`);
+      if (targetButton) {
+        targetButton.classList.add("active", "text-blue-600", "border-b-2", "border-blue-600");
+        targetButton.classList.remove("text-gray-500", "hover:text-gray-700");
       }
 
-      // Initial activation for financeiro tabs
-      activateFinanceiroTab('visao-geral');
-
+      if (subTabId === 'visao-geral') {
+        updateFinanceiroView();
+      }
     }
+
+    // Global event listeners for financeiro tabs
+    document.addEventListener('click', (e) => {
+      const financeiroTabBtn = e.target.closest('.tab-financeiro');
+      if (financeiroTabBtn) {
+        const subTabId = financeiroTabBtn.getAttribute("data-tab-financeiro");
+        activateFinanceiroTab(subTabId);
+      }
+    });
 
     window.changeTab = (e, tabId) => {
       activateTab(tabId);
@@ -4584,9 +4548,13 @@ Qualquer dúvida estou à disposição!`;
           }
         });
         labels = meses;
-        const bc = { barPercentage: 0.7, categoryPercentage: 0.8, borderRadius: 4 };
-        datasets = [{ label:'Bruto', data: bM, backgroundColor:'#FACC15', ...bc }, { label:'Aprovado', data: aM, backgroundColor:'#22C55E', ...bc }, { label:'Faturado', data: fM, backgroundColor:'#3B82F6', ...bc }];
-        chartType = 'bar';
+        if (chartType === 'pie') {
+          labels = ['Bruto', 'Aprovado', 'Faturado'];
+          datasets = [{ data: [bruto, aprovado, faturado], backgroundColor: ['#FACC15', '#22C55E', '#3B82F6'], borderWidth: 2, borderColor: '#fff' }];
+        } else {
+          const bc = { barPercentage: 0.7, categoryPercentage: 0.8, borderRadius: 4 };
+          datasets = [{ label: 'Bruto', data: bM, backgroundColor: '#FACC15', ...bc }, { label: 'Aprovado', data: aM, backgroundColor: '#22C55E', ...bc }, { label: 'Faturado', data: fM, backgroundColor: '#3B82F6', ...bc }];
+        }
       } else {
         appState.orcamentos.forEach(orc => {
           const total = Number(orc.total||0);
@@ -4603,10 +4571,14 @@ Qualquer dúvida estou à disposição!`;
             if (dF && (anoSel==='todos'||dF.getFullYear().toString()===anoSel) && (mesSel==='all'||dF.getMonth().toString()===mesSel)) faturado += total;
           }
         });
-        const bc = { barPercentage: 0.6, maxBarThickness: 80, borderRadius: 4 };
-        labels = ['Total do Mês'];
-        datasets = [{ label:'Bruto', data:[bruto], backgroundColor:'#FACC15', ...bc }, { label:'Aprovado', data:[aprovado], backgroundColor:'#22C55E', ...bc }, { label:'Faturado', data:[faturado], backgroundColor:'#3B82F6', ...bc }];
-        chartType = 'bar';
+        if (chartType === 'pie') {
+          labels = ['Bruto', 'Aprovado', 'Faturado'];
+          datasets = [{ data: [bruto, aprovado, faturado], backgroundColor: ['#FACC15', '#22C55E', '#3B82F6'], borderWidth: 2, borderColor: '#fff' }];
+        } else {
+          const bc = { barPercentage: 0.6, maxBarThickness: 80, borderRadius: 4 };
+          labels = ['Total do Mês'];
+          datasets = [{ label: 'Bruto', data: [bruto], backgroundColor: '#FACC15', ...bc }, { label: 'Aprovado', data: [aprovado], backgroundColor: '#22C55E', ...bc }, { label: 'Faturado', data: [faturado], backgroundColor: '#3B82F6', ...bc }];
+        }
       }
 
       // Atualiza os novos cards de resumo financeiro
@@ -4657,9 +4629,11 @@ Qualquer dúvida estou à disposição!`;
       document.getElementById('financeiro-a-receber').textContent = format(aReceber);
       document.getElementById('financeiro-vencidos').textContent = format(vencidos);
       document.getElementById('financeiro-ticket-medio').textContent = format(ticketMedio);
-      document.getElementById('financeiro-a-pagar').textContent = format(aPagar);
-      document.getElementById('financeiro-saldo-30-dias').textContent = format(saldo30Dias);
-      document.getElementById('financeiro-saldo-caixa').textContent = format(saldoCaixa);
+      // document.getElementById('financeiro-a-pagar').textContent = format(aPagar); // Removido do HTML
+      // document.getElementById('financeiro-saldo-30-dias').textContent = format(saldo30Dias); // Removido do HTML
+      document.getElementById('financeiro-saldo-caixa').textContent = format(recebidoMes); // Valor do caixa atual do mês
+      const elCaixaDetalhado = document.getElementById('caixa-valor-detalhado');
+      if (elCaixaDetalhado) elCaixaDetalhado.textContent = format(recebidoMes);
 
       // Remove os elementos antigos, se existirem
       // const elB = document.getElementById('fat-bruto');
@@ -4681,16 +4655,28 @@ Qualquer dúvida estou à disposição!`;
           plugins: {
             legend: { position: 'top', labels: { boxWidth: 12, padding: 12 } },
             tooltip: { backgroundColor: 'rgba(0,0,0,.8)', padding: 10, cornerRadius: 8,
-              callbacks: { label: (ctx) => { let l = ctx.dataset.label; l += ': '; let v = ctx.parsed.y; if (v===undefined) v = ctx.raw; l += format(v); return l; } }
+              callbacks: { label: (ctx) => { 
+                let l = chartType === 'pie' ? ctx.label : ctx.dataset.label; 
+                l += ': '; 
+                let v = ctx.parsed.y; 
+                if (v === undefined) v = ctx.raw; 
+                l += format(v); 
+                return l; 
+              } }
             }
           },
-          scales: {
+          scales: chartType === 'pie' ? { x: { display: false }, y: { display: false } } : {
             y: { beginAtZero: true, ticks: { callback: (v) => format(v) } },
             x: { grid: { display: false } }
           }
         }
       });
     }
+
+    window.mudarTipoGrafico = (tipo) => { 
+      chartType = tipo; 
+      updateFinanceiroView(); 
+    };
 
 
 
