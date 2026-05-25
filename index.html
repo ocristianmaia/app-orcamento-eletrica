@@ -1275,7 +1275,7 @@
                   </div>
                   <p id="dash-faturamento-aprovado" class="text-lg sm:text-2xl font-extrabold text-slate-950">R$ 0,00</p>
                 </div>
-                <p class="text-[11px] sm:text-sm text-slate-500 mt-2 sm:mt-1">Faturamento aprovado</p>
+                <p class="text-[11px] sm:text-sm text-slate-500 mt-2 sm:mt-1">Saldo em caixa</p>
               </article>
 
               <article class="dashboard-card p-3 sm:p-6 order-2 xl:order-none" style="--accent:#8b5cf6;--soft:#f3e8ff;">
@@ -1711,7 +1711,7 @@
                 <div>
                   <p class="text-sm font-semibold text-gray-500 uppercase">Saldo em Caixa</p>
                   <p class="text-2xl font-bold text-green-700 mt-1" id="financeiro-saldo-caixa">R$ 0,00</p>
-                  <p class="text-xs text-gray-400 mt-1">Zerado</p>
+                  <p class="text-xs text-gray-400 mt-1">Saldo Atual</p>
                 </div>
               </div>
 
@@ -4587,7 +4587,9 @@ Qualquer dúvida estou à disposição!`;
 
       setText('dashboard-greeting', `${saudacao}, ${nome}!`);
       setText('dashboard-period', `${mesesLongos[mesFiltro][0].toUpperCase()}${mesesLongos[mesFiltro].slice(1)} ${anoFiltro} · Visão geral do período`);
-      setText('dash-faturamento-aprovado', formatBRL(faturamentoAprovado));
+      // Ajustado para mostrar o Saldo em Caixa (Faturados) conforme solicitado
+      const faturamentoFaturado = orcamentos.filter(orc => statusOf(orc) === 'faturado').reduce((acc, orc) => acc + Number(orc.total || 0), 0);
+      setText('dash-faturamento-aprovado', formatBRL(faturamentoFaturado));
       setText('dash-total-orcamentos', String(orcamentos.length));
       setText('dash-aprovados', String(aprovados.length));
       setText('dash-clientes', String((appState.clientes || []).length));
