@@ -4575,8 +4575,17 @@ Qualquer dúvida estou à disposição!`;
       
       // Filtrar orçamentos pelo período selecionado
       const orcamentos = orcamentosRaw.filter(orc => {
-        const ref = orc.createdAt ? (orc.createdAt.toDate ? orc.createdAt.toDate() : new Date(orc.createdAt)) : null;
-        if (!ref) return false;
+        const st = statusOf(orc);
+        let ref = null;
+        
+        // Se estiver faturado, a data de referência para o dashboard deve ser a data de faturamento
+        if (st === 'faturado') {
+          ref = orc.dataFaturamento ? (orc.dataFaturamento.toDate ? orc.dataFaturamento.toDate() : new Date(orc.dataFaturamento)) : (orc.createdAt ? (orc.createdAt.toDate ? orc.createdAt.toDate() : new Date(orc.createdAt)) : null);
+        } else {
+          ref = orc.createdAt ? (orc.createdAt.toDate ? orc.createdAt.toDate() : new Date(orc.createdAt)) : null;
+        }
+
+        if (!ref || Number.isNaN(ref.getTime())) return false;
         return ref.getFullYear() === anoFiltro && ref.getMonth() === mesFiltro;
       });
 
@@ -4588,8 +4597,9 @@ Qualquer dúvida estou à disposição!`;
       setText('dashboard-greeting', `${saudacao}, ${nome}!`);
       setText('dashboard-period', `${mesesLongos[mesFiltro][0].toUpperCase()}${mesesLongos[mesFiltro].slice(1)} ${anoFiltro} · Visão geral do período`);
       // Ajustado para mostrar o Saldo em Caixa (Faturados) conforme solicitado
-      const faturamentoFaturado = orcamentos.filter(orc => statusOf(orc) === 'faturado').reduce((acc, orc) => acc + Number(orc.total || 0), 0);
-      setText('dash-faturamento-aprovado', formatBRL(faturamentoFaturado));
+      // O Saldo em Caixa é a soma dos orçamentos faturados no período selecionado
+      const saldoCaixaCalculado = orcamentos.filter(orc => statusOf(orc) === 'faturado').reduce((acc, orc) => acc + Number(orc.total || 0), 0);
+      setText('dash-faturamento-aprovado', formatBRL(saldoCaixaCalculado));
       setText('dash-total-orcamentos', String(orcamentos.length));
       setText('dash-aprovados', String(aprovados.length));
       setText('dash-clientes', String((appState.clientes || []).length));
@@ -4756,7 +4766,7 @@ Qualquer dúvida estou à disposição!`;
             }
           }
           if (st === 'faturado') {
-            let dF = orc.dataFaturamento ? (orc.dataFaturamento.toDate ? orc.dataFaturamento.toDate() : new Date(orc.dataFaturamento)) : (orc.createdAt ? new Date(orc.createdAt) : null);
+            let dF = orc.dataFaturamento ? (orc.dataFaturamento.toDate ? orc.dataFaturamento.toDate() : new Date(orc.dataFaturamento)) : (orc.createdAt ? (orc.createdAt.toDate ? orc.createdAt.toDate() : new Date(orc.createdAt)) : null);
             if (dF && (anoSel === 'todos' || dF.getFullYear().toString() === anoSel)) { faturado += total; fM[dF.getMonth()] += total; }
           }
         });
@@ -4780,7 +4790,7 @@ Qualquer dúvida estou à disposição!`;
             }
           }
           if (st === 'faturado') {
-            let dF = orc.dataFaturamento ? (orc.dataFaturamento.toDate ? orc.dataFaturamento.toDate() : new Date(orc.dataFaturamento)) : (orc.createdAt ? new Date(orc.createdAt) : null);
+            let dF = orc.dataFaturamento ? (orc.dataFaturamento.toDate ? orc.dataFaturamento.toDate() : new Date(orc.dataFaturamento)) : (orc.createdAt ? (orc.createdAt.toDate ? orc.createdAt.toDate() : new Date(orc.createdAt)) : null);
             if (dF && (anoSel==='todos'||dF.getFullYear().toString()===anoSel) && (mesSel==='all'||dF.getMonth().toString()===mesSel)) faturado += total;
           }
         });
@@ -4803,28 +4813,31 @@ Qualquer dúvida estou à disposição!`;
       appState.orcamentos.forEach(orc => {
         const total = Number(orc.total || 0);
         const st = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
-        const dataCriacao = orc.createdAt ? new Date(orc.createdAt) : null;
+        const dataCriacao = orc.createdAt ? (orc.createdAt.toDate ? orc.createdAt.toDate() : new Date(orc.createdAt)) : null;
         const dataFaturamento = orc.dataFaturamento ? (orc.dataFaturamento.toDate ? orc.dataFaturamento.toDate() : new Date(orc.dataFaturamento)) : null;
 
         // Lógica de Filtro para os Cards
-        const matchAno = (anoSel === 'todos' || (dataCriacao && dataCriacao.getFullYear().toString() === anoSel));
-        const matchMes = (mesSel === 'all' || (dataCriacao && dataCriacao.getMonth().toString() === mesSel));
+        // Para faturados, usamos data de faturamento. Se não tiver, usamos a de criação como fallback.
+        const dFatRef = dataFaturamento || dataCriacao;
+        const matchAnoFat = (anoSel === 'todos' || (dFatRef && dFatRef.getFullYear().toString() === anoSel));
+        const matchMesFat = (mesSel === 'all' || (dFatRef && dFatRef.getMonth().toString() === mesSel));
         
-        const matchAnoFat = (anoSel === 'todos' || (dataFaturamento && dataFaturamento.getFullYear().toString() === anoSel));
-        const matchMesFat = (mesSel === 'all' || (dataFaturamento && dataFaturamento.getMonth().toString() === mesSel));
+        // Para outros status, usamos a data de criação
+        const matchAnoCri = (anoSel === 'todos' || (dataCriacao && dataCriacao.getFullYear().toString() === anoSel));
+        const matchMesCri = (mesSel === 'all' || (dataCriacao && dataCriacao.getMonth().toString() === mesSel));
 
-        // Recebido no Período Selecionado
+        // Recebido no Período Selecionado (Faturados)
         if (st === 'faturado' && matchAnoFat && matchMesFat) {
           recebidoMes += total;
         }
 
         // A Receber (considerando orçamentos aprovados/em andamento que não foram faturados no período)
-        if (['aprovado', 'concluido', 'andamento', 'aguardando_pag'].includes(st) && st !== 'faturado' && matchAno && matchMes) {
+        if (['aprovado', 'concluido', 'andamento', 'aguardando_pag'].includes(st) && st !== 'faturado' && matchAnoCri && matchMesCri) {
           aReceber += total;
         }
 
         // Vencidos (orçamentos pendentes/aprovados do período selecionado que já passaram da data atual)
-        if (['aprovado', 'concluido', 'andamento', 'aguardando_pag', 'pendente'].includes(st) && st !== 'faturado' && matchAno && matchMes && dataCriacao && dataCriacao < hoje) {
+        if (['aprovado', 'concluido', 'andamento', 'aguardando_pag', 'pendente'].includes(st) && st !== 'faturado' && matchAnoCri && matchMesCri && dataCriacao && dataCriacao < hoje) {
           vencidos += total;
         }
       });
