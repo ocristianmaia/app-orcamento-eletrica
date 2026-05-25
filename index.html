@@ -686,6 +686,34 @@
     /* ===== FADE ANIMATION ===== */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
     .animate-fadeIn { animation: fadeIn .2s ease-out; }
+    /* ===== FAB NOVO ORÇAMENTO ===== */
+    #fab-novo-orcamento {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #06b6d4;
+      color: #ffffff;
+      border: none;
+      border-radius: 50px;
+      padding: 0.85rem 1.4rem;
+      font-weight: 750;
+      font-size: 0.9rem;
+      box-shadow: 0 8px 24px rgba(6,182,212,.45);
+      cursor: pointer;
+      transition: transform .2s, background .2s, box-shadow .2s;
+    }
+    #fab-novo-orcamento:hover {
+      background: #0891b2;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(6,182,212,.5);
+    }
+    #fab-novo-orcamento:active {
+      transform: translateY(0);
+    }
 
     /* ===== SECTION DIVIDER ===== */
     .section-title {
@@ -2111,6 +2139,15 @@
                       </div>
                     </label>
                   </div>
+                  <div>
+                    <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border cursor-pointer">
+                      <input type="checkbox" id="config-ocultar-servico" class="h-4 w-4 text-blue-600 rounded">
+                      <div>
+                        <p class="text-sm font-medium text-gray-800">Ocultar Serviços</p>
+                        <p class="text-xs text-gray-500">Remove a opção "Por Serviço" da aba de Novo Orçamento</p>
+                      </div>
+                    </label>
+                  </div>
                 </div>
                 <div class="mt-5">
                   <button type="button" onclick="saveConfigData()" class="w-full btn-primary">Salvar Ajustes</button>
@@ -2424,6 +2461,12 @@
         </a>
       </div>
     </footer>
+
+  <!-- ===== FAB: NOVO ORÇAMENTO ===== -->
+  <button id="fab-novo-orcamento" type="button" onclick="openOrcamentoModal()" aria-label="Novo Orçamento">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+    Novo Orçamento
+  </button>
 
   </div><!-- /app-view -->
 
@@ -3999,17 +4042,43 @@ Qualquer dúvida estou à disposição!`;
       return appState.config?.ocultar_estoque === true;
     }
 
-    function aplicarVisibilidadeModoCobranca() {
+    function isServicoOculto() {
+      return appState.config?.ocultar_servico === true;
+    }
+
+    function aplicarVisibilidadeServico() {
+      const ocultar = isServicoOculto();
+      const servicoOption = document.getElementById('modo-cobranca-por-servico-option');
+      const modoWrapper = document.getElementById('orc-modo-cobranca');
+      const servicoRadio = document.querySelector('input[name="modo-cobranca"][value="por_servico"]');
+      const moRadio = document.querySelector('input[name="modo-cobranca"][value="mao_de_obra"]');
+      if (servicoOption) servicoOption.classList.toggle('hidden', ocultar);
+      if (modoWrapper) {
+        modoWrapper.classList.toggle('grid-cols-2', !ocultar && !isMaoDeObraOculta());
+        modoWrapper.classList.toggle('grid-cols-1', ocultar || isMaoDeObraOculta());
+      }
+      if (ocultar && appState.currentOrcamento) {
+        if (appState.currentOrcamento.modoCobranca === 'por_servico') {
+          appState.currentOrcamento.modoCobranca = 'mao_de_obra';
+          appState.currentOrcamento.tiposDeServico = [];
+          if (moRadio) moRadio.checked = true;
+          if (servicoRadio) servicoRadio.checked = false;
+        }
+      }
+    }
+
+        function aplicarVisibilidadeModoCobranca() {
       const ocultar = isMaoDeObraOculta();
+      const ocultarSrv = isServicoOculto();
       const modoWrapper = document.getElementById('orc-modo-cobranca');
       const moOption = document.getElementById('modo-cobranca-mao-de-obra-option');
       const moRadio = document.querySelector('input[name="modo-cobranca"][value="mao_de_obra"]');
       const servicoRadio = document.querySelector('input[name="modo-cobranca"][value="por_servico"]');
-      
       if (moOption) moOption.classList.toggle('hidden', ocultar);
       if (modoWrapper) {
-        modoWrapper.classList.toggle('grid-cols-2', !ocultar);
-        modoWrapper.classList.toggle('grid-cols-1', ocultar);
+        const ambosVisiveis = !ocultar && !ocultarSrv;
+        modoWrapper.classList.toggle('grid-cols-2', ambosVisiveis);
+        modoWrapper.classList.toggle('grid-cols-1', !ambosVisiveis);
       }
       if (ocultar) {
         if (moRadio) moRadio.checked = false;
@@ -4042,7 +4111,10 @@ Qualquer dúvida estou à disposição!`;
 
     const toggleModoDeCobranca = (modo) => {
       aplicarVisibilidadeModoCobranca();
-      const modoEfetivo = isMaoDeObraOculta() ? 'por_servico' : modo;
+      aplicarVisibilidadeServico();
+      let modoEfetivo = modo;
+      if (isMaoDeObraOculta()) modoEfetivo = 'por_servico';
+      if (isServicoOculto() && modoEfetivo === 'por_servico') modoEfetivo = 'mao_de_obra';
       const moW = document.getElementById('orc-cobranca-mo-wrapper');
       const svW = document.getElementById('orc-cobranca-servico-wrapper');
       const isEditing = document.getElementById('modal-title').textContent === 'Editar Orçamento';
@@ -4081,24 +4153,38 @@ Qualquer dúvida estou à disposição!`;
         populateTiposDeServicoOrcamento();
         
         // --- CORREÇÃO: Aplicar visibilidade dos campos baseada nas configurações ---
-        const aplicarVisibilidadeCampos = () => {
+                const aplicarVisibilidadeCampos = () => {
           const config = appState.config || {};
           const tipoObra = document.querySelector('input[name="tipo-obra"]:checked')?.value || 'residencial';
-          
+          const rowEmpreitada = document.getElementById('row-tipo-empreitada');
+          const rowDiaria = document.getElementById('row-tipo-diaria');
+          const rowPonto = document.getElementById('row-tipo-ponto');
+          const rowHora = document.getElementById('row-tipo-hora');
+          const rowMetro = document.getElementById('row-tipo-metro');
+          const spanPonto = document.getElementById('ponto-label-span');
+          const pontoInput = document.getElementById('ponto-qtd');
           if (tipoObra === 'residencial') {
-            document.getElementById('row-tipo-empreitada').style.display = (config.show_res_empreitada !== false) ? 'flex' : 'none';
-            document.getElementById('row-tipo-diaria').style.display = (config.show_res_diaria !== false) ? 'flex' : 'none';
-            document.getElementById('row-tipo-ponto').style.display = (config.show_res_ponto !== false) ? 'flex' : 'none';
-            document.getElementById('row-tipo-hora').style.display = (config.show_res_hora !== false) ? 'flex' : 'none';
-            document.getElementById('row-tipo-metro').style.display = (config.show_res_metro !== false) ? 'flex' : 'none';
-            document.getElementById('ponto-label-span').textContent = 'Por Ponto';
+            if (rowEmpreitada) rowEmpreitada.classList.toggle('hidden', config.show_res_empreitada === false);
+            if (rowDiaria) rowDiaria.classList.toggle('hidden', config.show_res_diaria === false);
+            if (rowPonto) rowPonto.classList.toggle('hidden', config.show_res_ponto === false);
+            if (rowHora) rowHora.classList.toggle('hidden', config.show_res_hora === false);
+            if (rowMetro) rowMetro.classList.toggle('hidden', config.show_res_metro === false);
+            if (spanPonto) spanPonto.textContent = 'Por Ponto';
+            if (pontoInput) pontoInput.placeholder = 'Qtd. Pontos';
           } else {
-            document.getElementById('row-tipo-empreitada').style.display = 'none';
-            document.getElementById('row-tipo-diaria').style.display = (config.show_ind_diaria !== false) ? 'flex' : 'none';
-            document.getElementById('row-tipo-ponto').style.display = (config.show_ind_ponto !== false) ? 'flex' : 'none';
-            document.getElementById('row-tipo-hora').style.display = (config.show_ind_hora !== false) ? 'flex' : 'none';
-            document.getElementById('row-tipo-metro').style.display = 'none';
-            document.getElementById('ponto-label-span').textContent = 'Por Equipamento';
+            if (rowEmpreitada) rowEmpreitada.classList.add('hidden');
+            if (rowDiaria) rowDiaria.classList.toggle('hidden', config.show_ind_diaria === false);
+            if (rowPonto) rowPonto.classList.toggle('hidden', config.show_ind_ponto === false);
+            if (rowHora) rowHora.classList.toggle('hidden', config.show_ind_hora === false);
+            if (rowMetro) rowMetro.classList.add('hidden');
+            if (spanPonto) spanPonto.textContent = 'Por Equipamento';
+            if (pontoInput) pontoInput.placeholder = 'Qtd. Equip.';
+          }
+          // Garantir que o tipo selecionado não esteja escondido
+          const currentChecked = document.querySelector('input[name="tipo-servico"]:checked');
+          if (currentChecked && currentChecked.closest('label')?.classList.contains('hidden')) {
+            const firstVisible = document.querySelector('#orc-mao-de-obra label:not(.hidden) input[name="tipo-servico"]');
+            if (firstVisible) firstVisible.checked = true;
           }
         };
 
@@ -4128,12 +4214,6 @@ Qualquer dúvida estou à disposição!`;
           const setR = (name, val) => { const r = document.querySelector(`input[name="${name}"][value="${val}"]`); if (r) r.checked = true; };
           setR('modo-cobranca', clone.modoCobranca);
           setR('usar-estoque', clone.usarEstoque);
-          if (clone.modoCobranca === 'mao_de_obra') {
-            setR('tipo-obra', clone.tipoObra);
-            // Disparar evento de mudança para atualizar labels (Ponto vs Equipamento)
-            const rbTipoObra = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
-            if (rbTipoObra) rbTipoObra.dispatchEvent(new Event('change'));
-          }
           const dTipo = document.getElementById('orc-desconto-tipo');
           const dVal = document.getElementById('orc-desconto-valor');
           if (clone.desconto?.tipo !== 'nenhum') {
@@ -4153,7 +4233,16 @@ Qualquer dúvida estou à disposição!`;
           toggleModoDeCobranca(clone.modoCobranca);
           toggleUsarEstoque(clone.usarEstoque);
           aplicarVisibilidadeEstoque();
-          aplicarVisibilidadeCampos(); // Aplica ao editar
+          aplicarVisibilidadeServico();
+          if (clone.modoCobranca === 'mao_de_obra') {
+            setR('tipo-obra', clone.tipoObra);
+            aplicarVisibilidadeCampos(); // Aplica ao editar (antes do dispatchEvent para evitar conflito)
+            // Disparar evento de mudança para atualizar labels (Ponto vs Equipamento)
+            const rbTipoObra = document.querySelector(`input[name="tipo-obra"][value="${clone.tipoObra}"]`);
+            if (rbTipoObra) rbTipoObra.dispatchEvent(new Event('change'));
+          } else {
+            aplicarVisibilidadeCampos(); // Aplica ao editar
+          }
 
           sel.dispatchEvent(new Event('change'));
           setTimeout(() => {
@@ -4204,9 +4293,10 @@ Qualquer dúvida estou à disposição!`;
           document.getElementById('orc-estoque-avulso').value = '0';
           document.getElementById('orc-cotacao-arquivo').value = '';
           document.getElementById('orc-cotacao-info').classList.add('hidden');
-          toggleModoDeCobranca(isMaoDeObraOculta() ? 'por_servico' : 'mao_de_obra');
+          toggleModoDeCobranca(isMaoDeObraOculta() ? 'por_servico' : (isServicoOculto() ? 'mao_de_obra' : 'mao_de_obra'));
           toggleUsarEstoque(isEstoqueOcultos() ? 'nao' : 'sim');
           aplicarVisibilidadeEstoque();
+          aplicarVisibilidadeServico();
           aplicarVisibilidadeCampos(); // Aplica ao criar novo
           document.getElementById('orc-cliente-select').value = '';
           document.getElementById('orc-cliente-select').dispatchEvent(new Event('change'));
@@ -4254,8 +4344,11 @@ Qualquer dúvida estou à disposição!`;
         return;
       }
       const tipo = tipoSel.value;
-      const tipoObra = appState.currentOrcamento.tipoObra || 'residencial';
-      const c = appState.config;
+      // Lê o tipoObra do appState (já atualizado pelo listener) com fallback para o radio selecionado
+      const tipoObra = appState.currentOrcamento.tipoObra
+        || document.querySelector('input[name="tipo-obra"]:checked')?.value
+        || 'residencial';
+      const c = appState.config || {};
       const rates = {
         empreitada: c.residencial_empreitada||0,
         diaria: (tipoObra==='industrial' ? c.industrial_diaria : c.residencial_diaria)||0,
@@ -4435,6 +4528,7 @@ Qualquer dúvida estou à disposição!`;
           ocultar_estoque_avulso: document.getElementById('config-ocultar-estoque-avulso')?.checked || false,
           ocultar_mao_de_obra: document.getElementById('config-ocultar-mao-de-obra')?.checked || false,
           ocultar_estoque: document.getElementById('config-ocultar-estoque')?.checked || false,
+          ocultar_servico: document.getElementById('config-ocultar-servico')?.checked || false,
         };
         delete data.endereco;
         await setDoc(doc(db, `users/${userId}/config/main`), data);
@@ -4520,6 +4614,8 @@ Qualquer dúvida estou à disposição!`;
       if (ocultarMoEl) ocultarMoEl.checked = c.ocultar_mao_de_obra || false;
       const ocultarEstoqueEl = el('config-ocultar-estoque');
       if (ocultarEstoqueEl) ocultarEstoqueEl.checked = c.ocultar_estoque || false;
+      const ocultarServicoEl = el('config-ocultar-servico');
+      if (ocultarServicoEl) ocultarServicoEl.checked = c.ocultar_servico || false;
       
       const containerMat = el('container-estoque-avulso');
       if (containerMat) {
@@ -4528,6 +4624,7 @@ Qualquer dúvida estou à disposição!`;
       }
 
       if (typeof aplicarVisibilidadeModoCobranca === 'function') aplicarVisibilidadeModoCobranca();
+      if (typeof aplicarVisibilidadeServico === 'function') aplicarVisibilidadeServico();
       if (typeof aplicarVisibilidadeEstoque === 'function') aplicarVisibilidadeEstoque();
 
       renderNovidades();
@@ -5625,7 +5722,9 @@ Qualquer dúvida estou à disposição!`;
 
     document.querySelectorAll('input[name="modo-cobranca"]').forEach(rb => {
       rb.addEventListener('change', (e) => {
-        const modo = isMaoDeObraOculta() ? 'por_servico' : e.target.value;
+        let modo = e.target.value;
+        if (isMaoDeObraOculta()) modo = 'por_servico';
+        if (isServicoOculto() && modo === 'por_servico') modo = 'mao_de_obra';
         if (appState.currentOrcamento) appState.currentOrcamento.modoCobranca = modo;
         toggleModoDeCobranca(modo);
       });
