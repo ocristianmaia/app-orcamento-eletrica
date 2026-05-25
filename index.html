@@ -714,6 +714,11 @@
     #fab-novo-orcamento:active {
       transform: translateY(0);
     }
+    @media (max-width: 767px) {
+      #fab-novo-orcamento {
+        bottom: 4.5rem;
+      }
+    }
 
     /* ===== SECTION DIVIDER ===== */
     .section-title {
@@ -2529,7 +2534,7 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
     function resetCurrentOrcamento() {
       appState.currentOrcamento = {
         id: null, cliente: null,
-        modoCobranca: appState.config?.ocultar_mao_de_obra ? 'por_servico' : 'mao_de_obra',
+        modoCobranca: (appState.config?.ocultar_mao_de_obra && !appState.config?.ocultar_servico) ? 'por_servico' : 'mao_de_obra',
         usarEstoque: appState.config?.ocultar_estoque ? 'nao' : 'sim',
         tiposDeServico: [], items: [],
         maoDeObra: { tipo: '', valor: 0, label: '', raw_value: '' },
@@ -4057,7 +4062,8 @@ Qualquer dúvida estou à disposição!`;
         modoWrapper.classList.toggle('grid-cols-2', !ocultar && !isMaoDeObraOculta());
         modoWrapper.classList.toggle('grid-cols-1', ocultar || isMaoDeObraOculta());
       }
-      if (ocultar && appState.currentOrcamento) {
+      // Só força volta para 'mao_de_obra' se serviço oculto E mão de obra está disponível
+      if (ocultar && !isMaoDeObraOculta() && appState.currentOrcamento) {
         if (appState.currentOrcamento.modoCobranca === 'por_servico') {
           appState.currentOrcamento.modoCobranca = 'mao_de_obra';
           appState.currentOrcamento.tiposDeServico = [];
@@ -4065,6 +4071,7 @@ Qualquer dúvida estou à disposição!`;
           if (servicoRadio) servicoRadio.checked = false;
         }
       }
+      // Se ambos ocultos, não altera o modo (estoque/materiais será a única opção)
     }
 
         function aplicarVisibilidadeModoCobranca() {
@@ -4080,7 +4087,8 @@ Qualquer dúvida estou à disposição!`;
         modoWrapper.classList.toggle('grid-cols-2', ambosVisiveis);
         modoWrapper.classList.toggle('grid-cols-1', !ambosVisiveis);
       }
-      if (ocultar) {
+      // Só força mudança para 'por_servico' se mão de obra está oculta E serviço está disponível
+      if (ocultar && !ocultarSrv) {
         if (moRadio) moRadio.checked = false;
         if (servicoRadio) servicoRadio.checked = true;
         if (appState.currentOrcamento) {
@@ -4088,6 +4096,7 @@ Qualquer dúvida estou à disposição!`;
           appState.currentOrcamento.maoDeObra = { tipo:'', valor:0, label:'', raw_value:'' };
         }
       }
+      // Se ambos estão ocultos, não força nenhum modo (estoque/materiais fica como única opção)
     }
 
     function aplicarVisibilidadeEstoque() {
@@ -4113,8 +4122,11 @@ Qualquer dúvida estou à disposição!`;
       aplicarVisibilidadeModoCobranca();
       aplicarVisibilidadeServico();
       let modoEfetivo = modo;
-      if (isMaoDeObraOculta()) modoEfetivo = 'por_servico';
-      if (isServicoOculto() && modoEfetivo === 'por_servico') modoEfetivo = 'mao_de_obra';
+      // Só redireciona para 'por_servico' se mão de obra oculta E serviço disponível
+      if (isMaoDeObraOculta() && !isServicoOculto()) modoEfetivo = 'por_servico';
+      // Só redireciona para 'mao_de_obra' se serviço oculto E mão de obra disponível
+      if (isServicoOculto() && modoEfetivo === 'por_servico' && !isMaoDeObraOculta()) modoEfetivo = 'mao_de_obra';
+      // Se ambos ocultos, mantém o modo passado sem redirecionamento (estoque será a única opção)
       const moW = document.getElementById('orc-cobranca-mo-wrapper');
       const svW = document.getElementById('orc-cobranca-servico-wrapper');
       const isEditing = document.getElementById('modal-title').textContent === 'Editar Orçamento';
@@ -4195,7 +4207,7 @@ Qualquer dúvida estou à disposição!`;
           clone.usarEstoque = clone.usarEstoque || 'sim';
           clone.tipoObra = clone.tipoObra || 'residencial';
           clone.maoDeObra = clone.maoDeObra || { tipo:'',valor:0,label:'',raw_value:'' };
-          if (isMaoDeObraOculta()) {
+          if (isMaoDeObraOculta() && !isServicoOculto()) {
             clone.modoCobranca = 'por_servico';
             clone.maoDeObra = { tipo:'',valor:0,label:'',raw_value:'' };
           }
@@ -4293,7 +4305,12 @@ Qualquer dúvida estou à disposição!`;
           document.getElementById('orc-estoque-avulso').value = '0';
           document.getElementById('orc-cotacao-arquivo').value = '';
           document.getElementById('orc-cotacao-info').classList.add('hidden');
-          toggleModoDeCobranca(isMaoDeObraOculta() ? 'por_servico' : (isServicoOculto() ? 'mao_de_obra' : 'mao_de_obra'));
+          // Determina o modo inicial respeitando as configurações de ocultação sem criar conflito
+          let modoInicial = 'mao_de_obra';
+          if (isMaoDeObraOculta() && !isServicoOculto()) modoInicial = 'por_servico';
+          else if (isServicoOculto() && !isMaoDeObraOculta()) modoInicial = 'mao_de_obra';
+          // Se ambos ocultos: mantém 'mao_de_obra' como fallback (estoque será a única opção visível)
+          toggleModoDeCobranca(modoInicial);
           toggleUsarEstoque(isEstoqueOcultos() ? 'nao' : 'sim');
           aplicarVisibilidadeEstoque();
           aplicarVisibilidadeServico();
@@ -4530,6 +4547,10 @@ Qualquer dúvida estou à disposição!`;
           ocultar_estoque: document.getElementById('config-ocultar-estoque')?.checked || false,
           ocultar_servico: document.getElementById('config-ocultar-servico')?.checked || false,
         };
+        // Validação: não permite ocultar todos os modos de orçamento simultaneamente
+        if (data.ocultar_mao_de_obra && data.ocultar_servico && data.ocultar_estoque) {
+          return alert('Não é possível ocultar todos os modos de orçamento ao mesmo tempo.\nPelo menos uma opção deve permanecer ativa (Mão de Obra, Serviços ou Estoque).');
+        }
         delete data.endereco;
         await setDoc(doc(db, `users/${userId}/config/main`), data);
         
@@ -5723,8 +5744,10 @@ Qualquer dúvida estou à disposição!`;
     document.querySelectorAll('input[name="modo-cobranca"]').forEach(rb => {
       rb.addEventListener('change', (e) => {
         let modo = e.target.value;
-        if (isMaoDeObraOculta()) modo = 'por_servico';
-        if (isServicoOculto() && modo === 'por_servico') modo = 'mao_de_obra';
+        // Só redireciona se mão de obra oculta E serviço disponível
+        if (isMaoDeObraOculta() && !isServicoOculto()) modo = 'por_servico';
+        // Só redireciona se serviço oculto E mão de obra disponível
+        if (isServicoOculto() && modo === 'por_servico' && !isMaoDeObraOculta()) modo = 'mao_de_obra';
         if (appState.currentOrcamento) appState.currentOrcamento.modoCobranca = modo;
         toggleModoDeCobranca(modo);
       });
