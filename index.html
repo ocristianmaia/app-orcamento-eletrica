@@ -1275,7 +1275,7 @@
                   </div>
                   <p id="dash-faturamento-faturado" class="text-lg sm:text-2xl font-extrabold text-slate-950">R$ 0,00</p>
                 </div>
-                <p class="text-[11px] sm:text-sm text-slate-500 mt-2 sm:mt-1">Faturamento faturado</p>
+                <p class="text-[11px] sm:text-sm text-slate-500 mt-2 sm:mt-1">Resumo Mensal</p>
               </article>
 
               <article class="dashboard-card p-3 sm:p-6 order-2 xl:order-none" style="--accent:#8b5cf6;--soft:#f3e8ff;">
@@ -4581,7 +4581,13 @@ Qualquer dúvida estou à disposição!`;
       });
 
       const aprovados = orcamentos.filter(orc => aprovadosSet.includes(statusOf(orc)));
-      const faturados = orcamentos.filter(orc => statusOf(orc) === 'faturado');
+      const faturados = orcamentos.filter(orc => {
+        const st = statusOf(orc);
+        if (st !== 'faturado') return false;
+        const dF = orc.dataFaturamento?.toDate ? orc.dataFaturamento.toDate() : (orc.dataFaturamento ? new Date(orc.dataFaturamento) : null);
+        if (!dF) return false;
+        return dF.getFullYear() === anoFiltro && dF.getMonth() === mesFiltro;
+      });
       const faturamentoFaturado = faturados.reduce((acc, orc) => acc + Number(orc.total || 0), 0);
       const taxa = orcamentos.length ? Math.round((aprovados.length / orcamentos.length) * 100) : 0;
       const ticket = faturados.length ? faturamentoFaturado / faturados.length : 0;
