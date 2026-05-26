@@ -5146,6 +5146,32 @@ Qualquer dúvida estou à disposição!`;
       XLSX.writeFile(wb, "meus_estoque_quotex.xlsx");
     };
 
+
+    window.baixarListaClientes = () => {
+      if (!appState.clientes || appState.clientes.length === 0) {
+        const modelo = [{ Nome: 'EXEMPLO CLIENTE', Telefone: '11999999999', Documento: '', CEP: '', Numero: '', Logradouro: '', Bairro: '', Cidade: '', UF: ''}];
+        const ws = XLSX.utils.json_to_sheet(modelo);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Clientes");
+        XLSX.writeFile(wb, "modelo_clientes_quotex.xlsx");
+        return;
+      }
+      const data = appState.clientes.map(c => ({
+        Nome: c.nome,
+        Telefone: c.telefone,
+        Documento: c.documento || '',
+        CEP: c.cep || '',
+        Numero: c.numero || '',
+        Logradouro: c.logradouro || '',
+        Bairro: c.bairro || '',
+        Cidade: c.cidade || '',
+        UF: c.uf || ''
+      }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Clientes");
+      XLSX.writeFile(wb, "meus_clientes_quotex.xlsx");
+    };
     // ===== Importar XLSX =====
     function setupXLSXImports() {
       // Serviços
@@ -6180,29 +6206,3 @@ Qualquer dúvida estou à disposição!`;
   </script>
 </body>
 </html>
-
-    window.baixarListaClientes = () => {
-      if (!appState.clientes || appState.clientes.length === 0) {
-        const modelo = [{ Nome: 'EXEMPLO CLIENTE', Telefone: '11999999999', Documento: '', CEP: '', Numero: '', Logradouro: '', Bairro: '', Cidade: '', UF: '' }];
-        const ws = XLSX.utils.json_to_sheet(modelo);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Clientes");
-        XLSX.writeFile(wb, "modelo_clientes_quotex.xlsx");
-        return;
-      }
-      const data = appState.clientes.map(c => ({
-        Nome: c.nome,
-        Telefone: c.telefone,
-        Documento: c.documento || '',
-        CEP: c.cep || '',
-        Numero: c.numero || '',
-        Logradouro: c.logradouro || '',
-        Bairro: c.bairro || '',
-        Cidade: c.cidade || '',
-        UF: c.uf || ''
-      }));
-      const ws = XLSX.utils.json_to_sheet(data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Clientes");
-      XLSX.writeFile(wb, "meus_clientes_quotex.xlsx");
-    };
