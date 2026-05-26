@@ -1494,6 +1494,7 @@
                   <div class="flex flex-col sm:flex-row gap-2">
                     <input type="file" id="clientes-xlsx-input" accept=".xlsx,.xls" class="block w-full text-sm border border-gray-200 p-2 rounded-lg">
                     <button id="btn-import-clientes-xlsx" class="btn-success whitespace-nowrap text-sm px-4 py-2">Importar</button>
+                    <button id="btn-download-clientes-xlsx" class="bg-blue-600 text-white whitespace-nowrap text-sm px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors">Exportar</button>
                     <button id="btn-clear-clientes" class="btn-danger whitespace-nowrap text-sm px-4 py-2">Limpar</button>
                   </div>
                   <p id="clientes-xlsx-status" class="text-xs text-gray-500 mt-2"></p>
@@ -5238,6 +5239,7 @@ Qualquer dúvida estou à disposição!`;
       });
       document.getElementById('btn-download-servicos-xlsx')?.addEventListener('click', window.baixarListaServicos);
       document.getElementById('btn-download-estoque-xlsx')?.addEventListener('click', window.baixarListaEstoque);
+      document.getElementById('btn-download-clientes-xlsx')?.addEventListener('click', window.baixarListaClientes);
       document.getElementById('btn-clear-clientes')?.addEventListener('click', async () => {
         if (!confirm('Limpar todos os clientes?') || !userId) return;
         const { getDocs } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
@@ -5459,12 +5461,15 @@ Qualquer dúvida estou à disposição!`;
             // Máscaras
             document.getElementById('config-doc')?.addEventListener('input', handleDocMask);
             document.getElementById('cliente-documento')?.addEventListener('input', handleDocMask);
+            document.getElementById('cadastro-cliente-documento')?.addEventListener('input', handleDocMask);
             document.getElementById('edit-cliente-documento')?.addEventListener('input', handleDocMask);
             document.getElementById('config-telefone')?.addEventListener('input', handleTelefoneMask);
             document.getElementById('cliente-telefone')?.addEventListener('input', handleTelefoneMask);
+            document.getElementById('cadastro-cliente-telefone')?.addEventListener('input', handleTelefoneMask);
             document.getElementById('edit-cliente-telefone')?.addEventListener('input', handleTelefoneMask);
             document.getElementById('config-cep')?.addEventListener('input', handleCEPMask);
             document.getElementById('cliente-cep')?.addEventListener('input', handleCEPMask);
+            document.getElementById('cadastro-cliente-cep')?.addEventListener('input', handleCEPMask);
             document.getElementById('edit-cliente-cep')?.addEventListener('input', handleCEPMask);
             document.getElementById('search-cliente')?.addEventListener('input', handleSearchCliente);
           } else {
@@ -5696,7 +5701,7 @@ Qualquer dúvida estou à disposição!`;
         }
         if (!categoria) categoria = 'OUTROS';
         const valor = parseFloat(document.getElementById('cadastro-servicos-valor').value);
-        await addDoc(collection(db, `users/${userId}/tiposDeServico`), { categoria, descricao, valor });
+        await addDoc(collection(db, `users/${userId}/tiposdeservico`), { categoria, descricao, valor });
         // Fechar o modal
         closeServicosCadastroModal();
         // Atualizar a lista de servicos no modal de orcamento
@@ -6175,3 +6180,29 @@ Qualquer dúvida estou à disposição!`;
   </script>
 </body>
 </html>
+
+    window.baixarListaClientes = () => {
+      if (!appState.clientes || appState.clientes.length === 0) {
+        const modelo = [{ Nome: 'EXEMPLO CLIENTE', Telefone: '11999999999', Documento: '', CEP: '', Numero: '', Logradouro: '', Bairro: '', Cidade: '', UF: '' }];
+        const ws = XLSX.utils.json_to_sheet(modelo);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Clientes");
+        XLSX.writeFile(wb, "modelo_clientes_quotex.xlsx");
+        return;
+      }
+      const data = appState.clientes.map(c => ({
+        Nome: c.nome,
+        Telefone: c.telefone,
+        Documento: c.documento || '',
+        CEP: c.cep || '',
+        Numero: c.numero || '',
+        Logradouro: c.logradouro || '',
+        Bairro: c.bairro || '',
+        Cidade: c.cidade || '',
+        UF: c.uf || ''
+      }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Clientes");
+      XLSX.writeFile(wb, "meus_clientes_quotex.xlsx");
+    };
