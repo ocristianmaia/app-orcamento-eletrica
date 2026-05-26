@@ -5174,6 +5174,29 @@ Qualquer dúvida estou à disposição!`;
     };
     // ===== Importar XLSX =====
     function setupXLSXImports() {
+      // Helper para encontrar valor na linha ignorando case e acentos básicos
+      const getVal = (row, keys) => {
+        const rowKeys = Object.keys(row);
+        for (let k of keys) {
+          const found = rowKeys.find(rk => rk.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === k.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+          if (found) return row[found];
+        }
+        return null;
+      };
+
+      // Helper para converter string de valor (R$ 1.234,56 ou 1234.56) para float
+      const parseBRL = (v) => {
+        if (v === null || v === undefined) return 0;
+        if (typeof v === 'number') return v;
+        let s = v.toString().replace('R$', '').trim();
+        if (s.includes(',') && s.includes('.')) {
+          s = s.replace(/\./g, '').replace(',', '.');
+        } else if (s.includes(',')) {
+          s = s.replace(',', '.');
+        }
+        return parseFloat(s) || 0;
+      };
+
       // Serviços
       document.getElementById('btn-import-xlsx')?.addEventListener('click', async () => {
         const file = document.getElementById('xlsx-input')?.files[0];
@@ -5186,10 +5209,13 @@ Qualquer dúvida estou à disposição!`;
           const rows = XLSX.utils.sheet_to_json(ws);
           let count = 0;
           for (const row of rows) {
-            const cat = (row['Categoria']||row['categoria']||'OUTROS').toString().toUpperCase().trim();
-            const desc = (row['Descrição']||row['Descricao']||row['descricao']||'').toString().trim();
-            const val = parseFloat(row['Valor']||row['valor']||0);
-            if (desc && val > 0) { await addDoc(collection(db, `users/${userId}/tiposdeservico`), { categoria: cat, descricao: desc, valor: val }); count++; }
+            const cat = (getVal(row, ['Categoria', 'cat']) || 'OUTROS').toString().toUpperCase().trim();
+            const desc = (getVal(row, ['Descrição', 'Descricao', 'desc']) || '').toString().trim();
+            const val = parseBRL(getVal(row, ['Valor', 'val', 'preco']));
+            if (desc && val > 0) { 
+              await addDoc(collection(db, `users/${userId}/tiposdeservico`), { categoria: cat, descricao: desc, valor: val }); 
+              count++; 
+            }
           }
           status.textContent = `${count} serviço(s) importado(s)!`;
           document.getElementById('xlsx-input').value = '';
@@ -5215,12 +5241,12 @@ Qualquer dúvida estou à disposição!`;
           const rows = XLSX.utils.sheet_to_json(ws);
           let count = 0;
           for (const row of rows) {
-            const categoria = (row['Categoria']||row['categoria']||'OUTROS').toString().trim().toUpperCase();
-            const nome = (row['Descrição']||row['Descricao']||row['Nome']||row['nome']||'').toString().trim();
-            const unidade = (row['Unidade']||row['unidade']||'UNID').toString().trim();
-            const valor = parseFloat(row['Valor']||row['valor']||0);
-            const ehEst = (row['Estoque']||row['estoque']||'').toString().toUpperCase() === 'SIM';
-            const qtdEst = parseFloat(row['Quantidade']||row['quantidade']||0);
+            const categoria = (getVal(row, ['Categoria', 'cat']) || 'OUTROS').toString().trim().toUpperCase();
+            const nome = (getVal(row, ['Descrição', 'Descricao', 'desc', 'Nome', 'nome']) || '').toString().trim();
+            const unidade = (getVal(row, ['Unidade', 'unid']) || 'UNID').toString().trim();
+            const valor = parseBRL(getVal(row, ['Valor', 'val', 'preco']));
+            const ehEst = (getVal(row, ['Estoque', 'est']) || '').toString().toUpperCase() === 'SIM';
+            const qtdEst = parseFloat(getVal(row, ['Quantidade', 'qtd', 'quant'])) || 0;
             if (nome && valor > 0) { 
               await addDoc(collection(db, `users/${userId}/estoque`), { categoria, nome, unidade, valor, tipo: ehEst ? 'estoque' : 'padrao', qtdEstoque: ehEst ? qtdEst : 0 }); 
               count++; 
@@ -5251,11 +5277,22 @@ Qualquer dúvida estou à disposição!`;
           const rows = XLSX.utils.sheet_to_json(ws);
           let count = 0;
           for (const row of rows) {
-            const nome = (row['Nome']||row['nome']||'').toString().trim().toUpperCase();
-            const telefone = (row['Telefone']||row['telefone']||'').toString().replace(/\D/g,'');
+            const nome = (getVal(row, ['Nome', 'cliente']) || '').toString().trim().toUpperCase();
+            const telefone = (getVal(row, ['Telefone', 'tel', 'celular']) || '').toString().replace(/\D/g,'');
             if (nome) {
               const novoID = gerarNovoNumeroCliente();
-              await addDoc(collection(db, `users/${userId}/clientes`), { nome, telefone, numeroCadastro: novoID, documento: (row['Documento']||'').toString().replace(/\D/g,''), cep: (row['CEP']||'').toString().replace(/\D/g,''), numero: (row['Número']||row['Numero']||'').toString(), logradouro: (row['Logradouro']||'').toString(), bairro: (row['Bairro']||'').toString(), cidade: (row['Cidade']||'').toString(), uf: (row['UF']||'').toString() });
+              await addDoc(collection(db, `users/${userId}/clientes`), { 
+                nome, 
+                telefone, 
+                numeroCadastro: novoID, 
+                documento: (getVal(row, ['Documento', 'doc', 'cpf', 'cnpj']) || '').toString().replace(/\D/g,''), 
+                cep: (getVal(row, ['CEP', 'cep']) || '').toString().replace(/\D/g,''), 
+                numero: (getVal(row, ['Número', 'Numero', 'n', 'num']) || '').toString(), 
+                logradouro: (getVal(row, ['Logradouro', 'rua', 'end']) || '').toString(), 
+                bairro: (getVal(row, ['Bairro', 'bairro']) || '').toString(), 
+                cidade: (getVal(row, ['Cidade', 'cid']) || '').toString(), 
+                uf: (getVal(row, ['UF', 'estado']) || '').toString() 
+              });
               count++;
             }
           }
