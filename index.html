@@ -2225,7 +2225,7 @@
               <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
             </span>
           </button>
-          <div id="filtros-orcamento-content" class="filtros-orcamento-content hidden md:grid gap-3 md:grid-cols-4 pt-3 md:pt-0">
+          <div id="filtros-orcamento-content" class="filtros-orcamento-content hidden md:grid gap-3 md:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 pt-3 md:pt-0">
             <div>
               <label class="executive-label">Status</label>
               <select id="filtro-status-orcamento" class="input-field executive-select">
@@ -2237,7 +2237,12 @@
                 <option value="concluido">Concluídos</option>
                 <option value="aguardando_pag">Aguardando Pag.</option>
                 <option value="faturado">Faturados</option>
+                <option value="cliente">Cliente</option>
               </select>
+            </div>
+            <div id="wrapper-filtro-cliente" class="hidden">
+              <label class="executive-label">Nome do Cliente</label>
+              <input type="text" id="filtro-cliente-nome" placeholder="Pesquisar cliente..." class="input-field executive-select w-full">
             </div>
             <div>
               <label class="executive-label">Mês</label>
@@ -3515,11 +3520,21 @@ Qualquer dúvida estou à disposição!`;
 
       if (isFullList) {
         const statusFiltro = document.getElementById('filtro-status-orcamento')?.value || 'todos';
+        const clienteFiltro = document.getElementById('filtro-cliente-nome')?.value.toLowerCase() || '';
         const mesFiltro = document.getElementById('filtro-mes-orcamento')?.value || 'todos';
         const anoFiltro = document.getElementById('filtro-ano-orcamento')?.value || 'todos';
         list = list.filter(orc => {
           let st = (orc.status || (orc.aprovado ? 'aprovado' : 'pendente')).toLowerCase();
-          if (statusFiltro !== 'todos' && st !== statusFiltro) return false;
+          
+          if (statusFiltro === 'cliente') {
+            if (clienteFiltro) {
+              const cliente = appState.clientes.find(c => c.id === orc.cliente?.id);
+              const nomeCliente = (cliente ? cliente.nome : 'Cliente Excluído').toLowerCase();
+              if (!nomeCliente.includes(clienteFiltro)) return false;
+            }
+          } else if (statusFiltro !== 'todos' && st !== statusFiltro) {
+            return false;
+          }
           let dataRef = null;
           if (st === 'faturado' && orc.dataFaturamento) {
             dataRef = orc.dataFaturamento.toDate ? orc.dataFaturamento.toDate() : new Date(orc.dataFaturamento);
@@ -6036,8 +6051,11 @@ Qualquer dúvida estou à disposição!`;
 
     // ===== Filtros de orçamentos (lista completa) =====
     function filtrosOrcamentoAtivos() {
-      return ['filtro-status-orcamento','filtro-mes-orcamento','filtro-ano-orcamento']
-        .some(id => (document.getElementById(id)?.value || 'todos') !== 'todos');
+      const statusAtivo = (document.getElementById('filtro-status-orcamento')?.value || 'todos') !== 'todos';
+      const mesAtivo = (document.getElementById('filtro-mes-orcamento')?.value || 'todos') !== 'todos';
+      const anoAtivo = (document.getElementById('filtro-ano-orcamento')?.value || 'todos') !== 'todos';
+      const clienteAtivo = (document.getElementById('filtro-cliente-nome')?.value || '') !== '';
+      return statusAtivo || mesAtivo || anoAtivo || clienteAtivo;
     }
     function updateFiltrosOrcamentoUI() {
       const ativo = filtrosOrcamentoAtivos();
@@ -6053,6 +6071,12 @@ Qualquer dúvida estou à disposição!`;
         const el = document.getElementById(id);
         if (el) el.value = 'todos';
       });
+      const inputCliente = document.getElementById('filtro-cliente-nome');
+      if (inputCliente) inputCliente.value = '';
+      
+      const wrapperCliente = document.getElementById('wrapper-filtro-cliente');
+      if (wrapperCliente) wrapperCliente.classList.add('hidden');
+      
       aplicarFiltrosOrcamento();
     };
     window.toggleFiltrosOrcamento = function() {
@@ -6063,7 +6087,18 @@ Qualquer dúvida estou à disposição!`;
       content.classList.toggle('hidden', !willOpen);
       btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     };
-    document.getElementById('filtro-status-orcamento')?.addEventListener('change', aplicarFiltrosOrcamento);
+    document.getElementById('filtro-status-orcamento')?.addEventListener('change', function() {
+      const wrapper = document.getElementById('wrapper-filtro-cliente');
+      if (this.value === 'cliente') {
+        wrapper?.classList.remove('hidden');
+      } else {
+        wrapper?.classList.add('hidden');
+        const input = document.getElementById('filtro-cliente-nome');
+        if (input) input.value = '';
+      }
+      aplicarFiltrosOrcamento();
+    });
+    document.getElementById('filtro-cliente-nome')?.addEventListener('input', aplicarFiltrosOrcamento);
     document.getElementById('filtro-mes-orcamento')?.addEventListener('change', aplicarFiltrosOrcamento);
     document.getElementById('filtro-ano-orcamento')?.addEventListener('change', aplicarFiltrosOrcamento);
     document.getElementById('btn-limpar-filtros-orcamento')?.addEventListener('click', limparFiltrosOrcamento);
