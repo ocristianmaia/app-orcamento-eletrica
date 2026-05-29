@@ -2059,21 +2059,60 @@
                     <p class="text-xs text-gray-500 mt-1">Aparece no rodapé de todos os orçamentos.</p>
                   </div>
                   <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Marca d'água no PDF</label>
-                    <div class="flex flex-col gap-2">
-                      <div class="flex items-center gap-3">
-                        <button type="button" onclick="document.getElementById('config-watermark-input').click()" class="btn-primary text-xs px-3 py-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Imagem de Fundo / Marca d'água no PDF</label>
+                    <div class="flex flex-col gap-4 p-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                      <div class="flex flex-wrap items-center gap-3">
+                        <button type="button" onclick="document.getElementById('config-watermark-input').click()" class="btn-secondary text-xs px-4 py-2.5 flex items-center gap-2">
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                           Selecionar Imagem
                         </button>
-                        <button type="button" id="btn-remove-watermark" onclick="removeWatermark()" class="btn-danger text-xs px-3 py-2 hidden">
+                        <button type="button" id="btn-remove-watermark" onclick="removeWatermark()" class="btn-danger text-xs px-4 py-2.5 hidden">
                           Remover
                         </button>
                       </div>
                       <input type="file" id="config-watermark-input" accept="image/*" class="hidden" onchange="handleWatermarkUpload(this)">
-                      <div id="watermark-preview-container" class="hidden mt-2 p-2 border rounded-lg bg-gray-50 flex justify-center">
-                        <img id="watermark-preview" src="" class="max-h-24 opacity-50">
+                      
+                      <div id="watermark-preview-container" class="hidden flex flex-col gap-4">
+                        <div class="p-2 border rounded-lg bg-white flex justify-center shadow-sm">
+                          <img id="watermark-preview" src="" class="max-h-32 object-contain" style="opacity: 0.5">
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Transparência</label>
+                            <div class="flex items-center gap-3">
+                              <input type="range" id="config-watermark-opacity" min="0" max="1" step="0.05" value="0.1" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateWatermarkPreviewStyle()">
+                              <span id="val-watermark-opacity" class="text-xs font-mono font-bold text-blue-600 w-8">10%</span>
+                            </div>
+                          </div>
+                          <div>
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Escala / Proporção</label>
+                            <div class="flex items-center gap-3">
+                              <input type="range" id="config-watermark-scale" min="10" max="210" step="5" value="100" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                              <span id="val-watermark-scale" class="text-xs font-mono font-bold text-blue-600 w-12">100mm</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Posicionamento Vertical</label>
+                          <div class="grid grid-cols-3 gap-2">
+                            <label class="cursor-pointer">
+                              <input type="radio" name="config-watermark-pos" value="top" class="peer hidden">
+                              <div class="py-2 text-center text-xs font-bold border-2 rounded-lg text-gray-500 border-gray-100 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all">SUPERIOR</div>
+                            </label>
+                            <label class="cursor-pointer">
+                              <input type="radio" name="config-watermark-pos" value="center" checked class="peer hidden">
+                              <div class="py-2 text-center text-xs font-bold border-2 rounded-lg text-gray-500 border-gray-100 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all">CENTRAL</div>
+                            </label>
+                            <label class="cursor-pointer">
+                              <input type="radio" name="config-watermark-pos" value="bottom" class="peer hidden">
+                              <div class="py-2 text-center text-xs font-bold border-2 rounded-lg text-gray-500 border-gray-100 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all">INFERIOR</div>
+                            </label>
+                          </div>
+                        </div>
                       </div>
-                      <p class="text-[10px] text-gray-500">A marca d'água aparecerá centralizada no fundo do orçamento PDF.</p>
+                      <p class="text-[10px] text-gray-500 leading-relaxed">A imagem será aplicada ao fundo de todas as páginas do PDF sem distorção, respeitando a escala e o posicionamento definidos.</p>
                     </div>
                   </div>
                   <div>
@@ -3014,15 +3053,40 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         const pageW = 210, margin = 15, contentW = pageW - margin * 2;
         let y = margin;
 
-        // Função para adicionar marca d'água
+        // Função para adicionar marca d'água / imagem de fundo
         const addWatermark = () => {
           if (config.watermark) {
             try {
-              const imgW = 100, imgH = 100; // Tamanho da marca d'água no centro
+              const opacity = config.watermark_opacity !== undefined ? config.watermark_opacity : 0.1;
+              const scaleMM = config.watermark_scale || 100;
+              const pos = config.watermark_pos || 'center';
+              
+              // Obter dimensões originais para manter proporção
+              const imgProps = doc.getImageProperties(config.watermark);
+              const ratio = imgProps.width / imgProps.height;
+              
+              let imgW = scaleMM;
+              let imgH = scaleMM / ratio;
+              
+              // Ajustar se exceder a largura da página
+              if (imgW > contentW) {
+                imgW = contentW;
+                imgH = imgW / ratio;
+              }
+
               const centerX = (pageW - imgW) / 2;
-              const centerY = (297 - imgH) / 2; // A4 tem 297mm de altura
+              let centerY;
+              
+              if (pos === 'top') {
+                centerY = margin;
+              } else if (pos === 'bottom') {
+                centerY = 297 - margin - imgH;
+              } else {
+                centerY = (297 - imgH) / 2;
+              }
+
               doc.saveGraphicsState();
-              doc.setGState(new doc.GState({ opacity: 0.1 })); // Opacidade baixa para marca d'água
+              doc.setGState(new doc.GState({ opacity: opacity }));
               doc.addImage(config.watermark, 'PNG', centerX, centerY, imgW, imgH, undefined, 'FAST');
               doc.restoreGraphicsState();
             } catch(e) { console.error('Erro marca dágua PDF:', e); }
@@ -4594,6 +4658,9 @@ Qualquer dúvida estou à disposição!`;
           validade_orcamento: parseInt(gv('config-validade-orcamento'))||15,
           obs_padrao: gv('config-obs-padrao'),
           watermark: document.getElementById('watermark-preview').src.startsWith('data:') ? document.getElementById('watermark-preview').src : (appState.config?.watermark || null),
+          watermark_opacity: parseFloat(document.getElementById('config-watermark-opacity')?.value) || 0.1,
+          watermark_scale: parseInt(document.getElementById('config-watermark-scale')?.value) || 100,
+          watermark_pos: document.querySelector('input[name="config-watermark-pos"]:checked')?.value || 'center',
           config_pdf_formato: document.querySelector('input[name="config-pdf-formato"]:checked')?.value || 'completo',
           config_mostrar_qrcode: document.getElementById('config-mostrar-qrcode')?.checked || false,
           novidades_ativo: document.getElementById('config-novidades-ativo')?.checked || false,
@@ -4672,6 +4739,15 @@ Qualquer dúvida estou à disposição!`;
         document.getElementById('watermark-preview').src = c.watermark;
         document.getElementById('watermark-preview-container').classList.remove('hidden');
         document.getElementById('btn-remove-watermark').classList.remove('hidden');
+        
+        // Carregar valores adicionais
+        sv('config-watermark-opacity', c.watermark_opacity || 0.1);
+        sv('config-watermark-scale', c.watermark_scale || 100);
+        const posEl = document.querySelector(`input[name="config-watermark-pos"][value="${c.watermark_pos || 'center'}"]`);
+        if (posEl) posEl.checked = true;
+        
+        // Atualizar labels e preview visual
+        updateWatermarkPreviewStyle();
       } else {
         document.getElementById('watermark-preview').src = '';
         document.getElementById('watermark-preview-container').classList.add('hidden');
@@ -6188,6 +6264,29 @@ Qualquer dúvida estou à disposição!`;
       document.getElementById('btn-remove-watermark').classList.add('hidden');
       document.getElementById('config-watermark-input').value = '';
     };
+
+    window.updateWatermarkPreviewStyle = () => {
+      const preview = document.getElementById('watermark-preview');
+      const opacityInput = document.getElementById('config-watermark-opacity');
+      const scaleInput = document.getElementById('config-watermark-scale');
+      const opacityVal = document.getElementById('val-watermark-opacity');
+      const scaleVal = document.getElementById('val-watermark-scale');
+      
+      if (preview && opacityInput) {
+        preview.style.opacity = opacityInput.value;
+        if (opacityVal) opacityVal.textContent = Math.round(opacityInput.value * 100) + '%';
+      }
+      if (scaleInput && scaleVal) {
+        scaleVal.textContent = scaleInput.value + 'mm';
+      }
+    };
+
+    // Adicionar listeners para os novos campos de marca d'água
+    document.addEventListener('input', (e) => {
+      if (e.target.id === 'config-watermark-opacity' || e.target.id === 'config-watermark-scale') {
+        updateWatermarkPreviewStyle();
+      }
+    });
 
     // ===== Estoque Avulso e Cotação =====
     window.handleCotacaoUpload = async (btn) => {
