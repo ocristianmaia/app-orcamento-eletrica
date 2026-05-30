@@ -1887,6 +1887,43 @@
                   <input type="text" id="config-nome" placeholder="Seu Nome ou Nome da Empresa" class="input-field">
                   <input type="tel" id="config-telefone" placeholder="Seu Telefone" class="input-field">
                   <input type="text" id="config-doc" placeholder="Seu CPF ou CNPJ" class="input-field">
+                  <div class="pt-3 border-t">
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Redes sociais no rodape do PDF</label>
+                    <div class="space-y-3">
+                      <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a9 9 0 100 18 9 9 0 000-18z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.6 9h16.8M3.6 15h16.8M12 3c2 2.4 3 5.4 3 9s-1 6.6-3 9M12 3c-2 2.4-3 5.4-3 9s1 6.6 3 9"/></svg>
+                        </span>
+                        <input type="url" id="config-site" placeholder="Site" class="input-field pl-10">
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="relative">
+                          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-pink-500">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="5" y="5" width="14" height="14" rx="4" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke-width="2"/><circle cx="16.5" cy="7.5" r="1" fill="currentColor" stroke="none"/></svg>
+                          </span>
+                          <input type="text" id="config-instagram" placeholder="Instagram" class="input-field pl-10">
+                        </div>
+                        <div class="relative">
+                          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 8.5h2V5h-2.7C10.8 5 9 6.8 9 9.4V12H7v3.5h2V21h4v-5.5h2.6L16 12h-3V9.8c0-.8.4-1.3 1-1.3z"/></svg>
+                          </span>
+                          <input type="text" id="config-facebook" placeholder="Facebook" class="input-field pl-10">
+                        </div>
+                        <div class="relative">
+                          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 4c.4 2.3 1.8 3.7 4 4v3.4c-1.5-.1-2.8-.5-4-1.2v5.2c0 3.4-2.2 5.6-5.2 5.6A4.8 4.8 0 014 16.2c0-3 2.3-5.1 5.4-4.7v3.6c-1-.3-1.9.3-1.9 1.2 0 .8.6 1.3 1.4 1.3.9 0 1.5-.6 1.5-1.8V4H14z"/></svg>
+                          </span>
+                          <input type="text" id="config-tiktok" placeholder="TikTok" class="input-field pl-10">
+                        </div>
+                        <div class="relative">
+                          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-green-600">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 19l1.2-3.2A7 7 0 1112 19a7.4 7.4 0 01-3.2-.7L6 19z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.4 9.2c.4 2 1.5 3.3 3.4 4.2l1.2-1.1 1.7.6c.2.1.3.3.3.5-.2 1.1-.8 1.7-1.8 1.7-2.8 0-6.2-3.1-6.2-6 0-1 .6-1.7 1.6-1.9.2 0 .4.1.5.3l.6 1.6-1.3 1.1z"/></svg>
+                          </span>
+                          <input type="tel" id="config-whatsapp" placeholder="WhatsApp" class="input-field pl-10">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <div class="grid grid-cols-3 gap-3">
                     <div class="col-span-2">
                       <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">CEP</label>
@@ -3109,6 +3146,81 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           return [r,g,b];
         };
         const [pr,pg,pb] = hexToRgb(corPrimaria);
+        const fitText = (text, maxWidth) => {
+          let output = String(text || '').trim();
+          if (!output) return '';
+          if (doc.getTextWidth(output) <= maxWidth) return output;
+          while (output.length > 3 && doc.getTextWidth(output + '...') > maxWidth) output = output.slice(0, -1);
+          return output + '...';
+        };
+        const drawSocialIcon = (type, x, y, size) => {
+          const cx = x + size / 2;
+          const cy = y + size / 2;
+          doc.setLineWidth(0.35);
+          if (type === 'site') {
+            doc.setDrawColor(37, 99, 235); doc.setTextColor(37, 99, 235);
+            doc.circle(cx, cy, size / 2, 'S');
+            doc.line(x + 0.8, cy, x + size - 0.8, cy);
+            doc.line(cx, y + 0.8, cx, y + size - 0.8);
+          } else if (type === 'instagram') {
+            doc.setFillColor(219, 39, 119); doc.setDrawColor(219, 39, 119);
+            doc.roundedRect(x, y, size, size, 1, 1, 'F');
+            doc.setDrawColor(255, 255, 255);
+            doc.roundedRect(x + 1, y + 1, size - 2, size - 2, 0.8, 0.8, 'S');
+            doc.circle(cx, cy, size * 0.18, 'S');
+            doc.circle(x + size * 0.73, y + size * 0.27, size * 0.07, 'F');
+          } else if (type === 'facebook') {
+            doc.setFillColor(24, 119, 242);
+            doc.circle(cx, cy, size / 2, 'F');
+            doc.setFont(undefined, 'bold'); doc.setFontSize(size * 1.7); doc.setTextColor(255, 255, 255);
+            doc.text('f', cx, y + size * 0.86, { align: 'center' });
+          } else if (type === 'tiktok') {
+            doc.setFillColor(17, 24, 39);
+            doc.circle(cx, cy, size / 2, 'F');
+            doc.setDrawColor(255, 255, 255); doc.setLineWidth(0.55);
+            doc.line(cx, y + size * 0.24, cx, y + size * 0.65);
+            doc.line(cx, y + size * 0.24, x + size * 0.72, y + size * 0.38);
+            doc.circle(x + size * 0.38, y + size * 0.7, size * 0.16, 'S');
+          } else if (type === 'whatsapp') {
+            doc.setFillColor(34, 197, 94);
+            doc.circle(cx, cy, size / 2, 'F');
+            doc.setDrawColor(255, 255, 255); doc.setLineWidth(0.6);
+            doc.line(x + size * 0.34, y + size * 0.36, x + size * 0.49, y + size * 0.58);
+            doc.line(x + size * 0.49, y + size * 0.58, x + size * 0.7, y + size * 0.68);
+          }
+          doc.setFont(undefined, 'normal');
+        };
+        const socialItems = [
+          { type: 'site', label: 'Site', value: config.site || config.config_site },
+          { type: 'instagram', label: 'Instagram', value: config.instagram || config.config_instagram },
+          { type: 'facebook', label: 'Facebook', value: config.facebook || config.config_facebook },
+          { type: 'tiktok', label: 'TikTok', value: config.tiktok || config.config_tiktok },
+          { type: 'whatsapp', label: 'WhatsApp', value: formatarTelefone(config.whatsapp || config.config_whatsapp) },
+        ].map(item => ({ ...item, value: String(item.value || '').trim() })).filter(item => item.value);
+        const addSocialFooter = () => {
+          if (!socialItems.length) return;
+          const rows = Math.ceil(socialItems.length / 2);
+          const neededH = 8 + rows * 5.5;
+          if (y + neededH > 282) { doc.addPage(); addWatermark(); y = margin; }
+          doc.setDrawColor(220, 220, 220);
+          doc.line(margin, y, pageW - margin, y);
+          y += 4;
+          doc.setFontSize(7); doc.setFont(undefined, 'bold'); doc.setTextColor(pr, pg, pb);
+          doc.text('CONTATOS E REDES SOCIAIS:', margin, y);
+          y += 4;
+          const colW = contentW / 2;
+          const iconSize = 4;
+          socialItems.forEach((item, index) => {
+            const col = index % 2;
+            const row = Math.floor(index / 2);
+            const x = margin + col * colW;
+            const itemY = y + row * 5.5;
+            drawSocialIcon(item.type, x, itemY - 3.2, iconSize);
+            doc.setFontSize(7); doc.setFont(undefined, 'normal'); doc.setTextColor(70, 70, 70);
+            doc.text(fitText(`${item.label}: ${item.value}`, colW - 8), x + 6, itemY);
+          });
+          y += rows * 5.5 + 1;
+        };
 
         // Logo com proporção mantida
         if (config.logo) {
@@ -3367,9 +3479,12 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         doc.setFont(undefined,'normal');
         if (orc.items?.some(i => i.tipo === 'estoque')) {
           doc.text('* Itens marcados com # são de estoque imediato.', margin, y);
+          y += 4;
         }
         
         // --- SOLUÇÃO DEFINITIVA: Mesclagem de Anexo ---
+        addSocialFooter();
+        
         let finalPdfBlob = doc.output('blob');
         
         if (orc.cotacao && (orc.cotacao.url || orc.cotacao.data)) {
@@ -4649,6 +4764,11 @@ Qualquer dúvida estou à disposição!`;
           numero: gv('config-numero'), logradouro: gv('config-logradouro'),
           bairro: gv('config-bairro'), cidade: gv('config-cidade'), uf: gv('config-uf'),
           logo: gv('config-logo'),
+          site: gv('config-site'),
+          instagram: gv('config-instagram'),
+          facebook: gv('config-facebook'),
+          tiktok: gv('config-tiktok'),
+          whatsapp: gv('config-whatsapp').replace(/\D/g,''),
           config_color_primary: gv('config-color-primary'), config_color_secondary: gv('config-color-secondary'),
           residencial_empreitada: parseFloat(gv('config-residencial-empreitada'))||0,
           residencial_diaria: parseFloat(gv('config-residencial-diaria'))||0,
@@ -4730,6 +4850,11 @@ Qualquer dúvida estou à disposição!`;
       const logoH = el('config-logo'); const logoW = el('config-logo-preview-wrapper'); const logoP = el('config-logo-preview');
       if (logoH) logoH.value = c.logo||'';
       if (logoW && logoP) { if (c.logo) { logoP.src = c.logo; logoW.classList.remove('hidden'); } else { logoP.src = ''; logoW.classList.add('hidden'); } }
+      sv('config-site', c.site || c.config_site || '');
+      sv('config-instagram', c.instagram || c.config_instagram || '');
+      sv('config-facebook', c.facebook || c.config_facebook || '');
+      sv('config-tiktok', c.tiktok || c.config_tiktok || '');
+      sv('config-whatsapp', formatarTelefone(c.whatsapp || c.config_whatsapp || ''));
       sv('config-color-primary', c.config_color_primary||'#000000');
       sv('config-color-secondary', c.config_color_secondary||'#1e40af');
       sv('config-residencial-empreitada', c.residencial_empreitada||'');
