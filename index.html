@@ -2206,6 +2206,13 @@
                   </button>
                 </div>
                 <div class="space-y-4">
+                  <div class="p-4 border border-cyan-100 rounded-xl bg-cyan-50">
+                    <a href="https://www.freetool.dev/pt/comprimir-imagem/" target="_blank" rel="noopener noreferrer" class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-cyan-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-cyan-700">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M8 12l4 4m0 0l4-4m-4 4V4"/></svg>
+                      Comprimir Logo
+                    </a>
+                    <p class="mt-2 text-xs text-cyan-900 leading-relaxed">Acesse o site comprima sua imagem, baixe em seu dispositivo e use novamente.</p>
+                  </div>
                   <div>
                     <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border cursor-pointer">
                       <input type="checkbox" id="config-ocultar-estoque-avulso" class="h-4 w-4 text-blue-600 rounded">
@@ -2738,6 +2745,12 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
     }
 
     // ===== Navegação =====
+    function resetConfigSections() {
+      document.querySelectorAll('.config-section').forEach(el => el.classList.add('hidden'));
+      document.getElementById('config-menu-view')?.classList.remove('hidden');
+      document.getElementById('configuracoes')?.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
     function activateTab(tabId) {
       // 1. Reset all main tabs
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -2760,6 +2773,7 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
 
       // 3. Handle specific view updates
       if (tabId === 'orcamentos') updateDashboardView();
+      if (tabId === 'configuracoes') resetConfigSections();
       if (tabId === 'financeiro') {
         updateFinanceiroView();
         activateFinanceiroTab('visao-geral');
@@ -4824,10 +4838,7 @@ Qualquer dúvida estou à disposição!`;
       document.querySelectorAll('.config-section').forEach(el => el.classList.add('hidden'));
       document.getElementById(id).classList.remove('hidden');
     };
-    window.hideConfigSection = () => {
-      document.querySelectorAll('.config-section').forEach(el => el.classList.add('hidden'));
-      document.getElementById('config-menu-view').classList.remove('hidden');
-    };
+    window.hideConfigSection = () => resetConfigSections();
 
     window.saveConfigData = async () => {
       if (!userId) return alert('Faça login novamente.');
