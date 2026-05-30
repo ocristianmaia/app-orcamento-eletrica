@@ -3074,6 +3074,35 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
       });
     };
 
+    const prepararLogoParaPdf = (src) => new Promise((resolve, reject) => {
+      if (!src) return resolve(null);
+      const img = new Image();
+      img.onload = () => {
+        const naturalW = img.naturalWidth || img.width;
+        const naturalH = img.naturalHeight || img.height;
+        if (!naturalW || !naturalH) return reject(new Error('Logo sem dimensoes validas.'));
+
+        const maxCanvasSide = 1200;
+        const scale = Math.min(1, maxCanvasSide / Math.max(naturalW, naturalH));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(naturalW * scale));
+        canvas.height = Math.max(1, Math.round(naturalH * scale));
+
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        resolve({
+          dataUrl: canvas.toDataURL('image/jpeg', 0.95),
+          width: naturalW,
+          height: naturalH,
+        });
+      };
+      img.onerror = () => reject(new Error('Nao foi possivel carregar a logo para o PDF.'));
+      img.src = src;
+    });
+
     window.gerarPDF = async (formato) => {
       // Fechar modal de formato se estiver aberto
       const fmtModal = document.getElementById('pdf-format-modal');
@@ -3227,15 +3256,13 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           try {
             // Definir área máxima para a logo (35mm largura x 18mm altura)
             const maxW = 35, maxH = 18;
-            const img = new Image();
-            img.src = config.logo;
-            // Aguardar carregamento se necessário (embora DataURL seja instantâneo)
+            const logoPdf = await prepararLogoParaPdf(config.logo);
             let finalW = maxW, finalH = maxH;
-            if (img.width > 0) {
-              const ratio = img.width / img.height;
+            if (logoPdf?.width > 0 && logoPdf?.height > 0) {
+              const ratio = logoPdf.width / logoPdf.height;
               if (ratio > maxW / maxH) { finalH = maxW / ratio; } else { finalW = maxH * ratio; }
             }
-            doc.addImage(config.logo, 'PNG', margin, y, finalW, finalH, undefined, 'FAST');
+            doc.addImage(logoPdf.dataUrl, 'JPEG', margin, y, finalW, finalH, undefined, 'FAST');
           } catch(e) { console.error('Erro logo PDF:', e); }
           y += 2;
         }
@@ -6590,11 +6617,11 @@ Qualquer dúvida estou à disposição!`;
         if (config.logo) {
           try {
             const maxW = 35, maxH = 15;
-            const imgProps = doc.getImageProperties(config.logo);
-            const ratio = imgProps.width / imgProps.height;
+            const logoPdf = await prepararLogoParaPdf(config.logo);
+            const ratio = logoPdf.width / logoPdf.height;
             let finalW = maxW, finalH = maxW / ratio;
             if (finalH > maxH) { finalH = maxH; finalW = maxH * ratio; }
-            doc.addImage(config.logo, 'PNG', margin, y, finalW, finalH, undefined, 'FAST');
+            doc.addImage(logoPdf.dataUrl, 'JPEG', margin, y, finalW, finalH, undefined, 'FAST');
             y += finalH + 10;
           } catch(e) { y += 5; }
         } else {
