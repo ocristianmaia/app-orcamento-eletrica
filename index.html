@@ -3126,9 +3126,10 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         const corTotal = config.config_color_secondary || '#1e40af';
         const pageW = 210, margin = 15, contentW = pageW - margin * 2;
         let y = margin;
+        let watermarkPdf = null;
 
         // Função para adicionar marca d'água / imagem de fundo
-        const addWatermark = () => {
+        const addWatermark = async () => {
           if (config.watermark) {
             try {
               const opacity = config.watermark_opacity !== undefined ? config.watermark_opacity : 0.1;
@@ -3136,8 +3137,9 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
               const pos = config.watermark_pos || 'center';
               
               // Obter dimensões originais para manter proporção
-              const imgProps = doc.getImageProperties(config.watermark);
-              const ratio = imgProps.width / imgProps.height;
+              if (!watermarkPdf) watermarkPdf = await prepararLogoParaPdf(config.watermark);
+              if (!watermarkPdf) return;
+              const ratio = watermarkPdf.width / watermarkPdf.height;
               
               let imgW = scaleMM;
               let imgH = scaleMM / ratio;
@@ -3161,14 +3163,14 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
 
               doc.saveGraphicsState();
               doc.setGState(new doc.GState({ opacity: opacity }));
-              doc.addImage(config.watermark, 'PNG', centerX, centerY, imgW, imgH, undefined, 'FAST');
+              doc.addImage(watermarkPdf.dataUrl, 'JPEG', centerX, centerY, imgW, imgH, undefined, 'FAST');
               doc.restoreGraphicsState();
             } catch(e) { console.error('Erro marca dágua PDF:', e); }
           }
         };
 
         // Adicionar na primeira página
-        addWatermark();
+        await addWatermark();
 
         const hexToRgb = (hex) => {
           const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
@@ -3189,8 +3191,9 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           if (type === 'site') {
             doc.setDrawColor(37, 99, 235); doc.setTextColor(37, 99, 235);
             doc.circle(cx, cy, size / 2, 'S');
-            doc.line(x + 0.8, cy, x + size - 0.8, cy);
-            doc.line(cx, y + 0.8, cx, y + size - 0.8);
+            doc.ellipse(cx, cy, size * 0.64, size * 0.23, 'S');
+            doc.setLineWidth(0.45);
+            doc.line(x + size * 0.22, y + size * 0.76, x + size * 0.78, y + size * 0.24);
           } else if (type === 'instagram') {
             doc.setFillColor(219, 39, 119); doc.setDrawColor(219, 39, 119);
             doc.roundedRect(x, y, size, size, 1, 1, 'F');
@@ -3226,11 +3229,11 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           { type: 'tiktok', label: 'TikTok', value: config.tiktok || config.config_tiktok },
           { type: 'whatsapp', label: 'WhatsApp', value: formatarTelefone(config.whatsapp || config.config_whatsapp) },
         ].map(item => ({ ...item, value: String(item.value || '').trim() })).filter(item => item.value);
-        const addSocialFooter = () => {
+        const addSocialFooter = async () => {
           if (!socialItems.length) return;
           const rows = Math.ceil(socialItems.length / 2);
           const neededH = 8 + rows * 5.5;
-          if (y + neededH > 282) { doc.addPage(); addWatermark(); y = margin; }
+          if (y + neededH > 282) { doc.addPage(); await addWatermark(); y = margin; }
           doc.setDrawColor(220, 220, 220);
           doc.line(margin, y, pageW - margin, y);
           y += 4;
@@ -3365,7 +3368,7 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         // Totais e Desconto
         if (y > 240) { 
           doc.addPage(); 
-          addWatermark();
+          await addWatermark();
           y = margin; 
         }
         
@@ -3510,7 +3513,7 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         }
         
         // --- SOLUÇÃO DEFINITIVA: Mesclagem de Anexo ---
-        addSocialFooter();
+        await addSocialFooter();
         
         let finalPdfBlob = doc.output('blob');
         
