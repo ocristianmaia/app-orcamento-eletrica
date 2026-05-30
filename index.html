@@ -3187,18 +3187,20 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         const drawSocialIcon = (type, x, y, size) => {
           const cx = x + size / 2;
           const cy = y + size / 2;
-          doc.setLineWidth(0.35);
+          doc.setLineWidth(0.45);
           if (type === 'site') {
-            doc.setDrawColor(37, 99, 235); doc.setTextColor(37, 99, 235);
-            doc.circle(cx, cy, size / 2, 'S');
-            doc.ellipse(cx, cy, size * 0.64, size * 0.23, 'S');
-            doc.setLineWidth(0.45);
-            doc.line(x + size * 0.22, y + size * 0.76, x + size * 0.78, y + size * 0.24);
+            doc.setFillColor(37, 99, 235);
+            doc.circle(cx, cy, size / 2, 'F');
+            doc.setDrawColor(255, 255, 255);
+            doc.circle(cx, cy, size * 0.34, 'S');
+            doc.ellipse(cx, cy, size * 0.34, size * 0.14, 'S');
+            doc.setLineWidth(0.35);
+            doc.line(x + size * 0.22, cy, x + size * 0.78, cy);
           } else if (type === 'instagram') {
             doc.setFillColor(219, 39, 119); doc.setDrawColor(219, 39, 119);
             doc.roundedRect(x, y, size, size, 1, 1, 'F');
             doc.setDrawColor(255, 255, 255);
-            doc.roundedRect(x + 1, y + 1, size - 2, size - 2, 0.8, 0.8, 'S');
+            doc.roundedRect(x + size * 0.22, y + size * 0.22, size * 0.56, size * 0.56, 0.8, 0.8, 'S');
             doc.circle(cx, cy, size * 0.18, 'S');
             doc.circle(x + size * 0.73, y + size * 0.27, size * 0.07, 'F');
           } else if (type === 'facebook') {
@@ -3232,29 +3234,30 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         const addSocialFooter = async () => {
           if (!socialItems.length) return;
           const rows = Math.ceil(socialItems.length / 2);
-          const neededH = 8 + rows * 5.5;
+          const neededH = 12 + rows * 6.5;
           if (y + neededH > 282) { doc.addPage(); await addWatermark(); y = margin; }
           doc.setDrawColor(220, 220, 220);
           doc.line(margin, y, pageW - margin, y);
           y += 4;
           doc.setFontSize(7); doc.setFont(undefined, 'bold'); doc.setTextColor(pr, pg, pb);
           doc.text('CONTATOS E REDES SOCIAIS:', margin, y);
-          y += 4;
+          y += 6;
           const colW = contentW / 2;
-          const iconSize = 4;
+          const iconSize = 5;
           socialItems.forEach((item, index) => {
             const col = index % 2;
             const row = Math.floor(index / 2);
             const x = margin + col * colW;
-            const itemY = y + row * 5.5;
-            drawSocialIcon(item.type, x, itemY - 3.2, iconSize);
+            const itemY = y + row * 6.5;
+            drawSocialIcon(item.type, x, itemY - 4.1, iconSize);
             doc.setFontSize(7); doc.setFont(undefined, 'normal'); doc.setTextColor(70, 70, 70);
-            doc.text(fitText(`${item.label}: ${item.value}`, colW - 8), x + 6, itemY);
+            doc.text(fitText(`${item.label}: ${item.value}`, colW - 10), x + 7.5, itemY);
           });
-          y += rows * 5.5 + 1;
+          y += rows * 6.5 + 1;
         };
 
         // Logo com proporção mantida
+        let logoAreaH = 0;
         if (config.logo) {
           try {
             // Definir área máxima para a logo (35mm largura x 18mm altura)
@@ -3266,19 +3269,23 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
               if (ratio > maxW / maxH) { finalH = maxW / ratio; } else { finalW = maxH * ratio; }
             }
             doc.addImage(logoPdf.dataUrl, 'JPEG', margin, y, finalW, finalH, undefined, 'FAST');
+            logoAreaH = finalH;
           } catch(e) { console.error('Erro logo PDF:', e); }
-          y += 2;
         }
 
         // Cabeçalho Empresa
+        const headerTop = y;
+        const companyBlockX = config.logo ? margin + 55 : margin;
+        const companyBlockW = pageW - margin - companyBlockX;
+        const companyCenterX = companyBlockX + companyBlockW / 2;
         doc.setFontSize(12); doc.setFont(undefined,'bold');
         doc.setTextColor(pr,pg,pb);
-        doc.text(config.nome || 'Profissional', config.logo ? margin + 35 : margin, y + 5);
+        doc.text(config.nome || 'Profissional', companyCenterX, headerTop + 5, { align: 'center' });
         doc.setFontSize(8); doc.setFont(undefined,'normal'); doc.setTextColor(80,80,80);
         const profEnd = `${config.logradouro||''}, ${config.numero||'s/n'} - ${config.bairro||''} - ${config.cidade||''}/${config.uf||''}`;
-        doc.text(profEnd, config.logo ? margin + 35 : margin, y + 10);
-        doc.text(`Tel: ${formatarTelefone(config.telefone)} | ${getLabelEValorDoc(config.doc).label} ${getLabelEValorDoc(config.doc).valor}`, config.logo ? margin + 35 : margin, y + 15);
-        y += 22;
+        doc.text(fitText(profEnd, companyBlockW), companyCenterX, headerTop + 10, { align: 'center' });
+        doc.text(fitText(`Tel: ${formatarTelefone(config.telefone)} | ${getLabelEValorDoc(config.doc).label} ${getLabelEValorDoc(config.doc).valor}`, companyBlockW), companyCenterX, headerTop + 15, { align: 'center' });
+        y = headerTop + Math.max(logoAreaH, 18) + 8;
 
         doc.setDrawColor(200,200,200); doc.line(margin, y, pageW - margin, y); y += 8;
 
