@@ -862,7 +862,7 @@
     /* Ajuste para avisos embaralhados */
     body.dark .bg-blue-50 { background-color: #1e3a8a !important; border-color: #1e40af !important; }
     body.dark .text-blue-800 { color: #bfdbfe !important; }
-    
+
     /* Harmonização e Refinamentos de Layout */
     body.dark #pdf-preview { background-color: #0f172a !important; color: #f8fafc !important; border-color: #334155 !important; }
     body.dark #pdf-preview [style*="background-color: #f8fafc"], 
@@ -870,11 +870,31 @@
     body.dark #pdf-preview [style*="border-bottom: 2px solid #333"] { border-color: #475569 !important; }
     body.dark #pdf-preview .text-gray-500, body.dark #pdf-preview .text-gray-600 { color: #94a3b8 !important; }
     
-    /* Seção de Marca d'água e Layout */
-    body.dark #watermark-preview-container .bg-white { background-color: #0f172a !important; border-color: #334155 !important; }
-    body.dark #watermark-preview { filter: brightness(0.8) contrast(1.2); }
-    body.dark .accent-blue-600 { accent-color: #38bdf8 !important; }
-    body.dark input[type="range"] { background-color: #334155 !important; }
+    /* Forçar visibilidade de textos que estavam apagados na foto */
+    body.dark #pdf-preview [style*="color: #000"],
+    body.dark #pdf-preview [style*="color: #1a1a1a"],
+    body.dark #pdf-preview [style*="color: #333"],
+    body.dark #pdf-preview [style*="color: #444"],
+    body.dark #pdf-preview [style*="color: #666"] { color: #f8fafc !important; }
+    
+    /* Ajuste do box amarelo de aviso no PDF */
+    body.dark #pdf-preview [style*="background-color: #fffbeb"] { background-color: #422006 !important; border-color: #78350f !important; }
+    body.dark #pdf-preview [style*="color: #92400e"] { color: #fde68a !important; }
+
+    /* Seção de Marca d'água e Layout - FUNDO BRANCO E TEXTOS ESCUROS */
+    body.dark #section-orcamento-config .bg-gray-50\/50,
+    body.dark #section-orcamento-config #watermark-preview-container .bg-white { 
+      background-color: #ffffff !important; 
+      border-color: #e2e8f0 !important; 
+    }
+    body.dark #section-orcamento-config label, 
+    body.dark #section-orcamento-config p:not(.text-amber-600),
+    body.dark #section-orcamento-config span:not(.text-blue-600) { 
+      color: #1e293b !important; 
+    }
+    body.dark #section-orcamento-config .text-gray-500 { color: #64748b !important; }
+    body.dark #section-orcamento-config .text-blue-600 { color: #2563eb !important; }
+    body.dark #section-orcamento-config .bg-gray-200 { background-color: #e2e8f0 !important; }
     
     /* Botões e Status */
     body.dark .peer-checked\:bg-blue-50:has(:checked) { background-color: #1e3a8a !important; color: #f8fafc !important; }
