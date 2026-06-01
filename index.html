@@ -729,6 +729,36 @@
       color: #94a3b8;
       margin-bottom: 8px;
     }
+
+    /* ===== DARK MODE OVERRIDES ===== */
+    body.dark { background-color: #0f172a !important; color: #f8fafc !important; }
+    body.dark .app-header { background: rgba(15, 23, 42, 0.9) !important; border-color: #334155 !important; }
+    body.dark .app-header h1 { color: #f8fafc !important; }
+    body.dark .card, body.dark .dashboard-card, body.dark .dashboard-panel, body.dark .quick-action-card, body.dark .modal > div, body.dark .executive-filter-card, body.dark .orcamento-executive-card, body.dark .orcamento-executive-card-mobile { 
+      background-color: #1e293b !important; border-color: #334155 !important; color: #f8fafc !important; 
+    }
+    body.dark .input-field, body.dark .executive-select, body.dark .orcamento-status-select, body.dark .orcamento-mobile-status-select, body.dark select, body.dark textarea { 
+      background-color: #1e293b !important; border-color: #334155 !important; color: #f8fafc !important; 
+    }
+    body.dark .bg-white { background-color: #1e293b !important; }
+    body.dark .bg-gray-50 { background-color: #0f172a !important; }
+    body.dark .bg-gray-100 { background-color: #334155 !important; }
+    body.dark .text-gray-900, body.dark .text-gray-800, body.dark .text-slate-950, body.dark .text-gray-700 { color: #f8fafc !important; }
+    body.dark .text-gray-600 { color: #cbd5e1 !important; }
+    body.dark .text-gray-500 { color: #94a3b8 !important; }
+    body.dark .border-gray-100, body.dark .border-gray-200, body.dark .border-slate-200, body.dark .border { border-color: #334155 !important; }
+    body.dark .mobile-menu-panel { background-color: #1e293b !important; border-color: #334155 !important; }
+    body.dark .mobile-menu-item { color: #cbd5e1 !important; }
+    body.dark .mobile-menu-item:hover, body.dark .mobile-menu-item.active { background-color: #334155 !important; color: #38bdf8 !important; }
+    body.dark .tab.active { color: #38bdf8 !important; border-color: #38bdf8 !important; }
+    body.dark .section-title { color: #64748b !important; }
+    body.dark .btn-executive-secondary { background-color: #334155 !important; color: #f8fafc !important; border-color: #475569 !important; }
+    body.dark .orcamento-total-pill { background-color: #0f172a !important; color: #f8fafc !important; border-color: #334155 !important; }
+    body.dark .filtros-orcamento-toggle { color: #f8fafc !important; }
+    body.dark .orcamento-mobile-name { color: #f8fafc !important; }
+    body.dark .orcamento-mobile-value { color: #f8fafc !important; }
+    body.dark .badge-pendente, body.dark .select-pendente { background:#422006 !important; color:#fbbf24 !important; border-color:#78350f !important; }
+    body.dark .badge-aprovado, body.dark .select-aprovado { background:#064e3b !important; color:#34d399 !important; border-color:#065f46 !important; }
   </style>
 </head>
 <body>
@@ -2249,6 +2279,18 @@
                       </div>
                     </label>
                   </div>
+                  <div class="pt-4 border-t">
+                    <label class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border cursor-pointer">
+                      <div>
+                        <p class="text-sm font-medium text-gray-800">Modo Escuro</p>
+                        <p class="text-xs text-gray-500">Altera a aparência do site para cores escuras</p>
+                      </div>
+                      <div class="relative inline-flex h-6 w-11 items-center cursor-pointer">
+                        <input type="checkbox" id="config-dark-mode" class="sr-only peer" onchange="applyDarkMode(this.checked)">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      </div>
+                    </label>
+                  </div>
                 </div>
                 <div class="mt-5">
                   <button type="button" onclick="saveConfigData()" class="w-full btn-primary">Salvar Ajustes</button>
@@ -2630,6 +2672,14 @@ const googleClientId = "424397941585-6p8t7bguc7gieejconvr2h9603rfdrtu.apps.googl
     window.toggleQtdEstoque = (cb) => {
       const div = document.getElementById('div-qtd-estoque');
       if (cb.checked) div.classList.remove('hidden'); else div.classList.add('hidden');
+    };
+
+    window.applyDarkMode = (isDark) => {
+      if (isDark) {
+        document.body.classList.add('dark');
+      } else {
+        document.body.classList.remove('dark');
+      }
     };
 
     function resetCurrentOrcamento() {
@@ -4896,6 +4946,7 @@ Qualquer dúvida estou à disposição!`;
           ocultar_mao_de_obra: document.getElementById('config-ocultar-mao-de-obra')?.checked || false,
           ocultar_estoque: document.getElementById('config-ocultar-estoque')?.checked || false,
           ocultar_servico: document.getElementById('config-ocultar-servico')?.checked || false,
+          dark_mode: document.getElementById('config-dark-mode')?.checked || false,
         };
         // Validação: não permite ocultar todos os modos de orçamento simultaneamente (precisa de pelo menos 1 ativo)
         if (data.ocultar_mao_de_obra && data.ocultar_servico && data.ocultar_estoque) {
@@ -5008,6 +5059,12 @@ Qualquer dúvida estou à disposição!`;
       if (ocultarEstoqueEl) ocultarEstoqueEl.checked = c.ocultar_estoque || false;
       const ocultarServicoEl = el('config-ocultar-servico');
       if (ocultarServicoEl) ocultarServicoEl.checked = c.ocultar_servico || false;
+      
+      const darkModeEl = el('config-dark-mode');
+      if (darkModeEl) {
+        darkModeEl.checked = c.dark_mode || false;
+        applyDarkMode(c.dark_mode || false);
+      }
       
       const containerMat = el('container-estoque-avulso');
       if (containerMat) {
