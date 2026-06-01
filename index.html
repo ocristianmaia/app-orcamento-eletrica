@@ -4957,8 +4957,18 @@ Qualquer dúvida estou à disposição!`;
       const { config, currentOrcamento: orc } = appState;
       const previewEl = document.getElementById('pdf-preview');
       if (!orc?.cliente) { previewEl.innerHTML = '<p class="text-gray-400 text-center mt-8 text-sm">Selecione um cliente para começar.</p>'; return; }
-      const corP = config.config_color_primary || '#000000';
-      const corT = config.config_color_secondary || '#1e40af';
+      
+      const isDark = document.body.classList.contains('dark');
+      const corP = config.config_color_primary || (isDark ? '#f8fafc' : '#000000');
+      const corT = config.config_color_secondary || (isDark ? '#38bdf8' : '#1e40af');
+      const borderColor = isDark ? '#334155' : '#ccc';
+      const textColor = isDark ? '#f8fafc' : '#333';
+      const secondaryBg = isDark ? '#1e293b' : '#f5f5f5';
+      const totalBg = isDark ? '#1e3a8a' : '#f0f4ff';
+      const validadeBg = isDark ? '#422006' : '#FFFFCC';
+      const validadeBorder = isDark ? '#78350f' : '#eee';
+      const validadeText = isDark ? '#fde68a' : '#000';
+
       const numSeq = String(orc.numeroOrcamento||'').padStart(3,'0');
       const dateRef = orc.createdAt ? new Date(orc.createdAt) : new Date();
       const anoFull = dateRef.getFullYear();
@@ -4978,69 +4988,69 @@ Qualquer dúvida estou à disposição!`;
         const linhas = orc.tiposDeServico.map(s => {
           const qtd = s.quantidade||1, tot = s.valor*qtd;
           subtotalServicos += tot;
-          return `<tr><td style="padding:3px 2px">${s.descricao||''}</td><td style="padding:3px 2px;text-align:center">${qtd}</td><td style="padding:3px 2px;text-align:right">R$ ${(s.valor||0).toFixed(2)}</td><td style="padding:3px 2px;text-align:right">R$ ${tot.toFixed(2)}</td></tr>`;
+          return `<tr><td style="padding:3px 2px;color:${textColor}">${s.descricao||''}</td><td style="padding:3px 2px;text-align:center;color:${textColor}">${qtd}</td><td style="padding:3px 2px;text-align:right;color:${textColor}">R$ ${(s.valor||0).toFixed(2)}</td><td style="padding:3px 2px;text-align:right;color:${textColor}">R$ ${tot.toFixed(2)}</td></tr>`;
         }).join('');
-        tiposHtml = `<h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">SERVIÇOS:</h4><table style="width:100%;border-collapse:collapse;font-size:0.85em;margin-bottom:8px"><thead><tr><th style="text-align:left;padding:3px 2px;border-bottom:1px solid #ccc">Descrição</th><th style="text-align:center;padding:3px 2px;border-bottom:1px solid #ccc">Qtd</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid #ccc">Unit.</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid #ccc">Total</th></tr></thead><tbody>${linhas}</tbody></table>`;
+        tiposHtml = `<h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">SERVIÇOS:</h4><table style="width:100%;border-collapse:collapse;font-size:0.85em;margin-bottom:8px"><thead><tr><th style="text-align:left;padding:3px 2px;border-bottom:1px solid ${borderColor};color:${corP}">Descrição</th><th style="text-align:center;padding:3px 2px;border-bottom:1px solid ${borderColor};color:${corP}">Qtd</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid ${borderColor};color:${corP}">Unit.</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid ${borderColor};color:${corP}">Total</th></tr></thead><tbody>${linhas}</tbody></table>`;
       }
       if (modoCobranca === 'mao_de_obra') {
         totalMaoDeObra = orc.maoDeObra?.valor||0;
-        if (totalMaoDeObra > 0) moHtml = `<h4 style="font-size:1em;font-weight:bold;margin-top:10px;margin-bottom:4px;color:${corP}">MÃO DE OBRA:</h4><div style="text-align:right"><span>${orc.maoDeObra.label}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>`;
+        if (totalMaoDeObra > 0) moHtml = `<h4 style="font-size:1em;font-weight:bold;margin-top:10px;margin-bottom:4px;color:${corP}">MÃO DE OBRA:</h4><div style="text-align:right;color:${textColor}"><span>${orc.maoDeObra.label}: R$ ${totalMaoDeObra.toFixed(2)}</span></div>`;
       }
       if (usarEstoque === 'sim' && orc.items?.length > 0) {
         const linhas = orc.items.map(item => {
           const tot = item.valor*(item.quantidade||1);
           subtotalEstoque += tot;
-          return `<tr><td style="padding:3px 2px">${item.tipo==='estoque'?'# ':''}${item.nome}</td><td style="padding:3px 2px;text-align:center">${item.quantidade||1} ${item.unidade||'UNID'}</td><td style="padding:3px 2px;text-align:right">R$ ${item.valor.toFixed(2)}</td><td style="padding:3px 2px;text-align:right">R$ ${tot.toFixed(2)}</td></tr>`;
+          return `<tr><td style="padding:3px 2px;color:${textColor}">${item.tipo==='estoque'?'# ':''}${item.nome}</td><td style="padding:3px 2px;text-align:center;color:${textColor}">${item.quantidade||1} ${item.unidade||'UNID'}</td><td style="padding:3px 2px;text-align:right;color:${textColor}">R$ ${item.valor.toFixed(2)}</td><td style="padding:3px 2px;text-align:right;color:${textColor}">R$ ${tot.toFixed(2)}</td></tr>`;
         }).join('');
-        matHtml = `<h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">ESTOQUE:</h4><table style="width:100%;border-collapse:collapse;font-size:0.85em"><thead><tr><th style="text-align:left;padding:3px 2px;border-bottom:1px solid #ccc">Descrição</th><th style="text-align:center;padding:3px 2px;border-bottom:1px solid #ccc">Qtd</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid #ccc">Unit.</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid #ccc">Total</th></tr></thead><tbody>${linhas}</tbody></table><div style="text-align:right;font-weight:bold;margin-top:6px;padding-top:4px;border-top:1px solid #ccc"><span>Subtotal Estoque: R$ ${subtotalEstoque.toFixed(2)}</span></div>`;
+        matHtml = `<h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">ESTOQUE:</h4><table style="width:100%;border-collapse:collapse;font-size:0.85em"><thead><tr><th style="text-align:left;padding:3px 2px;border-bottom:1px solid ${borderColor};color:${corP}">Descrição</th><th style="text-align:center;padding:3px 2px;border-bottom:1px solid ${borderColor};color:${corP}">Qtd</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid ${borderColor};color:${corP}">Unit.</th><th style="text-align:right;padding:3px 2px;border-bottom:1px solid ${borderColor};color:${corP}">Total</th></tr></thead><tbody>${linhas}</tbody></table><div style="text-align:right;font-weight:bold;margin-top:6px;padding-top:4px;border-top:1px solid ${borderColor};color:${textColor}"><span>Subtotal Estoque: R$ ${subtotalEstoque.toFixed(2)}</span></div>`;
       }
       const estoqueAvulso = parseFloat(document.getElementById('orc-estoque-avulso')?.value) || orc.estoqueAvulso || 0;
       orc.estoqueAvulso = estoqueAvulso; // Sincroniza o estado
       const subtotal = subtotalServicos + subtotalEstoque + totalMaoDeObra + estoqueAvulso;
       let estoqueAvulsoHtml = '';
       if (estoqueAvulso > 0) {
-        estoqueAvulsoHtml = `<div style="text-align:right;background:#f0f9ff;padding:6px 4px;margin-top:6px;border:1px solid #bfdbfe;border-radius:4px"><span style="font-weight:bold">Estoque Avulso (Cotacao Externa): R$ ${estoqueAvulso.toFixed(2)}</span></div>`;
+        estoqueAvulsoHtml = `<div style="text-align:right;background:${isDark ? '#083344' : '#f0f9ff'};padding:6px 4px;margin-top:6px;border:1px solid ${isDark ? '#164e63' : '#bfdbfe'};border-radius:4px;color:${isDark ? '#22d3ee' : '#000'}"><span style="font-weight:bold">Estoque Avulso (Cotacao Externa): R$ ${estoqueAvulso.toFixed(2)}</span></div>`;
       }
       let valorDesconto = 0, descontoHtml = '';
       if (orc.desconto?.tipo !== 'nenhum' && orc.desconto?.valor > 0) {
         valorDesconto = orc.desconto.tipo === 'percent' ? (subtotal*orc.desconto.valor/100) : orc.desconto.valor;
-        descontoHtml = `<div style="text-align:right;background:#f5f5f5;padding:2px 0"><span>Desconto: R$ -${valorDesconto.toFixed(2)}</span></div>`;
+        descontoHtml = `<div style="text-align:right;background:${secondaryBg};padding:2px 0;color:${textColor}"><span>Desconto: R$ -${valorDesconto.toFixed(2)}</span></div>`;
       }
       orc.total = subtotal - valorDesconto;
       let pagHtml = '';
       if (config.config_pix_chave || config.config_cartao_vezes || config.config_deposito_banco) {
-        pagHtml = `<div style="border:2px dotted #888;padding:8px;margin-top:15px"><h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">Formas de Pagamento:</h4><div style="font-size:0.85em;line-height:1.4">`;
+        pagHtml = `<div style="border:2px dotted ${isDark ? '#475569' : '#888'};padding:8px;margin-top:15px"><h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">Formas de Pagamento:</h4><div style="font-size:0.85em;line-height:1.4;color:${textColor}">`;
         if (config.config_pix_chave) pagHtml += `<strong>PIX:</strong> ${config.config_pix_chave}<br>`;
         if (config.config_cartao_vezes) pagHtml += `<strong>Cartão:</strong> até ${config.config_cartao_vezes}x<br>`;
         if (config.config_deposito_banco) pagHtml += `<strong>Depósito:</strong> ${config.config_deposito_banco}<br>`;
         pagHtml += '</div></div>';
       }
       const validade = config.validade_orcamento || 15;
-      previewEl.innerHTML = `<div style="padding:8px 16px 16px 12px">
+      previewEl.innerHTML = `<div style="padding:8px 16px 16px 12px;color:${textColor}">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:15px">
           <div style="text-align:left;max-width:70%">
-            <strong style="font-size:1.1em;display:block">${config.nome||'Nome do Profissional'}</strong>
-            <span style="display:block;font-size:0.85em">${profEnd1}</span>
-            <span style="display:block;font-size:0.85em">${profEnd2}</span>
-            <span style="display:block;font-size:0.85em">Tel: ${formatarTelefone(config.telefone)} | ${pDocL} ${pDocV}</span>
+            <strong style="font-size:1.1em;display:block;color:${corP}">${config.nome||'Nome do Profissional'}</strong>
+            <span style="display:block;font-size:0.85em;color:${textColor}">${profEnd1}</span>
+            <span style="display:block;font-size:0.85em;color:${textColor}">${profEnd2}</span>
+            <span style="display:block;font-size:0.85em;color:${textColor}">Tel: ${formatarTelefone(config.telefone)} | ${pDocL} ${pDocV}</span>
           </div>
           ${config.logo ? `<div style="text-align:right;flex-shrink:0;margin-left:15px"><img src="${config.logo}" alt="Logo" style="max-width:120px;max-height:60px"></div>` : ''}
         </div>
-        <hr style="margin:10px 0">
+        <hr style="margin:10px 0;border-color:${borderColor}">
         <h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">Pedido Nº: ${codOrc}</h4>
         <h4 style="font-size:1em;font-weight:bold;margin-bottom:8px;color:${corP}">Data: ${dataFmt}</h4>
-        <strong style="display:block">${orc.cliente.nome}</strong>
-        <span style="display:block;font-size:0.85em">${cliEnd}</span>
-        ${orc.cliente.documento ? `<span style="display:block;font-size:0.85em">${cDocL} ${cDocV}</span>` : ''}
-        <span style="display:block;font-size:0.85em">Tel: ${formatarTelefone(orc.cliente.telefone)}</span>
-        <hr style="margin:10px 0">
-        ${orc.descricaoServico ? `<h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">DESCRIÇÃO DO SERVIÇO:</h4><p style="font-size:0.85em;margin-bottom:8px;white-space:pre-line">${orc.descricaoServico}</p>` : ''}
+        <strong style="display:block;color:${corP}">${orc.cliente.nome}</strong>
+        <span style="display:block;font-size:0.85em;color:${textColor}">${cliEnd}</span>
+        ${orc.cliente.documento ? `<span style="display:block;font-size:0.85em;color:${textColor}">${cDocL} ${cDocV}</span>` : ''}
+        <span style="display:block;font-size:0.85em;color:${textColor}">Tel: ${formatarTelefone(orc.cliente.telefone)}</span>
+        <hr style="margin:10px 0;border-color:${borderColor}">
+        ${orc.descricaoServico ? `<h4 style="font-size:1em;font-weight:bold;margin-bottom:4px;color:${corP}">DESCRIÇÃO DO SERVIÇO:</h4><p style="font-size:0.85em;margin-bottom:8px;white-space:pre-line;color:${textColor}">${orc.descricaoServico}</p>` : ''}
         ${tiposHtml}${matHtml}${moHtml}${estoqueAvulsoHtml}${descontoHtml}
-        <div style="text-align:right;font-size:1.1em;font-weight:bold;margin-top:8px;padding:8px 4px;border-top:2px solid ${corT};color:${corT};background:#f0f4ff">TOTAL: R$ ${orc.total.toFixed(2)}</div>
+        <div style="text-align:right;font-size:1.1em;font-weight:bold;margin-top:8px;padding:8px 4px;border-top:2px solid ${corT};color:${corT};background:${totalBg}">TOTAL: R$ ${orc.total.toFixed(2)}</div>
         <div style="margin-top:8px">${pagHtml}
-          ${orc.cotacao ? `<div style="font-size:0.8em;margin-top:8px;padding:8px;background:#f3e8ff;border:1px solid #ddd6fe;border-radius:4px;text-align:center"><strong>Cotação Anexada:</strong> <button onclick="abrirAnexoCotacao()" style="color:#6b21a8;text-decoration:underline;background:none;border:none;cursor:pointer;font-weight:bold">${orc.cotacao.nome} (Clique para abrir)</button></div>` : ''}
-          <div style="font-size:0.8em;margin-top:4px;text-align:center;background:#FFFFCC;padding:4px;border:1px solid #eee">Orçamento válido por ${validade} dias.</div>
-          ${(config.obs_padrao||config.config_obs_padrao) ? `<div style="font-size:0.78em;margin-top:4px;padding:4px;border:1px solid #e5e7eb;border-radius:4px;color:#555;white-space:pre-line">${config.obs_padrao||config.config_obs_padrao}</div>` : ''}
+          ${orc.cotacao ? `<div style="font-size:0.8em;margin-top:8px;padding:8px;background:${isDark ? '#3b0764' : '#f3e8ff'};border:1px solid ${isDark ? '#581c87' : '#ddd6fe'};border-radius:4px;text-align:center;color:${isDark ? '#d8b4fe' : '#000'}"><strong>Cotação Anexada:</strong> <button onclick="abrirAnexoCotacao()" style="color:${isDark ? '#e9d5ff' : '#6b21a8'};text-decoration:underline;background:none;border:none;cursor:pointer;font-weight:bold">${orc.cotacao.nome} (Clique para abrir)</button></div>` : ''}
+          <div style="font-size:0.8em;margin-top:4px;text-align:center;background:${validadeBg};padding:4px;border:1px solid ${validadeBorder};color:${validadeText}">Orçamento válido por ${validade} dias.</div>
+          ${(config.obs_padrao||config.config_obs_padrao) ? `<div style="font-size:0.78em;margin-top:4px;padding:4px;border:1px solid ${borderColor};border-radius:4px;color:${isDark ? '#94a3b8' : '#555'};white-space:pre-line">${config.obs_padrao||config.config_obs_padrao}</div>` : ''}
         </div>
       </div>`;
     }
