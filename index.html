@@ -944,6 +944,15 @@
       color: #475569 !important;
       opacity: 0.7;
     }
+
+    /* Correção do botão Fechar no modal de orçamento */
+    body.dark #orcamento-modal .bg-gray-200 {
+      background-color: #334155 !important;
+      color: #f8fafc !important;
+    }
+    body.dark #orcamento-modal .bg-gray-200:hover {
+      background-color: #475569 !important;
+    }
   </style>
 </head>
 <body>
@@ -1296,8 +1305,16 @@
         <h3 class="text-xl font-bold text-gray-900">Pré-visualização do Orçamento</h3>
         <button onclick="closePdfPreviewModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">&times;</button>
       </div>
-      <div class="flex-grow bg-gray-100 rounded-lg overflow-hidden relative">
-        <iframe id="pdf-preview-iframe" class="w-full h-full border-none"></iframe>
+      <div class="flex-grow bg-gray-100 rounded-lg overflow-hidden relative flex flex-col">
+        <iframe id="pdf-preview-iframe" class="w-full h-full border-none flex-grow"></iframe>
+        <!-- Botão de download alternativo para Android -->
+        <div id="android-pdf-fallback" class="hidden p-4 bg-white border-t border-gray-200 text-center">
+          <p class="text-xs text-gray-500 mb-2">Se o PDF não carregar, use o botão abaixo:</p>
+          <button id="btn-android-download" class="btn-primary py-2 px-4 text-sm inline-flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Baixar Orçamento (PDF)
+          </button>
+        </div>
       </div>
       <div class="mt-4 flex gap-3">
         <button onclick="closePdfPreviewModal()" class="flex-1 py-3 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-colors">Cancelar</button>
@@ -3883,6 +3900,23 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         const previewModal = document.getElementById('pdf-preview-modal');
         previewModal.style.zIndex = "10000"; // Garantir que fique à frente de outros modais
         previewModal.classList.add('active');
+
+        // Lógica para Android: mostrar botão de download se o iframe falhar ou por segurança
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        const androidFallback = document.getElementById('android-pdf-fallback');
+        const btnAndroidDownload = document.getElementById('btn-android-download');
+        
+        if (isAndroid) {
+          androidFallback.classList.remove('hidden');
+          btnAndroidDownload.onclick = () => {
+            const a = document.createElement('a');
+            a.href = pdfUrl;
+            a.download = `Orcamento_${codOrc.replace(/\//g,'_')}.pdf`;
+            a.click();
+          };
+        } else {
+          androidFallback.classList.add('hidden');
+        }
         
         // Configurar botão de envio no preview
         const btnConfirmar = document.getElementById('btn-confirmar-envio');
@@ -6243,15 +6277,21 @@ Qualquer dúvida estou à disposição!`;
           uf: document.getElementById('cadastro-cliente-uf').value,
         };
         const docRef = await addDoc(collection(db, `users/${userId}/clientes`), novoCliente);
+        
+        // Otimização: Adicionar manualmente ao appState para resposta instantânea
+        if (!appState.clientes) appState.clientes = [];
+        appState.clientes.push({ id: docRef.id, ...novoCliente });
+        
         // Fechar o modal
         closeClienteCadastroModal();
-        // Atualizar o seletor de cliente e selecionar o novo cliente
-        setTimeout(() => {
-          populateClienteSelect();
-          const sel = document.getElementById('orc-cliente-select');
-          if (sel) sel.value = docRef.id;
+        
+        // Atualizar o seletor de cliente e selecionar o novo cliente (instantâneo)
+        populateClienteSelect();
+        const sel = document.getElementById('orc-cliente-select');
+        if (sel) {
+          sel.value = docRef.id;
           sel.dispatchEvent(new Event('change'));
-        }, 500);
+        }
       } catch(err) { console.error(err); alert('Erro ao salvar cliente.'); }
       finally { btn.disabled = false; btn.textContent = 'Salvar Cliente'; }
     });
