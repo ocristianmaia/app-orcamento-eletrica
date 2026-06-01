@@ -922,6 +922,28 @@
     /* Inputs e Placeholders */
     body.dark ::placeholder { color: #64748b !important; }
     body.dark .input-field:focus { border-color: #38bdf8 !important; ring-color: #38bdf8 !important; }
+    
+    /* Correção de transparência em inputs e selects */
+    body.dark input, body.dark select, body.dark textarea { 
+      background-color: #1e293b !important; 
+      color: #f8fafc !important; 
+      border-color: #334155 !important;
+    }
+    body.dark select option {
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+    }
+    body.dark .input-field {
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+    }
+    
+    /* Melhoria no contraste de botões desativados */
+    body.dark input:disabled, body.dark select:disabled {
+      background-color: #0f172a !important;
+      color: #475569 !important;
+      opacity: 0.7;
+    }
   </style>
 </head>
 <body>
@@ -4959,8 +4981,10 @@ Qualquer dúvida estou à disposição!`;
       if (!orc?.cliente) { previewEl.innerHTML = '<p class="text-gray-400 text-center mt-8 text-sm">Selecione um cliente para começar.</p>'; return; }
       
       const isDark = document.body.classList.contains('dark');
-      const corP = config.config_color_primary || (isDark ? '#f8fafc' : '#000000');
-      const corT = config.config_color_secondary || (isDark ? '#38bdf8' : '#1e40af');
+      // Forçar cores neutras na edição (Novo Orçamento) para não conflitar com o Modo Escuro
+      // As cores de configuração (config.config_color_primary) serão usadas apenas na geração real do PDF
+      const corP = isDark ? '#f8fafc' : '#000000';
+      const corT = isDark ? '#38bdf8' : '#1e40af';
       const borderColor = isDark ? '#334155' : '#ccc';
       const textColor = isDark ? '#f8fafc' : '#333';
       const secondaryBg = isDark ? '#1e293b' : '#f5f5f5';
