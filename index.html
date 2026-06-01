@@ -875,26 +875,35 @@
     body.dark #pdf-preview [style*="color: #1a1a1a"],
     body.dark #pdf-preview [style*="color: #333"],
     body.dark #pdf-preview [style*="color: #444"],
-    body.dark #pdf-preview [style*="color: #666"] { color: #f8fafc !important; }
+    body.dark #pdf-preview [style*="color: #555"],
+    body.dark #pdf-preview [style*="color: #666"],
+    body.dark #pdf-preview [style*="color: #777"],
+    body.dark #pdf-preview [style*="color: #888"] { color: #f8fafc !important; }
     
     /* Ajuste do box amarelo de aviso no PDF */
     body.dark #pdf-preview [style*="background-color: #fffbeb"] { background-color: #422006 !important; border-color: #78350f !important; }
-    body.dark #pdf-preview [style*="color: #92400e"] { color: #fde68a !important; }
+    body.dark #pdf-preview [style*="color: #92400e"],
+    body.dark #pdf-preview [style*="color: #b45309"] { color: #fde68a !important; }
 
-    /* Seção de Marca d'água e Layout - FUNDO BRANCO E TEXTOS ESCUROS */
-    body.dark #section-orcamento-config .bg-gray-50\/50,
-    body.dark #section-orcamento-config #watermark-preview-container .bg-white { 
+    /* Seção de Marca d'água e Layout - Ajustes de Botões e Labels */
+    body.dark #section-orcamento-config .btn-secondary { background-color: #334155 !important; color: #f8fafc !important; border-color: #475569 !important; }
+    body.dark #section-orcamento-config .btn-secondary:hover { background-color: #475569 !important; }
+    body.dark #section-orcamento-config .text-gray-800, 
+    body.dark #section-orcamento-config .text-gray-700 { color: #f8fafc !important; }
+    body.dark #section-orcamento-config .bg-blue-50 { background-color: #1e3a8a !important; border-color: #1d4ed8 !important; }
+    body.dark #section-orcamento-config .bg-green-50 { background-color: #064e3b !important; border-color: #065f46 !important; }
+
+    /* Seção de Marca d'água e Layout - FUNDO BRANCO APENAS NO CONTAINER DA IMAGEM */
+    body.dark #section-orcamento-config #watermark-preview-container .bg-white,
+    body.dark #section-orcamento-config .border-dashed.bg-gray-50\/50 { 
       background-color: #ffffff !important; 
       border-color: #e2e8f0 !important; 
     }
-    body.dark #section-orcamento-config label, 
-    body.dark #section-orcamento-config p:not(.text-amber-600),
-    body.dark #section-orcamento-config span:not(.text-blue-600) { 
+    body.dark #section-orcamento-config .border-dashed label, 
+    body.dark #section-orcamento-config .border-dashed p:not(.text-amber-600),
+    body.dark #section-orcamento-config .border-dashed span:not(.text-blue-600) { 
       color: #1e293b !important; 
     }
-    body.dark #section-orcamento-config .text-gray-500 { color: #64748b !important; }
-    body.dark #section-orcamento-config .text-blue-600 { color: #2563eb !important; }
-    body.dark #section-orcamento-config .bg-gray-200 { background-color: #e2e8f0 !important; }
     
     /* Botões e Status */
     body.dark .peer-checked\:bg-blue-50:has(:checked) { background-color: #1e3a8a !important; color: #f8fafc !important; }
