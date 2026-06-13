@@ -3400,6 +3400,14 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
       
       const orc = appState.currentOrcamento;
       if (!orc?.cliente) return alert('Selecione um cliente.');
+
+      // Registrar visualização para a lógica de orçamentos recentes
+      if (orc.id && userId) {
+        try {
+          const now = new Date();
+          await setDoc(doc(db, `users/${userId}/orcamentos/${orc.id}`), { lastViewedAt: serverTimestamp() }, { merge: true });
+        } catch(e) { console.warn('Erro ao registrar visualização:', e); }
+      }
       
       const btn = document.getElementById('btn-enviar-pdf');
       const originalText = btn ? btn.textContent : 'Enviar PDF';
@@ -3683,31 +3691,47 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           y = margin; 
         }
         
-        // Recalcular subtotal para garantir que estoque avulso está incluso
-        let subtotalPDF = 0;
-        if (orc.modoCobranca === 'por_servico') {
-          subtotalPDF += (orc.tiposDeServico || []).reduce((acc, s) => acc + (s.valor * (s.quantidade || 1)), 0);
-        } else {
-          subtotalPDF += (orc.maoDeObra?.valor || 0);
-        }
-        if (orc.usarEstoque === 'sim') {
-          subtotalPDF += (orc.items || []).reduce((acc, i) => acc + (i.valor * (i.quantidade || 1)), 0);
-        }
-        subtotalPDF += (orc.estoqueAvulso || 0);
+        // Recalcular valores separadamente para exibição detalhada
+        let valorServicoPDF = 0;
+        let valorMaterialPDF = 0;
 
-        // Estoque Avulso
-        if (orc.estoqueAvulso > 0) {
-          doc.setFontSize(9); doc.setTextColor(40,40,40);
-          doc.text('Estoque Avulso (Cotacao Externa):', margin, y);
-          doc.text(formatBRL(orc.estoqueAvulso), pageW - margin, y, { align: 'right' });
-          y += 6;
+        if (orc.modoCobranca === 'por_servico') {
+          valorServicoPDF = (orc.tiposDeServico || []).reduce((acc, s) => acc + (s.valor * (s.quantidade || 1)), 0);
+        } else {
+          valorServicoPDF = (orc.maoDeObra?.valor || 0);
         }
+
+        if (orc.usarEstoque === 'sim') {
+          valorMaterialPDF = (orc.items || []).reduce((acc, i) => acc + (i.valor * (i.quantidade || 1)), 0);
+        }
+        valorMaterialPDF += (orc.estoqueAvulso || 0);
+
+        const subtotalPDF = valorServicoPDF + valorMaterialPDF;
         
+        // Exibição Detalhada de Valores
+        doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.setTextColor(60, 60, 60);
+        
+        // Valor de Material
+        doc.text('VALOR DE MATERIAL:', margin, y);
+        doc.setFont(undefined, 'normal');
+        doc.text(formatBRL(valorMaterialPDF), pageW - margin, y, { align: 'right' });
+        y += 6;
+
+        // Valor de Mão de Obra / Serviço
+        doc.setFont(undefined, 'bold');
+        const labelServico = orc.modoCobranca === 'por_servico' ? 'VALOR DO SERVIÇO:' : 'VALOR DE MÃO DE OBRA:';
+        doc.text(labelServico, margin, y);
+        doc.setFont(undefined, 'normal');
+        doc.text(formatBRL(valorServicoPDF), pageW - margin, y, { align: 'right' });
+        y += 6;
+
         let valorDescontoPDF = 0;
         if (orc.desconto?.valor > 0) {
           valorDescontoPDF = orc.desconto.tipo === 'percent' ? (subtotalPDF * orc.desconto.valor / 100) : orc.desconto.valor;
-          doc.setFontSize(9); doc.setTextColor(150,0,0);
-          doc.text(`Desconto: - ${formatBRL(valorDescontoPDF)}`, pageW - margin, y, { align: 'right' });
+          doc.setFontSize(9); doc.setTextColor(150,0,0); doc.setFont(undefined, 'bold');
+          doc.text(`DESCONTO:`, margin, y);
+          doc.setFont(undefined, 'normal');
+          doc.text(`- ${formatBRL(valorDescontoPDF)}`, pageW - margin, y, { align: 'right' });
           y += 6;
         }
         
@@ -3717,7 +3741,7 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
         doc.setFillColor(tr,tg,tb);
         doc.rect(margin, y, contentW, 10, 'F');
         doc.setFontSize(12); doc.setFont(undefined,'bold'); doc.setTextColor(255,255,255);
-        doc.text('TOTAL DO ORÇAMENTO:', margin + 4, y + 6.5);
+        doc.text('VALOR TOTAL:', margin + 4, y + 6.5);
         doc.text(formatBRL(orc.total), pageW - margin - 4, y + 6.5, { align: 'right' });
         y += 18;
 
@@ -4051,9 +4075,17 @@ Qualquer dúvida estou à disposição!`;
     };
 
     // ===== Editar Orçamento =====
-    window.editOrcamento = (id) => {
+    window.editOrcamento = async (id) => {
       const orc = appState.orcamentos.find(o => o.id === id);
-      if (!orc) return alert('Orçamento não encontrado.');
+      if (!orc) return;
+      
+      // Registrar acesso/edição para a lógica de orçamentos recentes
+      if (userId) {
+        try {
+          await setDoc(doc(db, `users/${userId}/orcamentos/${id}`), { lastViewedAt: serverTimestamp() }, { merge: true });
+        } catch(e) { console.warn('Erro ao registrar acesso:', e); }
+      }
+      
       openOrcamentoModal(orc);
     };
 
@@ -4092,7 +4124,12 @@ Qualquer dúvida estou à disposição!`;
           return true;
         });
       } else {
-        list = list.slice(0, 3);
+        // Na home, mostrar os 3 últimos acessados/editados (usando lastViewedAt ou updatedAt)
+        list = [...list].sort((a, b) => {
+          const timeA = a.lastViewedAt?.toDate ? a.lastViewedAt.toDate().getTime() : (a.lastViewedAt ? new Date(a.lastViewedAt).getTime() : (a.createdAt?.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt || 0).getTime()));
+          const timeB = b.lastViewedAt?.toDate ? b.lastViewedAt.toDate().getTime() : (b.lastViewedAt ? new Date(b.lastViewedAt).getTime() : (b.createdAt?.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt || 0).getTime()));
+          return timeB - timeA;
+        }).slice(0, 3);
       }
 
       if (!list.length) {
