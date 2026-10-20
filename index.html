@@ -3557,6 +3557,14 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           }
         };
 
+        const ensurePdfSpace = async (requiredHeight) => {
+          if (y + requiredHeight > 282) {
+            doc.addPage();
+            await addWatermark();
+            y = margin;
+          }
+        };
+
         // Adicionar na primeira página
         await addWatermark();
 
@@ -3571,6 +3579,17 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
           if (doc.getTextWidth(output) <= maxWidth) return output;
           while (output.length > 3 && doc.getTextWidth(output + '...') > maxWidth) output = output.slice(0, -1);
           return output + '...';
+        };
+        const fitMoneyTableCell = (data) => {
+          if (data.section !== 'body' || ![2, 3].includes(data.column.index)) return;
+          const text = Array.isArray(data.cell.text) ? data.cell.text.join(' ') : String(data.cell.text || '');
+          const previousFontSize = doc.getFontSize();
+          doc.setFontSize(8);
+          const textWidth = doc.getTextWidth(text);
+          doc.setFontSize(previousFontSize);
+          const availableWidth = 32;
+          data.cell.styles.fontSize = textWidth > availableWidth ? 8 * availableWidth / textWidth : 8;
+          data.cell.styles.overflow = 'visible';
         };
         const drawFallbackSocialIcon = (type, x, y, size) => {
           const cx = x + size / 2;
@@ -3720,13 +3739,27 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
 
         // Descrição do Serviço
         if (orc.descricaoServico) {
+          await ensurePdfSpace(10);
           doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(pr,pg,pb);
           doc.text('DESCRIÇÃO DO SERVIÇO:', margin, y);
           y += 5;
           doc.setFont(undefined,'normal'); doc.setTextColor(60,60,60);
           const lines = doc.splitTextToSize(orc.descricaoServico, contentW);
-          doc.text(lines, margin, y);
-          y += (lines.length * 4) + 6;
+          let lineIndex = 0;
+          while (lineIndex < lines.length) {
+            await ensurePdfSpace(4);
+            const linesOnPage = Math.max(1, Math.floor((282 - y) / 4));
+            const pageLines = lines.slice(lineIndex, lineIndex + linesOnPage);
+            doc.text(pageLines, margin, y);
+            y += pageLines.length * 4;
+            lineIndex += pageLines.length;
+            if (lineIndex < lines.length) {
+              doc.addPage();
+              await addWatermark();
+              y = margin;
+            }
+          }
+          y += 6;
         }
 
         // Itens (Serviços / Estoque)
@@ -3738,6 +3771,8 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
               head: [['Serviço', 'Qtd', 'Unit.', 'Total']],
               body: orc.tiposDeServico.map(s => [s.descricao, s.quantidade||1, formatBRL(s.valor), formatBRL(s.valor*(s.quantidade||1))]),
               styles: { fontSize: 8 },
+              columnStyles: { 0: { cellWidth: 92 }, 1: { cellWidth: 16 }, 2: { cellWidth: 36 }, 3: { cellWidth: 36 } },
+              didParseCell: fitMoneyTableCell,
               headStyles: { fillColor: [pr,pg,pb] },
               margin: { left: margin, right: margin }
             });
@@ -3751,6 +3786,8 @@ Gere orçamentos profissionais para seus clientes de forma rápida e fácil!
               head: [['Estoque', 'Qtd', 'Unit.', 'Total']],
               body: orc.items.map(i => [i.nome, `${i.quantidade} ${i.unidade||'UNID'}`, formatBRL(i.valor), formatBRL(i.valor*i.quantidade)]),
               styles: { fontSize: 8 },
+              columnStyles: { 0: { cellWidth: 92 }, 1: { cellWidth: 16 }, 2: { cellWidth: 36 }, 3: { cellWidth: 36 } },
+              didParseCell: fitMoneyTableCell,
               headStyles: { fillColor: [pr,pg,pb] },
               margin: { left: margin, right: margin }
             });
