@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>QUOTEX — Orçamento Inteligente</title>
   <link rel="icon" href="icons/icon-32x32.png">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -22,7 +22,7 @@
 
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180x180.png">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#f6f5f1">
 
   <style>
     /* Estilos para o Modal de Bloqueio Trial */
@@ -1011,6 +1011,51 @@
       background-color: #475569 !important;
     }
   </style>
+
+  <style id="qx-skin">
+  /* ===== QUOTEX • visual limpo (camada sobre o CSS original; modo escuro intocado) ===== */
+  :root{--qx-bg:#f6f5f1;--qx-card:#ffffff;--qx-tx:#1d1d1b;--qx-mut:#6b6a63;--qx-bd:#e6e3da;--qx-ac:#e8a200;--qx-ac2:#c98a00;--qx-acx:#1d1d1b;--qx-r:16px}
+  body:not(.dark){background:var(--qx-bg);color:var(--qx-tx);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body:not(.dark) .app-header{background:rgba(246,245,241,.92);border-bottom:1px solid var(--qx-bd);box-shadow:none;padding-top:env(safe-area-inset-top,0px)}
+  body:not(.dark) .app-header h1{color:var(--qx-tx)}
+  body:not(.dark) .app-header .text-cyan-600{color:var(--qx-mut)!important;font-weight:500}
+  body:not(.dark) #user-plan-label{background:#fff4d6;color:#8a5d00;border-color:#f3dba0}
+  /* cartões */
+  body:not(.dark) .dashboard-card,body:not(.dark) .bg-white.rounded-xl,body:not(.dark) .bg-white.rounded-2xl,body:not(.dark) .bg-white.rounded-lg{border:1px solid var(--qx-bd);border-radius:var(--qx-r);box-shadow:0 1px 2px rgba(29,29,27,.04)}
+  body:not(.dark) .dashboard-card{box-shadow:0 1px 2px rgba(29,29,27,.04)}
+  body:not(.dark) .shadow-sm,body:not(.dark) .shadow-md,body:not(.dark) .shadow-lg{box-shadow:0 1px 2px rgba(29,29,27,.05)!important}
+  /* cor de destaque única (âmbar) no lugar de azul/ciano */
+  body:not(.dark) .bg-blue-600,body:not(.dark) .bg-blue-500,body:not(.dark) .bg-cyan-500,body:not(.dark) .bg-cyan-600,body:not(.dark) .bg-indigo-600{background:var(--qx-ac)!important;color:var(--qx-acx)!important}
+  body:not(.dark) .hover\:bg-blue-700:hover,body:not(.dark) .hover\:bg-cyan-600:hover,body:not(.dark) .hover\:bg-cyan-700:hover{background:var(--qx-ac2)!important}
+  body:not(.dark) .text-blue-600,body:not(.dark) .text-blue-700,body:not(.dark) .text-cyan-600,body:not(.dark) .text-cyan-700{color:#8a5d00!important}
+  body:not(.dark) .bg-blue-100,body:not(.dark) .bg-cyan-50,body:not(.dark) .bg-blue-50{background:#fff4d6!important}
+  body:not(.dark) .tab.active{border-bottom-color:var(--qx-ac);color:#8a5d00}
+  body:not(.dark) .desktop-action-btn{background:var(--qx-ac);color:var(--qx-acx);border-radius:12px;font-weight:700;padding:.6rem 1rem}
+  /* campos e botões maiores (dedo / luva) */
+  body:not(.dark) input:not([type=checkbox]):not([type=radio]),body:not(.dark) select,body:not(.dark) textarea{border-radius:12px;border-color:var(--qx-bd);background:#fff;min-height:44px}
+  body:not(.dark) input:focus,body:not(.dark) select:focus,body:not(.dark) textarea:focus{outline:2px solid var(--qx-ac);outline-offset:0;border-color:var(--qx-ac)}
+  body:not(.dark) button{border-radius:12px}
+  body:not(.dark) .novidades-banner{background:#fff4d6;color:#5c3d00;border:1px solid #f3dba0;box-shadow:none}
+  body:not(.dark) .novidades-banner *{color:inherit}
+  /* botão flutuante só no desktop; no celular entra a barra inferior */
+  body:not(.dark) #fab-novo-orcamento{background:var(--qx-ac);color:var(--qx-acx);box-shadow:0 6px 18px rgba(232,162,0,.35)}
+  body:not(.dark) #fab-novo-orcamento:hover{background:var(--qx-ac2)}
+  @media (max-width:767px){#fab-novo-orcamento{display:none!important}#app-view:not(.hidden){padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+    #main-view>div{padding:12px}}
+  /* barra inferior (mobile) */
+  #qx-bottom{display:none}
+  @media (max-width:767px){
+   #qx-bottom{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:600;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-top:1px solid var(--qx-bd);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+   #qx-bottom button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;color:var(--qx-mut);font:600 11px/1.1 Inter,system-ui,sans-serif;padding:6px 0;min-height:52px}
+   #qx-bottom button svg{width:24px;height:24px}
+   #qx-bottom button.on{color:#8a5d00}
+   #qx-bottom .qx-plus{color:var(--qx-acx)}
+   #qx-bottom .qx-plus span.circ{display:flex;align-items:center;justify-content:center;width:46px;height:46px;margin-top:-18px;border-radius:50%;background:var(--qx-ac);box-shadow:0 4px 12px rgba(232,162,0,.45)}
+   body.dark #qx-bottom{background:rgba(15,23,42,.96);border-color:#334155}
+   body.dark #qx-bottom button{color:#94a3b8}body.dark #qx-bottom button.on{color:#f0b429}
+  }
+  </style>
+
 </head>
 <body>
 
@@ -1019,6 +1064,18 @@
     <div class="spinner mb-4"></div>
     <p id="loading-text" class="text-white/80 text-sm font-medium">Conectando...</p>
   </div>
+  <script>
+  /* Rede de segurança: se a tela de carregamento passar de 10s, avisa e oferece recarregar */
+  setTimeout(function(){
+    var o=document.getElementById('loading-overlay');
+    if(!o||getComputedStyle(o).display==='none'||document.getElementById('qx-retry'))return;
+    var t=document.getElementById('loading-text');
+    if(t)t.textContent='Está demorando mais que o normal. Verifique a internet.';
+    var b=document.createElement('button');b.id='qx-retry';b.textContent='Tentar novamente';
+    b.style.cssText='margin-top:16px;padding:12px 20px;border-radius:12px;border:0;background:#e8a200;color:#1d1d1b;font-weight:700';
+    b.onclick=function(){location.reload()};o.appendChild(b);
+  },10000);
+  </script>
 
   <!-- ===== MODAL: CONFIRMAÇÃO DE EXCLUSÃO ===== -->
   <div id="delete-confirm-modal" class="modal">
@@ -2887,6 +2944,26 @@
         </a>
       </div>
     </footer>
+
+  <!-- ===== BARRA INFERIOR (mobile) ===== -->
+  <nav id="qx-bottom" aria-label="Navegação principal">
+    <button type="button" data-qx="orcamentos" onclick="navigateMobileMenu('orcamentos')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-8 9 8M5 10v10h14V10"/></svg>Início</button>
+    <button type="button" data-qx="lista" onclick="showAllOrcamentosPage()"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6M9 16h6M9 8h6M5 4h14v16H5z"/></svg>Orçamentos</button>
+    <button type="button" class="qx-plus" onclick="openOrcamentoModal()" aria-label="Novo orçamento"><span class="circ"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6" style="width:24px;height:24px"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/></svg></span>Novo</button>
+    <button type="button" data-qx="clientes" onclick="navigateMobileMenu('clientes')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-4-2.8M9 11a4 4 0 100-8 4 4 0 000 8zm-7 9v-2a4 4 0 014-4h6a4 4 0 014 4v2"/></svg>Clientes</button>
+    <button type="button" data-qx="mais" onclick="toggleMobileMenu()"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01"/></svg>Mais</button>
+  </nav>
+  <script>
+  (function(){
+    function cur(){var l=document.getElementById('all-orcamentos-view');
+      if(l&&!l.classList.contains('hidden'))return 'lista';
+      var a=document.querySelector('.tab-content.active');var id=a?a.id:'orcamentos';
+      return (id==='orcamentos'||id==='clientes')?id:'mais';}
+    function sync(){var c=cur();document.querySelectorAll('#qx-bottom [data-qx]').forEach(function(b){b.classList.toggle('on',b.dataset.qx===c)})}
+    var v=document.getElementById('app-view');if(!v)return;
+    new MutationObserver(sync).observe(v,{subtree:true,attributes:true,attributeFilter:['class']});sync();
+  })();
+  </script>
 
   <!-- ===== FAB: NOVO ORÇAMENTO ===== -->
   <button id="fab-novo-orcamento" type="button" onclick="openOrcamentoModal()" aria-label="Novo Orçamento">
@@ -7298,7 +7375,9 @@ Qualquer dúvida estou à disposição!`;
     }
 
     // ===== Inicializar =====
-    window.onload = initializeFirebase;
+    // Inicia o Firebase assim que o HTML estiver pronto (sem esperar CDNs/imagens lentas, que travavam em "Conectando...")
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeFirebase);
+    else initializeFirebase();
 
   </script>
 </body>
