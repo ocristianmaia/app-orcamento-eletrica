@@ -1056,6 +1056,63 @@
   }
   </style>
 
+  <style id="qx-skin2">
+  /* ===== QUOTEX v2: início com foco em ação, etapas no celular, avisos, login claro ===== */
+  #orcamentos.active{display:flex!important;flex-direction:column;gap:18px}
+  #orcamentos>*{margin:0!important}
+  #orcamentos>#trial-warning-container:empty{display:none}
+  #orcamentos>:nth-child(1){order:0}#orcamentos>:nth-child(2){order:1}#orcamentos>:nth-child(3){order:2}
+  #orcamentos>:nth-child(9){order:3}#orcamentos>:nth-child(4){order:4}#orcamentos>:nth-child(5){order:5}
+  #orcamentos>:nth-child(6){order:6}#orcamentos>:nth-child(7){order:7}#orcamentos>:nth-child(8){order:8}
+  .qx-charts>summary{list-style:none;cursor:pointer;font-weight:800;padding:14px 16px;border:1px solid var(--qx-bd);border-radius:14px;background:var(--qx-card)}
+  .qx-charts>summary::-webkit-details-marker{display:none}
+  .qx-charts[open]>summary{margin-bottom:12px}
+  body:not(.dark) #main-view .tab{border-radius:10px 10px 0 0}
+  body:not(.dark) #main-view .tab.active{background:#fff4d6;border-bottom-color:var(--qx-ac)}
+  /* tela de carregamento e login claros */
+  body:not(.dark) #loading-overlay{background:var(--qx-bg)}
+  body:not(.dark) #loading-overlay #loading-text{color:var(--qx-mut)}
+  body:not(.dark) .spinner{border-color:#e6e3da;border-top-color:var(--qx-ac)}
+  body:not(.dark) #login-view{background:var(--qx-bg)!important}
+  body:not(.dark) #login-view h1{color:var(--qx-tx)}
+  body:not(.dark) #login-view .text-blue-300,body:not(.dark) #login-view .text-white\/70,body:not(.dark) #login-view .text-white\/30{color:var(--qx-mut)}
+  body:not(.dark) #login-view .bg-white\/10{background:#fff;border-color:var(--qx-bd);box-shadow:0 8px 30px rgba(29,29,27,.06)}
+  body:not(.dark) #login-view button{border:1px solid var(--qx-bd);box-shadow:none}
+  /* modo escuro em destaque */
+  #qx-theme .sun{display:none}body.dark #qx-theme .sun{display:block}body.dark #qx-theme .moon{display:none}
+  body.dark #qx-theme{background:#334155;color:#facc15}
+  /* avisos (no lugar do alert) */
+  #qx-toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:100001;display:flex;flex-direction:column;gap:8px;width:min(92vw,420px);pointer-events:none}
+  .qx-toast{pointer-events:auto;background:#1d1d1b;color:#fff;padding:12px 14px;border-radius:12px;font:500 14px/1.35 Inter,system-ui,sans-serif;white-space:pre-line;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:qxin .2s ease-out}
+  .qx-toast.ok{background:#1d7a46}.qx-toast.err{background:#b4232f}
+  @keyframes qxin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  /* etapas do orçamento (só celular) */
+  #qx-steps,#qx-foot{display:none}
+  @media (max-width:767px){
+    #qx-toasts{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+    #qx-charts:not([open]) .dashboard-chart-box{display:none}
+    #orcamentos>:nth-child(8){display:none}
+    input,select,textarea{font-size:16px!important}
+    #orcamento-modal>div{width:100%!important;max-width:none!important;height:100dvh;max-height:100dvh!important;border-radius:0!important;padding:14px 14px 0!important}
+    #orcamento-modal .qx-off{display:none!important}
+    #qx-steps{display:flex;gap:6px;margin:0 0 14px}
+    #qx-steps button{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 4px;border-radius:12px;border:1px solid var(--qx-bd);background:#fff;color:var(--qx-mut);font:700 11px Inter,system-ui,sans-serif}
+    #qx-steps b{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--qx-bd);color:var(--qx-tx);font-size:11px}
+    #qx-steps button.on{background:#fff4d6;border-color:var(--qx-ac);color:#8a5d00}
+    #qx-steps button.on b{background:var(--qx-ac)}
+    #qx-foot{display:flex;align-items:center;gap:10px;position:sticky;bottom:0;z-index:5;background:#fff;border-top:1px solid var(--qx-bd);margin:14px -14px 0;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}
+    #qx-foot .qx-total{flex:1;display:flex;flex-direction:column;line-height:1.1}
+    #qx-foot small{font-size:11px;color:var(--qx-mut)}#qx-foot strong{font-size:18px}
+    #qx-foot button{min-height:48px;padding:0 18px;font-weight:700}
+    #qx-next{background:var(--qx-ac);color:var(--qx-acx)}
+    #qx-foot[data-step="4"] #qx-next{display:none}
+    body.dark #qx-foot{background:#1e293b;border-color:#334155}
+    body.dark #qx-steps button{background:#1e293b;border-color:#334155;color:#94a3b8}
+    body.dark #qx-foot strong{color:#f8fafc}
+  }
+  </style>
+
+
 </head>
 <body>
 
@@ -1525,6 +1582,10 @@
     Plano: Carregando...
   </span>
 </div>
+          <button type="button" id="qx-theme" onclick="qxToggleTheme()" title="Modo escuro" aria-label="Alternar modo escuro" class="flex w-10 h-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-colors">
+            <svg class="moon w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            <svg class="sun w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          </button>
           <button type="button" onclick="openOrcamentoModal()" class="desktop-action-btn hidden md:inline-flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
             Novo Orçamento
@@ -1724,6 +1785,7 @@
               </article>
             </section>
 
+            <details id="qx-charts" class="qx-charts"><summary>Gráficos do período</summary>
             <section class="grid grid-cols-1 xl:grid-cols-4 gap-4">
               <div class="dashboard-panel xl:col-span-3">
                 <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
@@ -1766,7 +1828,7 @@
                   <div id="dashboard-status-legend" class="mt-4 grid grid-cols-2 gap-2 text-xs text-slate-600"></div>
                 </div>
               </div>
-            </section>
+            </section></details>
 
             <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button type="button" onclick="openOrcamentoModal()" class="quick-action-card p-5 text-left">
@@ -2965,6 +3027,60 @@
   })();
   </script>
 
+  <script>
+  /* Avisos não bloqueantes: substitui alert() */
+  (function(){
+    var box=document.createElement('div');box.id='qx-toasts';box.setAttribute('aria-live','polite');document.body.appendChild(box);
+    window.alert=function(msg){
+      var s=String(msg==null?'':msg),t=document.createElement('div');
+      t.className='qx-toast '+(/erro|falha|n[aã]o |restrito|selecione|preencha|fa[cç]a login|inv[aá]lid/i.test(s)?'err':(/sucesso|salv|atualizad|cadastrad|copiad|anex|exclu/i.test(s)?'ok':''));
+      t.textContent=s;t.onclick=function(){t.remove()};box.appendChild(t);
+      setTimeout(function(){t.remove()},Math.min(8000,3500+s.length*30));
+    };
+  })();
+  </script>
+  <script>
+  /* Novo orçamento em etapas (celular). Só agrupa/mostra blocos já existentes. */
+  (function(){
+    var STEPS=['Cliente','Serviço','Materiais','Revisar'],step=1,kids=[],right,inner,foot;
+    function $(i){return document.getElementById(i)}
+    function init(){
+      var modal=$('orcamento-modal');if(!modal)return;
+      inner=modal.firstElementChild;var grid=inner&&inner.querySelector(':scope > .grid');if(!grid)return;
+      var left=grid.children[0];right=grid.children[1];if(!left||!right)return;
+      kids=[].slice.call(left.children);
+      kids.forEach(function(k){
+        k.dataset.qxStep=k.querySelector('#orc-cliente-select')?1:(k.id==='orc-estoque-section'||k.id==='container-estoque-avulso')?3:k.querySelector('#orc-desconto-tipo')?4:2;
+      });
+      var bar=document.createElement('div');bar.id='qx-steps';
+      bar.innerHTML=STEPS.map(function(n,i){return '<button type="button" data-s="'+(i+1)+'"><b>'+(i+1)+'</b><span>'+n+'</span></button>'}).join('');
+      inner.insertBefore(bar,grid);
+      foot=document.createElement('div');foot.id='qx-foot';
+      foot.innerHTML='<div class="qx-total"><small>Total</small><strong id="qx-total">R$ 0,00</strong></div><button type="button" id="qx-back">Voltar</button><button type="button" id="qx-next">Avançar</button>';
+      inner.appendChild(foot);
+      bar.onclick=function(e){var b=e.target.closest('button');if(b)go(+b.dataset.s)};
+      $('qx-back').onclick=function(){var s=step;do{s--}while(s>1&&!has(s));go(s)};
+      $('qx-next').onclick=function(){var s=step;do{s++}while(s<4&&!has(s));go(s)};
+      new MutationObserver(function(){if(modal.classList.contains('active')){if(!modal._on){modal._on=1;step=1;apply()}}else modal._on=0}).observe(modal,{attributes:true,attributeFilter:['class']});
+      var pv=$('pdf-preview');
+      if(pv)new MutationObserver(function(){var m=/TOTAL:\s*R\$\s*([\d.,\-]+)/i.exec(pv.textContent);$('qx-total').textContent='R$ '+(m?m[1]:'0,00')}).observe(pv,{childList:true,subtree:true,characterData:true});
+      apply();
+    }
+    function has(s){return kids.some(function(k){return +k.dataset.qxStep===s&&!k.classList.contains('hidden')})}
+    function go(s){
+      if(s>1&&!($('orc-cliente-select')||{}).value){alert('Selecione um cliente para continuar.');s=1}
+      step=Math.max(1,Math.min(4,s));apply();if(inner)inner.scrollTop=0;
+    }
+    function apply(){
+      kids.forEach(function(k){k.classList.toggle('qx-off',+k.dataset.qxStep!==step)});
+      if(right)right.classList.toggle('qx-off',step!==4);
+      if(foot)foot.dataset.step=step;
+      var b=$('qx-back');if(b)b.style.visibility=step>1?'visible':'hidden';
+      document.querySelectorAll('#qx-steps button').forEach(function(x){x.classList.toggle('on',+x.dataset.s===step)});
+    }
+    init();
+  })();
+  </script>
   <!-- ===== FAB: NOVO ORÇAMENTO ===== -->
   <button id="fab-novo-orcamento" type="button" onclick="openOrcamentoModal()" aria-label="Novo Orçamento">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
@@ -7379,6 +7495,23 @@ Qualquer dúvida estou à disposição!`;
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeFirebase);
     else initializeFirebase();
 
+  </script>
+  <script>
+  document.addEventListener('DOMContentLoaded',function(){
+    var KEY='qx_dark',orig=window.applyDarkMode;
+    function pref(){try{return localStorage.getItem(KEY)}catch(e){return null}}
+    function save(on){try{localStorage.setItem(KEY,on?'1':'0')}catch(e){}}
+    function sync(){var on=document.body.classList.contains('dark'),cb=document.getElementById('config-dark-mode'),b=document.getElementById('qx-theme');if(cb)cb.checked=on;if(b)b.setAttribute('aria-pressed',on)}
+    var set=function(on){document.body.classList.toggle('dark',on)};
+    if(typeof orig==='function'){
+      set=orig;
+      window.applyDarkMode=function(d){var p=pref();orig(p===null?d:p==='1');sync()};
+    }
+    window.qxToggleTheme=function(){var on=!document.body.classList.contains('dark');save(on);set(on);sync()};
+    var cb=document.getElementById('config-dark-mode');
+    if(cb){cb.removeAttribute('onchange');cb.addEventListener('change',function(){save(cb.checked);set(cb.checked);sync()})}
+    var p=pref();if(p!==null)set(p==='1');sync();
+  });
   </script>
 </body>
 </html>
